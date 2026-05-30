@@ -1,0 +1,423 @@
+<?php
+
+declare(strict_types=1);
+
+// Load centralized version configuration
+if (!file_exists(__DIR__ . '/version.php')) {
+    die('Critical: Version file missing');
+}
+require_once(__DIR__ . '/version.php');
+
+// Ensure sessions survive for at least ~14 hours (matches the 50000s login check).
+// PHP's default gc_maxlifetime is 1440s (24 min), which silently destroys sessions.
+ini_set('session.gc_maxlifetime', '50000');
+ini_set('session.cookie_lifetime', '0'); // session cookie — expires when browser closes
+
+// Start the session at the beginning to avoid undefined $_SESSION variable.
+// AJAX detection depends on clients sending X-Requested-With. jQuery does this
+// automatically; fetch() and sendBeacon() do not unless the caller adds it.
+// For AJAX requests, use read_and_close to release the session file lock immediately.
+// PHP's file-based sessions use exclusive locks, so parallel AJAX requests become
+// serialized if the lock is held. Session data is still readable in $_SESSION after close.
+$_is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+    && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+if ($_is_ajax) {
+    session_start(['read_and_close' => true]);
+} else {
+    session_start();
+}
+
+if (!function_exists('withWritableSession')) {
+    /**
+     * Reopen a read-only session just long enough to persist writes, then
+     * release the session lock again for the rest of the request.
+     */
+    function withWritableSession(callable $callback): void
+    {
+        $openedHere = false;
+
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            if (headers_sent()) {
+                error_log('withWritableSession: headers already sent; session writes may not persist');
+                $callback();
+                return;
+            }
+
+            session_start();
+            $openedHere = true;
+        }
+
+        $callback();
+
+        if ($openedHere && session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+    }
+}
+
+DEFINE('TRACKING202_RSS_URL', 'http://rss.tracking202.com');
+DEFINE('TRACKING202_ADS_URL', 'https://ads.tracking202.com');
+
+// Dashboard API configuration
+DEFINE('DASHBOARD_API_URL', 'https://my.tracking202.com/api/v1');
+DEFINE('DASHBOARD_CACHE_TTL', 3600); // 1 hour
+
+//fix for nginx with no server name set
+if ($_SERVER['SERVER_NAME'] == '_') {
+    $_SERVER['SERVER_NAME'] = $_SERVER['HTTP_HOST'];
+}
+
+DEFINE('ROOT_PATH', substr(__DIR__, 0, -10));
+DEFINE('CONFIG_PATH', __DIR__);
+@ini_set('auto_detect_line_endings', '1');
+// Deprecated in PHP 5.4
+// @ini_set('register_globals', 0);
+@ini_set('display_errors', 'On');
+@ini_set('error_reporting', '6135');
+// @ini_set('safe_mode', 'Off'); // Removed in PHP 5.4
+@ini_set('set_time_limit', '0');
+
+if (!class_exists('Memcache')) {
+    class Memcache
+    {
+        public function connect($host, $port)
+        {
+            return false;
+        }
+        public function set($key, $value, $flag = false, $exp = 0)
+        {
+            return false;
+        }
+    }
+}
+
+// Add polyfill for Memcached if the extension isn't installed
+if (!class_exists('Memcached')) {
+    class Memcached
+    {
+        public function __construct() {}
+        public function addServer($host, $port)
+        {
+            return false;
+        }
+        public function set($key, $value, $exp = 0)
+        {
+            return false;
+        }
+    }
+}
+
+// Use null coalescing operator to handle undefined array index
+if (!isset($_SESSION['user_timezone']) || empty($_SESSION['user_timezone'])) {
+    date_default_timezone_set('GMT');
+} else {
+    date_default_timezone_set($_SESSION['user_timezone']);
+}
+
+// Check if mysqli extension is loaded before calling mysqli_report
+if (function_exists('mysqli_report')) {
+    mysqli_report(MYSQLI_REPORT_STRICT);
+} else {
+    // Polyfill or alternative error handling if mysqli_report isn't available
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+    @ini_set('display_errors', 'On');
+}
+
+$install_path = substr(ROOT_PATH, strlen((string) $_SERVER['DOCUMENT_ROOT']));
+
+$re = '/\b(api|tracking202|202-\w+).*/';
+$str = (string)($_SERVER['REQUEST_URI'] ?? '');
+preg_match_all($re, $str, $matches, PREG_SET_ORDER, 0);
+
+// Fix for PHP 8 - Check if $matches array exists and has expected structure before accessing it
+if (!empty($matches)) {
+    $navigation = $matches[0][0];
+    $navigation = '/' . $navigation;
+} else {
+    // Fallback if no matches are found
+    $navigation = '/';
+}
+
+$navigation = explode('/', $navigation);
+foreach ($navigation as $key => $row) {
+    $split_chars = preg_split('/\?{1}/', $navigation[$key], -1, PREG_SPLIT_OFFSET_CAPTURE);
+    if (!empty($split_chars)) {
+        $navigation[$key] = $split_chars[0][0];
+    }
+}
+
+//get the real ip
+$_SERVER['HTTP_X_FORWARDED_FOR'] = match (true) {
+    !empty($_SERVER['HTTP_CF_CONNECTING_IP']) => $_SERVER['HTTP_CF_CONNECTING_IP'],
+    !empty($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']) => $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'],
+    !empty($_SERVER['HTTP_X_SUCURI_CLIENTIP']) => $_SERVER['HTTP_X_SUCURI_CLIENTIP'],
+    !empty($_SERVER['HTTP_X_REAL_IP']) => $_SERVER['HTTP_X_REAL_IP'],
+    !empty($_SERVER['HTTP_CLIENT_IP']) => $_SERVER['HTTP_CLIENT_IP'],
+    !empty($_SERVER['HTTP_X_FORWARDED_FOR']) && ($_SERVER['SERVER_ADDR'] != $_SERVER['HTTP_X_FORWARDED_FOR']) => $_SERVER['HTTP_X_FORWARDED_FOR'],
+    default => $_SERVER['REMOTE_ADDR'],
+};
+
+
+$tempip = explode(",", (string) $_SERVER['HTTP_X_FORWARDED_FOR']);
+$_SERVER['HTTP_X_FORWARDED_FOR'] = trim($tempip[0]);
+
+// Store the IP address temporarily, we'll pass it to ipAddress() after functions.php is included
+$temp_ip_address = $_SERVER['HTTP_X_FORWARDED_FOR'];
+
+if (file_exists(ROOT_PATH  . '202-config.php')) {
+    include_once(ROOT_PATH  . '202-config.php');
+} else {
+    header('location: setup-config.php');
+    die();
+}
+include_once(ROOT_PATH  . '202-config.php');
+// Load Composer autoloader if available for PSR-4 classes.
+$autoloadPath = ROOT_PATH . 'vendor/autoload.php';
+if (file_exists($autoloadPath)) {
+    require_once $autoloadPath;
+}
+include_once(CONFIG_PATH . '/sessions.php');
+include_once(CONFIG_PATH . '/functions-tracking202.php');
+include_once(CONFIG_PATH . '/functions.php');
+// Now that functions.php is included, we can use ipAddress()
+$ip_address = ipAddress($temp_ip_address);
+include_once(CONFIG_PATH . '/template.php');
+
+include_once(CONFIG_PATH . '/functions-auth.php');
+include_once(CONFIG_PATH . '/class-filterengine.php');
+
+include_once(CONFIG_PATH . '/functions-tracking202api.php');
+include_once(CONFIG_PATH . '/l10n.php');
+include_once(CONFIG_PATH . '/formatting.php');
+include_once(CONFIG_PATH . '/Role.class.php');
+include_once(CONFIG_PATH . '/User.class.php');
+include_once(CONFIG_PATH . '/Slack.class.php');
+include_once(CONFIG_PATH . '/functions-timeframe.php');
+include_once(CONFIG_PATH . '/functions-db.php');
+include_once(CONFIG_PATH . '/functions-indexes.php');
+include_once(CONFIG_PATH . '/functions-icons.php');
+include_once(CONFIG_PATH . '/functions-api.php');
+include_once(CONFIG_PATH . '/functions-utils.php');
+include_once(CONFIG_PATH . '/functions-empty.php');
+
+$whatCache = false;
+$memcacheInstalled = false;
+$memcacheWorking = false;
+$mchost = $mchost ?? '127.0.0.1';
+
+// try to connect to memcache server
+if (extension_loaded('memcache') && class_exists('Memcache')) {
+    $whatCache = 'memcache';
+    $memcacheInstalled = true;
+    /** @var Memcache $memcache */
+    $memcache = new Memcache();
+    if (@$memcache->connect($mchost, 11211)) {
+        $memcacheWorking = true;
+    } else {
+        $memcacheWorking = false;
+    }
+} else {
+    if (extension_loaded('memcached') && class_exists('Memcached')) {
+        $whatCache = 'memcached';
+        $memcacheInstalled = true;
+        /** @var Memcached $memcache */
+        $memcache = new Memcached();
+        if (@$memcache->addserver($mchost, 11211)) {
+            $memcacheWorking = true;
+        } else {
+            $memcacheWorking = false;
+        }
+    }
+}
+
+function setCache($key, $value, $exp = null)
+{
+    global $whatCache, $memcache;
+    switch ($whatCache) {
+        case 'memcache':
+            return $memcache->set($key, $value, false, $exp);
+
+        case 'memcached':
+            return $memcache->set($key, $value, $exp);
+    }
+}
+
+// ipAddress() function has been moved to functions.php - using that implementation instead
+// to avoid duplicate function declaration errors
+
+function inet6_ntoa($ip)
+{
+    return @inet_ntop($ip);
+}
+
+function inet6_aton($ip)
+{
+    return @inet_pton($ip);
+}
+
+
+try {
+    $database = DB::getInstance();
+
+    $db = $database->getConnection();
+
+    // Check for connection errors on the mysqli object itself (redundant if constructor throws, but safe)
+    if ($db === null || $db->connect_error) {
+        $errno = $db ? $db->connect_errno : 'N/A';
+        $error = $db ? $db->connect_error : 'DB object is null';
+        throw new Exception("MySQL Connection Error ({$errno}): {$error}");
+    }
+    // Initialize $dbro as well
+    $dbro = $database->getConnectionro();
+    if ($dbro === null || $dbro->connect_error) {
+        $errno = $dbro ? $dbro->connect_errno : 'N/A';
+        $error = $dbro ? $dbro->connect_error : 'DB RO object is null';
+        // Decide if this is fatal or just a warning
+        error_log("Read-only DB Connection Error ({$errno}): {$error}");
+        // Potentially allow the script to continue if read-only connection is not critical
+    }
+} catch (Exception $e) {
+    // Capture the specific exception message
+    $db_error_msg = $e->getMessage();
+
+    _die("<h6>Error establishing a database connection</h6>
+			<p><small>This either means that the username and password information in your <code>202-config.php</code> file is incorrect or we can't contact the database server. This could mean your host's database server is down.</small></p>
+            <p><strong style='color: red;'>Error Details: {$db_error_msg}</strong></p>
+			<small>
+			<ul> 
+				<li>Are you sure you have the correct username and password?</li>
+				<li>Are you sure that you have typed the correct hostname?</li>
+				<li>Are you sure that you have typed the correct database name?</li>
+				<li>Are you sure that the database server is running?</li>
+			</ul>
+			</small> 
+			<p><small>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://support.tracking202.com'>Prosper202 Support Center</a>.</small></p>
+		");
+}
+
+// Initialize $skip_upgrade to false before it is used to avoid undefined variable warning
+$skip_upgrade = false;
+
+// Initialize $stopSessions to false by default
+$stopSessions = false;
+
+//stop the sessions if this is a redirect or a javascript placement, we were recording sessions on every hit when we don't need it on
+if ($navigation[1] == 'tracking202') {
+    switch ($navigation[2]) {
+        case "redirect":
+        case "static":
+            $stopSessions = true;
+            break;
+    }
+}
+
+//if the mysql tables are all installed now
+if (($navigation[1]) and ($navigation[1] != '202-config')) {
+
+    //we can initalize the session managers
+    if (!$stopSessions) {
+
+        //disable mysql sessions because they are slow
+        //$sess = new SessionManager();
+        if (session_status() !== PHP_SESSION_ACTIVE && !$_is_ajax) {
+            session_start();
+        }
+    }
+
+    //run the cronjob checker
+    //	include_once(ROOT_PATH . '/202-cronjobs/index.php'); 
+}
+
+//set token to prevent CSRF attacks
+if (!isset($_SESSION['token'])) {
+    withWritableSession(static function (): void {
+        if (!isset($_SESSION['token'])) {
+            $_SESSION['token'] = md5(uniqid((string) random_int(0, mt_getrandmax()), true));
+        }
+    });
+}
+
+
+// Initialize $skip_upgrade variable
+$skip_upgrade = false;
+
+//don't run the upgrade, if regular users are being redirected through the self-hosted software
+if (($navigation[1] == 'tracking202') and ($navigation[2] == 'static')) {
+    $skip_upgrade = true;
+}
+if (($navigation[1] == 'tracking202') and ($navigation[2] == 'redirect')) {
+    $skip_upgrade = true;
+}
+
+if ($skip_upgrade == false) {
+
+    //only check to see if upgraded, if this thing is acutally already installed
+    if (is_installed() == true) {
+
+        //if we need upgrade, and its not already on the upgrade screen, redirect to the upgrade screen
+        if ((upgrade_needed() == true) and (($navigation[1] != '202-config') and ($navigation[2] != 'upgrade.php'))) {
+            header('location: ' . get_absolute_url() . '202-config/upgrade.php');
+            die();
+        }
+    }
+}
+
+//if safe mode is turned on, and the user is trying to use offers202, stats202 or alerts202, show the error page
+switch ($navigation[1]) {
+    case "offers202":
+    case "alerts202":
+    case "stats202":
+        if (@ini_get('safe_mode')) {
+            header('location: ' . get_absolute_url() . '202-account/disable-safe-mode.php');
+            die();
+        }
+        break;
+}
+
+// Skip user initialization during installation
+if (!str_contains((string) $_SERVER['PHP_SELF'], '202-config/install.php')) {
+    $userObj = new User($_SESSION['user_own_id'] ?? null);
+} else {
+    $userObj = null;
+}
+
+if (!isset($_SESSION['ipv6']) || !$_SESSION['ipv6']) {
+    $sql = "select inet6_ntoa(0x00000000000000000000000000000001) as ipv6";
+    $result = $db->query($sql);
+
+    withWritableSession(static function () use ($result): void {
+        $_SESSION['ipv6'] = $result ? 'ipv6' : '';
+    });
+}
+
+if (isset($_SESSION['ipv6']) && $_SESSION['ipv6'] != '') {
+    $inet6_ntoa = 'inet6_ntoa'; //decodes for display etc
+    $inet6_aton = 'inet6_aton'; //encodes for db
+} else {
+    $inet6_ntoa = '';
+    $inet6_aton = '';
+}
+
+$user_sql = "SET session sql_mode= ''";
+$user_results = $db->query($user_sql);
+
+function updateBlazerCache(&$mysql, $blazerCacheType = '')
+{
+    global $db;
+
+    switch ($blazerCacheType) {
+        case 'ac':
+            $bc_results = ($db->query("SELECT DISTINCT tracker_id_public from 202_trackers WHERE aff_campaign_id = 1"));
+
+            while ($bc_row = $bc_results->fetch_assoc()) {
+                $bc_key = "td_" . $bc_row['tracker_id_public'];
+                setCache($bc_key, $mysql['aff_campaign_url']);
+            }
+            break;
+
+        default:
+            # code...
+
+            break;
+    }
+}

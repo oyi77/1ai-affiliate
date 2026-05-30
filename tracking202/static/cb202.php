@@ -1,0 +1,63 @@
+<?php
+declare(strict_types=1);
+include_once(substr(__DIR__, 0,-19) . '/202-config/connect.php');
+include_once(substr(__DIR__, 0,-19) . '/202-config/class-dataengine-slim.php');
+include_once(substr(__DIR__, 0,-19) . '/202-config/static-endpoint-helpers.php');
+
+$mysql['user_id'] = 1;
+
+$slack = false;
+$user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook as url, 2up.cb_key AS cb_key FROM 202_users AS 2u INNER JOIN 202_users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '".$mysql['user_id']."'";
+$user_results = $db->query($user_sql);
+$user_row = $user_results->fetch_assoc();
+
+if (!empty($user_row['url'])) 
+    $slack = new Slack($user_row['url']);
+
+if (function_exists('openssl_decrypt')) {
+    $message = json_decode(file_get_contents('php://input'));
+    $encrypted = $message->{'notification'};
+    $iv = $message->{'iv'};
+    $decrypted = trim(
+        openssl_decrypt(
+            base64_decode((string) $encrypted),
+            'AES-128-CBC',
+            substr(sha1((string) $user_row['cb_key']), 0, 32),
+            OPENSSL_RAW_DATA,
+            base64_decode((string) $iv)
+        ),
+        "\0..\32"
+    );
+    $order = json_decode($decrypted, true);
+
+    if ($order['transactionType'] == 'TEST') {
+        $user_sql = "UPDATE 202_users_pref
+                     SET cb_verified=1
+                     WHERE user_id='".$mysql['user_id']."'";
+        $user_results = $db->query($user_sql);
+
+        if ($slack) 
+            $slack->push('cb_key_verified', []);
+
+    } else if($order['transactionType'] == 'SALE') {
+        $mysql['click_id'] = $db->real_escape_string($order['trackingCodes'][0]);
+        $mysql['click_payout'] = $db->real_escape_string($order['totalAccountAmount']);
+
+        $cpa_sql = "SELECT 202_cpa_trackers.tracker_id_public, 202_trackers.click_cpa FROM 202_cpa_trackers LEFT JOIN 202_trackers USING (tracker_id_public) WHERE click_id = '".$mysql['click_id']."'";
+        $cpa_result = $db->query($cpa_sql);
+        $cpa_row = $cpa_result->fetch_assoc();
+
+        $mysql['click_cpa'] = $db->real_escape_string($cpa_row['click_cpa']);
+                
+        p202ApplyConversionUpdate(
+            $db,
+            (string) $mysql['click_id'],
+            (string) $mysql['click_cpa'],
+            true,
+            (string) $mysql['click_payout']
+        );
+    }
+
+} else {
+    die("Missing Mcrypt!");
+}
