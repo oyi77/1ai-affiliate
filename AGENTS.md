@@ -1,70 +1,141 @@
-## Overview
+# 1ai-Affiliate — Unified Marketing, Sales & Affiliate Hub
 
-Welcome to the Prosper202 codebase. This repository contains the source code for Prosper202, a self-hosted PPC conversion tracking platform licensed under the Business Source License 1.1 (BUSL-1.1). The project is structured to facilitate efficient tracking of online advertising campaigns, attribution, conversion data, split testing, and more.
+One-stop platform for CPA tracking, affiliate marketing, content distribution, and sales automation.
 
-**Directory Structure:**
+## Architecture
 
-* `202-account`, `202-charts`, `202-config`, etc.: Core modules handling various functionalities.
-* `202-css`, `202-js`, `202-img`: Front-end assets including stylesheets, JavaScript files, and images.
-* `202-cronjobs`: Scheduled tasks for maintenance and data processing.
-* `api`: API endpoints for external integrations.
-* `vendor`: Third-party dependencies managed via Composer.
+```
+1ai-affiliate/                    # PHP 8.3+ CPA tracking (Prosper202-based)
+├── api/V3/                       # REST API — affiliates, commissions, offers
+├── 202-config/Affiliate/         # Affiliate profiles + auth
+├── 202-config/Margin/            # Payout calculator + commission handler
+├── 202-config/Offer/             # Offer management + access control
+├── 202-config/Commission/        # Ledger + payout batch system
+├── scripts/                      # DB migrations (4 SQL files)
+│
+├── pipeline/                     # TikTok → Shopee → FB/IG (Python)
+│   └── 21 Meta accounts, 27 affiliate links, 5 niches
+│
+├── poster/                       # Hourly Shopee poster → Telegram (Python)
+│
+├── server/                       # Node.js Express (port 3001)
+│   ├── app.js                     # Entry — CORS, JWT, static SPA
+│   ├── routes/                    # /api/auth, /api/admin, /api/payment, /api/content
+│   ├── controllers/               # auth + admin + payment (Tripay) + content (6 Gemini tools)
+│   ├── services/gemini.js         # Gemini SDK wrapper + circuit breaker
+│   ├── db/mysql.js                # Pool to prosper202 (shared with PHP)
+│   └── public/
+│       ├── admin/index.html       # Dashboard-first SPA — Tailwind CDN, dark, mobile-first
+│       ├── client/index.html
+│       └── assets/app.js          # Vanilla JS, fetch(), JWT in localStorage
+│
+├── mcp/                            # Unified MCP gateway
+    ├── unified_hub.py              # FastMCP server — all services via HTTP proxy
+    ├── requirements.txt            # mcp + httpx
+    └── mcp.json                    # Claude Desktop / Code config
+```
 
-Please focus your contributions within these directories, adhering to the project's coding standards and guidelines.
+## Architecture: API/MCP Integration (NOT symlinks)
 
-## Contribution & Style Guidelines
+```
+┌─────────────────────────────────────────────────────────┐
+│              1ai-affiliate Unified MCP Hub              │
+│         mcp/unified_hub.py (FastMCP + httpx)            │
+├─────────────────────────────────────────────────────────┤
+│  Tool                          │  Target Service        │
+│  ads_generate()                │  1ai-ads :5000         │
+│  ads_generate_landing()        │  1ai-ads :5000         │
+│  social_blast()                │  1ai-social :8200      │
+│  social_analytics()            │  1ai-social :8200      │
+│  social_shopee_sync()          │  1ai-social :8200      │
+│  social_shopee_commission()    │  1ai-social :8200      │
+│  content_status()              │  1ai-content :3000     │
+│  content_banner()              │  1ai-affiliate :3001   │
+│  content_carousel()            │  1ai-affiliate :3001   │
+│  content_caption()             │  1ai-affiliate :3001   │
+│  content_brand_kit()           │  1ai-affiliate :3001   │
+│  content_ab_test()             │  1ai-affiliate :3001   │
+│  content_bg_remove()           │  1ai-affiliate :3001   │
+│  ebook_generate()              │  1ai-ebook :8100       │
+│  ebook_status()                │  1ai-ebook :8100       │
+│  ebook_market_research()       │  1ai-ebook :8100       │
+│  tracking_affiliates()         │  PHP V3 API (localhost)│
+│  tracking_commissions()        │  PHP V3 API (localhost)│
+│  tracking_offers()             │  PHP V3 API (localhost)│
+│  unified_campaign()            │  CROSS-SERVICE 🔥      │
+│  unified_affiliate_onboarding()│  CROSS-SERVICE 🔥      │
+│  unified_content_funnel()      │  CROSS-SERVICE 🔥      │
+└─────────────────────────────────────────────────────────┘
+```
 
-* **Coding Standards**: Follow PSR-12 coding standards for PHP.
-* **Dependencies**: Manage PHP dependencies using Composer.
-* **Testing**: Implement and run tests using PHPUnit.
-* **Documentation**: Document public methods and classes with PHPDoc comments.
-* **Version Control**: Avoid committing files in the `vendor` directory.
-* **Legacy Code**: Refrain from modifying legacy scripts unless necessary.
+Each MCP tool = HTTP REST proxy to native API with circuit breaker.
+Cross-service tools chain multiple services (e.g., generate ad → create tracking link → blast social).
 
-## Migration/Refactor Notes
+## Modules
 
-* **Modernization**: Efforts are underway to transition from procedural PHP to object-oriented programming.
-* **Autoloading**: Utilize Composer's PSR-4 autoloading for new classes.
-* **Namespace Usage**: Apply appropriate namespaces to new classes to maintain organization.
+### Content Generation: 6 Gemini Tools (Node, port 3001)
+- `POST /api/content/banner` — banner concepts (headline/subtext/palette/layout/CTA/font mood)
+- `POST /api/content/carousel` — Instagram carousel (hook→value→CTA, configurable slide count)
+- `POST /api/content/caption` — social caption + 3 alt hooks + hashtags
+- `POST /api/content/brand-kit` — palette (5 hex), fonts, voice, logo concept, taglines
+- `POST /api/content/ab-test` — 3 landing-page variants with predicted CTR + reasoning
+- `POST /api/content/bg-remove` — optimized prompt for AI bg-removal
+- `GET  /api/content/status` — public: checks `GEMINI_API_KEY` configured
+- Circuit breaker: 5 failures → 30s open. Auth: JWT Bearer (admin/affiliate)
 
-## Validation Procedures
+### Core: CPA Tracking (PHP 8.3+)
+- Campaign tracking with click/pixel/postback
+- Sub-affiliate network with commission engine
+- Offer management with affiliate access control
+- Commission ledger with payout batch processing
+- V3 REST API (router/controller pattern, `Connection` DI)
 
-To ensure code quality and functionality:
+### MCP Gateway (Python)
+- 17 tools covering 5 services
+- Circuit breaker per service (5 failures → 30s open)
+- Cross-service workflows: `unified_campaign`, `unified_affiliate_onboarding`
+- Config via env vars: `ADS_URL`, `SOCIAL_URL`, `CONTENT_URL`, `EBOOK_URL`, `TRACKING_URL`
 
-1. **Linting**:
+### Pipeline: Content Distribution (Python)
+- TikTok download (no watermark) → FFmpeg hash mod (Meta-safe)
+- AI niche detection (Omniroute + keyword fallback)
+- 27 Shopee affiliate links, 5 niches, 21 Meta accounts
+- Anti-spam: 45-120min delay, 4 posts/acct/day
 
-   ```bash
-   phpcs --standard=PSR12 .
-   ```
-2. **Testing**:
+### Poster: Telegram Affiliate (Python)
+- Hourly Shopee product posting to Telegram
+- PostgreSQL-backed product queue, dual-mode (photo+text)
 
-   ```bash
-   vendor/bin/phpunit
-   ```
-3. **Dependency Installation**:
+### Connected Services (via MCP/API)
+- **1ai-ads** (port 5000): AdForge — generate ads, landing pages, campaigns
+- **1ai-social** (port 8200): SMMA — 27 routers, blast/reach/outreach/Shopee
+- **1ai-content** (port 3000): AI Video Marketing — Telegram bot
+- **1ai-ebook** (port 8100): AI ebook pipeline — multi-language, novel, comics
 
-   ```bash
-   composer install
-   ```
+## Quick Start
 
-## Agent Interaction Guidelines
+```bash
+# Core tracking platform
+composer install && cp 202-config-sample.php 202-config.php
+php scripts/run_migrations.php
 
-* **Context Exploration**: Review relevant files in `202-*` directories and configuration files before making changes.
-* **Documentation**: Update or create documentation for significant code changes.
-* **Task Planning for Large Projects**: 
-  * For complex or multi-step tasks, create a detailed task plan in markdown format
-  * Break down the work into specific, actionable items
-  * Save the plan as a `.md` file (e.g., `task-plan-feature-name.md`)
-  * Check off each item as it's completed
-  * It's acceptable to modify the task list as new requirements or issues are discovered
-  * Keep the plan updated throughout the project to maintain visibility and track progress
-* **Pull Request Formatting**:
+# Pipeline
+cd pipeline && pip install -r requirements.txt
 
-  * **Title**: `[Component] Brief Description`
-  * **Description**:
+# Poster
+cd poster && pip install -r requirements.txt
+```
 
-    * Summary of changes and rationale.
-    * Instructions for testing and validation.
-    * References to related issues or discussions.
+## Testing
 
-##
+```bash
+# Core
+php8.4 vendor/bin/phpunit --no-configuration tests/
+
+# Pipeline + Poster — check individual READMEs
+```
+
+## Related
+- Upstream: tracking202/prosper202
+- 1ai-ads: ~/projects/1ai-ads
+- 1ai-social: ~/projects/1ai-social
