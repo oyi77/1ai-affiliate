@@ -1,0 +1,2 @@
+202-config/geo/*.mmdb filter=lfs diff=lfs merge=lfs -text
+202-config/geo/*.dat filter=lfs diff=lfs merge=lfs -text

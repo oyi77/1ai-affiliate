@@ -55,8 +55,9 @@ CLAUDE.md
 # Absorbed sub-modules
 /pipeline/.git
 /poster/.git
-202-config/geo/*.mmdb
-202-config/geo/*.dat
+
+# Large files (tracked via Git LFS)
+# Geo data files are in LFS, not ignored
 documentation/images/
 202-css/fonts/fontawesome-webfont.svg
 202-css/css/flat-ui-pro.css.map
