@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /tmp && node ui-login-test.mjs 2>&1\",\"timeout\":30000,\"description\":\"Run Playwright UI login test\"}",
+  "error": "Exit code 1",
+  "timestamp": "2026-06-02T23:00:07.760Z",
+  "retry_count": 1
+}

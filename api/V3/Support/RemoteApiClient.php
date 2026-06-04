@@ -28,12 +28,12 @@ class RemoteApiClient
     }
 
     /**
-     * Translate external URLs to internal Docker service names using P202_URL_MAP.
-     * Format: P202_URL_MAP=localhost:8000=web:80,localhost:8001=web2:80
+     * Translate external URLs to internal Docker service names using P1AI_URL_MAP.
+     * Format: P1AI_URL_MAP=localhost:8000=web:80,localhost:8001=web2:80
      */
     private static function translateUrl(string $url): string
     {
-        $map = getenv('P202_URL_MAP');
+        $map = getenv('P1AI_URL_MAP');
         if ($map === false || $map === '') {
             return $url;
         }

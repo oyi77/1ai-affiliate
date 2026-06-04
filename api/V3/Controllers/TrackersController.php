@@ -9,7 +9,7 @@ use Api\V3\Exception\NotFoundException;
 
 class TrackersController extends Controller
 {
-    protected function tableName(): string { return '202_trackers'; }
+    protected function tableName(): string { return 'trackers'; }
     protected function primaryKey(): string { return 'tracker_id'; }
 
     protected function fields(): array
@@ -51,7 +51,7 @@ class TrackersController extends Controller
             'data' => [
                 'tracker_id'        => $id,
                 'tracker_id_public' => $publicId,
-                'direct_url'        => $baseUrl . '/tracking202/redirect/go.php?t202id=' . $publicId,
+                'direct_url'        => $baseUrl . '/tracking_support/redirect/go.php?t202id=' . $publicId,
                 'tracking_params'   => '?t202id=' . $publicId . '&t202kw={keyword}&c1={c1}&c2={c2}&c3={c3}&c4={c4}',
             ],
         ];
@@ -59,7 +59,7 @@ class TrackersController extends Controller
 
     private function getBaseUrl(): string
     {
-        $stmt = $this->prepare('SELECT user_tracking_domain FROM 202_users_pref WHERE user_id = ? LIMIT 1');
+        $stmt = $this->prepare('SELECT user_tracking_domain FROM users_pref WHERE user_id = ? LIMIT 1');
         $this->bind($stmt, 'i', $this->userId);
         $this->execute($stmt, 'Failed to query tracking domain');
         $row = $stmt->get_result()->fetch_assoc();

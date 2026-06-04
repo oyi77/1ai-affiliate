@@ -22,17 +22,17 @@ final class Bootstrap
             define('ROOT_PATH', $root . '/');
         }
         if (!defined('CONFIG_PATH')) {
-            define('CONFIG_PATH', $root . '/202-config');
+            define('CONFIG_PATH . '/config');
         }
 
-        $configFile = $root . '/202-config.php';
+        $configFile = $root . '/config.php';
         if (!file_exists($configFile)) {
             throw new \RuntimeException('Configuration not found');
         }
 
         require_once $configFile;
 
-        $authHelpers = $root . '/202-config/functions-auth.php';
+        $authHelpers = $root . '/config/functions-auth.php';
         if (file_exists($authHelpers)) {
             require_once $authHelpers;
         }

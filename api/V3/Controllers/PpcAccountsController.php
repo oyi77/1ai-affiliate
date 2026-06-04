@@ -8,7 +8,7 @@ use Api\V3\Controller;
 
 class PpcAccountsController extends Controller
 {
-    protected function tableName(): string { return '202_ppc_accounts'; }
+    protected function tableName(): string { return 'ppc_accounts'; }
     protected function primaryKey(): string { return 'ppc_account_id'; }
     protected function deletedColumn(): ?string { return 'ppc_account_deleted'; }
 

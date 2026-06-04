@@ -54,7 +54,7 @@ class ClicksController
 
         $whereClause = 'WHERE ' . implode(' AND ', $where);
 
-        $countSql = "SELECT COUNT(*) as total FROM 202_clicks c $whereClause";
+        $countSql = "SELECT COUNT(*) as total FROM clicks c $whereClause";
         $stmt = $this->prepare($countSql);
         $this->bind($stmt, $types, ...$binds);
         $this->execute($stmt, 'Count query failed');
@@ -69,12 +69,12 @@ class ClicksController
                 ca.keyword_id, ca.country_id, ca.platform_id, ca.browser_id, ca.device_id,
                 lc.country_name, lc.country_code,
                 p.platform_name, b.browser_name
-            FROM 202_clicks c
-            LEFT JOIN 202_clicks_record cr ON c.click_id = cr.click_id
-            LEFT JOIN 202_clicks_advance ca ON c.click_id = ca.click_id
-            LEFT JOIN 202_locations_country lc ON ca.country_id = lc.country_id
-            LEFT JOIN 202_platforms p ON ca.platform_id = p.platform_id
-            LEFT JOIN 202_browsers b ON ca.browser_id = b.browser_id
+            FROM clicks c
+            LEFT JOIN clicks_record cr ON c.click_id = cr.click_id
+            LEFT JOIN clicks_advance ca ON c.click_id = ca.click_id
+            LEFT JOIN locations_country lc ON ca.country_id = lc.country_id
+            LEFT JOIN platforms p ON ca.platform_id = p.platform_id
+            LEFT JOIN browsers b ON ca.browser_id = b.browser_id
             $whereClause
             ORDER BY c.click_time DESC
             LIMIT ? OFFSET ?";
@@ -114,16 +114,16 @@ class ClicksController
                 lc.country_name, lc.country_code,
                 lr.region_name, lci.city_name, li.isp_name,
                 p.platform_name, b.browser_name
-            FROM 202_clicks c
-            LEFT JOIN 202_clicks_record cr ON c.click_id = cr.click_id
-            LEFT JOIN 202_clicks_advance ca ON c.click_id = ca.click_id
-            LEFT JOIN 202_clicks_tracking ct ON c.click_id = ct.click_id
-            LEFT JOIN 202_locations_country lc ON ca.country_id = lc.country_id
-            LEFT JOIN 202_locations_region lr ON ca.region_id = lr.region_id
-            LEFT JOIN 202_locations_city lci ON ca.city_id = lci.city_id
-            LEFT JOIN 202_locations_isp li ON ca.isp_id = li.isp_id
-            LEFT JOIN 202_platforms p ON ca.platform_id = p.platform_id
-            LEFT JOIN 202_browsers b ON ca.browser_id = b.browser_id
+            FROM clicks c
+            LEFT JOIN clicks_record cr ON c.click_id = cr.click_id
+            LEFT JOIN clicks_advance ca ON c.click_id = ca.click_id
+            LEFT JOIN clicks_tracking ct ON c.click_id = ct.click_id
+            LEFT JOIN locations_country lc ON ca.country_id = lc.country_id
+            LEFT JOIN locations_region lr ON ca.region_id = lr.region_id
+            LEFT JOIN locations_city lci ON ca.city_id = lci.city_id
+            LEFT JOIN locations_isp li ON ca.isp_id = li.isp_id
+            LEFT JOIN platforms p ON ca.platform_id = p.platform_id
+            LEFT JOIN browsers b ON ca.browser_id = b.browser_id
             WHERE c.click_id = ? AND c.user_id = ?
             LIMIT 1";
 

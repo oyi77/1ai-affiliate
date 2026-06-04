@@ -7,7 +7,7 @@ require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 // Load config at file scope so DB globals ($dbhost, $dbuser, etc.) are
 // available via the 'global' keyword in the DB class constructor.
 // Including inside Bootstrap::init() scopes them locally and breaks DB.
-require_once dirname(__DIR__, 2) . '/202-config.php';
+require_once dirname(__DIR__, 2) . '/config.php';
 
 use Api\V3\Auth;
 use Api\V3\AuthException;
@@ -92,10 +92,10 @@ if ($requestedVersion !== '' && !in_array($requestedVersion, ['v3', '3'], true))
 RequestContext::setResolvedApiVersion('v3');
 header('X-P202-API-Version-Resolved: v3');
 
-$adoptionPct = (int)(getenv('P202_CAPABILITY_ADOPTION_PCT') ?: 0);
-$deprecationThresholdPct = (int)(getenv('P202_DEPRECATION_THRESHOLD_PCT') ?: 95);
+$adoptionPct = (int)(getenv('P1AI_CAPABILITY_ADOPTION_PCT') ?: 0);
+$deprecationThresholdPct = (int)(getenv('P1AI_DEPRECATION_THRESHOLD_PCT') ?: 95);
 if ($adoptionPct >= $deprecationThresholdPct && shouldEmitDeprecationNotice($path, $requestedVersion)) {
-    $sunset = (string)(getenv('P202_DEPRECATION_SUNSET') ?: gmdate('D, d M Y H:i:s \\G\\M\\T', strtotime('+180 days')));
+    $sunset = (string)(getenv('P1AI_DEPRECATION_SUNSET') ?: gmdate('D, d M Y H:i:s \\G\\M\\T', strtotime('+180 days')));
     header('Deprecation: true');
     header('Sunset: ' . $sunset);
     header('Warning: 299 - "Legacy unversioned API requests are deprecated; use X-P202-API-Version: v3."');

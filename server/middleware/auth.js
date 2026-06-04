@@ -55,7 +55,7 @@ function requireAdmin(req, res, next) {
 }
 
 /**
- * Generate JWT matching user in 202_users table.
+ * Generate JWT matching user in users table.
  */
 async function generateToken(userRow) {
   return jwt.sign(

@@ -29,7 +29,7 @@ class SystemController
 
     public function version(): array
     {
-        $result = $this->db->query("SELECT version FROM 202_version LIMIT 1");
+        $result = $this->db->query("SELECT version FROM version LIMIT 1");
         $row = $result ? $result->fetch_assoc() : null;
 
         return [
@@ -45,17 +45,17 @@ class SystemController
     public function dbStats(): array
     {
         $tables = [
-            '202_clicks'             => 'Clicks',
-            '202_conversion_logs'    => 'Conversions',
-            '202_aff_campaigns'      => 'Campaigns',
-            '202_aff_networks'       => 'Affiliate Networks',
-            '202_ppc_accounts'       => 'PPC Accounts',
-            '202_trackers'           => 'Trackers',
-            '202_landing_pages'      => 'Landing Pages',
-            '202_rotators'           => 'Rotators',
-            '202_users'              => 'Users',
-            '202_dataengine'         => 'Data Engine',
-            '202_attribution_models' => 'Attribution Models',
+            'clicks'             => 'Clicks',
+            'conversion_logs'    => 'Conversions',
+            'aff_campaigns'      => 'Campaigns',
+            'aff_networks'       => 'Affiliate Networks',
+            'ppc_accounts'       => 'PPC Accounts',
+            'trackers'           => 'Trackers',
+            'landing_pages'      => 'Landing Pages',
+            'rotators'           => 'Rotators',
+            'users'              => 'Users',
+            'dataengine'         => 'Data Engine',
+            'attribution_models' => 'Attribution Models',
         ];
 
         // Use information_schema for row estimates — avoids expensive COUNT(*) on large tables.
@@ -104,7 +104,7 @@ class SystemController
 
     public function cronStatus(): array
     {
-        $result = $this->db->query('SELECT cronjob_type, cronjob_time FROM 202_cronjobs ORDER BY cronjob_type');
+        $result = $this->db->query('SELECT cronjob_type, cronjob_time FROM cronjobs ORDER BY cronjob_type');
         $jobs = [];
         if ($result) {
             while ($row = $result->fetch_assoc()) {
@@ -113,7 +113,7 @@ class SystemController
             }
         }
 
-        $result = $this->db->query('SELECT id, last_execution_time FROM 202_cronjob_logs ORDER BY id DESC LIMIT 20');
+        $result = $this->db->query('SELECT id, last_execution_time FROM cronjob_logs ORDER BY id DESC LIMIT 20');
         $logs = [];
         if ($result) {
             while ($row = $result->fetch_assoc()) {
@@ -130,7 +130,7 @@ class SystemController
         $limit = max(1, min(100, (int)($params['limit'] ?? 20)));
         $stmt = $this->prepare(
             'SELECT mysql_error_id, mysql_error_time, mysql_error_text AS mysql_error_message, mysql_error_sql '
-            . 'FROM 202_mysql_errors ORDER BY mysql_error_id DESC LIMIT ?'
+            . 'FROM mysql_errors ORDER BY mysql_error_id DESC LIMIT ?'
         );
         $this->bind($stmt, 'i', $limit);
         $this->execute($stmt, 'Errors query failed');
@@ -151,7 +151,7 @@ class SystemController
 
     public function dataengineStatus(): array
     {
-        $result = $this->db->query('SELECT time_from, time_to, processing, processed FROM 202_dataengine_job ORDER BY time_from DESC LIMIT 20');
+        $result = $this->db->query('SELECT time_from, time_to, processing, processed FROM dataengine_job ORDER BY time_from DESC LIMIT 20');
         $jobs = [];
         if ($result) {
             while ($row = $result->fetch_assoc()) {
@@ -168,7 +168,7 @@ class SystemController
             }
         }
 
-        $result = $this->db->query('SELECT COUNT(*) as cnt FROM 202_dirty_hours WHERE processed = 0');
+        $result = $this->db->query('SELECT COUNT(*) as cnt FROM dirty_hours WHERE processed = 0');
         $dirtyRow = $result ? $result->fetch_assoc() : ['cnt' => 0];
 
         return [
@@ -199,8 +199,8 @@ class SystemController
         }
         $queueLagSeconds = $oldestQueueEpoch === null ? 0 : max(0, time() - $oldestQueueEpoch);
 
-        $failureSpikeThreshold = $this->intEnv('P202_ALERT_FAILURE_SPIKE', 20);
-        $queueLagThreshold = $this->intEnv('P202_ALERT_QUEUE_LAG_SECONDS', 300);
+        $failureSpikeThreshold = $this->intEnv('P1AI_ALERT_FAILURE_SPIKE', 20);
+        $queueLagThreshold = $this->intEnv('P1AI_ALERT_QUEUE_LAG_SECONDS', 300);
         $failureCount = (int)($counters['jobs_failed'] ?? 0) + (int)($counters['jobs_partial'] ?? 0);
 
         $alerts = [];

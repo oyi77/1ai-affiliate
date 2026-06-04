@@ -56,7 +56,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
     {
         $write = new FakeMysqliConnection();
         // Return no rows for click lookup
-        $write->whenQueryContainsReturnRows('FROM 202_clicks WHERE click_id = ?', []);
+        $write->whenQueryContainsReturnRows('FROM clicks WHERE click_id = ?', []);
 
         [$repo] = $this->buildRepo($write);
 
@@ -69,7 +69,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
     {
         $write = new FakeMysqliConnection();
         // The query includes user_id in WHERE, so no rows returned for wrong user
-        $write->whenQueryContainsReturnRows('FROM 202_clicks WHERE click_id = ?', []);
+        $write->whenQueryContainsReturnRows('FROM clicks WHERE click_id = ?', []);
 
         [$repo] = $this->buildRepo($write);
 
@@ -89,7 +89,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
         // call to the shared fake.
         $write = new InsertReportingFakeMysqliConnection(7);
         $write->whenQueryContainsReturnRows(
-            'FROM 202_clicks WHERE click_id = ?',
+            'FROM clicks WHERE click_id = ?',
             [['click_id' => 10, 'aff_campaign_id' => 44, 'click_payout' => 2.75, 'click_time' => 1700000000]]
         );
 
@@ -101,8 +101,8 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
 
         self::assertSame(7, $id);
 
-        // Verify INSERT INTO 202_conversion_logs was prepared
-        $insertStmts = $write->statementsContaining('INSERT INTO 202_conversion_logs');
+        // Verify INSERT INTO conversion_logs was prepared
+        $insertStmts = $write->statementsContaining('INSERT INTO conversion_logs');
         self::assertCount(1, $insertStmts);
         self::assertSame('isidiii', $insertStmts[0]->boundTypes);
     }
@@ -111,14 +111,14 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
     {
         $write = new FakeMysqliConnection();
         $write->whenQueryContainsReturnRows(
-            'FROM 202_clicks WHERE click_id = ?',
+            'FROM clicks WHERE click_id = ?',
             [['click_id' => 10, 'aff_campaign_id' => 44, 'click_payout' => 2.75, 'click_time' => 1700000000]]
         );
 
         [$repo] = $this->buildRepo($write);
         $repo->create(1, ['click_id' => 10]);
 
-        $updateStmts = $write->statementsContaining('UPDATE 202_clicks SET click_lead = 1');
+        $updateStmts = $write->statementsContaining('UPDATE clicks SET click_lead = 1');
         self::assertCount(1, $updateStmts);
     }
 
@@ -126,7 +126,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
     {
         $write = new FakeMysqliConnection();
         $write->whenQueryContainsReturnRows(
-            'FROM 202_clicks WHERE click_id = ?',
+            'FROM clicks WHERE click_id = ?',
             [['click_id' => 10, 'aff_campaign_id' => 44, 'click_payout' => 2.75, 'click_time' => 1700000000]]
         );
 
@@ -134,7 +134,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
         $repo->create(1, ['click_id' => 10, 'payout' => 50.00]);
 
         // The UPDATE should use 50.00 not 2.75
-        $updateStmts = $write->statementsContaining('UPDATE 202_clicks SET click_lead = 1');
+        $updateStmts = $write->statementsContaining('UPDATE clicks SET click_lead = 1');
         self::assertCount(1, $updateStmts);
         self::assertEqualsWithDelta(50.00, $updateStmts[0]->boundValues[0], 0.01);
     }
@@ -143,14 +143,14 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
     {
         $write = new FakeMysqliConnection();
         $write->whenQueryContainsReturnRows(
-            'FROM 202_clicks WHERE click_id = ?',
+            'FROM clicks WHERE click_id = ?',
             [['click_id' => 10, 'aff_campaign_id' => 44, 'click_payout' => 2.75, 'click_time' => 1700000000]]
         );
 
         [$repo] = $this->buildRepo($write);
         $repo->create(1, ['click_id' => 10]);
 
-        $updateStmts = $write->statementsContaining('UPDATE 202_clicks SET click_lead = 1');
+        $updateStmts = $write->statementsContaining('UPDATE clicks SET click_lead = 1');
         self::assertCount(1, $updateStmts);
         self::assertEqualsWithDelta(2.75, $updateStmts[0]->boundValues[0], 0.01);
     }
@@ -159,7 +159,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
     {
         $write = new FakeMysqliConnection();
         $write->whenQueryContainsReturnRows(
-            'FROM 202_clicks WHERE click_id = ?',
+            'FROM clicks WHERE click_id = ?',
             [['click_id' => 10, 'aff_campaign_id' => 44, 'click_payout' => 2.75, 'click_time' => 1700000000]]
         );
 
@@ -178,7 +178,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
 
         $repo->softDelete(5, 1);
 
-        $stmts = $write->statementsContaining('UPDATE 202_conversion_logs SET deleted = 1');
+        $stmts = $write->statementsContaining('UPDATE conversion_logs SET deleted = 1');
         self::assertCount(1, $stmts);
         self::assertSame('ii', $stmts[0]->boundTypes);
         self::assertSame([5, 1], $stmts[0]->boundValues);
@@ -191,7 +191,7 @@ final class MysqlConversionRepositoryExpandedTest extends TestCase
         $write = new FakeMysqliConnection();
         $read = new FakeMysqliConnection();
         $read->whenQueryContainsReturnRows(
-            'FROM 202_conversion_logs',
+            'FROM conversion_logs',
             [['conv_id' => 1, 'click_id' => 10, 'transaction_id' => 'TX-1']]
         );
 
@@ -369,7 +369,7 @@ final class InsertReportingFakeStatement
 
     public function execute(?array $params = null): bool
     {
-        if (str_contains($this->sql, 'INSERT INTO 202_conversion_logs')) {
+        if (str_contains($this->sql, 'INSERT INTO conversion_logs')) {
             $this->insert_id = $this->insertIdToReport;
         }
         $this->affected_rows = 1;

@@ -15,7 +15,7 @@ final class PasswordTest extends TestCase
         parent::setUp();
 
         // Include the auth functions
-        require_once __DIR__ . '/../../202-config/functions-auth.php';
+        require_once __DIR__ . '/../../config/functions-auth.php';
     }
 
     public function testHashUserPassReturnsString(): void

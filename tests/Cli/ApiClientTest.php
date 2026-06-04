@@ -74,7 +74,7 @@ class ApiClientTest extends TestCase
 
     public function testFromConfigCreatesClientCorrectly(): void
     {
-        $tmpDir = sys_get_temp_dir() . '/p202_api_test_' . uniqid();
+        $tmpDir = sys_get_temp_dir() . '/papi_test_' . uniqid();
         mkdir($tmpDir, 0700, true);
         $origHome = getenv('HOME') ?: '';
         putenv("HOME={$tmpDir}");
@@ -110,7 +110,7 @@ class ApiClientTest extends TestCase
 
     public function testFromConfigThrowsWhenUrlMissing(): void
     {
-        $tmpDir = sys_get_temp_dir() . '/p202_api_test_' . uniqid();
+        $tmpDir = sys_get_temp_dir() . '/papi_test_' . uniqid();
         mkdir($tmpDir, 0700, true);
         $origHome = getenv('HOME') ?: '';
         putenv("HOME={$tmpDir}");
@@ -130,7 +130,7 @@ class ApiClientTest extends TestCase
 
     public function testFromConfigThrowsWhenApiKeyMissing(): void
     {
-        $tmpDir = sys_get_temp_dir() . '/p202_api_test_' . uniqid();
+        $tmpDir = sys_get_temp_dir() . '/papi_test_' . uniqid();
         mkdir($tmpDir, 0700, true);
         $origHome = getenv('HOME') ?: '';
         putenv("HOME={$tmpDir}");
@@ -150,7 +150,7 @@ class ApiClientTest extends TestCase
 
     public function testFromConfigDefaultTimeoutWhenNotSet(): void
     {
-        $tmpDir = sys_get_temp_dir() . '/p202_api_test_' . uniqid();
+        $tmpDir = sys_get_temp_dir() . '/papi_test_' . uniqid();
         mkdir($tmpDir, 0700, true);
         $origHome = getenv('HOME') ?: '';
         putenv("HOME={$tmpDir}");

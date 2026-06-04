@@ -16,7 +16,7 @@ final class TimeframeTest extends TestCase
         parent::setUp();
 
         // Include the functions file
-        require_once __DIR__ . '/../../202-config/functions-timeframe.php';
+        require_once __DIR__ . '/../../config/functions-timeframe.php';
 
         // Set a consistent timezone for testing
         date_default_timezone_set('UTC');

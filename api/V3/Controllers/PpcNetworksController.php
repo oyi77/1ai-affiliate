@@ -8,7 +8,7 @@ use Api\V3\Controller;
 
 class PpcNetworksController extends Controller
 {
-    protected function tableName(): string { return '202_ppc_networks'; }
+    protected function tableName(): string { return 'ppc_networks'; }
     protected function primaryKey(): string { return 'ppc_network_id'; }
     protected function deletedColumn(): ?string { return 'ppc_network_deleted'; }
 

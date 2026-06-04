@@ -8,7 +8,7 @@ use Api\V3\Controller;
 
 class LandingPagesController extends Controller
 {
-    protected function tableName(): string { return '202_landing_pages'; }
+    protected function tableName(): string { return 'landing_pages'; }
     protected function primaryKey(): string { return 'landing_page_id'; }
     protected function deletedColumn(): ?string { return 'landing_page_deleted'; }
 

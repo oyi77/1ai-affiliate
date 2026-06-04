@@ -1,0 +1,536 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Password helper functions live here to avoid bootstrap order issues.
+ * They support both legacy salted MD5 hashes and modern password_hash()-based hashes.
+ */
+if (!function_exists('hash_user_pass')) {
+    function hash_user_pass(string $password): string
+    {
+        // @phpstan-ignore-next-line centralized password hashing helper
+        return password_hash($password, PASSWORD_DEFAULT);
+    }
+}
+
+if (!function_exists('verify_user_pass')) {
+    /**
+     * @return array{valid: bool, needsRehash: bool}
+     */
+    function verify_user_pass(string $password, string $storedHash): array
+    {
+        $storedHash = trim($storedHash);
+        if ($storedHash === '') {
+            return ['valid' => false, 'needsRehash' => false];
+        }
+
+        $hashInfo = password_get_info($storedHash);
+        if (($hashInfo['algo'] ?? 0) !== 0) {
+            $valid = password_verify($password, $storedHash);
+            return [
+                'valid' => $valid,
+                'needsRehash' => $valid && password_needs_rehash($storedHash, PASSWORD_DEFAULT),
+            ];
+        }
+
+        $legacyHash = function_exists('salt_user_pass') ? salt_user_pass($password) : md5($password);
+        if (hash_equals((string) $legacyHash, $storedHash)) {
+            return ['valid' => true, 'needsRehash' => true];
+        }
+
+        if (hash_equals(md5($password), $storedHash)) {
+            return ['valid' => true, 'needsRehash' => true];
+        }
+
+        return ['valid' => false, 'needsRehash' => false];
+    }
+}
+
+//error_reporting(E_ALL);
+class AUTH
+{
+    public const LOGOUT_DAYS = 14;
+    private const string LOGIN_SELECT = 'SELECT u.user_id, u.user_name, u.user_pass, u.user_api_key, u.user_statsapp_key, u.user_timezone, u.user_mods_lb, u.install_hash, u.pcustomer_api_key, up.user_id AS pref_user_id FROM users u LEFT JOIN users_pref up ON up.user_id = u.user_id WHERE u.user_name = ? AND u.user_deleted != 1 AND u.user_active = 1 LIMIT 1';
+    private static bool $passwordColumnChecked = false;
+    private static bool $sessionHeartbeatRefreshed = false;
+
+    private static function updateSession(array $values, bool $regenerateId = false): void
+    {
+        $writer = static function () use ($values, $regenerateId): void {
+            if ($regenerateId && session_status() === PHP_SESSION_ACTIVE) {
+                session_regenerate_id(true);
+            }
+
+            foreach ($values as $key => $value) {
+                $_SESSION[$key] = $value;
+            }
+        };
+
+        if (function_exists('withWritableSession')) {
+            withWritableSession($writer);
+            return;
+        }
+
+        $writer();
+    }
+
+    private static function writeSessionValue(string $key, $value): void
+    {
+        self::updateSession([$key => $value]);
+    }
+
+    public static function logged_in()
+    {
+        $session_time_passed = isset($_SESSION['session_time']) ? time() - $_SESSION['session_time'] : PHP_INT_MAX;
+        if (isset($_SESSION['user_name']) and isset($_SESSION['user_id']) and isset($_SESSION['session_fingerprint']) and ($_SESSION['session_fingerprint'] == md5('session_fingerprint' . session_id())) and ($session_time_passed < 50000)) {
+            if (!self::$sessionHeartbeatRefreshed) {
+                self::writeSessionValue('session_time', time());
+                self::$sessionHeartbeatRefreshed = true;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static function authenticate(string $username, string $password, \mysqli $db): array
+    {
+        $username = trim($username);
+        if ($username === '' || $password === '') {
+            return ['success' => false, 'error' => 'missing_credentials'];
+        }
+        //die('starting authentication...');
+        $stmt = $db->prepare(self::LOGIN_SELECT);
+       // die('prepared statement...');
+        if (!$stmt) {
+            throw new \RuntimeException('Unable to prepare login query: ' . $db->error);
+        }
+       // die('prepared statement...');
+        self::bind($stmt, 's', $username);
+        self::execute($stmt, 'Unable to execute login query');
+        $result = $stmt->get_result();
+        $user_row = $result ? $result->fetch_assoc() : null;
+        $stmt->close();
+       // die('done fetching user row...');
+        if (!$user_row) {
+            return ['success' => false, 'error' => 'invalid_credentials', 'user' => null];
+        }
+
+        $verification = verify_user_pass($password, (string) ($user_row['user_pass'] ?? ''));
+        if ($verification['valid'] === false) {
+            return ['success' => false, 'error' => 'invalid_credentials', 'user' => $user_row];
+        }
+
+        if ($verification['needsRehash'] === true) {
+           // die('upgrading password hash...');
+            self::upgrade_user_password($db, (int) $user_row['user_id'], $password);
+        }
+      //  die('authentication successful...');
+        return [
+            'success' => true,
+            'user' => $user_row,
+            'error' => null,
+        ];
+    }
+
+    private static function upgrade_user_password(\mysqli $db, int $user_id, string $password): void
+    {
+        self::ensure_password_column_capacity($db);
+        $new_hash = hash_user_pass($password);
+        $stmt = $db->prepare('UPDATE users SET user_pass = ? WHERE user_id = ?');
+        if (!$stmt) {
+            throw new \RuntimeException('Unable to prepare password upgrade query: ' . $db->error);
+        }
+        self::bind($stmt, 'si', $new_hash, $user_id);
+        self::execute($stmt, 'Unable to execute password upgrade query');
+        $stmt->close();
+    }
+
+    private static function ensure_password_column_capacity(\mysqli $db): void
+    {
+        if (self::$passwordColumnChecked) {
+            return;
+        }
+
+        $result = $db->query("SHOW COLUMNS FROM users LIKE 'user_pass'");
+        if ($result) {
+            $column = $result->fetch_assoc();
+            $result->close();
+            if ($column && isset($column['Type'])) {
+                $type = strtolower((string) $column['Type']);
+                if (preg_match('/\\((\\d+)\\)/', $type, $matches)) {
+                    $length = (int) $matches[1];
+                    if ($length < 60) {
+                        $alter = $db->query('ALTER TABLE users MODIFY user_pass VARCHAR(255) NOT NULL');
+                        if ($alter === false && function_exists('prosper_log')) {
+                            prosper_log('login', 'Failed to expand user_pass column: ' . $db->error);
+                        }
+                    }
+                }
+            }
+        }
+
+        self::$passwordColumnChecked = true;
+    }
+
+    private static function determineAccountOwnerId(array $user_row): int
+    {
+        $userId = (int) ($user_row['user_id'] ?? 0);
+        $installHash = trim((string) ($user_row['install_hash'] ?? ''));
+        $existingKey = trim((string) ($user_row['pcustomer_api_key'] ?? ''));
+
+        if ($existingKey !== '' || $installHash === '') {
+            return $userId;
+        }
+
+        $database = DB::getInstance();
+        $db = $database->getConnection();
+        $stmt = $db->prepare('SELECT user_id FROM users WHERE install_hash = ? AND user_deleted != 1 AND user_active = 1 AND pcustomer_api_key IS NOT NULL AND pcustomer_api_key != "" ORDER BY user_id ASC LIMIT 1');
+        if (!$stmt) {
+            return $userId;
+        }
+
+        self::bind($stmt, 's', $installHash);
+        self::execute($stmt, 'Unable to execute API owner lookup query');
+        $result = $stmt->get_result();
+        $ownerRow = $result ? $result->fetch_assoc() : null;
+        $stmt->close();
+
+        if ($ownerRow && isset($ownerRow['user_id'])) {
+            return (int) $ownerRow['user_id'];
+        }
+
+        return $userId;
+    }
+
+    private static function lookupApiKeyForUser(int $userId): string
+    {
+        if ($userId <= 0) {
+            return '';
+        }
+
+        $user_sql = "SELECT user_pref_ad_settings, pcustomer_api_key FROM users_pref LEFT JOIN users ON (users_pref.user_id = users.user_id) WHERE users_pref.user_id='" . $userId . "'";
+        $user_result = _mysqli_query($user_sql);
+        if ($user_result) {
+            $user_row = $user_result->fetch_assoc();
+            return trim((string) ($user_row['pcustomer_api_key'] ?? ''));
+        }
+
+        return '';
+    }
+
+    public static function begin_user_session(array $user_row): void
+    {
+        $writer = static function () use ($user_row): void {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_regenerate_id(true);
+            }
+
+            $_SESSION['session_fingerprint'] = md5('session_fingerprint' . session_id());
+            $_SESSION['session_time'] = time();
+            $_SESSION['user_name'] = $user_row['user_name'];
+            $_SESSION['user_id'] = (int) $user_row['user_id'];
+            $_SESSION['user_own_id'] = (int) $user_row['user_id'];
+            $_SESSION['user_api_key'] = $user_row['user_api_key'] ?? null;
+            $_SESSION['user_statsapp_key'] = $user_row['user_statsapp_key'] ?? null;
+            $_SESSION['user_timezone'] = $user_row['user_timezone'] ?? 'UTC';
+            $_SESSION['user_mods_lb'] = $user_row['user_mods_lb'] ?? 0;
+            $_SESSION['account_owner_id'] = self::determineAccountOwnerId($user_row);
+        };
+
+        if (function_exists('withWritableSession')) {
+            withWritableSession($writer);
+        } else {
+            $writer();
+        }
+
+        self::$sessionHeartbeatRefreshed = true;
+    }
+
+    public static function require_user($auth_type = '')
+    {
+        $loggedIn = AUTH::logged_in();
+        if ($loggedIn == false) {
+            AUTH::remember_me_on_logged_out();
+            $loggedIn = AUTH::logged_in();
+        }
+
+        if ($loggedIn == false) {
+            if ($auth_type == "toolbar") {
+                self::writeSessionValue('toolbar', 'true');
+            }
+
+            die(include_once(realpath(__DIR__ . '/../') . '/access-denied.php'));
+//go up one level
+        }
+        AUTH::set_timezone($_SESSION['user_timezone']);
+        AUTH::require_valid_api_key();
+    }
+
+    public static function require_valid_api_key()
+    {
+        $candidateIds = array_unique(array_filter([
+            (int) ($_SESSION['account_owner_id'] ?? 0),
+            (int) ($_SESSION['user_id'] ?? 0),
+            (int) ($_SESSION['user_own_id'] ?? 0),
+        ]));
+
+        $user_api_key = '';
+        foreach ($candidateIds as $candidateId) {
+            $user_api_key = self::lookupApiKeyForUser($candidateId);
+            if ($user_api_key !== '') {
+                break;
+            }
+        }
+
+        if (self::is_valid_api_key($user_api_key) == false || $user_api_key == '') {
+            header('location: ' . get_absolute_url() . 'api-key-required.php');
+            die();
+        }
+    }
+
+
+    //this checks if this api key is valid
+    public static function is_valid_api_key($user_api_key)
+    {
+
+        //only check once per session speed up ui
+        if (isset($_SESSION['valid_key']) && $_SESSION['valid_key'] == true) {
+            return true;
+        }
+
+        $post = [];
+        $post['key'] = $user_api_key;
+        $fields = http_build_query($post);
+// Initiate curl
+        $ch = curl_init();
+// Set the url
+        curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/validate-customers-key');
+// Verify the TLS certificate so the validation response cannot be forged
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+// Will return the response, if false it print the response
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+// Set to post
+        curl_setopt($ch, CURLOPT_POST, true);
+// Set post fields
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+// Prevent network issues from logging users out
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+// Execute
+        $result = curl_exec($ch);
+        $curlFailed = curl_errno($ch) || $result === false;
+        // close connection
+        curl_close($ch);
+
+        // On network failure, don't punish the user — assume valid until next check
+        if ($curlFailed) {
+            return true;
+        }
+
+        $api_validate = json_decode((string) $result, true);
+        if (is_array($api_validate) && ($api_validate['msg'] ?? '') === "Key valid") {
+        //update the api key
+            $user_sql = "	UPDATE 	users
+							SET		pcustomer_api_key='" . $user_api_key . "'
+							WHERE 	user_id='" . $_SESSION['user_id'] . "'";
+            _mysqli_query($user_sql);
+            self::writeSessionValue('valid_key', true);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    public static function set_timezone($user_timezone)
+    {
+        if (isset($_SESSION['user_timezone'])) {
+            $user_timezone = $_SESSION['user_timezone'];
+        }
+
+        date_default_timezone_set($user_timezone);
+    }
+
+    public static function remember_me_on_logged_out()
+    {
+        if (isset($_COOKIE['remember_me']) && AUTH::logged_in() == false) {
+            [$user_id, $auth_key, $hash] = explode('-', (string) $_COOKIE['remember_me']);
+            if (!empty($user_id) && !empty($auth_key) && !empty($hash)) {
+                if ($hash !== hash_hmac('sha256', $user_id . '-' . $auth_key, (string) self::get_user_secret_key($user_id))) {
+                    return false;
+                }
+
+                $database = DB::getInstance();
+                $db = $database->getConnection();
+                $mysql = [
+                    'user_id' => $db->real_escape_string($user_id),
+                    'auth_key' => $db->real_escape_string($auth_key)
+                ];
+                $sql = '
+					SELECT
+						*
+                  	FROM
+                  		auth_keys 2a, users 2u
+                 	WHERE
+                 	    2a.expires > UNIX_TIMESTAMP()
+                 	AND
+                 		2a.user_id = "' . $mysql['user_id'] . '"
+                  	AND
+                  		2a.auth_key = "' . $mysql['auth_key'] . '"
+                  	AND
+                  	    2u.user_id = 2a.user_id
+                    AND
+                        2u.user_deleted != 1
+					AND
+						2u.user_active = 1
+                	LIMIT 1';
+                $user_result = _mysqli_query($sql);
+                $user_row = $user_result->fetch_assoc();
+                if ($user_row) {
+                    self::begin_user_session($user_row);
+                    self::writeSessionValue('user_cirrus_link', $user_row['user_api_key'] ?? null);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static function generate_random_string($length)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $index = (int) self::dev_urand(0, $charactersLength - 1);
+            $randomString .= $characters[$index];
+        }
+        return $randomString;
+    }
+
+    public static function get_user_secret_key($user_id)
+    {
+        $database = DB::getInstance();
+        $db = $database->getConnection();
+        $mysql['user_id'] = $db->escape_string((string) $user_id);
+        $sql = '
+			SELECT
+				secret_key
+			FROM
+				users
+			WHERE
+				user_id = "' . $mysql['user_id'] . '"
+		';
+        $user_result = _mysqli_query($sql);
+        $user_row = $user_result->fetch_assoc();
+        if (empty($user_row['secret_key'])) {
+            $mysql['secret_key'] = self::generate_random_string(48);
+            $sql = '
+				UPDATE
+					users
+				SET
+					secret_key = "' . $mysql['secret_key'] . '"
+				WHERE
+					user_id = "' . $mysql['user_id'] . '"
+			';
+            _mysqli_query($sql);
+            return $mysql['secret_key'];
+        } else {
+            return $user_row['secret_key'];
+        }
+    }
+
+    public static function remember_me_on_auth()
+    {
+        $auth_key = self::generate_random_string(48);
+        $database = DB::getInstance();
+        $db = $database->getConnection();
+// Clean up expired auth keys
+        $cleanup_sql = 'DELETE FROM auth_keys WHERE expires < UNIX_TIMESTAMP()';
+        _mysqli_query($cleanup_sql);
+        $mysql = [
+            'user_id' => $db->real_escape_string((string)$_SESSION['user_own_id']),
+            'auth_key' => $db->real_escape_string($auth_key)
+        ];
+        $sql = 'INSERT INTO
+					auth_keys
+				SET
+					auth_key = "' . $mysql['auth_key'] . '",
+					user_id = "' . $mysql['user_id'] . '",
+					expires = "' . (time() + (self::LOGOUT_DAYS * 24 * 60 * 60)) . '"
+				';
+        _mysqli_query($sql);
+        $hash = hash_hmac('sha256', $_SESSION['user_own_id'] . '-' . $auth_key, (string) self::get_user_secret_key($_SESSION['user_own_id']));
+        $expire = strtotime('+' . self::LOGOUT_DAYS . ' days');
+        $secure = !empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off';
+        setcookie('remember_me', $_SESSION['user_own_id'] . '-' . $auth_key . '-' . $hash, [
+            'expires' => $expire,
+            'path' => '/',
+            'domain' => self::cookie_domain(),
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
+
+    public static function cookie_domain(): string
+    {
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        // Strip port number if present (e.g. "example.com:8080" → "example.com")
+        $domain = strtolower((string) preg_replace('/:\d+$/', '', (string) $host));
+        // Don't set a cookie domain for localhost or IP addresses — browsers reject it
+        if ($domain === 'localhost' || filter_var($domain, FILTER_VALIDATE_IP)) {
+            return '';
+        }
+        return $domain;
+    }
+
+    public static function delete_old_auth_hash()
+    {
+        $sql = 'DELETE FROM auth_keys WHERE expires < UNIX_TIMESTAMP()';
+        _mysqli_query($sql);
+    }
+
+    public static function dev_urand($min = 0, $max = 0x7FFFFFFF)
+    {
+        if (function_exists('random_bytes')) {
+            $diff = $max - $min;
+            if ($diff < 0 || $diff > 0x7FFFFFFF) {
+                throw new \RuntimeException("Bad range");
+            }
+            $bytes = random_bytes(4);
+            if (strlen($bytes) != 4) {
+                throw new \RuntimeException("Unable to get 4 bytes");
+            }
+            $ary = unpack("Nint", $bytes);
+            $val = $ary['int'] & 0x7FFFFFFF;
+// 32-bit safe
+            $fp = (float) $val / 2147483647.0;
+// convert to [0,1]
+            return (int) round($fp * $diff) + $min;
+        }
+
+        // fallback to less secure mt_rand in case user doesn't have random_bytes
+        return (int) mt_rand($min, $max);
+    }
+
+    private static function bind(\mysqli_stmt $stmt, string $types, mixed ...$values): void
+    {
+        // @phpstan-ignore-next-line -- AUTH::bind() is this class's own checked binding wrapper (no Database\Connection instance is in scope; static context). Return value is checked and throws on failure.
+        if (!$stmt->bind_param($types, ...$values)) {
+            throw new \RuntimeException('Unable to bind statement parameters');
+        }
+    }
+
+    private static function execute(\mysqli_stmt $stmt, string $message): void
+    {
+        // @phpstan-ignore-next-line -- AUTH::execute() is this class's own checked-execution wrapper (no Database\Connection instance is in scope; static context). Return value is checked and throws on failure.
+        if (!$stmt->execute()) {
+            throw new \RuntimeException($message);
+        }
+    }
+}

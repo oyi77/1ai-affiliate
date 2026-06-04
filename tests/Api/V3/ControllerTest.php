@@ -119,12 +119,12 @@ final class SystemControllerBehaviorTest extends TestCase
         $db->method('query')->willReturnCallback(
             function (string $sql) use (&$queries) {
                 $queries[] = $sql;
-                if (str_contains($sql, 'FROM 202_cronjobs')) {
+                if (str_contains($sql, 'FROM cronjobs')) {
                     return $this->createResultMock([
                         ['cronjob_type' => 'main', 'cronjob_time' => '1700000000'],
                     ]);
                 }
-                if (str_contains($sql, 'FROM 202_cronjob_logs')) {
+                if (str_contains($sql, 'FROM cronjob_logs')) {
                     return $this->createResultMock([
                         ['id' => 1, 'last_execution_time' => '1700001234'],
                     ]);
@@ -139,7 +139,7 @@ final class SystemControllerBehaviorTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertSame(1, $result['data']['recent_logs'][0]['id']);
         $this->assertStringContainsString(
-            'SELECT id, last_execution_time FROM 202_cronjob_logs',
+            'SELECT id, last_execution_time FROM cronjob_logs',
             implode("\n", $queries)
         );
     }
@@ -212,9 +212,9 @@ final class SystemControllerBehaviorTest extends TestCase
     {
         $stateDir = sys_get_temp_dir() . '/p202-system-metrics-' . bin2hex(random_bytes(4));
         mkdir($stateDir, 0700, true);
-        putenv('P202_SERVER_STATE_DIR=' . $stateDir);
-        putenv('P202_ALERT_FAILURE_SPIKE=1');
-        putenv('P202_ALERT_QUEUE_LAG_SECONDS=1');
+        putenv('P1AI_SERVER_STATE_DIR=' . $stateDir);
+        putenv('P1AI_ALERT_FAILURE_SPIKE=1');
+        putenv('P1AI_ALERT_QUEUE_LAG_SECONDS=1');
 
         try {
             $store = new ServerStateStore($stateDir);
@@ -242,9 +242,9 @@ final class SystemControllerBehaviorTest extends TestCase
             $this->assertNotEmpty($result['data']['alerts']['active']);
             $this->assertNotEmpty($result['data']['tracing']['recent_spans']);
         } finally {
-            putenv('P202_SERVER_STATE_DIR');
-            putenv('P202_ALERT_FAILURE_SPIKE');
-            putenv('P202_ALERT_QUEUE_LAG_SECONDS');
+            putenv('P1AI_SERVER_STATE_DIR');
+            putenv('P1AI_ALERT_FAILURE_SPIKE');
+            putenv('P1AI_ALERT_QUEUE_LAG_SECONDS');
             $this->removeDir($stateDir);
         }
     }
@@ -278,7 +278,7 @@ final class ReportsControllerBehaviorTest extends TestCase
     public function testDaypartReturnsTwentyFourRowsWithMetricsAndTimezone(): void
     {
         $db = $this->createMysqliMock([
-            'SELECT user_timezone FROM 202_users' => ['user_timezone' => 'America/New_York'],
+            'SELECT user_timezone FROM users' => ['user_timezone' => 'America/New_York'],
             'GROUP BY hour_of_day' => [
                 [
                     'hour_of_day' => 3,
@@ -314,7 +314,7 @@ final class ReportsControllerBehaviorTest extends TestCase
     public function testDaypartZeroFillsMissingHours(): void
     {
         $db = $this->createMysqliMock([
-            'SELECT user_timezone FROM 202_users' => ['user_timezone' => 'UTC'],
+            'SELECT user_timezone FROM users' => ['user_timezone' => 'UTC'],
             'GROUP BY hour_of_day' => [
                 [
                     'hour_of_day' => 10,
@@ -345,7 +345,7 @@ final class ReportsControllerBehaviorTest extends TestCase
     public function testDaypartSortsByMetricDescendingWithHourTieBreaker(): void
     {
         $db = $this->createMysqliMock([
-            'SELECT user_timezone FROM 202_users' => ['user_timezone' => 'UTC'],
+            'SELECT user_timezone FROM users' => ['user_timezone' => 'UTC'],
             'GROUP BY hour_of_day' => [
                 ['hour_of_day' => 2, 'total_clicks' => 1, 'total_click_throughs' => 1, 'total_leads' => 1, 'total_income' => 4, 'total_cost' => 2, 'total_net' => 2, 'epc' => 4, 'avg_cpc' => 2, 'conv_rate' => 100, 'roi' => 100, 'cpa' => 2],
                 ['hour_of_day' => 1, 'total_clicks' => 1, 'total_click_throughs' => 1, 'total_leads' => 1, 'total_income' => 4, 'total_cost' => 2, 'total_net' => 2, 'epc' => 4, 'avg_cpc' => 2, 'conv_rate' => 100, 'roi' => 100, 'cpa' => 2],
@@ -373,7 +373,7 @@ final class ReportsControllerBehaviorTest extends TestCase
     public function testDaypartInvalidTimezoneFallsBackToUtc(): void
     {
         $db = $this->createMysqliMock([
-            'SELECT user_timezone FROM 202_users' => ['user_timezone' => 'Invalid/Timezone'],
+            'SELECT user_timezone FROM users' => ['user_timezone' => 'Invalid/Timezone'],
             'GROUP BY hour_of_day' => [],
         ]);
 
@@ -584,7 +584,7 @@ final class ControllerTest extends TestCase
     {
         $stateDir = sys_get_temp_dir() . '/p202-bulk-upsert-state-' . bin2hex(random_bytes(4));
         mkdir($stateDir, 0700, true);
-        putenv('P202_SERVER_STATE_DIR=' . $stateDir);
+        putenv('P1AI_SERVER_STATE_DIR=' . $stateDir);
 
         [$ctrl] = $this->createControllerWithDb();
         RequestContext::setHeaders(['Idempotency-Key' => 'bulk-request-hash-1']);
@@ -602,7 +602,7 @@ final class ControllerTest extends TestCase
             $this->assertSame(2, $third['summary']['skipped']);
         } finally {
             RequestContext::reset();
-            putenv('P202_SERVER_STATE_DIR');
+            putenv('P1AI_SERVER_STATE_DIR');
         }
     }
 
@@ -634,7 +634,7 @@ final class ControllerTest extends TestCase
     public function testBulkUpsertHonorsConfigurableMaxRowsEnvLimit(): void
     {
         [$ctrl] = $this->createControllerWithDb();
-        putenv('P202_MAX_BULK_ROWS=1');
+        putenv('P1AI_MAX_BULK_ROWS=1');
         RequestContext::setHeaders(['Idempotency-Key' => 'bulk-limit-' . bin2hex(random_bytes(4))]);
 
         $this->expectException(ValidationException::class);
@@ -642,7 +642,7 @@ final class ControllerTest extends TestCase
             $ctrl->bulkUpsert(['rows' => [[], []]]);
         } finally {
             RequestContext::reset();
-            putenv('P202_MAX_BULK_ROWS');
+            putenv('P1AI_MAX_BULK_ROWS');
         }
     }
 

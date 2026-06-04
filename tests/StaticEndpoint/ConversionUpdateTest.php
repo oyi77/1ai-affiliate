@@ -39,7 +39,7 @@ final class ConversionUpdateTest extends TestCase
         }
 
         if (!self::$loaded) {
-            require_once __DIR__ . '/../../202-config/static-endpoint-helpers.php';
+            require_once __DIR__ . '/../../config/static-endpoint-helpers.php';
             self::$loaded = true;
         }
     }
@@ -58,8 +58,8 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '25.00');
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
-        self::assertNotNull($clicksQuery, '202_clicks UPDATE must be executed');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
+        self::assertNotNull($clicksQuery, 'clicks UPDATE must be executed');
         self::assertStringContainsString("click_lead='1'", $clicksQuery);
         self::assertStringContainsString("click_filtered='0'", $clicksQuery);
         self::assertStringContainsString("click_id='100'", $clicksQuery);
@@ -72,8 +72,8 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '25.00');
 
-        $spyQuery = $this->findQueryContaining($queries, '202_clicks_spy');
-        self::assertNotNull($spyQuery, '202_clicks_spy UPDATE must be executed');
+        $spyQuery = $this->findQueryContaining($queries, 'clicks_spy');
+        self::assertNotNull($spyQuery, 'clicks_spy UPDATE must be executed');
         self::assertStringContainsString("click_lead='1'", $spyQuery);
         self::assertStringContainsString("click_filtered='0'", $spyQuery);
     }
@@ -86,7 +86,7 @@ final class ConversionUpdateTest extends TestCase
         p202ApplyConversionUpdate($db, '42', '10.50');
 
         $clicksQuery = $this->findQueryContaining($queries, 'UPDATE');
-        $spyQueries = array_filter($queries, fn($q) => str_contains($q, '202_clicks_spy'));
+        $spyQueries = array_filter($queries, fn($q) => str_contains($q, 'clicks_spy'));
 
         self::assertNotEmpty($spyQueries, 'Spy table must be updated');
 
@@ -105,7 +105,7 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '25.50');
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("click_cpc='25.50'", $clicksQuery);
     }
 
@@ -116,7 +116,7 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '');
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringNotContainsString('click_cpc', $clicksQuery);
         // But must still set lead flag
         self::assertStringContainsString("click_lead='1'", $clicksQuery);
@@ -131,7 +131,7 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '10.00', true, '50.00');
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("click_payout='50.00'", $clicksQuery);
     }
 
@@ -142,7 +142,7 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '10.00', false);
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringNotContainsString('click_payout', $clicksQuery);
     }
 
@@ -153,8 +153,8 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '10.00', true, '99.99');
 
-        $clicksQueries = array_filter($queries, fn($q) => str_contains($q, '202_clicks') && str_contains($q, 'UPDATE'));
-        $spyQueries = array_filter($queries, fn($q) => str_contains($q, '202_clicks_spy'));
+        $clicksQueries = array_filter($queries, fn($q) => str_contains($q, 'clicks') && str_contains($q, 'UPDATE'));
+        $spyQueries = array_filter($queries, fn($q) => str_contains($q, 'clicks_spy'));
 
         foreach ($clicksQueries as $q) {
             self::assertStringContainsString("click_payout='99.99'", $q);
@@ -173,7 +173,7 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '10.00', false, '', '55');
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("aff_campaign_id='55'", $clicksQuery);
     }
 
@@ -184,7 +184,7 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, '100', '10.00');
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringNotContainsString('aff_campaign_id', $clicksQuery);
     }
 
@@ -197,7 +197,7 @@ final class ConversionUpdateTest extends TestCase
 
         p202ApplyConversionUpdate($db, "100' OR 1=1; --", '10.00');
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         // The value should be escaped (addslashes mock)
         self::assertStringContainsString("100\\' OR 1=1; --", $clicksQuery);
     }
@@ -207,9 +207,9 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', "25'; DROP TABLE 202_clicks; --");
+        p202ApplyConversionUpdate($db, '100', "25'; DROP TABLE clicks; --");
 
-        $clicksQuery = $this->findQueryContaining($queries, '202_clicks');
+        $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("25\\';", $clicksQuery);
     }
 
@@ -242,8 +242,8 @@ final class ConversionUpdateTest extends TestCase
             fn($q) => str_contains(strtoupper($q), 'UPDATE')
         ));
         self::assertCount(2, $updateQueries);
-        self::assertStringContainsString('202_clicks', $updateQueries[0]);
-        self::assertStringContainsString('202_clicks_spy', $updateQueries[1]);
+        self::assertStringContainsString('clicks', $updateQueries[0]);
+        self::assertStringContainsString('clicks_spy', $updateQueries[1]);
     }
 
     public function testAlwaysExecutesTwoUpdateQueries(): void
@@ -254,7 +254,7 @@ final class ConversionUpdateTest extends TestCase
         p202ApplyConversionUpdate($db, '1', '0');
 
         $updateQueries = array_filter($queries, fn($q) => str_contains(strtoupper($q), 'UPDATE'));
-        self::assertCount(2, $updateQueries, 'Must update both 202_clicks and 202_clicks_spy');
+        self::assertCount(2, $updateQueries, 'Must update both clicks and clicks_spy');
     }
 
     // --- Helper: p202ResolveAdvertiserId ---

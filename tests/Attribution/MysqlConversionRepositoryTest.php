@@ -66,7 +66,7 @@ final class FakeMysqli extends \mysqli
     #[\ReturnTypeWillChange]
     public function prepare(string $query): FakeMysqliStatement|false
     {
-        if (str_contains($query, 'FROM 202_conversion_logs')) {
+        if (str_contains($query, 'FROM conversion_logs')) {
             return new FakeMysqliStatement($this->conversionRows);
         }
 

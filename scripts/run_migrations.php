@@ -8,7 +8,7 @@ declare(strict_types=1);
  * Usage: php scripts/run_migrations.php
  */
 
-require_once dirname(__DIR__) . '/202-config.php';
+require_once dirname(__DIR__) . '/config.php';
 
 $migrations = [
     '001_affiliate_tables.sql',

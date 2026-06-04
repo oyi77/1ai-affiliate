@@ -17,7 +17,7 @@ $attributionTestMode = PHP_SAPI === 'cli'
     && defined('PROSPER_ATTRIBUTION_TEST_MODE')
     && PROSPER_ATTRIBUTION_TEST_MODE === true;
 if (!$attributionTestMode) {
-    require_once __DIR__ . '/../../202-config/connect.php';
+    require_once __DIR__ . '/../../config/connect.php';
 }
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -147,7 +147,7 @@ function register_attribution_routes(\Slim\App $app, Controller $controller): vo
 
             $result = $controller->getMetrics($params);
 
-            // Supplement with total click count from 202_clicks (attribution only
+            // Supplement with total click count from clicks (attribution only
             // counts clicks tied to conversions; the dashboard should show ALL clicks)
             if ($result['status'] === 200 && $db && $userId !== null) {
                 $startHour = isset($params['start_hour']) ? (int) $params['start_hour'] : (time() - (24 * 3600));
@@ -155,7 +155,7 @@ function register_attribution_routes(\Slim\App $app, Controller $controller): vo
                 $scope = isset($params['scope']) ? (string) $params['scope'] : 'global';
                 $scopeId = isset($params['scope_id']) && is_numeric($params['scope_id']) ? (int) $params['scope_id'] : null;
 
-                $clickSql = "SELECT COUNT(*) AS total FROM 202_clicks WHERE user_id = ? AND click_time BETWEEN ? AND ?";
+                $clickSql = "SELECT COUNT(*) AS total FROM clicks WHERE user_id = ? AND click_time BETWEEN ? AND ?";
                 $bindTypes = 'iii';
                 $bindValues = [$userId, $startHour, $endHour];
 
@@ -276,7 +276,7 @@ function authorize_attribution_request(array $params, string $permission): array
         ];
     }
 
-    $stmt = $connection->prepare('SELECT user_id FROM 202_api_keys WHERE api_key = ? LIMIT 1');
+    $stmt = $connection->prepare('SELECT user_id FROM api_keys WHERE api_key = ? LIMIT 1');
     if ($stmt === false) {
         return [
             'status' => 500,

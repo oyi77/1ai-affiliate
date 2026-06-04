@@ -16,7 +16,7 @@ final class FraudDetectionIPQSTest extends TestCase
         parent::setUp();
 
         // Include the class
-        require_once __DIR__ . '/../../202-config/FraudDetectionIPQS.class.php';
+        require_once __DIR__ . '/../../config/FraudDetectionIPQS.class.php';
     }
 
     public function testConstructorSetsProperties(): void
@@ -75,7 +75,7 @@ final class FraudDetectionIPQSLogicTest extends TestCase
     {
         parent::setUp();
 
-        require_once __DIR__ . '/../../202-config/FraudDetectionIPQS.class.php';
+        require_once __DIR__ . '/../../config/FraudDetectionIPQS.class.php';
     }
 
     public function testVerifyKeyWithValidResponse(): void

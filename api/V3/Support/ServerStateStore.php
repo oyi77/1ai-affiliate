@@ -557,7 +557,7 @@ class ServerStateStore
 
     private function resolveDefaultBaseDir(): string
     {
-        $env = getenv('P202_SERVER_STATE_DIR');
+        $env = getenv('P1AI_SERVER_STATE_DIR');
         if (is_string($env) && trim($env) !== '') {
             return trim($env);
         }

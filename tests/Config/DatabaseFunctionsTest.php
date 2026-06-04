@@ -26,7 +26,7 @@ final class DatabaseFunctionsTest extends TestCase
         $memcacheWorking = true;
 
         // Include the functions file
-        require_once __DIR__ . '/../../202-config/functions-db.php';
+        require_once __DIR__ . '/../../config/functions-db.php';
     }
 
     protected function tearDown(): void

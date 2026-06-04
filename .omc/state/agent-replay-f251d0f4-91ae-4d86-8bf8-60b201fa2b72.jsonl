@@ -1,0 +1,15 @@
+{"t":0,"agent":"a3eaf97","agent_type":"verification","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"afa8c27","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a7456be","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a884ce0","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a5aac06","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a6f1310","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"aaccc94","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a5e04c9","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a904d54","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a01e8ee","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a3eaf97","agent_type":"verification","event":"agent_stop","success":true,"duration_ms":301391}
+{"t":0,"agent":"a2c2024","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"system","event":"keyword_detected","keyword":"autopilot"}
+{"t":0,"agent":"system","event":"mode_change","mode_from":"none","mode_to":"autopilot"}
+{"t":0,"agent":"aff0302","agent_type":"unknown","event":"agent_stop","success":true}

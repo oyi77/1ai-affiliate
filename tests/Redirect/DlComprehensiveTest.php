@@ -27,7 +27,7 @@ class DlComprehensiveTest extends TestCase
         // Set up default server vars
         $_SERVER['HTTP_HOST'] = 'test.1ai-affiliate.com';
         $_SERVER['SERVER_NAME'] = 'test.1ai-affiliate.com';
-        $_SERVER['REQUEST_URI'] = '/tracking202/redirect/dl.php';
+        $_SERVER['REQUEST_URI'] = '/tracking_support/redirect/dl.php';
         $_SERVER['HTTP_X_FORWARDED_FOR'] = '192.168.1.100';
         
         // Create mock database

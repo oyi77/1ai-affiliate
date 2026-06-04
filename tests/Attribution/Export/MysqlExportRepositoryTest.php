@@ -140,32 +140,32 @@ final class FakeStatement
     {
         $sql = $this->query;
 
-        if (str_starts_with($sql, 'INSERT INTO 202_attribution_exports')) {
+        if (str_starts_with($sql, 'INSERT INTO attribution_exports')) {
             $this->performInsert();
             return true;
         }
 
-        if (str_starts_with($sql, 'UPDATE 202_attribution_exports SET status') && str_contains($sql, 'last_attempted_at')) {
+        if (str_starts_with($sql, 'UPDATE attribution_exports SET status') && str_contains($sql, 'last_attempted_at')) {
             $this->performClaimUpdate();
             return true;
         }
 
-        if (str_starts_with($sql, 'UPDATE 202_attribution_exports SET status')) {
+        if (str_starts_with($sql, 'UPDATE attribution_exports SET status')) {
             $this->performUpdate();
             return true;
         }
 
-        if (str_starts_with($sql, 'SELECT * FROM 202_attribution_exports WHERE export_id')) {
+        if (str_starts_with($sql, 'SELECT * FROM attribution_exports WHERE export_id')) {
             $this->performFindById();
             return true;
         }
 
-        if (str_starts_with($sql, 'SELECT * FROM 202_attribution_exports WHERE user_id')) {
+        if (str_starts_with($sql, 'SELECT * FROM attribution_exports WHERE user_id')) {
             $this->performFindForUser();
             return true;
         }
 
-        if (str_starts_with($sql, 'SELECT * FROM 202_attribution_exports WHERE status')) {
+        if (str_starts_with($sql, 'SELECT * FROM attribution_exports WHERE status')) {
             $this->performSelectPending();
             return true;
         }

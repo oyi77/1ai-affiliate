@@ -16,7 +16,7 @@ class ConfigTest extends TestCase
     {
         parent::setUp();
 
-        $this->tmpDir = sys_get_temp_dir() . '/p202_config_test_' . uniqid();
+        $this->tmpDir = sys_get_temp_dir() . '/pconfig_test_' . uniqid();
         mkdir($this->tmpDir, 0700, true);
 
         // Preserve and override HOME so Config uses our temp directory

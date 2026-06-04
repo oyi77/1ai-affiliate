@@ -10,20 +10,20 @@ use Api\V3\Exception\ValidationException;
 class ReportsController
 {
     private const array BREAKDOWNS = [
-        'campaign'     => ['table' => '202_aff_campaigns',      'id' => 'aff_campaign_id',  'name' => 'aff_campaign_name',  'de_id' => 'aff_campaign_id'],
-        'aff_network'  => ['table' => '202_aff_networks',       'id' => 'aff_network_id',   'name' => 'aff_network_name',   'de_id' => 'aff_network_id'],
-        'ppc_account'  => ['table' => '202_ppc_accounts',       'id' => 'ppc_account_id',   'name' => 'ppc_account_name',   'de_id' => 'ppc_account_id'],
-        'ppc_network'  => ['table' => '202_ppc_networks',       'id' => 'ppc_network_id',   'name' => 'ppc_network_name',   'de_id' => 'ppc_network_id'],
-        'landing_page' => ['table' => '202_landing_pages',      'id' => 'landing_page_id',  'name' => 'landing_page_url',   'de_id' => 'landing_page_id'],
-        'keyword'      => ['table' => '202_keywords',           'id' => 'keyword_id',       'name' => 'keyword',            'de_id' => 'keyword_id'],
-        'country'      => ['table' => '202_locations_country',  'id' => 'country_id',       'name' => 'country_name',       'de_id' => 'country_id'],
-        'city'         => ['table' => '202_locations_city',      'id' => 'city_id',          'name' => 'city_name',          'de_id' => 'city_id'],
-        'region'       => ['table' => '202_locations_region',    'id' => 'region_id',        'name' => 'region_name',        'de_id' => 'region_id'],
-        'browser'      => ['table' => '202_browsers',           'id' => 'browser_id',       'name' => 'browser_name',       'de_id' => 'browser_id'],
-        'platform'     => ['table' => '202_platforms',           'id' => 'platform_id',      'name' => 'platform_name',      'de_id' => 'platform_id'],
-        'device'       => ['table' => '202_device_models',       'id' => 'device_id',        'name' => 'device_name',        'de_id' => 'device_id'],
-        'isp'          => ['table' => '202_locations_isp',       'id' => 'isp_id',           'name' => 'isp_name',           'de_id' => 'isp_id'],
-        'text_ad'      => ['table' => '202_text_ads',            'id' => 'text_ad_id',       'name' => 'text_ad_name',       'de_id' => 'text_ad_id'],
+        'campaign'     => ['table' => 'aff_campaigns',      'id' => 'aff_campaign_id',  'name' => 'aff_campaign_name',  'de_id' => 'aff_campaign_id'],
+        'aff_network'  => ['table' => 'aff_networks',       'id' => 'aff_network_id',   'name' => 'aff_network_name',   'de_id' => 'aff_network_id'],
+        'ppc_account'  => ['table' => 'ppc_accounts',       'id' => 'ppc_account_id',   'name' => 'ppc_account_name',   'de_id' => 'ppc_account_id'],
+        'ppc_network'  => ['table' => 'ppc_networks',       'id' => 'ppc_network_id',   'name' => 'ppc_network_name',   'de_id' => 'ppc_network_id'],
+        'landing_page' => ['table' => 'landing_pages',      'id' => 'landing_page_id',  'name' => 'landing_page_url',   'de_id' => 'landing_page_id'],
+        'keyword'      => ['table' => 'keywords',           'id' => 'keyword_id',       'name' => 'keyword',            'de_id' => 'keyword_id'],
+        'country'      => ['table' => 'locations_country',  'id' => 'country_id',       'name' => 'country_name',       'de_id' => 'country_id'],
+        'city'         => ['table' => 'locations_city',      'id' => 'city_id',          'name' => 'city_name',          'de_id' => 'city_id'],
+        'region'       => ['table' => 'locations_region',    'id' => 'region_id',        'name' => 'region_name',        'de_id' => 'region_id'],
+        'browser'      => ['table' => 'browsers',           'id' => 'browser_id',       'name' => 'browser_name',       'de_id' => 'browser_id'],
+        'platform'     => ['table' => 'platforms',           'id' => 'platform_id',      'name' => 'platform_name',      'de_id' => 'platform_id'],
+        'device'       => ['table' => 'device_models',       'id' => 'device_id',        'name' => 'device_name',        'de_id' => 'device_id'],
+        'isp'          => ['table' => 'locations_isp',       'id' => 'isp_id',           'name' => 'isp_name',           'de_id' => 'isp_id'],
+        'text_ad'      => ['table' => 'text_ads',            'id' => 'text_ad_id',       'name' => 'text_ad_name',       'de_id' => 'text_ad_id'],
     ];
 
     private const array ALLOWED_SORTS = ['total_clicks', 'total_leads', 'total_income', 'total_cost', 'total_net', 'roi', 'epc', 'conv_rate'];
@@ -102,7 +102,7 @@ class ReportsController
                 CASE WHEN SUM(de.click_out) > 0 THEN SUM(de.leads) / SUM(de.click_out) * 100 ELSE 0 END as conv_rate,
                 CASE WHEN SUM(de.cost) > 0 THEN (SUM(de.income) - SUM(de.cost)) / SUM(de.cost) * 100 ELSE 0 END as roi,
                 CASE WHEN SUM(de.leads) > 0 THEN SUM(de.cost) / SUM(de.leads) ELSE 0 END as cpa
-            FROM 202_dataengine de
+            FROM dataengine de
             $whereClause";
 
         $stmt = $this->prepare($sql);
@@ -157,7 +157,7 @@ class ReportsController
                 CASE WHEN SUM(de.click_out) > 0 THEN SUM(de.leads) / SUM(de.click_out) * 100 ELSE 0 END as conv_rate,
                 CASE WHEN SUM(de.cost) > 0 THEN (SUM(de.income) - SUM(de.cost)) / SUM(de.cost) * 100 ELSE 0 END as roi,
                 CASE WHEN SUM(de.leads) > 0 THEN SUM(de.cost) / SUM(de.leads) ELSE 0 END as cpa
-            FROM 202_dataengine de
+            FROM dataengine de
             INNER JOIN {$bd['table']} ref ON de.{$bd['de_id']} = ref.{$bd['id']}
             $whereClause
             GROUP BY ref.{$bd['id']}, ref.{$bd['name']}
@@ -227,7 +227,7 @@ class ReportsController
                 CASE WHEN SUM(de.click_out) > 0 THEN SUM(de.leads) / SUM(de.click_out) * 100 ELSE 0 END as conv_rate,
                 CASE WHEN SUM(de.cost) > 0 THEN (SUM(de.income) - SUM(de.cost)) / SUM(de.cost) * 100 ELSE 0 END as roi,
                 CASE WHEN SUM(de.leads) > 0 THEN SUM(de.cost) / SUM(de.leads) ELSE 0 END as cpa
-            FROM 202_dataengine de
+            FROM dataengine de
             $whereClause
             GROUP BY period
             ORDER BY period ASC
@@ -289,7 +289,7 @@ class ReportsController
                 CASE WHEN SUM(de.click_out) > 0 THEN SUM(de.leads) / SUM(de.click_out) * 100 ELSE 0 END as conv_rate,
                 CASE WHEN SUM(de.cost) > 0 THEN (SUM(de.income) - SUM(de.cost)) / SUM(de.cost) * 100 ELSE 0 END as roi,
                 CASE WHEN SUM(de.leads) > 0 THEN SUM(de.cost) / SUM(de.leads) ELSE 0 END as cpa
-            FROM 202_dataengine de
+            FROM dataengine de
             $whereClause
             GROUP BY hour_of_day";
 
@@ -370,7 +370,7 @@ class ReportsController
                 CASE WHEN SUM(de.click_out) > 0 THEN SUM(de.leads) / SUM(de.click_out) * 100 ELSE 0 END as conv_rate,
                 CASE WHEN SUM(de.cost) > 0 THEN (SUM(de.income) - SUM(de.cost)) / SUM(de.cost) * 100 ELSE 0 END as roi,
                 CASE WHEN SUM(de.leads) > 0 THEN SUM(de.cost) / SUM(de.leads) ELSE 0 END as cpa
-            FROM 202_dataengine de
+            FROM dataengine de
             $whereClause
             GROUP BY day_of_week";
 
@@ -464,7 +464,7 @@ class ReportsController
 
     private function resolveUserTimezone(): string
     {
-        $stmt = $this->prepare('SELECT user_timezone FROM 202_users WHERE user_id = ? LIMIT 1');
+        $stmt = $this->prepare('SELECT user_timezone FROM users WHERE user_id = ? LIMIT 1');
         $this->bind($stmt, 'i', $this->userId);
         $this->execute($stmt, 'Failed to resolve timezone');
         $result = $stmt->get_result();

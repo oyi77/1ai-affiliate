@@ -16,7 +16,7 @@ final class MysqlConversionRepositoryTest extends TestCase
         $write = new FakeMysqliConnection();
         $read = new FakeMysqliConnection();
         $write->whenQueryContainsReturnRows(
-            'FROM 202_clicks WHERE click_id = ? AND user_id = ? LIMIT 1 FOR UPDATE',
+            'FROM clicks WHERE click_id = ? AND user_id = ? LIMIT 1 FOR UPDATE',
             [[
                 'click_id' => 10,
                 'aff_campaign_id' => 44,
@@ -32,7 +32,7 @@ final class MysqlConversionRepositoryTest extends TestCase
         self::assertIsInt($id);
         self::assertCount(0, $read->statements, 'create() should not use read connection.');
 
-        $lookupStatements = $write->statementsContaining('FROM 202_clicks WHERE click_id = ? AND user_id = ?');
+        $lookupStatements = $write->statementsContaining('FROM clicks WHERE click_id = ? AND user_id = ?');
         self::assertCount(1, $lookupStatements);
         self::assertStringContainsString('FOR UPDATE', $lookupStatements[0]->sql);
         self::assertSame('ii', $lookupStatements[0]->boundTypes);

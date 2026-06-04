@@ -3,7 +3,7 @@ declare(strict_types=1);
 function getAuth($db, $variables): mixed {
 	$mysql['api_key'] = $db->real_escape_string((string) ($variables['apikey'] ?? ''));
 	$key_sql = "SELECT 	*
-				FROM   	`202_api_keys` 
+				FROM   	`api_keys` 
 				WHERE  	`api_key`='".$mysql['api_key']."'";
 	$key_result = _mysqli_query($db, $key_sql);
 	$key_row = $key_result->fetch_assoc();
@@ -12,7 +12,7 @@ function getAuth($db, $variables): mixed {
 
 		$mysql['user_id'] = $db->real_escape_string($key_row['user_id']);
 		$user_sql = "SELECT 	`user_timezone`
-					FROM   	`202_users` 
+					FROM   	`users` 
 					WHERE  	`user_id`='".$mysql['user_id']."'";
 		$user_result = _mysqli_query($db, $user_sql);
 		$user_row = $user_result->fetch_assoc();
@@ -45,7 +45,7 @@ function showCategories($db, $vars, $user = null): void {
 function listCategories($db,$user): void {
     $cat = ['categories' => []];
     $mysql['user_id'] = $db->real_escape_string($user);
-    $aff_network_sql = "SELECT * FROM `202_aff_networks` WHERE `user_id`='".$mysql['user_id']."' AND `aff_network_deleted`='0' ORDER BY `aff_network_name` ASC";
+    $aff_network_sql = "SELECT * FROM `aff_networks` WHERE `user_id`='".$mysql['user_id']."' AND `aff_network_deleted`='0' ORDER BY `aff_network_name` ASC";
     $aff_network_result = $db->query($aff_network_sql) or die();
   //  echo $aff_network_sql;
     while ($aff_network_row = $aff_network_result->fetch_array(MYSQLI_ASSOC)) {
@@ -174,19 +174,19 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 	$mysql['c4'] = $db->real_escape_string($c4);
 
 	$report_sql = "SELECT *
-				FROM   	202_clicks AS 2c
-				LEFT OUTER JOIN 202_clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
+				FROM   	clicks AS 2c
+				LEFT OUTER JOIN clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
 
 				//If referers report type
 				if($type == "referers"){
 					$report_sql .= "
-						LEFT OUTER JOIN 202_clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
-						LEFT OUTER JOIN 202_site_urls AS 2su ON (2cs.click_referer_site_url_id = 2su.site_url_id)
-						LEFT OUTER JOIN 202_site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
+						LEFT OUTER JOIN clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
+						LEFT OUTER JOIN site_urls AS 2su ON (2cs.click_referer_site_url_id = 2su.site_url_id)
+						LEFT OUTER JOIN site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
 				//If landing pages report type
 				} elseif($type == "landing_pages") {
-					$report_sql .= " LEFT OUTER JOIN 202_clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
-									 LEFT OUTER JOIN 202_landing_pages AS 2lp ON (2lp.landing_page_id = 2c.landing_page_id)";
+					$report_sql .= " LEFT OUTER JOIN clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
+									 LEFT OUTER JOIN landing_pages AS 2lp ON (2lp.landing_page_id = 2c.landing_page_id)";
 				} else {
 					//If any other report type
 				   		$report_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
@@ -194,15 +194,15 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 
 				//If any of C1-C4 variables are set
 				if ($mysql['c1'] || $mysql['c2'] || $mysql['c3'] || $mysql['c4']) {
-					$report_sql .= "LEFT OUTER JOIN 202_clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
+					$report_sql .= "LEFT OUTER JOIN clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
 					
-					if($mysql['c1']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
+					if($mysql['c1']) { $report_sql .= "LEFT OUTER JOIN tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
 
-					if ($mysql['c2']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
+					if ($mysql['c2']) { $report_sql .= "LEFT OUTER JOIN tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
 
-					if ($mysql['c3']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
+					if ($mysql['c3']) { $report_sql .= "LEFT OUTER JOIN tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
 
-					if ($mysql['c4']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
+					if ($mysql['c4']) { $report_sql .= "LEFT OUTER JOIN tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
 				}
 
 				$report_sql .= " WHERE 2c.user_id='".$mysql['user_id']."' AND click_time > ".$mysql['date_from']." AND click_time < ".$mysql['date_to']."";
@@ -233,34 +233,34 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 							SUM(2c.click_lead) AS leads,
 							SUM(2c.click_payout*2c.click_lead) AS income
 					   FROM
-							202_clicks AS 2c
-					   LEFT OUTER JOIN 202_clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
+							clicks AS 2c
+					   LEFT OUTER JOIN clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
 
 					   //If referers report type
 					   if($type == "referers"){
 					   		$click_sql .= "
-					   		LEFT OUTER JOIN 202_clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
-							LEFT OUTER JOIN 202_site_urls AS 2su ON (2cs.click_referer_site_url_id=2su.site_url_id)
-							LEFT OUTER JOIN 202_site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
+					   		LEFT OUTER JOIN clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
+							LEFT OUTER JOIN site_urls AS 2su ON (2cs.click_referer_site_url_id=2su.site_url_id)
+							LEFT OUTER JOIN site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
 					   } else {
 					   		$report_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 					   }
 
 					   //If any of C1-C4 variables are set
 						if ($mysql['c1'] || $mysql['c2'] || $mysql['c3'] || $mysql['c4']) {
-							$click_sql .= "LEFT OUTER JOIN 202_clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
+							$click_sql .= "LEFT OUTER JOIN clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
 							
-							if($mysql['c1']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
+							if($mysql['c1']) { $click_sql .= "LEFT OUTER JOIN tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
 
-							if ($mysql['c2']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
+							if ($mysql['c2']) { $click_sql .= "LEFT OUTER JOIN tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
 
-							if ($mysql['c3']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
+							if ($mysql['c3']) { $click_sql .= "LEFT OUTER JOIN tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
 
-							if ($mysql['c4']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
+							if ($mysql['c4']) { $click_sql .= "LEFT OUTER JOIN tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
 						}
 
 					   //If any other
-					   $click_sql .= " LEFT OUTER JOIN 202_clicks_record AS 2cr ON (2cr.click_id = 2c.click_id)
+					   $click_sql .= " LEFT OUTER JOIN clicks_record AS 2cr ON (2cr.click_id = 2c.click_id)
 					   				  WHERE 2c.user_id='".$mysql['user_id']."' AND click_time > '".$mysql['date_from']."' AND click_time < '".$mysql['date_to']."'";
 
 					   	//If C variables are set
@@ -428,7 +428,7 @@ function getCampaignID($db, $campaign, $user): bool {
 	$mysql['user_id'] = $db->real_escape_string($user);
 	$mysql['campaign_id'] = $db->real_escape_string($campaign);
 	$key_sql = "SELECT 	*
-				FROM   	`202_aff_campaigns` 
+				FROM   	`aff_campaigns` 
 				WHERE  	`user_id`='".$mysql['user_id']."' AND `aff_campaign_id`='".$mysql['campaign_id']."'";
 	$key_result = _mysqli_query($db, $key_sql);
 	$key_row = $key_result->fetch_assoc();

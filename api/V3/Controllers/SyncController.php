@@ -585,7 +585,7 @@ class SyncController
 
     private function enforceQueueLimit(array $source, array $target): void
     {
-        $raw = getenv('P202_MAX_QUEUED_PER_PAIR');
+        $raw = getenv('P1AI_MAX_QUEUED_PER_PAIR');
         $maxQueuedPerPair = 20;
         if (is_string($raw) && trim($raw) !== '' && (int)$raw > 0) {
             $maxQueuedPerPair = (int)$raw;

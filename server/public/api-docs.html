@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1AI Affiliate Tracker API</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    body { margin: 0; background: #0f0f1a; }
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui .info .title { color: #a5b4fc !important; }
+    .swagger-ui .info .description { color: #c4b5fd !important; }
+    .swagger-ui .opblock-tag { color: #e0e7ff !important; border-bottom-color: #312e81 !important; }
+    .swagger-ui .opblock { border-radius: 6px; }
+    .swagger-ui .opblock-summary-get { border-color: #6366f1; background: rgba(99,102,241,0.08); }
+    .swagger-ui .opblock-summary-post { border-color: #8b5cf6; background: rgba(139,92,246,0.08); }
+    .swagger-ui .opblock-summary-get .opblock-summary-method { background: #6366f1; }
+    .swagger-ui .opblock-summary-post .opblock-summary-method { background: #8b5cf6; }
+    .swagger-ui .opblock-summary-method { color: #fff !important; }
+    .swagger-ui .btn.execute { background: #6366f1; border-color: #6366f1; color: #fff; }
+    .swagger-ui .btn.execute:hover { background: #4f46e5; }
+    .swagger-ui .btn.authorize { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+    .swagger-ui .btn.authorize:hover { background: #6366f1; }
+    .swagger-ui label { color: #e0e7ff !important; }
+    .swagger-ui .parameter__name { color: #c4b5fd !important; }
+    .swagger-ui .response-col-status { color: #a5b4fc !important; }
+    .swagger-ui .response-col-description { color: #c4b5fd !important; }
+    .swagger-ui .model-box { background: #1a1a2e !important; }
+    .swagger-ui section.models .model-container { background: #1a1a2e !important; }
+    .swagger-ui .model { color: #c4b5fd !important; }
+    .swagger-ui .prop-type { color: #818cf8 !important; }
+    .swagger-ui .model-box-type { color: #a5b4fc !important; }
+    .swagger-ui table thead tr th { color: #a5b4fc !important; border-color: #312e81 !important; }
+    .swagger-ui table tbody tr td { color: #c4b5fd !important; border-color: #312e81 !important; }
+    .swagger-ui .scheme-container { background: #1a1a2e; }
+    .swagger-ui .filter-container { background: #1a1a2e; }
+    .swagger-ui .wrapper { background: #0f0f1a; }
+    .swagger-ui .info { background: #0f0f1a; }
+    .swagger-ui main { background: #0f0f1a; }
+    .swagger-ui .scheme-container { background: #1a1a2e; border-color: #312e81; }
+    .swagger-ui .response { background: #1a1a2e; }
+    .swagger-ui .response-col__inner { background: #1a1a2e; }
+    .swagger-ui .highlight-code { background: #1a1a2e; }
+    .swagger-ui pre { background: #1a1a2e; color: #c4b5fd; }
+    .swagger-ui code { background: #1a1a2e; color: #a5b4fc; }
+    .swagger-ui .opblock-body { background: #0f0f1a; }
+    .swagger-ui .opblock-section { background: #0f0f1a; }
+    .swagger-ui .parameters-col_description { color: #c4b5fd !important; }
+    .swagger-ui .parameters-col_name { color: #a5b4fc !important; }
+    .swagger-ui .auth-container { background: #1a1a2e !important; }
+    .swagger-ui .auth-container h4 { color: #a5b4fc !important; }
+    .swagger-ui .auth-container p { color: #c4b5fd !important; }
+    .swagger-ui input[type=text], .swagger-ui input[type=password] {
+      background: #1a1a2e !important; color: #e0e7ff !important; border-color: #312e81 !important;
+    }
+    .swagger-ui select {
+      background: #1a1a2e !important; color: #e0e7ff !important; border-color: #312e81 !important;
+    }
+    .swagger-ui textarea {
+      background: #1a1a2e !important; color: #e0e7ff !important; border-color: #312e81 !important;
+    }
+    .swagger-ui .loading-placeholder { background-color: #0f0f1a; }
+    #swagger-ui { background: #0f0f1a; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    const spec = {
+      openapi: '3.0.3',
+      info: {
+        title: '1AI Affiliate Tracker API',
+        version: '1.0.0',
+        description: 'Unified API for CPA tracking, affiliate management, content generation (6 Gemini-powered tools), payment processing via Tripay, and admin analytics. Shared MySQL with PHP Prosper202 tracking platform.',
+        contact: { name: '1AI Support', url: 'https://aitradepulse.com' },
+      },
+      servers: [
+        { url: 'https://tracking.aitradepulse.com', description: 'Production' },
+        { url: 'http://localhost:3001', description: 'Development' },
+      ],
+      components: {
+        securitySchemes: {
+          BearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+            description: 'JWT token obtained from /api/auth/login',
+          },
+          ApiKeyAuth: {
+            type: 'apiKey',
+            in: 'header',
+            name: 'X-API-Key',
+            description: 'PHP V3 API key — used instead of JWT for service-to-service calls',
+          },
+        },
+        schemas: {
+          Error: {
+            type: 'object',
+            properties: {
+              error: { type: 'string', example: 'Authorization required' },
+            },
+          },
+          LoginRequest: {
+            type: 'object',
+            required: ['email', 'password'],
+            properties: {
+              email: { type: 'string', description: 'Email or username', example: 'admin@aitradepulse.com' },
+              password: { type: 'string', format: 'password', example: 'secret123' },
+            },
+          },
+          LoginResponse: {
+            type: 'object',
+            properties: {
+              token: { type: 'string', description: 'JWT token (expires in 24h)', example: 'eyJhbGciOiJIUzI1NiIs...' },
+              user: {
+                type: 'object',
+                properties: {
+                  id: { type: 'integer', example: 1 },
+                  email: { type: 'string', example: 'admin@aitradepulse.com' },
+                  role: { type: 'string', enum: ['admin', 'user'], example: 'admin' },
+                  affiliate: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                      id: { type: 'integer', example: 5 },
+                      affiliate_code: { type: 'string', example: 'AFF-X9K2' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          MeResponse: {
+            type: 'object',
+            properties: {
+              user: {
+                type: 'object',
+                properties: {
+                  user_id: { type: 'integer', example: 1 },
+                  user_email: { type: 'string', example: 'admin@aitradepulse.com' },
+                  user_name: { type: 'string', example: 'admin' },
+                  user_role: { type: 'integer', example: 2 },
+                },
+              },
+              affiliate: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  id: { type: 'integer', example: 5 },
+                  affiliate_code: { type: 'string', example: 'AFF-X9K2' },
+                  balance: { type: 'number', example: 125000 },
+                  pending_conversions: { type: 'integer', example: 3 },
+                  paid_conversions: { type: 'integer', example: 12 },
+                },
+              },
+            },
+          },
+          StatsResponse: {
+            type: 'object',
+            properties: {
+              totalAffiliates: { type: 'integer', example: 42 },
+              newAffiliates7d: { type: 'integer', example: 5 },
+              clicks24h: { type: 'integer', example: 1280 },
+              clickChange: { type: 'number', description: 'Click growth vs previous 24h (fraction)', example: 0.15 },
+              pendingPayout: { type: 'number', example: 2500000 },
+              pendingCount: { type: 'integer', example: 8 },
+              revenueMtd: { type: 'number', description: 'Month-to-date revenue', example: 5000000 },
+              revenueGrowth: { type: 'number', description: 'Revenue growth vs previous month (fraction)', example: 0.22 },
+              totalPaid: { type: 'number', example: 15000000 },
+            },
+          },
+          Affiliate: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', example: 5 },
+              user_id: { type: 'integer', example: 1 },
+              affiliate_code: { type: 'string', example: 'AFF-X9K2' },
+              tier: { type: 'string', enum: ['free', 'premium'], example: 'premium' },
+              created_at: { type: 'integer', description: 'Unix timestamp', example: 1717200000 },
+              username: { type: 'string', example: 'admin' },
+              joined_at: { type: 'string', format: 'date-time', example: '2024-06-01T00:00:00.000Z' },
+              user_email: { type: 'string', example: 'admin@aitradepulse.com' },
+            },
+          },
+          Earning: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', example: 10 },
+              affiliate_id: { type: 'integer', example: 5 },
+              payout_amount: { type: 'number', example: 50000 },
+              status: { type: 'string', enum: ['pending', 'approved', 'paid', 'rejected'], example: 'pending' },
+              created_at: { type: 'integer', description: 'Unix timestamp', example: 1717200000 },
+              affiliate_code: { type: 'string', example: 'AFF-X9K2' },
+              affiliate_name: { type: 'string', example: 'admin' },
+              amount: { type: 'number', example: 50000 },
+            },
+          },
+          Commission: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', example: 1 },
+              affiliate_id: { type: 'integer', example: 5 },
+              offer_id: { type: 'integer', example: 3 },
+              commission: { type: 'number', example: 10000 },
+              tier: { type: 'integer', example: 1 },
+              status: { type: 'string', example: 'active' },
+              created_at: { type: 'integer', description: 'Unix timestamp', example: 1717200000 },
+              affiliate_code: { type: 'string', example: 'AFF-X9K2' },
+              affiliate: { type: 'string', example: 'admin' },
+              offer: { type: 'string', example: 'Premium Subscription' },
+            },
+          },
+          Payment: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', example: 1 },
+              user_id: { type: 'integer', example: 1 },
+              reference: { type: 'string', example: 'PAY-1717200000-a1b2c3d4' },
+              amount: { type: 'number', example: 99000 },
+              status: { type: 'string', enum: ['UNPAID', 'PAID'], example: 'PAID' },
+              tripay_ref: { type: 'string', example: 'TRX-abc123' },
+              created_at: { type: 'integer', description: 'Unix timestamp', example: 1717200000 },
+              paid_at: { type: 'integer', nullable: true, description: 'Unix timestamp', example: 1717286400 },
+            },
+          },
+          Campaign: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', example: 1 },
+              name: { type: 'string', example: 'Shopee Fashion Campaign' },
+              payout: { type: 'number', example: 50000 },
+              payout_type: { type: 'string', example: 'CPA' },
+              status: { type: 'string', example: 'active' },
+              clicks: { type: 'integer', example: 342 },
+              conversions: { type: 'integer', example: 15 },
+              revenue: { type: 'number', example: 750000 },
+            },
+          },
+          BannerRequest: {
+            type: 'object',
+            required: ['product'],
+            properties: {
+              product: { type: 'string', description: 'Product or service to promote', example: 'Shopee Fashion Sale' },
+              audience: { type: 'string', description: 'Target audience', example: 'young women 18-30' },
+              platform: { type: 'string', description: 'Target platform', enum: ['instagram', 'tiktok', 'facebook', 'twitter', 'web'], default: 'instagram', example: 'instagram' },
+              style: { type: 'string', description: 'Visual style', enum: ['bold', 'minimal', 'luxury', 'playful', 'corporate'], default: 'bold', example: 'bold' },
+              variations: { type: 'integer', description: 'Number of banner variations', default: 3, example: 3 },
+            },
+          },
+          BannerResponse: {
+            type: 'object',
+            properties: {
+              banners: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    headline: { type: 'string', example: 'Fashion Sale Up to 70% Off' },
+                    subtext: { type: 'string', example: 'Limited time only — shop now' },
+                    palette: { type: 'array', items: { type: 'string' }, example: ['#6366F1', '#8B5CF6', '#EC4899'] },
+                    layout: { type: 'string', enum: ['portrait', 'landscape', 'square'], example: 'portrait' },
+                    cta: { type: 'string', example: 'Shop Now' },
+                    font_mood: { type: 'string', example: 'Modern, bold sans-serif' },
+                  },
+                },
+              },
+            },
+          },
+          CarouselRequest: {
+            type: 'object',
+            required: ['topic'],
+            properties: {
+              topic: { type: 'string', description: 'Carousel topic or product', example: '5 Summer Fashion Must-Haves' },
+              slides: { type: 'integer', description: 'Number of slides (default 7)', default: 7, example: 7 },
+              platform: { type: 'string', description: 'Target platform', enum: ['instagram', 'tiktok', 'linkedin'], default: 'instagram', example: 'instagram' },
+            },
+          },
+          CarouselResponse: {
+            type: 'object',
+            properties: {
+              slides: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    number: { type: 'integer', example: 1 },
+                    title: { type: 'string', example: 'Wait — these are HOW cheap?' },
+                    body: { type: 'string', example: 'Shopee summer sale just dropped...' },
+                    visual: { type: 'string', example: 'Flat-lay with pastel beach towel and accessories' },
+                  },
+                },
+              },
+              caption: { type: 'string', example: 'Summer essentials under 100K 🛍️ #fashion #shopee' },
+            },
+          },
+          CaptionRequest: {
+            type: 'object',
+            required: ['product'],
+            properties: {
+              product: { type: 'string', description: 'Product to write about', example: 'Shopee Skincare Bundle' },
+              platform: { type: 'string', description: 'Target platform', enum: ['instagram', 'tiktok', 'facebook', 'twitter'], default: 'instagram', example: 'instagram' },
+              tone: { type: 'string', description: 'Caption tone', enum: ['casual', 'professional', 'funny', 'urgent', 'aspirational'], default: 'casual', example: 'casual' },
+              length: { type: 'string', description: 'Caption length', enum: ['short', 'medium', 'long'], default: 'medium', example: 'medium' },
+            },
+          },
+          CaptionResponse: {
+            type: 'object',
+            properties: {
+              caption: { type: 'string', example: 'Your skin deserves better and so does your wallet.' },
+              hashtags: { type: 'array', items: { type: 'string' }, example: ['#skincare', '#shopee', '#glowup'] },
+              alt_versions: { type: 'array', items: { type: 'string' }, example: ['Hook: Price drop alert', 'Hook: Before & after', 'Hook: Secret weapon'] },
+            },
+          },
+          BrandKitRequest: {
+            type: 'object',
+            required: ['brand_name'],
+            properties: {
+              brand_name: { type: 'string', description: 'Brand or product name', example: '1AI Skincare' },
+              industry: { type: 'string', description: 'Industry or niche', example: 'beauty' },
+              vibe: { type: 'string', description: 'Brand vibe', enum: ['modern', 'luxury', 'playful', 'minimal', 'bold'], default: 'modern', example: 'modern' },
+            },
+          },
+          BrandKitResponse: {
+            type: 'object',
+            properties: {
+              palette: { type: 'array', items: { type: 'string' }, description: '5 hex colors (primary, secondary, accent, light, dark)', example: ['#6366F1', '#8B5CF6', '#EC4899', '#F5F3FF', '#1E1B4B'] },
+              fonts: {
+                type: 'object',
+                properties: {
+                  heading: { type: 'string', example: 'Inter' },
+                  body: { type: 'string', example: 'Roboto' },
+                },
+              },
+              voice: {
+                type: 'object',
+                properties: {
+                  adjectives: { type: 'array', items: { type: 'string' }, example: ['confident', 'fresh', 'approachable'] },
+                  use: { type: 'array', items: { type: 'string' }, example: ['Glow up with 1AI', 'Your routine, upgraded'] },
+                  avoid: { type: 'array', items: { type: 'string' }, example: ['Cheap', 'Complicated'] },
+                },
+              },
+              logo_concept: { type: 'string', example: 'A clean wordmark with a luminous gradient accent suggesting transformation and technology' },
+              tagline: { type: 'array', items: { type: 'string' }, example: ['Smart beauty, real results', 'AI meets skincare'] },
+            },
+          },
+          ABTestRequest: {
+            type: 'object',
+            required: ['product'],
+            properties: {
+              product: { type: 'string', description: 'Product to test', example: 'Shopee Premium Skincare Set' },
+              audience: { type: 'string', description: 'Target audience', example: 'women 25-40 interested in skincare' },
+              hypothesis: { type: 'string', description: 'Optional hypothesis to test', example: 'Social proof outperforms price anchoring' },
+            },
+          },
+          ABTestResponse: {
+            type: 'object',
+            properties: {
+              variants: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string', example: 'Social Proof Hero' },
+                    headline: { type: 'string', example: '10,000 women already made the switch' },
+                    subheadline: { type: 'string', example: 'Join the skincare revolution' },
+                    cta: { type: 'string', example: 'Try It Free' },
+                    body_excerpt: { type: 'string', example: 'See why thousands are switching to...' },
+                    predicted_ctr: { type: 'string', enum: ['low', 'medium', 'high'], example: 'high' },
+                    reasoning: { type: 'string', example: 'Social proof builds trust fast and reduces hesitation' },
+                  },
+                },
+              },
+            },
+          },
+          BgRemoveRequest: {
+            type: 'object',
+            required: ['image_subject'],
+            properties: {
+              image_subject: { type: 'string', description: 'Description of the subject to extract', example: 'white skincare bottle on marble surface' },
+              intent: { type: 'string', description: 'Removal intent/purpose', default: 'product photo clean white background', example: 'product photo clean white background' },
+            },
+          },
+          BgRemoveResponse: {
+            type: 'object',
+            properties: {
+              prompt: { type: 'string', example: 'Isolate the skincare bottle, remove all background, preserve soft shadows on surface' },
+              negative_prompt: { type: 'string', example: 'blurry, cropped, distorted, watermark, text overlay' },
+              settings: {
+                type: 'object',
+                properties: {
+                  padding: { type: 'number', example: 0.05 },
+                  alpha_matting: { type: 'boolean', example: true },
+                  edge_refine: { type: 'string', example: 'feather 2px' },
+                },
+              },
+            },
+          },
+          PaymentCreateRequest: {
+            type: 'object',
+            required: ['amount', 'paymentMethod'],
+            properties: {
+              amount: { type: 'integer', description: 'Payment amount in IDR', example: 99000 },
+              paymentMethod: { type: 'string', description: 'Tripay payment method code', example: 'BRIVA' },
+            },
+          },
+          PaymentCreateResponse: {
+            type: 'object',
+            properties: {
+              reference: { type: 'string', example: 'INV-abc123' },
+              amount: { type: 'integer', example: 99000 },
+              qr_url: { type: 'string', nullable: true, example: 'https://tripay.co.id/qr/abc123' },
+              checkout_url: { type: 'string', example: 'https://tripay.co.id/pay/abc123' },
+            },
+          },
+          PaymentCallbackRequest: {
+            type: 'object',
+            properties: {
+              reference: { type: 'string', description: 'Tripay transaction reference', example: 'INV-abc123' },
+              status: { type: 'string', enum: ['PAID', 'UNPAID', 'EXPIRED', 'FAILED'], example: 'PAID' },
+            },
+          },
+          ContentStatusResponse: {
+            type: 'object',
+            properties: {
+              enabled: { type: 'boolean', example: true },
+              model: { type: 'string', example: 'gemini-2.0-flash' },
+              tools: { type: 'array', items: { type: 'string' }, example: ['banner', 'carousel', 'caption', 'brand-kit', 'ab-test', 'bg-remove'] },
+            },
+          },
+          User: {
+            type: 'object',
+            properties: {
+              user_id: { type: 'integer', example: 1 },
+              user_name: { type: 'string', example: 'admin' },
+              user_email: { type: 'string', example: 'admin@aitradepulse.com' },
+              user_role: { type: 'integer', example: 2 },
+              user_date_added: { type: 'string', format: 'date-time', example: '2024-01-01T00:00:00.000Z' },
+            },
+          },
+        },
+      },
+      paths: {
+        '/health': {
+          get: {
+            tags: ['Health'],
+            summary: 'Health check',
+            description: 'Returns service status. No authentication required.',
+            operationId: 'getHealth',
+            responses: {
+              '200': {
+                description: 'Service is running',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        status: { type: 'string', example: 'ok' },
+                        service: { type: 'string', example: '1ai-affiliate-tracker' },
+                        port: { type: 'integer', example: 3001 },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        '/api/auth/login': {
+          post: {
+            tags: ['Authentication'],
+            summary: 'Login',
+            description: 'Authenticate with email/username and password. Returns a JWT token valid for 24 hours. Accepts either email or username in the email field.',
+            operationId: 'authLogin',
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/LoginRequest' },
+                },
+              },
+            },
+            responses: {
+              '200': {
+                description: 'Authentication successful',
+                content: {
+                  'application/json': {
+                    schema: { $ref: '#/components/schemas/LoginResponse' },
+                  },
+                },
+              },
+              '400': {
+                description: 'Missing email or password',
+                content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+              },
+              '401': {
+                description: 'Invalid credentials',
+                content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+              },
+              '500': {
+                description: 'Internal server error',
+                content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+              },
+            },
+          },
+        },
+        '/api/auth/me': {
+          get: {
+            tags: ['Authentication'],
+            summary: 'Get current user profile',
+            description: 'Returns the authenticated user profile with affiliate data including balance, pending and paid conversions.',
+            operationId: 'authMe',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            responses: {
+              '200': {
+                description: 'User profile with affiliate info',
+                content: {
+                  'application/json': {
+                    schema: { $ref: '#/components/schemas/MeResponse' },
+                  },
+                },
+              },
+              '401': {
+                description: 'Authorization required',
+                content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+              },
+              '404': {
+                description: 'User not found',
+                content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+              },
+            },
+          },
+        },
+        '/api/admin/stats': {
+          get: {
+            tags: ['Admin'],
+            summary: 'Dashboard statistics',
+            description: 'Returns aggregated stats for the admin dashboard: total affiliates, recent signups, clicks, revenue, and payouts.',
+            operationId: 'adminStats',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            responses: {
+              '200': {
+                description: 'Dashboard statistics',
+                content: {
+                  'application/json': {
+                    schema: { $ref: '#/components/schemas/StatsResponse' },
+                  },
+                },
+              },
+              '401': {
+                description: 'Authorization required',
+                content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+              },
+              '403': {
+                description: 'Admin access required',
+                content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+              },
+            },
+          },
+        },
+        '/api/admin/affiliates': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List affiliates',
+            description: 'Returns a paginated list of all affiliates with user data. Max 500 results.',
+            operationId: 'adminAffiliates',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'limit', in: 'query', schema: { type: 'integer', default: 100, maximum: 500 }, description: 'Max results (1-500)' },
+            ],
+            responses: {
+              '200': {
+                description: 'List of affiliates',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Affiliate' } } },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/earnings': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List affiliate earnings',
+            description: 'Returns affiliate earnings with optional filters. Sorted by most recent first.',
+            operationId: 'adminEarnings',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'affiliate_id', in: 'query', schema: { type: 'integer' }, description: 'Filter by affiliate ID' },
+              { name: 'status', in: 'query', schema: { type: 'string', enum: ['pending', 'approved', 'paid', 'rejected'] }, description: 'Filter by status' },
+            ],
+            responses: {
+              '200': {
+                description: 'List of earnings',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Earning' } } },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/earnings/{id}/approve': {
+          post: {
+            tags: ['Admin'],
+            summary: 'Approve an earning',
+            description: 'Approve a pending affiliate earning. Only pending earnings can be approved.',
+            operationId: 'adminApproveEarning',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: 'Earning ID to approve' },
+            ],
+            responses: {
+              '200': {
+                description: 'Earning approved',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: { approved: { type: 'integer', description: 'Number of rows affected (0 or 1)', example: 1 } },
+                    },
+                  },
+                },
+              },
+              '400': { description: 'Missing id parameter', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/commissions': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List commission entries',
+            description: 'Returns commission entries with affiliate and offer details. Sorted by most recent first.',
+            operationId: 'adminCommissions',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'limit', in: 'query', schema: { type: 'integer', default: 50, maximum: 500 }, description: 'Max results (1-500)' },
+            ],
+            responses: {
+              '200': {
+                description: 'List of commissions',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Commission' } } },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/payments': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List payments',
+            description: 'Returns payment records from Tripay. Sorted by most recent first.',
+            operationId: 'adminPayments',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'limit', in: 'query', schema: { type: 'integer', default: 50, maximum: 500 }, description: 'Max results (1-500)' },
+            ],
+            responses: {
+              '200': {
+                description: 'List of payments',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Payment' } } },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/campaigns': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List campaigns',
+            description: 'Returns affiliate campaigns with click, conversion, and revenue stats. Aggregated from clicks and conversion_logs tables.',
+            operationId: 'adminCampaigns',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'limit', in: 'query', schema: { type: 'integer', default: 50, maximum: 500 }, description: 'Max results (1-500)' },
+            ],
+            responses: {
+              '200': {
+                description: 'List of campaigns',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Campaign' } } },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/users': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List users',
+            description: 'Returns the 100 most recently registered users from the shared MySQL users table.',
+            operationId: 'adminUsers',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            responses: {
+              '200': {
+                description: 'List of users',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: { data: { type: 'array', items: { $ref: '#/components/schemas/User' } } },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/content/status': {
+          get: {
+            tags: ['Content'],
+            summary: 'Content generation status',
+            description: 'Public endpoint — no auth required. Returns whether Gemini content generation is enabled and which tools are available.',
+            operationId: 'contentStatus',
+            responses: {
+              '200': {
+                description: 'Content generation status',
+                content: {
+                  'application/json': {
+                    schema: { $ref: '#/components/schemas/ContentStatusResponse' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        '/api/content/banner': {
+          post: {
+            tags: ['Content'],
+            summary: 'Generate banner concepts',
+            description: 'Generate affiliate marketing banner concepts using Gemini AI. Returns headline, palette, layout, CTA, and font mood for each variation.',
+            operationId: 'contentBanner',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/BannerRequest' } } },
+            },
+            responses: {
+              '200': { description: 'Banner concepts generated', content: { 'application/json': { schema: { $ref: '#/components/schemas/BannerResponse' } } } },
+              '400': { description: 'product field required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Gemini API error or circuit breaker open', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/content/carousel': {
+          post: {
+            tags: ['Content'],
+            summary: 'Generate carousel slides',
+            description: 'Generate an Instagram-style carousel using Gemini AI. Produces hook, value slides, and CTA with visual suggestions.',
+            operationId: 'contentCarousel',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/CarouselRequest' } } },
+            },
+            responses: {
+              '200': { description: 'Carousel generated', content: { 'application/json': { schema: { $ref: '#/components/schemas/CarouselResponse' } } } },
+              '400': { description: 'topic field required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Gemini API error or circuit breaker open', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/content/caption': {
+          post: {
+            tags: ['Content'],
+            summary: 'Generate social media caption',
+            description: 'Generate a social media caption with hashtags and 3 alternative hooks using Gemini AI.',
+            operationId: 'contentCaption',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/CaptionRequest' } } },
+            },
+            responses: {
+              '200': { description: 'Caption generated', content: { 'application/json': { schema: { $ref: '#/components/schemas/CaptionResponse' } } } },
+              '400': { description: 'product field required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Gemini API error or circuit breaker open', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/content/brand-kit': {
+          post: {
+            tags: ['Content'],
+            summary: 'Generate brand kit',
+            description: 'Generate a starter brand kit with palette, fonts, voice guidelines, logo concept, and taglines using Gemini AI.',
+            operationId: 'contentBrandKit',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/BrandKitRequest' } } },
+            },
+            responses: {
+              '200': { description: 'Brand kit generated', content: { 'application/json': { schema: { $ref: '#/components/schemas/BrandKitResponse' } } } },
+              '400': { description: 'brand_name field required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Gemini API error or circuit breaker open', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/content/ab-test': {
+          post: {
+            tags: ['Content'],
+            summary: 'Generate A/B test variants',
+            description: 'Generate 3 distinct landing page A/B test variants with predicted CTR and reasoning using Gemini AI.',
+            operationId: 'contentABTest',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/ABTestRequest' } } },
+            },
+            responses: {
+              '200': { description: 'A/B test variants generated', content: { 'application/json': { schema: { $ref: '#/components/schemas/ABTestResponse' } } } },
+              '400': { description: 'product field required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Gemini API error or circuit breaker open', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/content/bg-remove': {
+          post: {
+            tags: ['Content'],
+            summary: 'Generate background-removal prompt',
+            description: 'Generate an optimized prompt for AI-based background removal. Actual removal happens client-side; this endpoint provides the prompt and settings for the client to use.',
+            operationId: 'contentBgRemove',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/BgRemoveRequest' } } },
+            },
+            responses: {
+              '200': { description: 'BG removal prompt generated', content: { 'application/json': { schema: { $ref: '#/components/schemas/BgRemoveResponse' } } } },
+              '400': { description: 'image_subject field required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Gemini API error or circuit breaker open', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/payment/create': {
+          post: {
+            tags: ['Payment'],
+            summary: 'Create a payment transaction',
+            description: 'Create a Tripay payment transaction. Requires JWT authentication. Returns payment reference, amount, and checkout URL.',
+            operationId: 'paymentCreate',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentCreateRequest' } } },
+            },
+            responses: {
+              '200': { description: 'Payment transaction created', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentCreateResponse' } } } },
+              '400': { description: 'Amount and payment method required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Tripay API error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/payment/callback': {
+          post: {
+            tags: ['Payment'],
+            summary: 'Tripay payment callback',
+            description: 'Webhook called by Tripay when payment status changes. Authenticates via HMAC signature, not JWT. On PAID status, upgrades the affiliate to premium tier.',
+            operationId: 'paymentCallback',
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentCallbackRequest' } } },
+            },
+            responses: {
+              '200': {
+                description: 'Callback processed',
+                content: {
+                  'application/json': {
+                    schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      tags: [
+        { name: 'Health', description: 'Service health check' },
+        { name: 'Authentication', description: 'Login and user profile' },
+        { name: 'Admin', description: 'Admin-only endpoints — require JWT Bearer + admin role, or X-API-Key' },
+        { name: 'Content', description: '6 Gemini-powered content generation tools for affiliate marketing' },
+        { name: 'Payment', description: 'Tripay payment integration for affiliate subscriptions' },
+      ],
+    };
+
+    SwaggerUIBundle({
+      spec: spec,
+      dom_id: '#swagger-ui',
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIBundle.SwaggerUIStandalonePreset,
+      ],
+      layout: 'BaseLayout',
+      deepLinking: true,
+      syntaxHighlight: { activate: true, theme: 'agate' },
+    });
+  </script>
+</body>
+</html>

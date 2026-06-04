@@ -1,0 +1,17 @@
+{
+  "mcp": {
+    "1ai-affiliate-hub": {
+      "command": "python3",
+      "args": ["mcp/unified_hub.py"],
+      "cwd": "/home/openclaw/projects/1ai-affiliate",
+      "env": {
+        "ADS_URL": "http://localhost:5000",
+        "SOCIAL_URL": "http://localhost:8200",
+        "CONTENT_URL": "http://localhost:3000",
+        "EBOOK_URL": "http://localhost:8100",
+        "TRACKING_URL": "http://localhost"
+      },
+      "description": "1ai-Affiliate Unified Hub — one MCP gateway for ads, social, content, ebook, and CPA tracking"
+    }
+  }
+}

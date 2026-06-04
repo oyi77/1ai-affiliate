@@ -1,0 +1,10 @@
+{
+  "active": true,
+  "started_at": "2026-06-02T12:52:15.560Z",
+  "original_prompt": "do anything needed for me, and make sure to test it end to end",
+  "session_id": "f251d0f4-91ae-4d86-8bf8-60b201fa2b72",
+  "project_path": "/home/openclaw/projects/1ai-affiliate/server",
+  "reinforcement_count": 0,
+  "awaiting_confirmation": true,
+  "last_checked_at": "2026-06-02T12:52:15.560Z"
+}

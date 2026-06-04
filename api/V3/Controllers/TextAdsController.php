@@ -8,7 +8,7 @@ use Api\V3\Controller;
 
 class TextAdsController extends Controller
 {
-    protected function tableName(): string { return '202_text_ads'; }
+    protected function tableName(): string { return 'text_ads'; }
     protected function primaryKey(): string { return 'text_ad_id'; }
     protected function deletedColumn(): ?string { return 'text_ad_deleted'; }
 

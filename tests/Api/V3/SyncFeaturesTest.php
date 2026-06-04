@@ -180,7 +180,7 @@ final class SyncFeaturesTest extends TestCase
     public function testCapabilitiesEndpointExposesSyncFeatures(): void
     {
         $db = $this->createMysqliMock([
-            'SELECT version FROM 202_version' => ['version' => '1.2.3'],
+            'SELECT version FROM version' => ['version' => '1.2.3'],
             'CONVERT_TZ' => ['tz' => '2000-01-01 00:00:00'],
         ]);
 
@@ -195,11 +195,11 @@ final class SyncFeaturesTest extends TestCase
 
     public function testCapabilitiesExposesConfiguredMaxBulkRows(): void
     {
-        putenv('P202_MAX_BULK_ROWS=123');
+        putenv('P1AI_MAX_BULK_ROWS=123');
 
         try {
             $db = $this->createMysqliMock([
-                'SELECT version FROM 202_version' => ['version' => '1.2.3'],
+                'SELECT version FROM version' => ['version' => '1.2.3'],
                 'CONVERT_TZ' => ['tz' => '2000-01-01 00:00:00'],
             ]);
 
@@ -207,7 +207,7 @@ final class SyncFeaturesTest extends TestCase
             $result = $controller->capabilities();
             $this->assertSame(123, $result['data']['limits']['max_bulk_rows']);
         } finally {
-            putenv('P202_MAX_BULK_ROWS');
+            putenv('P1AI_MAX_BULK_ROWS');
         }
     }
 
@@ -257,7 +257,7 @@ final class SyncFeaturesTest extends TestCase
 
     public function testWorkerProgressUnderQueuedLoad(): void
     {
-        putenv('P202_MAX_QUEUED_PER_PAIR=1000');
+        putenv('P1AI_MAX_QUEUED_PER_PAIR=1000');
         try {
             $db = $this->createMysqliMock();
             $store = new ServerStateStore($this->tmpDir);
@@ -286,7 +286,7 @@ final class SyncFeaturesTest extends TestCase
             $this->assertGreaterThanOrEqual($jobCount, $totalProcessed);
             $this->assertSame($jobCount, $succeeded);
         } finally {
-            putenv('P202_MAX_QUEUED_PER_PAIR');
+            putenv('P1AI_MAX_QUEUED_PER_PAIR');
         }
     }
 
@@ -329,7 +329,7 @@ final class SyncFeaturesTest extends TestCase
 
     public function testCreateJobRespectsPerPairQueueLimit(): void
     {
-        putenv('P202_MAX_QUEUED_PER_PAIR=1');
+        putenv('P1AI_MAX_QUEUED_PER_PAIR=1');
         try {
             $db = $this->createMysqliMock();
             $store = new ServerStateStore($this->tmpDir);
@@ -349,7 +349,7 @@ final class SyncFeaturesTest extends TestCase
                 'entity' => 'campaigns',
             ]);
         } finally {
-            putenv('P202_MAX_QUEUED_PER_PAIR');
+            putenv('P1AI_MAX_QUEUED_PER_PAIR');
         }
     }
 

@@ -24,7 +24,7 @@ final class MysqlClickRepositoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->source = file_get_contents(__DIR__ . '/../../202-config/Click/MysqlClickRepository.php');
+        $this->source = file_get_contents(__DIR__ . '/../../config/Click/MysqlClickRepository.php');
         self::assertNotFalse($this->source);
     }
 
@@ -44,15 +44,15 @@ final class MysqlClickRepositoryTest extends TestCase
     public function testRecordClickWritesToAllNineTables(): void
     {
         $expectedTables = [
-            '202_clicks_counter' => 'click ID allocation',
-            '202_clicks SET' => 'core click data',
-            '202_clicks_variable' => 'variable set associations',
-            '202_google' => 'UTM and gclid data',
-            '202_clicks_spy' => 'denormalized reporting copy',
-            '202_clicks_advance' => 'geo/device/keyword data',
-            '202_clicks_tracking' => 'C1-C4 tracking params',
-            '202_clicks_record' => 'public ID and cloaking state',
-            '202_clicks_site' => 'URL references',
+            'clicks_counter' => 'click ID allocation',
+            'clicks SET' => 'core click data',
+            'clicks_variable' => 'variable set associations',
+            'google' => 'UTM and gclid data',
+            'clicks_spy' => 'denormalized reporting copy',
+            'clicks_advance' => 'geo/device/keyword data',
+            'clicks_tracking' => 'C1-C4 tracking params',
+            'clicks_record' => 'public ID and cloaking state',
+            'clicks_site' => 'URL references',
         ];
 
         foreach ($expectedTables as $table => $description) {
@@ -68,75 +68,75 @@ final class MysqlClickRepositoryTest extends TestCase
 
     public function testCoreClicksBindParamTypes(): void
     {
-        // 202_clicks: clickId(i), userId(i), affCampaignId(i), landingPageId(i),
+        // clicks: clickId(i), userId(i), affCampaignId(i), landingPageId(i),
         //             ppcAccountId(i), clickCpc(s), clickPayout(s),
         //             clickFiltered(i), clickBot(i), clickAlp(i), clickTime(i)
         self::assertStringContainsString(
             "'iiiiissiiii'",
             $this->source,
-            '202_clicks bind types must be iiiiissiiii (11 params)'
+            'clicks bind types must be iiiiissiiii (11 params)'
         );
     }
 
     public function testGoogleTableBindParamTypes(): void
     {
-        // 202_google: clickId(i), gclid(s), utm_source_id(i), utm_medium_id(i),
+        // google: clickId(i), gclid(s), utm_source_id(i), utm_medium_id(i),
         //             utm_campaign_id(i), utm_term_id(i), utm_content_id(i)
         self::assertStringContainsString(
             "'isiiiii'",
             $this->source,
-            '202_google bind types must be isiiiii (7 params)'
+            'google bind types must be isiiiii (7 params)'
         );
     }
 
     public function testAdvanceTableBindParamTypes(): void
     {
-        // 202_clicks_advance: clickId(i), textAdId(i), keywordId(i), ipId(i),
+        // clicks_advance: clickId(i), textAdId(i), keywordId(i), ipId(i),
         //                     countryId(i), regionId(i), ispId(i), cityId(i),
         //                     platformId(i), browserId(i), deviceId(i)
         self::assertStringContainsString(
             "'iiiiiiiiiii'",
             $this->source,
-            '202_clicks_advance bind types must be iiiiiiiiiii (11 params)'
+            'clicks_advance bind types must be iiiiiiiiiii (11 params)'
         );
     }
 
     public function testTrackingTableBindParamTypes(): void
     {
-        // 202_clicks_tracking: clickId(i), c1Id(i), c2Id(i), c3Id(i), c4Id(i)
+        // clicks_tracking: clickId(i), c1Id(i), c2Id(i), c3Id(i), c4Id(i)
         // Count i's: should be 5
-        preg_match_all("/202_clicks_tracking.*?bind\(\\\$stmt,\s*'(i+)'/s", $this->source, $matches);
-        self::assertNotEmpty($matches[1], 'Must find bind types for 202_clicks_tracking');
-        self::assertSame(5, strlen($matches[1][0]), '202_clicks_tracking must bind 5 integers');
+        preg_match_all("/clicks_tracking.*?bind\(\\\$stmt,\s*'(i+)'/s", $this->source, $matches);
+        self::assertNotEmpty($matches[1], 'Must find bind types for clicks_tracking');
+        self::assertSame(5, strlen($matches[1][0]), 'clicks_tracking must bind 5 integers');
     }
 
     public function testRecordTableBindParamTypes(): void
     {
-        // 202_clicks_record: clickId(i), clickIdPublic(s), clickCloaking(i),
+        // clicks_record: clickId(i), clickIdPublic(s), clickCloaking(i),
         //                    clickIn(i), clickOut(i)
         self::assertStringContainsString(
             "'isiii'",
             $this->source,
-            '202_clicks_record bind types must be isiii (5 params)'
+            'clicks_record bind types must be isiii (5 params)'
         );
     }
 
     public function testSiteTableBindParamTypes(): void
     {
-        // 202_clicks_site: clickId(i), referer(i), landing(i), outbound(i),
+        // clicks_site: clickId(i), referer(i), landing(i), outbound(i),
         //                  cloaking(i), redirect(i)
         // Should be 6 i's
-        preg_match_all("/202_clicks_site.*?bind\(\\\$stmt,\s*'(i+)'/s", $this->source, $matches);
-        self::assertNotEmpty($matches[1], 'Must find bind types for 202_clicks_site');
-        self::assertSame(6, strlen($matches[1][0]), '202_clicks_site must bind 6 integers');
+        preg_match_all("/clicks_site.*?bind\(\\\$stmt,\s*'(i+)'/s", $this->source, $matches);
+        self::assertNotEmpty($matches[1], 'Must find bind types for clicks_site');
+        self::assertSame(6, strlen($matches[1][0]), 'clicks_site must bind 6 integers');
     }
 
     public function testVariableTableBindParamTypes(): void
     {
-        // 202_clicks_variable: clickId(i), variableSetId(i)
-        preg_match_all("/202_clicks_variable.*?bind\(\\\$stmt,\s*'(i+)'/s", $this->source, $matches);
-        self::assertNotEmpty($matches[1], 'Must find bind types for 202_clicks_variable');
-        self::assertSame(2, strlen($matches[1][0]), '202_clicks_variable must bind 2 integers');
+        // clicks_variable: clickId(i), variableSetId(i)
+        preg_match_all("/clicks_variable.*?bind\(\\\$stmt,\s*'(i+)'/s", $this->source, $matches);
+        self::assertNotEmpty($matches[1], 'Must find bind types for clicks_variable');
+        self::assertSame(2, strlen($matches[1][0]), 'clicks_variable must bind 2 integers');
     }
 
     // --- Spy table consistency ---
@@ -144,17 +144,17 @@ final class MysqlClickRepositoryTest extends TestCase
     public function testSpyTableUsesIdenticalInsertStructureAsClicksTable(): void
     {
         // Extract the column list between SET and the closing quote for each INSERT
-        preg_match("/INSERT INTO 202_clicks SET\s+(.+?)'/s", $this->source, $clicksMatch);
-        preg_match("/INSERT INTO 202_clicks_spy SET\s+(.+?)'/s", $this->source, $spyMatch);
+        preg_match("/INSERT INTO clicks SET\s+(.+?)'/s", $this->source, $clicksMatch);
+        preg_match("/INSERT INTO clicks_spy SET\s+(.+?)'/s", $this->source, $spyMatch);
 
-        self::assertNotEmpty($clicksMatch, 'Must find 202_clicks INSERT');
-        self::assertNotEmpty($spyMatch, 'Must find 202_clicks_spy INSERT');
+        self::assertNotEmpty($clicksMatch, 'Must find clicks INSERT');
+        self::assertNotEmpty($spyMatch, 'Must find clicks_spy INSERT');
 
         // Normalize whitespace and compare column lists
         $clicksCols = preg_replace('/\s+/', ' ', trim($clicksMatch[1]));
         $spyCols = preg_replace('/\s+/', ' ', trim($spyMatch[1]));
 
-        self::assertSame($clicksCols, $spyCols, '202_clicks and 202_clicks_spy must have identical column lists');
+        self::assertSame($clicksCols, $spyCols, 'clicks and clicks_spy must have identical column lists');
     }
 
     // --- Pre-allocated ID handling ---

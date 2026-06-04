@@ -29,7 +29,7 @@ final class DlTest extends TestCase
         // Set default server variables
         $_SERVER['HTTP_HOST'] = 'test.1ai-affiliate.com';
         $_SERVER['SERVER_NAME'] = 'test.1ai-affiliate.com';
-        $_SERVER['REQUEST_URI'] = '/tracking202/redirect/dl.php';
+        $_SERVER['REQUEST_URI'] = '/tracking_support/redirect/dl.php';
         $_SERVER['HTTP_X_FORWARDED_FOR'] = '127.0.0.1';
         
         // Create mocks
@@ -208,7 +208,7 @@ final class DlTest extends TestCase
             }
             
             // Database is working, fetch tracker
-            $tracker_sql = "SELECT * FROM 202_trackers WHERE tracker_id_public='" . $db->real_escape_string($t202id) . "'";
+            $tracker_sql = "SELECT * FROM trackers WHERE tracker_id_public='" . $db->real_escape_string($t202id) . "'";
             $tracker_result = $db->query($tracker_sql);
             $tracker_row = $tracker_result->fetch_assoc();
             

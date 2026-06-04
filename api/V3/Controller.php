@@ -51,7 +51,7 @@ abstract class Controller
 
     protected function maxBulkRows(): int
     {
-        $raw = getenv('P202_MAX_BULK_ROWS');
+        $raw = getenv('P1AI_MAX_BULK_ROWS');
         if (is_string($raw) && trim($raw) !== '') {
             $parsed = (int)$raw;
             if ($parsed > 0) {
@@ -700,13 +700,13 @@ abstract class Controller
     protected function changeEntityName(): ?string
     {
         $map = [
-            '202_aff_networks' => 'aff-networks',
-            '202_ppc_networks' => 'ppc-networks',
-            '202_ppc_accounts' => 'ppc-accounts',
-            '202_aff_campaigns' => 'campaigns',
-            '202_landing_pages' => 'landing-pages',
-            '202_text_ads' => 'text-ads',
-            '202_trackers' => 'trackers',
+            'aff_networks' => 'aff-networks',
+            'ppc_networks' => 'ppc-networks',
+            'ppc_accounts' => 'ppc-accounts',
+            'aff_campaigns' => 'campaigns',
+            'landing_pages' => 'landing-pages',
+            'text_ads' => 'text-ads',
+            'trackers' => 'trackers',
         ];
         return $map[$this->tableName()] ?? null;
     }

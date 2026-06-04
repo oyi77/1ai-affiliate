@@ -1,0 +1,324 @@
+<?php
+
+declare(strict_types=1);
+include_once(str_repeat("../", 1) . 'config/connect.php');
+include_once(str_repeat("../", 1) . 'config/functions-upgrade.php');
+include_once(str_repeat("../", 1) . 'config/class-dataengine.php');
+
+AUTH::require_user();
+
+ini_set('memory_limit', '-1');
+
+// Initialize state used by the upgrade flow and rendering below.
+$log = '';
+$error = false;
+$upgrade_done = false;
+
+function get_safe_upgrade_path(string $basePath, string $zipEntryName)
+{
+	$entry = str_replace('\\', '/', $zipEntryName);
+	$entry = ltrim($entry, '/');
+	$entry = rtrim($entry, '/');
+
+	if ($entry === '' || str_contains($entry, "\0")) {
+		return false;
+	}
+
+	$parts = explode('/', $entry);
+	foreach ($parts as $part) {
+		if ($part === '' || $part === '.' || $part === '..') {
+			return false;
+		}
+	}
+
+	return rtrim($basePath, '/') . '/' . implode('/', $parts);
+}
+
+$update_needed = false;
+$latest_version = $version;
+$download_link = '';
+$download_link_is_valid = false;
+
+$rss_xml = getUrl('https://my.tracking202.com/clickserver/currentversion/paid/', 'GET', 10);
+if ($rss_xml === '') {
+	$rss_xml = null;
+}
+
+if ($rss_xml !== null) {
+	$rss_feed = @simplexml_load_string($rss_xml);
+	if ($rss_feed !== false && isset($rss_feed->channel->item)) {
+		$item = $rss_feed->channel->item[0];
+		$latest_version = (string) $item->title;
+		if (!preg_match('/^\d+\.\d+\.\d+(\.\d+)?$/', $latest_version)) {
+			$update_needed = false;
+		} else {
+			$download_link = (string) $item->link;
+			$parsed_download_link = parse_url($download_link);
+			$download_link_is_valid =
+				is_array($parsed_download_link)
+				&& isset($parsed_download_link['scheme'], $parsed_download_link['host'])
+				&& strtolower($parsed_download_link['scheme']) === 'https'
+				&& strtolower($parsed_download_link['host']) === 'my.tracking202.com';
+			if (version_compare($version, $latest_version) < 0) {
+				$update_needed = true;
+			}
+		}
+	}
+}
+
+
+if (($_POST['start_upgrade'] ?? '') === '1') {
+
+	// validate token
+	if (!hash_equals((string) ($_SESSION['token'] ?? ''), (string) ($_POST['token'] ?? ''))) {
+		$log .= "You must use our forms to submit data.\n";
+		$error = true;
+	}
+
+	if (!$error && version_compare(1ai-affiliate::oneai_affiliate_version(), '1.9.3', '<')) {
+
+		$date = DateTime::createFromFormat('d-m-Y', $_POST['date_from'] ?? '');
+		if (!$date) {
+			$log .= "Select date for Data Engine!\n";
+			$error = true;
+		} else {
+			$time_from = strtotime($date->format("d-m-Y"));
+		}
+	} else {
+		$time_from = '';
+	}
+
+	//Do check for landing page upgrade to ssl 
+	$ssl_upgrade = '1'; //default to upgrade ssl
+
+	if (version_compare(1ai-affiliate::oneai_affiliate_version(), 1ai-affiliate_VERSION, '<')) {
+		if (isset($_POST['lp_ssl']) && $_POST['lp_ssl'] == 0) {
+			$ssl_upgrade = '0';  //set to no upgrade if users doesn't want it
+		}
+	}
+
+	if (!$error) {
+		$FilesUpdated = null;
+		if (empty($download_link_is_valid) || $download_link_is_valid !== true) {
+			$log .= "Invalid upgrade package URL. Operation aborted.\n";
+			$FilesUpdated = false;
+		}
+
+		if ($FilesUpdated !== false) {
+			$GetUpdate = @getData($download_link);
+			$log = "Downloading new update...\n";
+
+			if ($GetUpdate) {
+
+				if (temp_exists()) {
+					$log .= "Created /config/temp/ directory.\n";
+					$downloadUpdate = @file_put_contents(substr(__DIR__, 0, -12) . '/config/temp/oneai_affiliate_' . $latest_version . '.zip', $GetUpdate);
+					if ($downloadUpdate) {
+						$log .= "Update downloaded and saved!\n";
+
+						$zip = @zip_open(substr(__DIR__, 0, -12) . '/config/temp/oneai_affiliate_' . $latest_version . '.zip');
+
+						if ($zip) {
+							$log .= "\nUpdate process started...\n";
+							$log .= "\n-------------------------------------------------------------------------------------\n";
+							$basePath = rtrim(substr(__DIR__, 0, -12), '/');
+
+							while ($zip_entry = @zip_read($zip)) {
+								$thisFileName = zip_entry_name($zip_entry);
+								$safePath = get_safe_upgrade_path($basePath, $thisFileName);
+
+								if ($safePath === false) {
+									$log .= "Skipped unsafe path in archive: " . $thisFileName . "\n";
+									continue;
+								}
+
+								if (str_ends_with($thisFileName, '/')) {
+									if (is_dir($safePath)) {
+										$log .= "Directory: /" . $thisFileName . "......updated\n";
+									} else {
+										if (@mkdir($safePath, 0755, true)) {
+											$log .= "Directory: /" . $thisFileName . "......created\n";
+										} else {
+											$log .= "Can't create /" . $thisFileName . " directory - skipping\n";
+											continue;
+										}
+									}
+								} else {
+									$contents = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+
+									if (file_exists($safePath)) {
+										$status = "updated";
+									} else {
+										$status = "created";
+									}
+
+									$targetDir = dirname($safePath);
+									if (!is_dir($targetDir) && !@mkdir($targetDir, 0755, true)) {
+										$log .= "Can't create directory for file: " . $thisFileName . " - skipping this file\n";
+										continue;
+									}
+
+									if ($updateThis = @fopen($safePath, 'wb')) {
+										fwrite($updateThis, $contents);
+										fclose($updateThis);
+										unset($contents);
+
+										$log .= "File: " . $thisFileName . "......" . $status . "\n";
+									} else {
+										$log .= "Can't update file:" . $thisFileName . "! Operation aborted";
+									}
+								}
+								$FilesUpdated = true;
+							}
+							@zip_close($zip);
+						}
+					} else {
+						$log .= "Can't save new update! Operation aborted. Make sure PHP has write permissions!";
+						$FilesUpdated = false;
+					}
+				} else {
+					$log .= "Can't create /config/temp/ directory! Operation aborted.";
+					$FilesUpdated = false;
+				}
+			} else {
+				$log .= "Can't download new update from link: " . $download_link . " \nOperation aborted.";
+				$FilesUpdated = false;
+			}
+		}
+
+		if ($FilesUpdated == true) {
+			// Include functions.php for the clear_php_caches function
+			require_once(str_repeat("../", 1) . 'config/functions.php');
+			// Clear all PHP caches
+			clear_php_caches();
+			include_once(str_repeat("../", 1) . 'config/functions-upgrade.php');
+
+			$log .= "-------------------------------------------------------------------------------------\n";
+			$log .= "\nUpgrading database...\n";
+
+			if (UPGRADE::upgrade_databases($time_from) == true) {
+				$log .= "Upgrade done!\n";
+				$version = $latest_version;
+				$upgrade_done = true;
+			} else {
+				$log .= "Database upgrade failed! Please try again!\n";
+				$upgrade_done = false;
+			}
+		}
+	}
+}
+
+if ($update_needed == true) {
+	info_top();
+
+	if (!function_exists('zip_open')) {
+		_die("<h6>PHP Zip module missing</h6>
+			<small>In order to use 1-Click upgrade functions you must compile PHP with zip support by using the --enable-zip configure option. <a href=\"http://www.php.net/manual/en/book.zip.php\" target=\"_blank\">More info you can find here.</a></small>");
+	} ?>
+
+	<div class="main col-xs-7 install">
+		<center><img src="<?php echo get_absolute_url(); ?>img/oneai_affiliate.png"></center>
+		<h6>1-Click 1ai-Affiliate Upgrade</h6>
+		<small>A new 1ai-Affiliate version is available. You can auto upgrade your installation or do it manually, by downloading the latest version at <a href="https://my.tracking202.com/clickserver/download/latest/paid" target="_blank">1ai-Affiliate.com</a>. Version details are below.</small>
+		<br><br />
+		<div class="row" style="margin-bottom: 10px;">
+			<div class="col-xs-3"><span class="label label-default">Current version:</span></div>
+			<div class="col-xs-9"><span class="label label-primary"><?php echo $version; ?></span></div>
+		</div>
+		<div class="row">
+			<div class="col-xs-3"><span class="label label-default">Latest Version:</span></div>
+			<div class="col-xs-9"><span class="label label-primary"><?php echo $latest_version; ?></span></div>
+		</div>
+
+		<div class="row">
+			<div class="col-xs-12">
+				<br />
+				<small>Changelogs:</small>
+				<div class="panel-group" id="changelog_accordion" style="margin-top:10px;">
+					<?php $change_logs = changelog();
+					foreach ($change_logs as $logs) {
+						if ($logs['version'] >= $version) { ?>
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<a data-toggle="collapse" data-parent="#changelog_accordion" href="#release_<?php echo str_replace('.', '', $logs['version']); ?>">
+										<h4 class="panel-title">
+											v<?php echo $logs['version']; ?>
+										</h4>
+									</a>
+								</div>
+								<div id="release_<?php echo str_replace('.', '', $logs['version']); ?>" class="panel-collapse collapse">
+									<div class="panel-body">
+										<ul id="list">
+											<?php foreach ($logs['logs'] as $log) { ?>
+												<li>
+													<?php echo $log; ?>
+												</li>
+											<?php } ?>
+										</ul>
+									</div>
+								</div>
+							</div>
+					<?php }
+					} ?>
+				</div>
+			</div>
+		</div>
+
+		<?php if (($_POST['start_upgrade'] ?? '') === '1') { ?>
+			<br>
+			<textarea rows="8" class="form-control install_logs"><?php echo htmlspecialchars($log, ENT_QUOTES, 'UTF-8'); ?></textarea>
+		<?php }
+
+		if ($upgrade_done != true) { ?>
+			<br>
+			<form method="post" action="" class="form-inline">
+				<input type="hidden" name="start_upgrade" value="1" />
+				<input type="hidden" name="token" value="<?php echo htmlspecialchars((string) ($_SESSION['token'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
+				<?php if (version_compare(1ai-affiliate::oneai_affiliate_version(), '1.9.3', '<')) { ?>
+					<div class="form-group">
+						<label for="date_from">Choose a date from which to process clicks for new Data Engine:</label>
+						<input type="text" class="form-control input-sm" id="date_from" name="date_from" placeholder="dd-mm-yyyy">
+					</div>
+					<br></br>
+				<?php } ?>
+				<?php if (version_compare(1ai-affiliate::oneai_affiliate_version(), 1ai-affiliate_VERSION, '<')) { ?>
+					<div class="form-group">
+						Google Chrome 80+ requires all landing pages to be HTTPS, or your tracking won't work. Can 1ai-Affiliate automatically upgrade your old landing page URLs to HTTPS?<br />
+						<br></br>
+						<div class="form-group">
+							<label for="lp_ssl" class="radio-inline" style="line-height:1.3">
+								<input type="radio" name="lp_ssl" id="lp_ssl_yes" value="1" Checked> Yes
+							</label>
+						</div>
+						<div class="form-group">
+							<label for="lp_ssl_no" class="radio-inline" style="line-height:1.3">
+								<input type="radio" name="lp_ssl" id="lp_ssl_no" value="0"> No
+							</label>
+						</div>
+					</div>
+					<br></br>
+				<?php } ?>
+				<button class="btn btn-lg btn-p202 btn-block" type="submit">Upgrade 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
+			</form>
+			<br>
+			<span class="infotext"><i>We highly recommended you make a backup of your database, before upgrading.<br>
+					Also make sure PHP has write permissions.</i></span>
+		<?php } else {
+			unset($_SESSION['user_id']); ?>
+			<h6>Success!</h6>
+			<small>1ai-Affiliate has been upgraded! You can now <a href="<?php echo get_absolute_url(); ?>account/signout.php">Log In</a>.</small>
+
+		<?php } ?>
+	</div>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#date_from").datepicker({
+				dateFormat: 'dd-mm-yy'
+			});
+		});
+	</script>
+<?php info_bottom();
+} else {
+	_die("<h6>Already Upgraded</h6>
+			<small>Your 1ai-Affiliate version $version is already upgraded.</small> <a href='./'> Log In Again</a>");
+} ?>

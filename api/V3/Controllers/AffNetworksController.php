@@ -8,7 +8,7 @@ use Api\V3\Controller;
 
 class AffNetworksController extends Controller
 {
-    protected function tableName(): string { return '202_aff_networks'; }
+    protected function tableName(): string { return 'aff_networks'; }
     protected function primaryKey(): string { return 'aff_network_id'; }
     protected function deletedColumn(): ?string { return 'aff_network_deleted'; }
 

@@ -35,7 +35,7 @@ class AttributionController
 
         $whereClause = 'WHERE ' . implode(' AND ', $where);
         $sql = "SELECT model_id, user_id, model_name, model_slug, model_type, weighting_config, is_active, is_default, created_at, updated_at
-            FROM 202_attribution_models $whereClause ORDER BY model_id DESC LIMIT ? OFFSET ?";
+            FROM attribution_models $whereClause ORDER BY model_id DESC LIMIT ? OFFSET ?";
         $binds[] = $limit;
         $types .= 'i';
         $binds[] = $offset;
@@ -56,7 +56,7 @@ class AttributionController
 
     public function getModel(int $id): array
     {
-        $stmt = $this->prepare('SELECT model_id, user_id, model_name, model_slug, model_type, weighting_config, is_active, is_default, created_at, updated_at FROM 202_attribution_models WHERE model_id = ? AND user_id = ? LIMIT 1');
+        $stmt = $this->prepare('SELECT model_id, user_id, model_name, model_slug, model_type, weighting_config, is_active, is_default, created_at, updated_at FROM attribution_models WHERE model_id = ? AND user_id = ? LIMIT 1');
         $this->bind($stmt, 'ii', $id, $this->userId);
         $this->execute($stmt, 'Query failed');
         $row = $stmt->get_result()->fetch_assoc();
@@ -89,7 +89,7 @@ class AttributionController
         $isDefault = (int)($payload['is_default'] ?? 0);
         $now = time();
 
-        $stmt = $this->prepare('INSERT INTO 202_attribution_models (user_id, model_name, model_slug, model_type, weighting_config, is_active, is_default, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $this->prepare('INSERT INTO attribution_models (user_id, model_name, model_slug, model_type, weighting_config, is_active, is_default, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $this->bind($stmt, 'issssiiii', $this->userId, $name, $slug, $type, $config, $isActive, $isDefault, $now, $now);
         $this->execute($stmt, 'Create failed');
         $id = $stmt->insert_id;
@@ -139,7 +139,7 @@ class AttributionController
         $binds[] = $this->userId;
         $types .= 'i';
 
-        $stmt = $this->prepare('UPDATE 202_attribution_models SET ' . implode(', ', $sets) . ' WHERE model_id = ? AND user_id = ?');
+        $stmt = $this->prepare('UPDATE attribution_models SET ' . implode(', ', $sets) . ' WHERE model_id = ? AND user_id = ?');
         $this->bind($stmt, $types, ...$binds);
         $this->execute($stmt, 'Update failed');
         $stmt->close();
@@ -153,22 +153,22 @@ class AttributionController
 
         $this->db->begin_transaction();
         try {
-            $stmt = $this->prepare('DELETE FROM 202_attribution_touchpoints WHERE snapshot_id IN (SELECT snapshot_id FROM 202_attribution_snapshots WHERE model_id = ? AND user_id = ?)');
+            $stmt = $this->prepare('DELETE FROM attribution_touchpoints WHERE snapshot_id IN (SELECT snapshot_id FROM attribution_snapshots WHERE model_id = ? AND user_id = ?)');
             $this->bind($stmt, 'ii', $id, $this->userId);
             $this->execute($stmt, 'Delete touchpoints failed');
             $stmt->close();
 
-            $stmt = $this->prepare('DELETE FROM 202_attribution_snapshots WHERE model_id = ? AND user_id = ?');
+            $stmt = $this->prepare('DELETE FROM attribution_snapshots WHERE model_id = ? AND user_id = ?');
             $this->bind($stmt, 'ii', $id, $this->userId);
             $this->execute($stmt, 'Delete snapshots failed');
             $stmt->close();
 
-            $stmt = $this->prepare('DELETE FROM 202_attribution_exports WHERE model_id = ? AND user_id = ?');
+            $stmt = $this->prepare('DELETE FROM attribution_exports WHERE model_id = ? AND user_id = ?');
             $this->bind($stmt, 'ii', $id, $this->userId);
             $this->execute($stmt, 'Delete exports failed');
             $stmt->close();
 
-            $stmt = $this->prepare('DELETE FROM 202_attribution_models WHERE model_id = ? AND user_id = ?');
+            $stmt = $this->prepare('DELETE FROM attribution_models WHERE model_id = ? AND user_id = ?');
             $this->bind($stmt, 'ii', $id, $this->userId);
             $this->execute($stmt, 'Delete model failed');
             $stmt->close();
@@ -202,7 +202,7 @@ class AttributionController
         $whereClause = 'WHERE ' . implode(' AND ', $where);
 
         $sql = "SELECT snapshot_id, model_id, user_id, scope_type, scope_id, date_hour, attributed_revenue, attributed_cost
-            FROM 202_attribution_snapshots $whereClause ORDER BY date_hour DESC LIMIT ? OFFSET ?";
+            FROM attribution_snapshots $whereClause ORDER BY date_hour DESC LIMIT ? OFFSET ?";
         $binds[] = $limit;
         $types .= 'i';
         $binds[] = $offset;
@@ -226,7 +226,7 @@ class AttributionController
     {
         $this->getModel($modelId);
 
-        $stmt = $this->prepare('SELECT export_id, user_id, model_id, scope_type, scope_id, start_hour, end_hour, requested_format, status, queued_at, started_at, completed_at, file_path, webhook_url, created_at, updated_at FROM 202_attribution_exports WHERE model_id = ? AND user_id = ? ORDER BY export_id DESC');
+        $stmt = $this->prepare('SELECT export_id, user_id, model_id, scope_type, scope_id, start_hour, end_hour, requested_format, status, queued_at, started_at, completed_at, file_path, webhook_url, created_at, updated_at FROM attribution_exports WHERE model_id = ? AND user_id = ? ORDER BY export_id DESC');
         $this->bind($stmt, 'ii', $modelId, $this->userId);
         $this->execute($stmt, 'Exports query failed');
         $result = $stmt->get_result();
@@ -252,7 +252,7 @@ class AttributionController
         $now = time();
         $status = 'queued';
 
-        $stmt = $this->prepare('INSERT INTO 202_attribution_exports (user_id, model_id, scope_type, scope_id, start_hour, end_hour, requested_format, status, queued_at, created_at, updated_at, webhook_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $this->prepare('INSERT INTO attribution_exports (user_id, model_id, scope_type, scope_id, start_hour, end_hour, requested_format, status, queued_at, created_at, updated_at, webhook_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $this->bind($stmt, 'iisiiissiiis',
             $this->userId, $modelId, $scopeType, $scopeId, $startHour, $endHour, $format, $status, $now, $now, $now, $webhookUrl
         );
@@ -260,7 +260,7 @@ class AttributionController
         $exportId = $stmt->insert_id;
         $stmt->close();
 
-        $stmt = $this->prepare('SELECT export_id, user_id, model_id, scope_type, scope_id, start_hour, end_hour, requested_format, status, queued_at, created_at, updated_at, webhook_url FROM 202_attribution_exports WHERE export_id = ?');
+        $stmt = $this->prepare('SELECT export_id, user_id, model_id, scope_type, scope_id, start_hour, end_hour, requested_format, status, queued_at, created_at, updated_at, webhook_url FROM attribution_exports WHERE export_id = ?');
         $this->bind($stmt, 'i', $exportId);
         $this->execute($stmt, 'Query failed');
         $row = $stmt->get_result()->fetch_assoc();

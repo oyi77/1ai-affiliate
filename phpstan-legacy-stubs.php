@@ -25,8 +25,8 @@ if (!defined('MYSQL_PASS')) {
 if (!defined('MYSQL_DATABASE')) {
     define('MYSQL_DATABASE', '');
 }
-if (!defined('PROSPER202_VERSION')) {
-    define('PROSPER202_VERSION', '0.0.0');
+if (!defined('1ai-affiliate_VERSION')) {
+    define('1ai-affiliate_VERSION', '0.0.0');
 }
 if (!defined('TRACKING202_ADS_URL')) {
     define('TRACKING202_ADS_URL', '');

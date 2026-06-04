@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"TOKEN=$(curl -s -X POST https://tracking.aitradepulse.com/api/auth/login -H 'Content-Type: application/json' -d '{\\\"email\\\":\\\"openclaw\\\",\\\"password\\\":\\\"openclaw\\\"}' | python3 -c 'import js...",
+  "error": "Exit code 1",
+  "timestamp": "2026-06-04T18:36:17.411Z",
+  "retry_count": 2
+}

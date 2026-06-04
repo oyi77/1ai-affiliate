@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-include_once(__DIR__ . '/202-config/connect.php');
-include_once(__DIR__ . '/202-config/functions-tracking202.php');
+include_once(__DIR__ . '/config/connect.php');
+include_once(__DIR__ . '/config/functions-tracking202.php');
 
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
 	$strProtocol = 'https://';
@@ -10,14 +10,14 @@ if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
 }
 
 // Check if API key already exists in database
-$existing_key_check = $db->query("SELECT p202_customer_api_key FROM 202_users WHERE user_id='1' AND p202_customer_api_key IS NOT NULL AND p202_customer_api_key != ''");
+$existing_key_check = $db->query("SELECT pcustomer_api_key FROM users WHERE user_id='1' AND pcustomer_api_key IS NOT NULL AND pcustomer_api_key != ''");
 $has_existing_key = false;
 $existing_api_key = '';
 if ($existing_key_check && $existing_key_check->num_rows > 0) {
 	$existing_key = $existing_key_check->fetch_assoc();
-	if (!empty($existing_key['p202_customer_api_key'])) {
+	if (!empty($existing_key['pcustomer_api_key'])) {
 		$has_existing_key = true;
-		$existing_api_key = $existing_key['p202_customer_api_key'];
+		$existing_api_key = $existing_key['pcustomer_api_key'];
 		
 	}
 }
@@ -34,15 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['api_key'])) {
 		
 		if (isset($validation_data['msg']) && $validation_data['msg'] === 'Key valid') {
 			// Save the API key
-			$mysql['p202_customer_api_key'] = $db->real_escape_string($api_key);
+			$mysql['pcustomer_api_key'] = $db->real_escape_string($api_key);
 			
 			// Always update user_id=1 as that's what AUTH checks
 			$mysql['user_id'] = '1';
 			
 			// Check if user exists
-			$user_check = $db->query("SELECT user_id FROM 202_users WHERE user_id='1'");
+			$user_check = $db->query("SELECT user_id FROM users WHERE user_id='1'");
 			if ($user_check && $user_check->num_rows > 0) {
-				$db->query("UPDATE 202_users SET p202_customer_api_key = '".$mysql['p202_customer_api_key']."' WHERE user_id = '".$mysql['user_id']."'");
+				$db->query("UPDATE users SET pcustomer_api_key = '".$mysql['pcustomer_api_key']."' WHERE user_id = '".$mysql['user_id']."'");
 				$success = true;
 				// Set session variable to indicate valid key
 				$_SESSION['valid_key'] = true;
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['api_key'])) {
 info_top(); ?>
 	<div class="row" style="position:absolute;left:1em;">
 	<div class="main col-xs-4" style="left:5em;width:400px;box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.1), 0 10px 30px 0 rgba(0, 0, 0, 0.2);">
-	  <center><img src="202-img/oneai_affiliate.png"></center>
+	  <center><img src="img/oneai_affiliate.png"></center>
 	  
 	  <?php if ($success): ?>
 		<br><center><p>API Key Successfully Saved!</p></center><br>
@@ -69,7 +69,7 @@ info_top(); ?>
 		  <strong>Success!</strong> Your API key has been validated and saved to the database.
 		</div>
 		<br>
-		<a href="/202-login.php" class="btn btn-lg btn-p202 btn-block">Proceed to Login</a>
+		<a href="/login.php" class="btn btn-lg btn-p202 btn-block">Proceed to Login</a>
 		<br>
 		<small class="text-muted">Note: If you're redirected back here, use the bypass link on the warning message.</small>
 	  <?php else: ?>

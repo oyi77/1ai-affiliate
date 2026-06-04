@@ -30,7 +30,7 @@ final class AuthClassTest extends TestCase
         $_SERVER['HTTPS'] = 'on';
 
         // Include the auth functions
-        require_once __DIR__ . '/../../202-config/functions-auth.php';
+        require_once __DIR__ . '/../../config/functions-auth.php';
 
         // Reset the per-request session heartbeat guard so each test behaves
         // like a fresh request. logged_in() refreshes session_time at most once
@@ -224,11 +224,11 @@ final class AuthClassTest extends TestCase
             'user_id' => 42,
             'user_name' => 'testuser',
             'user_api_key' => 'test_api_key',
-            'user_stats202_app_key' => 'test_app_key',
+            'user_statsapp_key' => 'test_app_key',
             'user_timezone' => 'America/New_York',
             'user_mods_lb' => 1,
             'install_hash' => '',
-            'p202_customer_api_key' => 'customer_key',
+            'pcustomer_api_key' => 'customer_key',
         ];
 
         AUTH::begin_user_session($userRow);
@@ -237,7 +237,7 @@ final class AuthClassTest extends TestCase
         $this->assertSame(42, $_SESSION['user_id']);
         $this->assertSame(42, $_SESSION['user_own_id']);
         $this->assertSame('test_api_key', $_SESSION['user_api_key']);
-        $this->assertSame('test_app_key', $_SESSION['user_stats202_app_key']);
+        $this->assertSame('test_app_key', $_SESSION['user_statsapp_key']);
         $this->assertSame('America/New_York', $_SESSION['user_timezone']);
         $this->assertSame(1, $_SESSION['user_mods_lb']);
         $this->assertArrayHasKey('session_fingerprint', $_SESSION);
@@ -304,16 +304,16 @@ final class AuthClassTest extends TestCase
     public function testAuthenticateTrimsUsername(): void
     {
         $mockDb = $this->createMockDb([
-            '202_users' => [
+            'users' => [
                 'user_id' => 1,
                 'user_name' => 'testuser',
                 'user_pass' => password_hash('password', PASSWORD_DEFAULT),
                 'user_api_key' => null,
-                'user_stats202_app_key' => null,
+                'user_statsapp_key' => null,
                 'user_timezone' => 'UTC',
                 'user_mods_lb' => 0,
                 'install_hash' => '',
-                'p202_customer_api_key' => '',
+                'pcustomer_api_key' => '',
                 'pref_user_id' => 1,
             ],
         ]);

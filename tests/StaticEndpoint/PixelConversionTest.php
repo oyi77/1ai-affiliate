@@ -73,17 +73,17 @@ final class PixelConversionTest extends TestCase
         $daysago = time() - 2592000;
 
         // Simulate the query construction from px.php
-        $sql = "SELECT 202_clicks.click_id
-                FROM 202_clicks
-                LEFT JOIN 202_clicks_advance USING (click_id)
-                LEFT JOIN 202_ips USING (ip_id)
-                WHERE 202_ips.ip_address='" . addslashes($ipAddress) . "'
-                AND 202_clicks.user_id='" . addslashes($userId) . "'
-                AND 202_clicks.click_time >= '" . $daysago . "'
-                ORDER BY 202_clicks.click_id DESC
+        $sql = "SELECT clicks.click_id
+                FROM clicks
+                LEFT JOIN clicks_advance USING (click_id)
+                LEFT JOIN ips USING (ip_id)
+                WHERE ips.ip_address='" . addslashes($ipAddress) . "'
+                AND clicks.user_id='" . addslashes($userId) . "'
+                AND clicks.click_time >= '" . $daysago . "'
+                ORDER BY clicks.click_id DESC
                 LIMIT 1";
 
-        self::assertStringContainsString('202_ips.ip_address', $sql);
+        self::assertStringContainsString('ips.ip_address', $sql);
         self::assertStringContainsString('click_time >=', $sql);
         self::assertStringContainsString('ORDER BY', $sql);
         self::assertStringContainsString('LIMIT 1', $sql);

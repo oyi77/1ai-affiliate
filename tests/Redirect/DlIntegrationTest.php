@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  */
 class DlIntegrationTest extends TestCase
 {
-    private $baseUrl = 'http://localhost:8000/tracking202/redirect/dl.php';
+    private $baseUrl = 'http://localhost:8000/tracking_support/redirect/dl.php';
     
     /**
      * Test redirect with invalid tracker ID

@@ -41,7 +41,7 @@ class ConversionsController
 
         $whereClause = 'WHERE ' . implode(' AND ', $where) . ' AND cl.deleted = 0';
 
-        $countSql = "SELECT COUNT(*) as total FROM 202_conversion_logs cl $whereClause";
+        $countSql = "SELECT COUNT(*) as total FROM conversion_logs cl $whereClause";
         $stmt = $this->prepare($countSql);
         $this->bind($stmt, $types, ...$binds);
         $this->execute($stmt, 'Count query failed');
@@ -51,8 +51,8 @@ class ConversionsController
         $sql = "SELECT cl.conv_id, cl.click_id, cl.transaction_id, cl.campaign_id,
                 cl.click_payout, cl.user_id, cl.click_time, cl.conv_time, cl.deleted,
                 ac.aff_campaign_name
-            FROM 202_conversion_logs cl
-            LEFT JOIN 202_aff_campaigns ac ON cl.campaign_id = ac.aff_campaign_id
+            FROM conversion_logs cl
+            LEFT JOIN aff_campaigns ac ON cl.campaign_id = ac.aff_campaign_id
             $whereClause
             ORDER BY cl.conv_time DESC LIMIT ? OFFSET ?";
 
@@ -83,8 +83,8 @@ class ConversionsController
         $sql = "SELECT cl.conv_id, cl.click_id, cl.transaction_id, cl.campaign_id,
                 cl.click_payout, cl.user_id, cl.click_time, cl.conv_time, cl.deleted,
                 ac.aff_campaign_name
-            FROM 202_conversion_logs cl
-            LEFT JOIN 202_aff_campaigns ac ON cl.campaign_id = ac.aff_campaign_id
+            FROM conversion_logs cl
+            LEFT JOIN aff_campaigns ac ON cl.campaign_id = ac.aff_campaign_id
             WHERE cl.conv_id = ? AND cl.user_id = ? AND cl.deleted = 0 LIMIT 1";
 
         $stmt = $this->prepare($sql);
@@ -106,7 +106,7 @@ class ConversionsController
             throw new ValidationException('click_id is required', ['click_id' => 'Must be a positive integer']);
         }
 
-        $stmt = $this->prepare('SELECT click_id, aff_campaign_id, click_payout, click_time FROM 202_clicks WHERE click_id = ? AND user_id = ? LIMIT 1');
+        $stmt = $this->prepare('SELECT click_id, aff_campaign_id, click_payout, click_time FROM clicks WHERE click_id = ? AND user_id = ? LIMIT 1');
         $this->bind($stmt, 'ii', $clickId, $this->userId);
         $this->execute($stmt, 'Query failed');
         $click = $stmt->get_result()->fetch_assoc();
@@ -124,7 +124,7 @@ class ConversionsController
 
         $this->db->begin_transaction();
         try {
-            $sql = "INSERT INTO 202_conversion_logs
+            $sql = "INSERT INTO conversion_logs
                 (click_id, transaction_id, campaign_id, click_payout, user_id, click_time, conv_time, deleted)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 0)";
             $stmt = $this->prepare($sql);
@@ -134,7 +134,7 @@ class ConversionsController
             $convId = $stmt->insert_id;
             $stmt->close();
 
-            $stmt = $this->prepare('UPDATE 202_clicks SET click_lead = 1, click_payout = ? WHERE click_id = ? AND user_id = ?');
+            $stmt = $this->prepare('UPDATE clicks SET click_lead = 1, click_payout = ? WHERE click_id = ? AND user_id = ?');
             $this->bind($stmt, 'dii', $payout, $clickId, $this->userId);
             $this->execute($stmt, 'Failed to update click');
             $stmt->close();
@@ -151,7 +151,7 @@ class ConversionsController
     public function delete(int $id): void
     {
         $this->get($id);
-        $stmt = $this->prepare('UPDATE 202_conversion_logs SET deleted = 1 WHERE conv_id = ? AND user_id = ?');
+        $stmt = $this->prepare('UPDATE conversion_logs SET deleted = 1 WHERE conv_id = ? AND user_id = ?');
         $this->bind($stmt, 'ii', $id, $this->userId);
         $this->execute($stmt, 'Delete failed');
         $stmt->close();

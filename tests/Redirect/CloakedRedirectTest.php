@@ -10,8 +10,8 @@ use PHPUnit\Framework\TestCase;
  * Tests for cl.php cloaked redirect logic.
  *
  * cl.php handles the second hop for cloaked campaigns. It:
- * 1. Looks up click_id_public from 202_clicks_record
- * 2. Fetches redirect URL from 202_clicks_site → 202_site_urls
+ * 1. Looks up click_id_public from clicks_record
+ * 2. Fetches redirect URL from clicks_site → site_urls
  * 3. Renders HTML with meta refresh and form submission
  *
  * If this breaks, cloaked campaigns produce zero conversions.
@@ -82,19 +82,19 @@ final class CloakedRedirectTest extends TestCase
         $trackerRow = false;
 
         if (!$trackerRow) {
-            $actionUrl = '/202-404.php';
-            $redirectUrl = '/202-404.php';
+            $actionUrl = '/404.php';
+            $redirectUrl = '/404.php';
             $referrer = '';
             $campaignName = '';
         } else {
-            $actionUrl = '/tracking202/redirect/cl2.php';
+            $actionUrl = '/tracking_support/redirect/cl2.php';
             $redirectUrl = $trackerRow['site_url_address'];
             $referrer = $trackerRow['user_pref_cloak_referer'] ?? '';
             $campaignName = $trackerRow['aff_campaign_name'] ?? '';
         }
 
-        self::assertSame('/202-404.php', $actionUrl);
-        self::assertSame('/202-404.php', $redirectUrl);
+        self::assertSame('/404.php', $actionUrl);
+        self::assertSame('/404.php', $redirectUrl);
         self::assertSame('', $referrer);
         self::assertSame('', $campaignName);
     }
@@ -107,12 +107,12 @@ final class CloakedRedirectTest extends TestCase
             'aff_campaign_name' => 'Test Campaign',
         ];
 
-        $actionUrl = '/tracking202/redirect/cl2.php';
+        $actionUrl = '/tracking_support/redirect/cl2.php';
         $redirectUrl = $trackerRow['site_url_address'];
         $referrer = $trackerRow['user_pref_cloak_referer'] ?? '';
         $campaignName = $trackerRow['aff_campaign_name'] ?? '';
 
-        self::assertSame('/tracking202/redirect/cl2.php', $actionUrl);
+        self::assertSame('/tracking_support/redirect/cl2.php', $actionUrl);
         self::assertSame('https://affiliate.com/offer?id=99', $redirectUrl);
         self::assertSame('no-referrer', $referrer);
         self::assertSame('Test Campaign', $campaignName);

@@ -3,7 +3,7 @@ declare(strict_types=1);
 function getStats($db, $variables): mixed {
 	$mysql['api_key'] = $db->real_escape_string($variables['apikey']);
 	$key_sql = "SELECT 	*
-				FROM   	`202_api_keys` 
+				FROM   	`api_keys` 
 				WHERE  	`api_key`='".$mysql['api_key']."'";
 	$key_result = _mysqli_query($db, $key_sql);
 	if ($key_result === false) {
@@ -15,7 +15,7 @@ function getStats($db, $variables): mixed {
 
 		$mysql['user_id'] = $db->real_escape_string($key_row['user_id']);
 		$user_sql = "SELECT 	`user_timezone`
-					FROM   	`202_users`
+					FROM   	`users`
 					WHERE  	`user_id`='".$mysql['user_id']."'";
 		$user_result = _mysqli_query($db, $user_sql);
 		if ($user_result === false) {
@@ -128,7 +128,7 @@ function getDataForWP($db, $user): array {
 	$campaigns = [];
 	$mysql['user_id'] = $db->real_escape_string($user);
 	
-	$sql = "SELECT landing_page_id_public, landing_page_nickname, landing_page_type, aff_campaign_id_public, aff_campaign_name FROM 202_landing_pages LEFT JOIN 202_aff_campaigns USING (aff_campaign_id) WHERE 202_landing_pages.user_id='".$mysql['user_id']."' AND landing_page_deleted='0'";
+	$sql = "SELECT landing_page_id_public, landing_page_nickname, landing_page_type, aff_campaign_id_public, aff_campaign_name FROM landing_pages LEFT JOIN aff_campaigns USING (aff_campaign_id) WHERE landing_pages.user_id='".$mysql['user_id']."' AND landing_page_deleted='0'";
 	$result = $db->query($sql);
 
 	while ($row = $result->fetch_assoc()) {
@@ -139,7 +139,7 @@ function getDataForWP($db, $user): array {
 		}
 	}
 
-	$sql = "SELECT aff_campaign_id_public, aff_campaign_name FROM `202_aff_campaigns` WHERE `user_id`='" . $mysql ['user_id'] . "' AND `aff_campaign_deleted`='0' ORDER BY `aff_campaign_name` ASC";
+	$sql = "SELECT aff_campaign_id_public, aff_campaign_name FROM `aff_campaigns` WHERE `user_id`='" . $mysql ['user_id'] . "' AND `aff_campaign_deleted`='0' ORDER BY `aff_campaign_name` ASC";
 	$result = $db->query($sql);
 	while ($row = $result->fetch_assoc()) {
 		$campaigns[] = $row;
@@ -165,7 +165,7 @@ function wpCreateLp($db, $user): array {
 		$mysql['landing_page_time'] = time();
 
 		if ($_GET['page_type'] == 'alp') {
-			$sql = "INSERT INTO `202_landing_pages` 
+			$sql = "INSERT INTO `landing_pages` 
 					SET 
 					aff_campaign_id = '0',
 					landing_page_nickname = '".$mysql['landing_page_nickname']."',
@@ -178,12 +178,12 @@ function wpCreateLp($db, $user): array {
 		} else if ($_GET['page_type'] == 'slp' && isset($_GET['slp_page_campaign'])) {
 			$mysql['aff_campaign_id_public'] = $db->real_escape_string((string)$_GET['slp_page_campaign']);
 
-			$sql = "SELECT aff_campaign_id FROM 202_aff_campaigns WHERE aff_campaign_id_public = '".$mysql['aff_campaign_id_public']."' AND user_id = '".$mysql['user_id']."'";
+			$sql = "SELECT aff_campaign_id FROM aff_campaigns WHERE aff_campaign_id_public = '".$mysql['aff_campaign_id_public']."' AND user_id = '".$mysql['user_id']."'";
 			$result = $db->query($sql);
 			
 			if ($result->num_rows > 0) {
 				$aff_campaign_id = $result->fetch_assoc();
-				$sql = "INSERT INTO `202_landing_pages` 
+				$sql = "INSERT INTO `landing_pages` 
 						SET 
 						aff_campaign_id = '".$aff_campaign_id['aff_campaign_id']."',
 						landing_page_nickname = '".$mysql['landing_page_nickname']."',
@@ -201,7 +201,7 @@ function wpCreateLp($db, $user): array {
 		}
 
 		$landing_page_id_public = random_int(1,9) . $insert_id . random_int(1,9);
-		$landing_page_sql = "UPDATE `202_landing_pages` SET `landing_page_id_public`='".$landing_page_id_public."' WHERE `landing_page_id`='".$insert_id."'";
+		$landing_page_sql = "UPDATE `landing_pages` SET `landing_page_id_public`='".$landing_page_id_public."' WHERE `landing_page_id`='".$insert_id."'";
 		$landing_page_result = $db->query($landing_page_sql);
 
 		if ($landing_page_result) {
@@ -228,7 +228,7 @@ function wpUpdateLp($db, $user): array {
 		$mysql['user_id'] = $db->real_escape_string($user);
 
 		if ($_GET['page_type'] == 'alp') {
-			$sql = "UPDATE `202_landing_pages` 
+			$sql = "UPDATE `landing_pages` 
 					SET 
 					aff_campaign_id = '0',
 					landing_page_nickname = '".$mysql['landing_page_nickname']."',
@@ -241,11 +241,11 @@ function wpUpdateLp($db, $user): array {
 		} else if ($_GET['page_type'] == 'slp' && isset($_GET['slp_page_campaign'])) {
 			$mysql['aff_campaign_id_public'] = $db->real_escape_string((string)$_GET['slp_page_campaign']);
 
-			$sql = "SELECT aff_campaign_id FROM 202_aff_campaigns WHERE aff_campaign_id_public = '".$mysql['aff_campaign_id_public']."' AND user_id = '".$mysql['user_id']."'";
+			$sql = "SELECT aff_campaign_id FROM aff_campaigns WHERE aff_campaign_id_public = '".$mysql['aff_campaign_id_public']."' AND user_id = '".$mysql['user_id']."'";
 			$result = $db->query($sql);
 			if ($result->num_rows > 0) {
 				$aff_campaign_id = $result->fetch_assoc();
-				$sql = "UPDATE `202_landing_pages` 
+				$sql = "UPDATE `landing_pages` 
 					SET 
 					aff_campaign_id = '".$aff_campaign_id['aff_campaign_id']."',
 					landing_page_nickname = '".$mysql['landing_page_nickname']."',
@@ -295,38 +295,38 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 	$mysql['c4'] = $db->real_escape_string($c4);
 
 	$report_sql = "SELECT *
-				FROM   	202_clicks AS 2c
-				LEFT OUTER JOIN 202_clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
+				FROM   	clicks AS 2c
+				LEFT OUTER JOIN clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
 
 				//If referers report type
 				if($type == "referers"){
 					$report_sql .= "
-						LEFT OUTER JOIN 202_clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
-						LEFT OUTER JOIN 202_site_urls AS 2su ON (2cs.click_referer_site_url_id = 2su.site_url_id)
-						LEFT OUTER JOIN 202_site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
+						LEFT OUTER JOIN clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
+						LEFT OUTER JOIN site_urls AS 2su ON (2cs.click_referer_site_url_id = 2su.site_url_id)
+						LEFT OUTER JOIN site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
 				//If landing pages report type
 				} elseif($type == "landing_pages") {
-					$report_sql .= " LEFT OUTER JOIN 202_clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
-									 LEFT OUTER JOIN 202_landing_pages AS 2lp ON (2lp.landing_page_id = 2c.landing_page_id)";
+					$report_sql .= " LEFT OUTER JOIN clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
+									 LEFT OUTER JOIN landing_pages AS 2lp ON (2lp.landing_page_id = 2c.landing_page_id)";
 				} else {
 					//If any other report type
 	if($type == 'wtkeywords')
-	$report_sql .= " LEFT OUTER JOIN 202_keywords AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
+	$report_sql .= " LEFT OUTER JOIN keywords AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 else
 					$report_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 				}
 
 				//If any of C1-C4 variables are set
 				if ($mysql['c1'] || $mysql['c2'] || $mysql['c3'] || $mysql['c4']) {
-					$report_sql .= "LEFT OUTER JOIN 202_clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
+					$report_sql .= "LEFT OUTER JOIN clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
 					
-					if($mysql['c1']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
+					if($mysql['c1']) { $report_sql .= "LEFT OUTER JOIN tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
 
-					if ($mysql['c2']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
+					if ($mysql['c2']) { $report_sql .= "LEFT OUTER JOIN tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
 
-					if ($mysql['c3']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
+					if ($mysql['c3']) { $report_sql .= "LEFT OUTER JOIN tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
 
-					if ($mysql['c4']) { $report_sql .= "LEFT OUTER JOIN 202_tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
+					if ($mysql['c4']) { $report_sql .= "LEFT OUTER JOIN tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
 				}
 
 				$report_sql .= " WHERE 2c.user_id='".$mysql['user_id']."' AND click_time > ".$mysql['date_from']." AND click_time < ".$mysql['date_to']."";
@@ -364,37 +364,37 @@ else
 							SUM(2c.click_lead) AS leads,
 							SUM(2c.click_payout*2c.click_lead) AS income
 					   FROM
-							202_clicks AS 2c
-					   LEFT OUTER JOIN 202_clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
+							clicks AS 2c
+					   LEFT OUTER JOIN clicks_advance AS 2ca ON (2ca.click_id = 2c.click_id)";
 
 					   //If referers report type
 					   if($type == "referers"){
 					   		$click_sql .= "
-					   		LEFT OUTER JOIN 202_clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
-							LEFT OUTER JOIN 202_site_urls AS 2su ON (2cs.click_referer_site_url_id=2su.site_url_id)
-							LEFT OUTER JOIN 202_site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
+					   		LEFT OUTER JOIN clicks_site AS 2cs ON (2cs.click_id = 2c.click_id)
+							LEFT OUTER JOIN site_urls AS 2su ON (2cs.click_referer_site_url_id=2su.site_url_id)
+							LEFT OUTER JOIN site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
 					   } else {
 				   		if($type == 'wtkeywords')
-$click_sql .= " LEFT OUTER JOIN 202_keywords AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
+$click_sql .= " LEFT OUTER JOIN keywords AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 	else
 $click_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 					   }
 
 					   //If any of C1-C4 variables are set
 						if ($mysql['c1'] || $mysql['c2'] || $mysql['c3'] || $mysql['c4']) {
-							$click_sql .= "LEFT OUTER JOIN 202_clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
+							$click_sql .= "LEFT OUTER JOIN clicks_tracking AS 2cv ON (2cv.click_id = 2c.click_id)";
 							
-							if($mysql['c1']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
+							if($mysql['c1']) { $click_sql .= "LEFT OUTER JOIN tracking_c1 AS 2c1 ON (2c1.c1_id = 2cv.c1_id)"; } 
 
-							if ($mysql['c2']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
+							if ($mysql['c2']) { $click_sql .= "LEFT OUTER JOIN tracking_c2 AS 2c2 ON (2c2.c2_id = 2cv.c2_id)"; } 
 
-							if ($mysql['c3']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
+							if ($mysql['c3']) { $click_sql .= "LEFT OUTER JOIN tracking_c3 AS 2c3 ON (2c3.c3_id = 2cv.c3_id)"; } 
 
-							if ($mysql['c4']) { $click_sql .= "LEFT OUTER JOIN 202_tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
+							if ($mysql['c4']) { $click_sql .= "LEFT OUTER JOIN tracking_c4 AS 2c4 ON (2c4.c4_id = 2cv.c4_id)"; }
 						}
 
 					   //If any other
-					   $click_sql .= " LEFT OUTER JOIN 202_clicks_record AS 2cr ON (2cr.click_id = 2c.click_id)
+					   $click_sql .= " LEFT OUTER JOIN clicks_record AS 2cr ON (2cr.click_id = 2c.click_id)
 					   				  WHERE 2c.user_id='".$mysql['user_id']."' AND click_time > '".$mysql['date_from']."' AND click_time < '".$mysql['date_to']."'";
 
 					   	//If C variables are set
@@ -566,7 +566,7 @@ function getCampaignID($db, $campaign, $user): bool {
 	$mysql['user_id'] = $db->real_escape_string($user);
 	$mysql['campaign_id'] = $db->real_escape_string($campaign);
 	$key_sql = "SELECT 	*
-				FROM   	`202_aff_campaigns` 
+				FROM   	`aff_campaigns` 
 				WHERE  	`user_id`='".$mysql['user_id']."' AND `aff_campaign_id`='".$mysql['campaign_id']."'";
 	$key_result = _mysqli_query($db, $key_sql);
 	$key_row = $key_result->fetch_assoc();

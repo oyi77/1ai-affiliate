@@ -44,8 +44,8 @@ final readonly class Auth
 
         $scopeColumnExists = self::apiKeyScopeColumnExists($db);
         $sql = $scopeColumnExists
-            ? 'SELECT user_id, scope FROM 202_api_keys WHERE api_key = ? LIMIT 1'
-            : 'SELECT user_id FROM 202_api_keys WHERE api_key = ? LIMIT 1';
+            ? 'SELECT user_id, scope FROM api_keys WHERE api_key = ? LIMIT 1'
+            : 'SELECT user_id FROM api_keys WHERE api_key = ? LIMIT 1';
         $stmt = $db->prepare($sql);
         if (!$stmt) {
             throw new AuthException('Authentication unavailable', 500);
@@ -76,8 +76,8 @@ final readonly class Auth
     {
         $roles = [];
         $stmt = $db->prepare(
-            'SELECT r.role_name FROM 202_user_role ur '
-            . 'INNER JOIN 202_roles r ON ur.role_id = r.role_id '
+            'SELECT r.role_name FROM user_role ur '
+            . 'INNER JOIN roles r ON ur.role_id = r.role_id '
             . 'WHERE ur.user_id = ?'
         );
         if (!$stmt) {
@@ -163,7 +163,7 @@ final readonly class Auth
 
     private static function apiKeyScopeColumnExists(\mysqli $db): bool
     {
-        $stmt = $db->prepare("SHOW COLUMNS FROM 202_api_keys LIKE 'scope'");
+        $stmt = $db->prepare("SHOW COLUMNS FROM api_keys LIKE 'scope'");
         if (!$stmt) {
             return false;
         }

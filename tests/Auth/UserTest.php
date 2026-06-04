@@ -20,8 +20,8 @@ final class UserTest extends TestCase
         $_SERVER['PHP_SELF'] = '/test.php';
 
         // Include the Role class first (User depends on it)
-        require_once __DIR__ . '/../../202-config/Role.class.php';
-        require_once __DIR__ . '/../../202-config/User.class.php';
+        require_once __DIR__ . '/../../config/Role.class.php';
+        require_once __DIR__ . '/../../config/User.class.php';
     }
 
     protected function tearDown(): void

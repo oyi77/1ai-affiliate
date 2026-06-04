@@ -15,11 +15,15 @@ app.use(morgan('dev'));
 // Static files — shared with PHP public dir
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API documentation
+app.get('/api-docs', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payment', require('./routes/payment'));
-app.use('/api/content', require('./routes/content'));
 app.use('/api/content', require('./routes/content'));
 
 // Health check

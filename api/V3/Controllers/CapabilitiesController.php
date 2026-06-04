@@ -46,8 +46,8 @@ class CapabilitiesController
                 ],
                 'server' => [
                     'build' => $this->resolveBuildVersion(),
-                    'commit' => defined('P202_GIT_COMMIT') ? (string)P202_GIT_COMMIT : 'unknown',
-                    'environment' => defined('P202_ENV') ? (string)P202_ENV : 'unknown',
+                    'commit' => defined('P1AI_GIT_COMMIT') ? (string)P1AI_GIT_COMMIT : 'unknown',
+                    'environment' => defined('P1AI_ENV') ? (string)P1AI_ENV : 'unknown',
                     'timezone_support' => $this->timezoneSupport(),
                 ],
             ],
@@ -78,7 +78,7 @@ class CapabilitiesController
 
     private function resolveBuildVersion(): string
     {
-        $result = $this->db->query('SELECT version FROM 202_version LIMIT 1');
+        $result = $this->db->query('SELECT version FROM version LIMIT 1');
         if ($result === false) {
             return 'unknown';
         }
@@ -111,7 +111,7 @@ class CapabilitiesController
 
     private function maxBulkRows(): int
     {
-        $raw = getenv('P202_MAX_BULK_ROWS');
+        $raw = getenv('P1AI_MAX_BULK_ROWS');
         if (is_string($raw) && trim($raw) !== '') {
             $parsed = (int)$raw;
             if ($parsed > 0) {
