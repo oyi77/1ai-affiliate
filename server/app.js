@@ -24,7 +24,7 @@ app.use('/api/content', require('./routes/content'));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: '1ai-affiliate-express', port: PORT });
+  res.json({ status: 'ok', service: '1ai-affiliate-tracker', port: PORT });
 });
 
 // SPA fallback — / serves admin SPA, /admin and /client alias
@@ -47,7 +47,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`1ai-Affiliate Express server on port ${PORT}`);
+  console.log(`1AI Affiliate Tracker server on port ${PORT}`);
   console.log(`Shared MySQL: ${process.env.DB_NAME || 'prosper202'}`);
 });
 

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>1AI Affiliate Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #131720;
+      --panel2: #1a1f2c;
+      --border: #232a3a;
+      --text: #e7eaf3;
+      --muted: #8b93a7;
+      --accent: #6366f1;
+      --accent2: #22d3ee;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+    html, body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+    .panel { background: var(--panel); border: 1px solid var(--border); }
+    .panel-2 { background: var(--panel2); border: 1px solid var(--border); }
+    .muted { color: var(--muted); }
+    .grad { background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%); }
+    .stat-card { transition: transform .15s ease, box-shadow .15s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,.15); }
+    .pill { padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+    .p-ok { background: rgba(16,185,129,.15); color: #34d399; }
+    .p-warn { background: rgba(245,158,11,.15); color: #fbbf24; }
+    .p-err { background: rgba(239,68,68,.15); color: #f87171; }
+    .p-info { background: rgba(99,102,241,.15); color: #a5b4fc; }
+    .nav-item { transition: background .12s ease, color .12s ease; }
+    .nav-item.active { background: var(--panel2); color: var(--text); }
+    .nav-item:hover { background: var(--panel2); }
+    .skeleton { background: linear-gradient(90deg, #1a1f2c 0%, #232a3a 50%, #1a1f2c 100%); background-size: 200% 100%; animation: sk 1.4s infinite; }
+    @keyframes sk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 0 rgba(16,185,129,.6); animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
+      70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    }
+    .num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #2a3142; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- LOGIN -->
+  <div id="login-view" class="min-h-screen grid place-items-center px-4">
+    <div class="w-full max-w-sm panel rounded-2xl p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl grad grid place-items-center text-white font-bold">1A</div>
+        <div>
+          <div class="font-bold text-lg">1AI Affiliate</div>
+          <div class="muted text-xs">Tracker</div>
+        </div>
+      </div>
+      <form id="login-form" class="space-y-3">
+        <div>
+          <label class="text-xs muted">Username</label>
+          <input id="login-user" type="text" autocomplete="username" required
+            class="w-full mt-1 panel-2 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="text-xs muted">Password</label>
+          <input id="login-pass" type="password" autocomplete="current-password" required
+            class="w-full mt-1 panel-2 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <button type="submit" class="w-full grad rounded-lg py-2.5 text-sm font-semibold text-white hover:opacity-95">
+          Sign in
+        </button>
+        <div id="login-err" class="text-xs text-red-400 hidden"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app-view" class="hidden min-h-screen">
+    <!-- mobile top bar -->
+    <header class="lg:hidden sticky top-0 z-30 panel border-b flex items-center justify-between px-4 h-14">
+      <button id="menu-btn" class="p-2 -ml-2" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg grad grid place-items-center text-white text-xs font-bold">1A</div>
+        <span class="font-semibold text-sm">1AI Affiliate</span>
+      </div>
+      <div class="w-9"></div>
+    </header>
+
+    <div class="flex">
+      <!-- sidebar -->
+      <aside id="sidebar" class="fixed lg:sticky top-0 lg:top-0 z-40 lg:z-auto h-screen w-64 panel border-r -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
+        <div class="p-4 flex items-center gap-3 border-b" style="border-color: var(--border);">
+          <div class="w-9 h-9 rounded-lg grad grid place-items-center text-white font-bold">1A</div>
+          <div>
+            <div class="font-semibold text-sm">1AI Affiliate</div>
+            <div class="muted text-[10px] uppercase tracking-wider">Tracker</div>
+          </div>
+        </div>
+        <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+          <a href="#" data-page="overview" class="nav-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            Overview
+          </a>
+          <a href="#" data-page="affiliates" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm14 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Affiliates
+          </a>
+          <a href="#" data-page="earnings" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Earnings
+          </a>
+          <a href="#" data-page="commissions" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 4 4 5-5"/></svg>
+            Commissions
+          </a>
+          <a href="#" data-page="payments" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            Payments
+          </a>
+          <a href="#" data-page="campaigns" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Campaigns
+          </a>
+          <a href="#" data-page="attribution" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Attribution
+          </a>
+          <a href="#" data-page="clicks" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+            Click Tracker
+          </a>
+          <a href="#" data-page="offers" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+            Offers
+          </a>
+          <a href="#" data-page="users" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/></svg>
+            Users
+          </a>
+          <a href="#" data-page="reports" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Reports
+          </a>
+          <a href="#" data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.361 2.329-1.361 2.754 0a1.474 1.474 0 002.087.905c1.262-.5 2.466.873 1.77 1.976a1.474 1.474 0 00.617 2.16c1.255.553 1.255 2.133 0 2.686a1.474 1.474 0 00-.617 2.16c.696 1.103-.508 2.476-1.77 1.976a1.474 1.474 0 00-2.087.905c-.425 1.361-2.328 1.361-2.754 0a1.474 1.474 0 00-2.087-.905c-1.262.5-2.466-.873-1.77-1.976a1.474 1.474 0 00-.617-2.16c-1.255-.553-1.255-2.133 0-2.686a1.474 1.474 0 00.617-2.16c-.696-1.103.508-2.476 1.77-1.976a1.474 1.474 0 002.087-.905z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </a>
+        </nav>
+        <div class="p-3 border-t" style="border-color: var(--border);">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="pulse-dot"></div>
+            <span class="muted text-xs">System healthy</span>
+          </div>
+          <div id="me" class="text-xs muted mb-2"></div>
+          <button id="logout" class="w-full text-xs px-3 py-2 rounded-lg panel-2 hover:bg-red-500/10 hover:text-red-400">
+            Sign out
+          </button>
+        </div>
+      </aside>
+
+      <!-- main -->
+      <main class="flex-1 min-w-0 p-4 lg:p-8 max-w-7xl">
+        <div id="page"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- mobile scrim -->
+  <div id="scrim" class="hidden lg:hidden fixed inset-0 z-30 bg-black/60"></div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>
