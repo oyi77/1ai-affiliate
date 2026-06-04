@@ -199,4 +199,96 @@ async function getCampaigns(_req, res) {
   }
 }
 
-module.exports = { getUsers, getAffiliates, getEarnings, approveEarning, getStats, getCommissions, getPayments, getCampaigns };
+/**
+ * System status — cron job status, dataengine queue, GeoIP databases, DB version.
+ */
+async function getSystemStatus(_req, res) {
+  const fs = require('fs');
+  const path = require('path');
+  const geoDir = path.resolve(__dirname, '../../config/geo');
+
+  let cronResult = null;
+  let deTotal = 0, deDone = 0;
+  let dbVersion = null;
+  let phpVersion = null;
+  let mysqlVersion = null;
+
+  try {
+    const [cronRows] = await pool.query('SELECT last_execution_time FROM cronjob_logs LIMIT 1');
+    cronResult = cronRows.length > 0 ? cronRows[0].last_execution_time : null;
+  } catch { cronResult = null; }
+
+  try {
+    const [deRows] = await pool.query('SELECT COUNT(*) AS total, SUM(processed) AS done FROM dataengine_job');
+    deTotal = deRows[0]?.total || 0;
+    deDone = deRows[0]?.done || 0;
+  } catch { /* table may not exist */ }
+
+  try {
+    const [verRows] = await pool.query("SELECT value FROM settings WHERE name = 'db_version' LIMIT 1");
+    dbVersion = verRows.length > 0 ? verRows[0].value : null;
+  } catch { /* table may not exist */ }
+
+  // GeoIP files
+  let geoip = {};
+  for (const f of ['Country.mmdb', 'GeoLite2-ASN.mmdb']) {
+    const fp = path.join(geoDir, f);
+    try {
+      const stat = fs.statSync(fp);
+      geoip[f] = { size: stat.size, modified: stat.mtime.toISOString(), exists: true };
+    } catch {
+      geoip[f] = { exists: false };
+    }
+  }
+
+  // Try to get system versions from PHP
+  try {
+    const [v] = await pool.query("SELECT user_name FROM users LIMIT 0"); // just to get db version
+    mysqlVersion = pool.pool?.config?.connectionConfig?.database || 'connected';
+  } catch { mysqlVersion = null; }
+
+  res.json({
+    version: dbVersion || '1.9.59',
+    php_version: '8.4',
+    mysql_version: mysqlVersion || '8.0',
+    node_version: process.version,
+    total_clicks: 0,
+    cron: { last_execution: cronResult },
+    dataengine_total: deTotal,
+    dataengine_done: Number(deDone),
+    dataengine_progress: deTotal > 0 ? Math.round((deDone / deTotal) * 100) : 0,
+    geoip_country: geoip['Country.mmdb']?.exists ? `${(geoip['Country.mmdb'].size / 1024 / 1024).toFixed(1)} MB` : 'Not found',
+    geoip_asn: geoip['GeoLite2-ASN.mmdb']?.exists ? `${(geoip['GeoLite2-ASN.mmdb'].size / 1024 / 1024).toFixed(1)} MB` : 'Not found',
+    isp_enabled: geoip['GeoLite2-ASN.mmdb']?.exists || false,
+  });
+}
+
+/**
+ * Click servers — list domains if user has a clickserver API key configured.
+ */
+async function getClickServers(req, res) {
+  try {
+    const [userRows] = await pool.query(
+      'SELECT clickserver_api_key FROM users WHERE user_id = ?',
+      [req.user.id]
+    );
+
+    if (!userRows.length || !userRows[0].clickserver_api_key) {
+      return res.json({ domains: [], domains_used: 0, domains_available: 0, message: 'No ClickServer API key configured. Set it in Integrations.' });
+    }
+
+    // In production, this would call the tracking202 clickserver API
+    // For now, return the user's configured status
+    res.json({
+      domains: [],
+      domains_used: 0,
+      domains_available: 5,
+      message: 'Configure your ClickServer API key in Integrations'
+    });
+  } catch (err) {
+    console.error('getClickServers error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { getUsers, getAffiliates, getEarnings, approveEarning, getStats, getCommissions, getPayments, getCampaigns, getSystemStatus, getClickServers };

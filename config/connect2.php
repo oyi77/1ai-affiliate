@@ -2273,9 +2273,12 @@ function getGeoData($ip)
         $ip_address = $ip->address ?? '';
     }
 
-    // Check if GeoIP2 Reader class exists
+    // Loyalsoldier/geoip — Country.mmdb (free, auto-updated weekly)
+    // https://github.com/Loyalsoldier/geoip
+    $country_db = CONFIG_PATH . '/geo/Country.mmdb';
+    $asn_db = CONFIG_PATH . '/geo/GeoLite2-ASN.mmdb';
+
     if (!class_exists(\GeoIp2\Database\Reader::class)) {
-        // Fallback to legacy method
         return [
             'country' => '',
             'country_code' => '',
@@ -2288,65 +2291,65 @@ function getGeoData($ip)
         ];
     }
 
-    $reader = new Reader(CONFIG_PATH . '/geo/GeoLite2-City.mmdb');
-    try {
-        $record = $reader->city($ip_address);
-        $country = $record->country->name;
-        $country_code = $record->country->isoCode;
-        $is_european_union = $record->country->isInEuropeanUnion;
-        $continent = $record->continent->name;
-        $city = $record->city->name;
-        $region = $record->mostSpecificSubdivision->name;
-        $region_code = $record->mostSpecificSubdivision->isoCode;
-        $postal = $record->postal->code;
-    } catch (\Exception) {
-        $record = '';
+    // Try Country.mmdb first (Loyalsoldier/geoip, free weekly updates)
+    if (file_exists($country_db)) {
+        try {
+            $reader = new Reader($country_db);
+            $record = $reader->country($ip_address);
+            $country = $record->country->name;
+            $country_code = $record->country->isoCode;
+            $is_european_union = $record->country->isInEuropeanUnion;
+            $continent = $record->continent->name;
+            $reader->close();
+        } catch (\Exception) {
+            $country = '';
+            $country_code = '';
+            $is_european_union = false;
+            $continent = '';
+        }
+    } else {
         $country = '';
         $country_code = '';
         $is_european_union = false;
         $continent = '';
-        $city = '';
-        $region = '';
-        $region_code = '';
-        $postal = '';
     }
 
-
-
-    if ($record != "null") {
-        if ($country == null) {
-            $country = "Unknown country";
-            $country_code = "non";
-        }
-
-        if ($is_european_union == null) {
-            $is_european_union = "Unknown";
-
-            //sometime continent is known as not Europe but EU status is still set as unknown
-            if ($continent != null && $continent != 'Europe') {
-                $is_european_union = false;
-            }
-        }
-
-        if ($continent == null) {
-            $continent = "Unknown continent";
-        }
-
-        if ($city == null) {
-            $city = "Unknown city";
-        }
-
-        if ($region == null) {
-            $region = "Unknown region";
-            $region_code = 'non';
-        }
-
-        if ($postal == null) {
-            $postal = "Unknown postal code";
+    // Try ASN database for ISP info
+    $isp = '';
+    if (file_exists($asn_db)) {
+        try {
+            $reader = new Reader($asn_db);
+            $record = $reader->asn($ip_address);
+            $isp = $record->autonomousSystemOrganization;
+            $reader->close();
+        } catch (\Exception) {
+            $isp = '';
         }
     }
 
-    $geoData = [
+    if ($country_code == null || $country_code == '') {
+        $country = 'Unknown country';
+        $country_code = 'non';
+    }
+
+    if ($is_european_union == null || $is_european_union === '') {
+        $is_european_union = false;
+        if ($continent != null && $continent != 'Europe') {
+            $is_european_union = false;
+        }
+    }
+
+    if ($continent == null || $continent == '') {
+        $continent = 'Unknown continent';
+    }
+
+    // City/region/postal unavailable in Country-level database — use sensible defaults
+    $city = 'Unknown city';
+    $region = 'Unknown region';
+    $region_code = 'non';
+    $postal = 'Unknown postal code';
+
+    return [
         'country' => $country,
         'country_code' => $country_code,
         'is_european_union' => $is_european_union,
@@ -2354,12 +2357,9 @@ function getGeoData($ip)
         'region' => $region,
         'region_code' => $region_code,
         'city' => $city,
-        'postal_code' => $postal
+        'postal_code' => $postal,
+        'isp' => $isp
     ];
-
-    $reader->close();
-
-    return $geoData;
 }
 
 function getIspData($ip)
@@ -2370,26 +2370,21 @@ function getIspData($ip)
         return "Unknown ISP/Carrier";
     }
 
-    // Try GeoIP2 ISP database (.mmdb) first
-    $mmdb_file = CONFIG_PATH . '/geo/GeoIP2-ISP.mmdb';
-    if (file_exists($mmdb_file)) {
-        try {
-            $reader = new Reader($mmdb_file);
-            $record = $reader->isp($ip_address);
-            $isp = $record->isp ?: ($record->organization ?: 'Unknown ISP/Carrier');
-            $reader->close();
-            return $isp;
-        } catch (\Exception) {
-            // Fall through to legacy .dat fallback
-        }
+    // Loyalsoldier/geoip ASN database (free, auto-updated weekly)
+    $asn_db = CONFIG_PATH . '/geo/GeoLite2-ASN.mmdb';
+    if (!class_exists(\GeoIp2\Database\Reader::class)) {
+        return "Unknown ISP/Carrier";
     }
 
-    // Legacy GeoIPISP.dat fallback via PHP geoip extension
-    $dat_file = CONFIG_PATH . '/geo/GeoIPISP.dat';
-    if (file_exists($dat_file) && function_exists('geoip_org_by_name')) {
-        $isp = @geoip_org_by_name($ip_address);
-        if ($isp) {
-            return $isp;
+    if (file_exists($asn_db)) {
+        try {
+            $reader = new Reader($asn_db);
+            $record = $reader->asn($ip_address);
+            $isp = $record->autonomousSystemOrganization;
+            $reader->close();
+            return $isp ?: 'Unknown ISP/Carrier';
+        } catch (\Exception) {
+            // Fall through
         }
     }
 

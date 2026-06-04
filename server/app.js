@@ -25,6 +25,11 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/content', require('./routes/content'));
+app.use('/api/geo', require('./routes/geoip'));
+app.use('/api/settings', require('./routes/settings'));
+app.use('/api/docs', require('./routes/docs'));
+app.use('/api/settings', require('./routes/settings'));
+app.use('/api/docs', require('./routes/docs'));
 
 // Health check
 app.get('/health', (req, res) => {

@@ -903,6 +903,78 @@
             summary: 'Tripay payment callback',
             description: 'Webhook called by Tripay when payment status changes. Authenticates via HMAC signature, not JWT. On PAID status, upgrades the affiliate to premium tier.',
             operationId: 'paymentCallback',
+          },
+        },
+        '/api/geo/{ip}': {
+          get: {
+            tags: ['GeoIP'],
+            summary: 'Look up IP geolocation',
+            description: 'Returns country, continent, and ISP data for an IPv4 address. Uses Loyalsoldier/geoip (free, weekly-updated). Requires JWT authentication.',
+            operationId: 'geoLookup',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              {
+                name: 'ip',
+                in: 'path',
+                required: true,
+                schema: { type: 'string', example: '8.8.8.8' },
+                description: 'IPv4 address to look up',
+              },
+            ],
+            responses: {
+              '200': {
+                description: 'GeoIP data for the IP address',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        ip: { type: 'string', example: '8.8.8.8' },
+                        country: { type: 'string', example: 'United States' },
+                        country_code: { type: 'string', example: 'US' },
+                        continent: { type: 'string', example: 'North America' },
+                        isp: { type: 'string', example: 'Google LLC' },
+                        asn_number: { type: 'integer', example: 15169 },
+                      },
+                    },
+                  },
+                },
+              },
+              '400': { description: 'Invalid IPv4 address', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Unauthorized — JWT required' },
+            },
+          },
+        },
+        '/api/geo/me/ip': {
+          get: {
+            tags: ['GeoIP'],
+            summary: 'Look up your own IP geolocation',
+            description: 'Returns country, continent, and ISP data for the requester\'s IP. Uses Loyalsoldier/geoip (free, weekly-updated). Requires JWT authentication.',
+            operationId: 'geoLookupMe',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': {
+                description: 'GeoIP data for the requester\'s IP',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        ip: { type: 'string', example: '203.0.113.50' },
+                        country: { type: 'string', example: 'Indonesia' },
+                        country_code: { type: 'string', example: 'ID' },
+                        continent: { type: 'string', example: 'Asia' },
+                        isp: { type: 'string', example: 'PT Telkom Indonesia' },
+                        asn_number: { type: 'integer', example: 7713 },
+                      },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Unauthorized — JWT required' },
+            },
+          },
+        },
             requestBody: {
               required: true,
               content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentCallbackRequest' } } },
@@ -924,6 +996,7 @@
         { name: 'Health', description: 'Service health check' },
         { name: 'Authentication', description: 'Login and user profile' },
         { name: 'Admin', description: 'Admin-only endpoints — require JWT Bearer + admin role, or X-API-Key' },
+        { name: 'GeoIP', description: 'IP geolocation lookup using Loyalsoldier/geoip (free, weekly-updated)' },
         { name: 'Content', description: '6 Gemini-powered content generation tools for affiliate marketing' },
         { name: 'Payment', description: 'Tripay payment integration for affiliate subscriptions' },
       ],

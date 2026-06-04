@@ -1,646 +1,612 @@
-/* 1AI Affiliate Tracker — Admin SPA
- * Vanilla JS, Tailwind CDN, fetch() to /api/admin + /api/auth + /api/payment.
- * Token in localStorage. Auto-redirect on 401.
- */
-const API = {
-  token: () => localStorage.getItem('1ai_token'),
-  set: (t) => localStorage.setItem('1ai_token', t),
-  clear: () => localStorage.removeItem('1ai_token'),
-  async req(path, opts = {}) {
-    const h = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
-    const t = API.token();
-    if (t) h['Authorization'] = `Bearer ${t}`;
-    const r = await fetch(path, { ...opts, headers: h });
-    if (r.status === 401) { API.clear(); showLogin(); throw new Error('Unauthorized'); }
-    return r;
-  },
-  get: (p) => API.req(p).then(r => r.json()),
-  post: (p, body) => API.req(p, { method: 'POST', body: JSON.stringify(body) }).then(r => r.json()),
-};
+// 1AI Affiliate Tracker — SPA
+const API = '';  // same origin
 
-const fmt = {
-  money: (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 0 }),
-  num: (n) => Number(n || 0).toLocaleString('id-ID'),
-  date: (ts) => ts ? new Date(ts * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—',
-  pct: (n) => (Number(n || 0) * 100).toFixed(1) + '%',
-};
+// ── Auth helpers ──
+function getToken() { return localStorage.getItem('1ai_token'); }
+function authHeaders() { return { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' }; }
 
-/* ──────────── AUTH ──────────── */
-function showLogin() {
-  document.getElementById('login-view').classList.remove('hidden');
-  document.getElementById('app-view').classList.add('hidden');
+// ── Navigation ──
+let currentPage = 'overview';
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  const titles = {
+    overview:'Overview', attribution:'Attribution', clicks:'Click Tracker', campaigns:'Campaigns',
+    offers:'Offers', reports:'Reports', affiliates:'Affiliates', earnings:'Earnings',
+    commissions:'Commissions', payments:'Payments', profile:'Profile & Settings',
+    integrations:'API Integrations', admin:'System Admin', clickservers:'Click Servers',
+    docs:'Documentation', help:'Help & Support', vipperks:'VIP Perks', users:'Users',
+    forgotpassword:'Forgot Password', resetpassword:'Reset Password'
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+  const el = document.getElementById('page-content');
+  const renderers = {
+    overview: renderOverview, attribution: renderAttribution, clicks: renderClicks,
+    campaigns: renderCampaigns, offers: renderOffers, reports: renderReports,
+    affiliates: renderAffiliates, earnings: renderEarnings, commissions: renderCommissions,
+    payments: renderPayments, profile: renderProfile, integrations: renderIntegrations,
+    admin: renderAdmin, clickservers: renderClickServers, docs: renderDocs,
+    help: renderHelp, vipperks: renderVipPerks, users: renderUsers
+  };
+  if (renderers[page]) { el.innerHTML = '<div class="skeleton" style="height:200px;margin-bottom:16px"></div><div class="skeleton" style="height:150px"></div>'; renderers[page](el); }
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('scrim').classList.remove('open');
 }
-function showApp() {
-  document.getElementById('login-view').classList.add('hidden');
-  document.getElementById('app-view').classList.remove('hidden');
-  document.getElementById('me').textContent = localStorage.getItem('1ai_user') || '';
-  loadPage('overview');
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('scrim').classList.toggle('open');
 }
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const errEl = document.getElementById('login-err');
-  errEl.classList.add('hidden');
+
+// ── Login / Auth flows ──
+async function doLogin() {
+  const user = document.getElementById('login-user').value;
+  const pass = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  err.style.display = 'none';
   try {
-    const r = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: document.getElementById('login-user').value,
-        password: document.getElementById('login-pass').value,
-      }),
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Login failed');
-    API.set(data.token);
-    localStorage.setItem('1ai_user', data.user?.username || data.user?.email || 'admin');
-    showApp();
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.remove('hidden');
-  }
-});
-document.getElementById('logout').addEventListener('click', () => {
-  API.clear();
-  localStorage.removeItem('1ai_user');
-  showLogin();
-});
+    const r = await fetch(API + '/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:user,password:pass}) });
+    const d = await r.json();
+    if (!r.ok) { err.textContent = d.error || 'Login failed'; err.style.display = 'block'; return; }
+    localStorage.setItem('1ai_token', d.token);
+    localStorage.setItem('1ai_user', d.user.email || d.user.id);
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('me').textContent = d.user.email || d.user.id;
+    navigate('overview');
+  } catch(e) { err.textContent = 'Network error'; err.style.display = 'block'; }
+}
+function doLogout() { localStorage.clear(); location.reload(); }
 
-/* ──────────── MOBILE NAV ──────────── */
-const sb = document.getElementById('sidebar');
-document.getElementById('menu-btn').addEventListener('click', () => {
-  sb.classList.toggle('-translate-x-full');
-  document.getElementById('scrim').classList.toggle('hidden');
-});
-document.getElementById('scrim').addEventListener('click', () => {
-  sb.classList.add('-translate-x-full');
-  document.getElementById('scrim').classList.add('hidden');
-});
+function showForgotPassword() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'block';
+  document.getElementById('reset-form').style.display = 'none';
+}
+function showLoginForm() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('forgot-form').style.display = 'none';
+  document.getElementById('reset-form').style.display = 'none';
+}
+function showResetForm(key) {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'none';
+  document.getElementById('reset-form').style.display = 'block';
+  if (key) document.getElementById('reset-key').value = key;
+}
 
-/* ──────────── ROUTER ──────────── */
-document.querySelectorAll('.nav-item').forEach(el => {
-  el.addEventListener('click', (e) => {
-    e.preventDefault();
-    const page = el.dataset.page;
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-    if (window.innerWidth < 1024) {
-      sb.classList.add('-translate-x-full');
-      document.getElementById('scrim').classList.add('hidden');
+async function doForgotPassword() {
+  const user = document.getElementById('forgot-user').value;
+  const email = document.getElementById('forgot-email').value;
+  const msg = document.getElementById('forgot-msg');
+  msg.style.display = 'none';
+  try {
+    const r = await fetch(API + '/api/auth/forgot-password', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:user,email}) });
+    const d = await r.json();
+    if (d.key) {
+      // Dev: auto-show reset form with key
+      showResetForm(d.key);
+    } else {
+      msg.textContent = d.message || d.error || 'Check your email for reset instructions.';
+      msg.style.display = 'block';
+      msg.style.color = d.error ? 'var(--red)' : 'var(--green)';
     }
-    loadPage(page);
-  });
-});
+  } catch(e) { msg.textContent = 'Network error'; msg.style.display = 'block'; }
+}
 
-async function loadPage(page) {
-  const target = document.getElementById('page');
-  target.innerHTML = '<div class="space-y-3"><div class="skeleton h-24 rounded-xl"></div><div class="skeleton h-32 rounded-xl"></div><div class="skeleton h-32 rounded-xl"></div></div>';
+async function doResetPassword() {
+  const key = document.getElementById('reset-key').value;
+  const pass = document.getElementById('reset-pass').value;
+  const msg = document.getElementById('reset-msg');
+  const success = document.getElementById('reset-success');
+  msg.style.display = 'none'; success.style.display = 'none';
   try {
-    if (page === 'overview') await renderOverview(target);
-    else if (page === 'affiliates') await renderAffiliates(target);
-    else if (page === 'earnings') await renderEarnings(target);
-    else if (page === 'commissions') await renderCommissions(target);
-    else if (page === 'payments') await renderPayments(target);
-    else if (page === 'campaigns') await renderCampaigns(target);
-    else if (page === 'attribution') await renderAttribution(target);
-    else if (page === 'clicks') await renderClicks(target);
-    else if (page === 'offers') await renderOffers(target);
-    else if (page === 'users') await renderUsers(target);
-    else if (page === 'reports') await renderReports(target);
-    else if (page === 'settings') await renderSettings(target);
-  } catch (err) {
-    target.innerHTML = `<div class="panel rounded-xl p-6 text-sm text-red-400">${err.message}</div>`;
+    const r = await fetch(API + '/api/auth/reset-password', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key,password:pass}) });
+    const d = await r.json();
+    if (!r.ok) { msg.textContent = d.error; msg.style.display = 'block'; return; }
+    success.textContent = d.message;
+    success.style.display = 'block';
+    setTimeout(() => showLoginForm(), 2000);
+  } catch(e) { msg.textContent = 'Network error'; msg.style.display = 'block'; }
+}
+
+// ── Auto-check token ──
+(function() {
+  const t = getToken();
+  if (t) {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('me').textContent = localStorage.getItem('1ai_user') || '';
+    navigate('overview');
   }
+})();
+
+// ── Page renderers ──
+
+async function renderOverview(el) {
+  try {
+    const [stats, affs, earns] = await Promise.all([
+      fetch(API+'/api/admin/stats', {headers:authHeaders()}).then(r=>r.json()),
+      fetch(API+'/api/admin/affiliates?limit=5', {headers:authHeaders()}).then(r=>r.json()),
+      fetch(API+'/api/admin/earnings?limit=5&status=pending', {headers:authHeaders()}).then(r=>r.json()),
+    ]);
+    el.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">Total Affiliates</div><div class="value">${stats.total_affiliates||0}</div></div>
+        <div class="stat-card"><div class="label">Active Clicks (24h)</div><div class="value">${stats.active_clicks_24h||0}</div></div>
+        <div class="stat-card"><div class="label">Pending Payout</div><div class="value">Rp ${(stats.pending_payout||0).toLocaleString()}</div></div>
+        <div class="stat-card"><div class="label">Revenue MTD</div><div class="value">Rp ${(stats.revenue_mtd||0).toLocaleString()}</div></div>
+      </div>
+      <div class="card"><h3>Top Affiliates</h3><div class="table-wrap"><table>
+        <tr><th>Name</th><th>Code</th><th>Earnings</th></tr>
+        ${(affs.data||[]).map(a=>`<tr><td>${a.username||a.user_email}</td><td>${a.affiliate_code}</td><td>Rp ${(a.total_earnings||0).toLocaleString()}</td></tr>`).join('')}
+      </table></div></div>
+      <div class="card"><h3>Pending Approvals</h3><div class="table-wrap"><table>
+        <tr><th>Affiliate</th><th>Amount</th><th>Date</th><th>Action</th></tr>
+        ${(earns.data||[]).map(e=>`<tr><td>${e.user_email||e.affiliate_id}</td><td>Rp ${(e.payout_amount||0).toLocaleString()}</td><td>${new Date(e.created_at).toLocaleDateString()}</td><td><button class="btn btn-sm btn-success" onclick="approveEarning(${e.id})">Approve</button></td></tr>`).join('')}
+      </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load overview data.</p></div>'; }
 }
 
-/* ──────────── COMPONENTS ──────────── */
-function statCard({ label, value, sub, accent = 'indigo' }) {
-  const accents = {
-    indigo: 'from-indigo-500/20 to-cyan-500/10',
-    green: 'from-emerald-500/20 to-teal-500/10',
-    yellow: 'from-amber-500/20 to-orange-500/10',
-    red: 'from-rose-500/20 to-pink-500/10',
-  };
-  return `
-    <div class="stat-card panel rounded-2xl p-5 relative overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br ${accents[accent] || accents.indigo} opacity-50"></div>
-      <div class="relative">
-        <div class="muted text-xs uppercase tracking-wider font-medium">${label}</div>
-        <div class="num text-3xl font-bold mt-2">${value}</div>
-        ${sub ? `<div class="muted text-xs mt-1">${sub}</div>` : ''}
+async function renderAffiliates(el) {
+  try {
+    const r = await fetch(API+'/api/admin/affiliates?limit=100', {headers:authHeaders()});
+    const d = await r.json();
+    el.innerHTML = `<div class="card"><div class="table-wrap"><table>
+      <tr><th>Name</th><th>Code</th><th>Tier</th><th>Clicks</th><th>Conversions</th><th>Earnings</th><th>Joined</th></tr>
+      ${(d.data||[]).map(a=>`<tr>
+        <td>${a.username||a.user_email}</td><td><code>${a.affiliate_code}</code></td>
+        <td><span class="pill pill-${{1:'indigo',2:'green',3:'yellow'}[a.tier]||'blue'}">${{1:'Starter',2:'Pro',3:'Premium'}[a.tier]||'Starter'}</span></td>
+        <td>${a.clicks||0}</td><td>${a.conversions||0}</td>
+        <td>Rp ${(a.total_earnings||0).toLocaleString()}</td>
+        <td>${a.joined_at?new Date(a.joined_at).toLocaleDateString():'-'}</td>
+      </tr>`).join('')}
+    </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load affiliates.</p></div>'; }
+}
+
+async function renderEarnings(el) {
+  try {
+    const r = await fetch(API+'/api/admin/earnings?limit=100', {headers:authHeaders()});
+    const d = await r.json();
+    const total = (d.data||[]).reduce((s,e)=>s+(e.payout_amount||0),0);
+    const pending = (d.data||[]).filter(e=>e.status==='pending').reduce((s,e)=>s+(e.payout_amount||0),0);
+    el.innerHTML = `<div class="stat-grid">
+      <div class="stat-card"><div class="label">Total Earnings</div><div class="value">Rp ${total.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="label">Pending</div><div class="value">Rp ${pending.toLocaleString()}</div></div>
+      <div class="stat-card"><div class="label">Approved</div><div class="value">Rp ${(total-pending).toLocaleString()}</div></div>
+    </div>
+    <div class="card"><div class="table-wrap"><table>
+      <tr><th>Affiliate</th><th>Payout</th><th>Status</th><th>Date</th><th>Action</th></tr>
+      ${(d.data||[]).map(e=>`<tr>
+        <td>${e.user_email||e.affiliate_id}</td><td>Rp ${(e.payout_amount||0).toLocaleString()}</td>
+        <td><span class="pill pill-${{pending:'yellow',approved:'green',paid:'blue'}[e.status]||'blue'}">${e.status}</span></td>
+        <td>${new Date(e.created_at).toLocaleDateString()}</td>
+        <td>${e.status==='pending'?`<button class="btn btn-sm btn-success" onclick="approveEarning(${e.id})">Approve</button>`:'-'}</td>
+      </tr>`).join('')}
+    </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load earnings.</p></div>'; }
+}
+
+async function renderCommissions(el) {
+  try {
+    const r = await fetch(API+'/api/admin/commissions?limit=50', {headers:authHeaders()});
+    const d = await r.json();
+    el.innerHTML = `<div class="card"><div class="table-wrap"><table>
+      <tr><th>Affiliate</th><th>Source</th><th>Amount</th><th>Date</th></tr>
+      ${(d.data||[]).map(c=>`<tr><td>${c.affiliate_id}</td><td>${c.source||'-'}</td><td>Rp ${(c.amount||0).toLocaleString()}</td><td>${new Date(c.created_at).toLocaleDateString()}</td></tr>`).join('')}
+    </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load commissions.</p></div>'; }
+}
+
+async function renderPayments(el) {
+  try {
+    const r = await fetch(API+'/api/admin/payments?limit=50', {headers:authHeaders()});
+    const d = await r.json();
+    el.innerHTML = `<div class="card"><div class="table-wrap"><table>
+      <tr><th>Reference</th><th>User</th><th>Amount</th><th>Status</th><th>Paid</th></tr>
+      ${(d.data||[]).map(p=>`<tr><td>${p.reference||p.id}</td><td>${p.user_email||p.user_id}</td><td>Rp ${(p.amount||0).toLocaleString()}</td><td><span class="pill pill-${{pending:'yellow',paid:'green',failed:'red'}[p.status]||'blue'}">${p.status}</span></td><td>${p.paid_at?new Date(p.paid_at).toLocaleDateString():'-'}</td></tr>`).join('')}
+    </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load payments.</p></div>'; }
+}
+
+async function renderCampaigns(el) {
+  try {
+    const r = await fetch(API+'/api/admin/campaigns?limit=50', {headers:authHeaders()});
+    const d = await r.json();
+    el.innerHTML = `<div class="card"><div class="table-wrap"><table>
+      <tr><th>Name</th><th>Status</th><th>Payout</th><th>Clicks</th><th>Conversions</th></tr>
+      ${(d.data||[]).map(c=>`<tr><td>${c.name}</td><td><span class="pill pill-${c.active?'green':'yellow'}">${c.active?'Active':'Paused'}</span></td><td>Rp ${(c.payout_amount||0).toLocaleString()}</td><td>${c.clicks||0}</td><td>${c.conversions||0}</td></tr>`).join('')}
+    </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load campaigns.</p></div>'; }
+}
+
+async function renderAttribution(el) {
+  try {
+    const r = await fetch(API+'/api/admin/stats', {headers:authHeaders()});
+    const s = await r.json();
+    el.innerHTML = `<div class="stat-grid">
+      <div class="stat-card"><div class="label">Total Clicks</div><div class="value">${s.total_clicks||0}</div></div>
+      <div class="stat-card"><div class="label">Attributed Conversions</div><div class="value">${s.attributed_conversions||0}</div></div>
+      <div class="stat-card"><div class="label">Assisted Conversions</div><div class="value">${s.assisted_conversions||0}</div></div>
+    </div>
+    <div class="card"><p style="color:var(--text2)">Multi-touch attribution data will populate as clicks and conversions are tracked.</p></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load attribution data.</p></div>'; }
+}
+
+async function renderClicks(el) {
+  try {
+    const r = await fetch(API+'/api/admin/stats', {headers:authHeaders()});
+    const s = await r.json();
+    el.innerHTML = `<div class="stat-grid">
+      <div class="stat-card"><div class="label">Clicks Today</div><div class="value">${s.clicks_today||s.active_clicks_24h||0}</div></div>
+      <div class="stat-card"><div class="label">Unique IPs</div><div class="value">${s.unique_ips||0}</div></div>
+      <div class="stat-card"><div class="label">Avg CTR</div><div class="value">${s.avg_ctr||0}%</div></div>
+    </div>
+    <div class="card"><p style="color:var(--text2)">Click tracking data will populate as traffic is received.</p></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load click data.</p></div>'; }
+}
+
+async function renderOffers(el) {
+  try {
+    const r = await fetch(API+'/api/admin/campaigns?limit=50', {headers:authHeaders()});
+    const d = await r.json();
+    el.innerHTML = `<div class="card"><div class="table-wrap"><table>
+      <tr><th>Offer Name</th><th>Payout</th><th>Status</th><th>Clicks</th><th>Conversions</th></tr>
+      ${(d.data||[]).map(c=>`<tr><td>${c.name}</td><td>Rp ${(c.payout_amount||0).toLocaleString()}</td><td><span class="pill pill-${c.active?'green':'yellow'}">${c.active?'Active':'Paused'}</span></td><td>${c.clicks||0}</td><td>${c.conversions||0}</td></tr>`).join('')}
+    </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load offers.</p></div>'; }
+}
+
+async function renderReports(el) {
+  try {
+    const r = await fetch(API+'/api/admin/stats', {headers:authHeaders()});
+    const s = await r.json();
+    el.innerHTML = `<div class="stat-grid">
+      <div class="stat-card"><div class="label">Total Revenue</div><div class="value">Rp ${(s.revenue_mtd||0).toLocaleString()}</div></div>
+      <div class="stat-card"><div class="label">Total Clicks</div><div class="value">${s.total_clicks||0}</div></div>
+      <div class="stat-card"><div class="label">Avg EPC</div><div class="value">Rp ${(s.avg_epc||0).toFixed(2)}</div></div>
+    </div>
+    <div class="card"><h3>Report Generator</h3>
+      <div class="form-row"><div class="form-group"><label>Date Range</label><select id="report-range"><option value="7d">Last 7 Days</option><option value="30d">Last 30 Days</option><option value="90d">Last 90 Days</option><option value="mtd">Month to Date</option><option value="ytd">Year to Date</option></select></div>
+      <div class="form-group"><label>Report Type</label><select id="report-type"><option value="summary">Summary</option><option value="clicks">Click Details</option><option value="conversions">Conversions</option><option value="payouts">Payouts</option></select></div></div>
+      <button class="btn btn-primary btn-sm" onclick="generateReport()">Generate Report</button>
+      <button class="btn btn-outline btn-sm" style="margin-left:8px" onclick="exportCSV()">Export CSV</button>
+    </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load report data.</p></div>'; }
+}
+
+async function generateReport() { alert('Report generation coming soon'); }
+async function exportCSV() { alert('CSV export coming soon'); }
+
+async function renderUsers(el) {
+  try {
+    const r = await fetch(API+'/api/admin/users?limit=50', {headers:authHeaders()});
+    const d = await r.json();
+    el.innerHTML = `<div class="card"><div class="table-wrap"><table>
+      <tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th></tr>
+      ${(d.data||[]).map(u=>`<tr>
+        <td>${u.user_name||'-'}</td><td>${u.user_email}</td>
+        <td><span class="pill pill-${u.user_role===2||u.user_role==='admin'?'indigo':'blue'}">${u.user_role===2||u.user_role==='admin'?'Admin':'User'}</span></td>
+        <td>${u.user_date_added?new Date(u.user_date_added).toLocaleDateString():'-'}</td>
+      </tr>`).join('')}
+    </table></div></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load users.</p></div>'; }
+}
+
+// ── NEW: Profile & Settings ──
+async function renderProfile(el) {
+  try {
+    const r = await fetch(API+'/api/settings/profile', {headers:authHeaders()});
+    const p = await r.json();
+    if (!r.ok) { el.innerHTML = '<div class="card"><p>Failed to load profile.</p></div>'; return; }
+    el.innerHTML = `
+      <div class="card"><h3>Account Information</h3>
+        <div class="form-row"><div class="form-group"><label>Username</label><input type="text" value="${p.username||''}" disabled style="opacity:.6"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="prof-email" value="${p.email||''}"></div></div>
+        <div class="form-row"><div class="form-group"><label>Timezone</label><select id="prof-timezone">
+          ${['UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles','Asia/Jakarta','Asia/Singapore','Asia/Tokyo','Europe/London','Europe/Berlin','Australia/Sydney'].map(tz=>`<option value="${tz}" ${p.timezone===tz?'selected':''}>${tz}</option>`).join('')}
+        </select></div>
+        <div class="form-group"><label>Role</label><input type="text" value="${p.role===2||p.role==='admin'?'Admin':'User'}" disabled style="opacity:.6"></div></div>
+        <button class="btn btn-primary btn-sm" onclick="saveProfile()">Save Profile</button>
+        <span id="profile-msg" style="margin-left:12px;font-size:13px;display:none"></span>
+      </div>
+
+      <div class="card"><h3>Change Password</h3>
+        <div class="form-row"><div class="form-group"><label>Current Password</label><input type="password" id="prof-current-pass" placeholder="Enter current password"></div></div>
+        <div class="form-row"><div class="form-group"><label>New Password</label><input type="password" id="prof-new-pass" placeholder="Min 6 characters"></div>
+        <div class="form-group"><label>Confirm New Password</label><input type="password" id="prof-confirm-pass" placeholder="Re-enter new password"></div></div>
+        <button class="btn btn-primary btn-sm" onclick="changePassword()">Change Password</button>
+        <span id="password-msg" style="margin-left:12px;font-size:13px;display:none"></span>
+      </div>
+
+      <div class="card"><h3>API Key</h3>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Use this key to authenticate API requests.</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <code style="background:var(--bg);padding:8px 12px;border-radius:6px;font-size:13px;flex:1;word-break:break-all">${p.api_key || '<em style="color:var(--text2)">No API key generated</em>'}</code>
+          ${p.api_key ? '<button class="btn btn-danger btn-sm" onclick="removeApiKey()">Remove</button>' : '<button class="btn btn-primary btn-sm" onclick="generateApiKey()">Generate</button>'}
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load profile.</p></div>'; }
+}
+
+async function saveProfile() {
+  const email = document.getElementById('prof-email').value;
+  const timezone = document.getElementById('prof-timezone').value;
+  const msg = document.getElementById('profile-msg');
+  try {
+    const r = await fetch(API+'/api/settings/profile', {method:'PUT', headers:authHeaders(), body:JSON.stringify({email,timezone})});
+    const d = await r.json();
+    msg.textContent = d.message || d.error; msg.style.display = 'inline'; msg.style.color = r.ok ? 'var(--green)' : 'var(--red)';
+  } catch(e) { msg.textContent = 'Network error'; msg.style.display = 'inline'; msg.style.color = 'var(--red)'; }
+}
+
+async function changePassword() {
+  const current = document.getElementById('prof-current-pass').value;
+  const newPass = document.getElementById('prof-new-pass').value;
+  const confirm = document.getElementById('prof-confirm-pass').value;
+  const msg = document.getElementById('password-msg');
+  if (newPass !== confirm) { msg.textContent = 'Passwords do not match'; msg.style.display = 'inline'; msg.style.color = 'var(--red)'; return; }
+  try {
+    const r = await fetch(API+'/api/auth/password', {method:'PUT', headers:authHeaders(), body:JSON.stringify({currentPassword:current,newPassword:newPass})});
+    const d = await r.json();
+    msg.textContent = d.message || d.error; msg.style.display = 'inline'; msg.style.color = r.ok ? 'var(--green)' : 'var(--red)';
+    if (r.ok) { document.getElementById('prof-current-pass').value = ''; document.getElementById('prof-new-pass').value = ''; document.getElementById('prof-confirm-pass').value = ''; }
+  } catch(e) { msg.textContent = 'Network error'; msg.style.display = 'inline'; msg.style.color = 'var(--red)'; }
+}
+
+async function generateApiKey() {
+  try {
+    const r = await fetch(API+'/api/settings/api-key', {method:'POST', headers:authHeaders()});
+    const d = await r.json();
+    if (r.ok) navigate('profile');
+    else alert(d.error);
+  } catch(e) { alert('Failed to generate API key'); }
+}
+
+async function removeApiKey() {
+  if (!confirm('Remove your API key? Any integrations using it will stop working.')) return;
+  try {
+    const r = await fetch(API+'/api/settings/api-key', {method:'DELETE', headers:authHeaders()});
+    if (r.ok) navigate('profile');
+    else alert((await r.json()).error);
+  } catch(e) { alert('Failed to remove API key'); }
+}
+
+// ── NEW: API Integrations ──
+async function renderIntegrations(el) {
+  try {
+    const r = await fetch(API+'/api/settings/integrations', {headers:authHeaders()});
+    const d = await r.json();
+    if (!r.ok) { el.innerHTML = '<div class="card"><p>Failed to load integrations.</p></div>'; return; }
+    const integrations = [
+      { key:'cb_key', label:'ClickBank Secret Key', desc:'Used for ClickBank order verification and notifications.', value:d.cb_key },
+      { key:'jvzoo_secret_key', label:'JVZoo IPN Secret', desc:'Used to verify JVZoo instant payment notifications.', value:d.jvzoo_secret_key },
+      { key:'zaxaa_api_signature', label:'Zaxaa API Signature', desc:'Used to verify Zaxaa order notifications.', value:d.zaxaa_api_signature },
+      { key:'ipqs_api_key', label:'IPQualityScore API Key', desc:'Used for fraud detection and IP reputation checks.', value:d.ipqs_api_key },
+      { key:'slack_webhook', label:'Slack Incoming Webhook', desc:'Receive notifications for conversions, approvals, and alerts.', value:d.slack_webhook },
+      { key:'clickserver_api_key', label:'ClickServer API Key', desc:'Used for click server domain management and tracking.', value:d.clickserver_api_key },
+      { key:'customer_api_key', label:'License / Customer API Key', desc:'Used for premium features and license verification.', value:d.customer_api_key },
+    ];
+    el.innerHTML = integrations.map(i => `
+      <div class="integration-card">
+        <h4>${i.label}</h4>
+        <div class="desc">${i.desc}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="password" id="int-${i.key}" value="${i.value||''}" placeholder="Enter ${i.label}" style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px">
+          <button class="btn btn-primary btn-sm" onclick="saveIntegration('${i.key}')">Save</button>
+          <button class="btn btn-outline btn-sm" onclick="toggleVis('int-${i.key}')">👁</button>
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load integrations.</p></div>'; }
+}
+
+function toggleVis(id) { const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; }
+
+async function saveIntegration(key) {
+  const value = document.getElementById('int-'+key).value;
+  try {
+    const r = await fetch(API+'/api/settings/integrations', {method:'PUT', headers:authHeaders(), body:JSON.stringify({key,value})});
+    const d = await r.json();
+    alert(r.ok ? 'Saved!' : (d.error || 'Failed'));
+  } catch(e) { alert('Network error'); }
+}
+
+// ── NEW: System Admin ──
+async function renderAdmin(el) {
+  try {
+    const [sys] = await Promise.all([fetch(API+'/api/admin/system', {headers:authHeaders()}).then(r=>r.json())]);
+    const s = sys.data || sys;
+    el.innerHTML = `
+      <div class="card"><h3>System Information</h3>
+        <table><tr><td style="color:var(--text2);width:200px">Application</td><td>1AI Affiliate Tracker</td></tr>
+        <tr><td style="color:var(--text2)">Version</td><td>${s.version||'1.9.59'}</td></tr>
+        <tr><td style="color:var(--text2)">PHP Version</td><td>${s.php_version||'—'}</td></tr>
+        <tr><td style="color:var(--text2)">MySQL Version</td><td>${s.mysql_version||'—'}</td></tr>
+        <tr><td style="color:var(--text2)">Node.js Version</td><td>${s.node_version||'—'}</td></tr>
+        <tr><td style="color:var(--text2)">Total Clicks</td><td>${s.total_clicks||0}</td></tr></table>
+      </div>
+
+      <div class="card"><h3>Data Engine Queue</h3>
+        <table><tr><td style="color:var(--text2);width:200px">Total Jobs</td><td>${s.dataengine_total||0}</td></tr>
+        <tr><td style="color:var(--text2)">Completed</td><td>${s.dataengine_done||0}</td></tr>
+        <tr><td style="color:var(--text2)">Pending</td><td>${(s.dataengine_total||0)-(s.dataengine_done||0)}</td></tr></table>
+      </div>
+
+      <div class="card"><h3>GeoIP Database</h3>
+        <table>
+        <tr><td style="color:var(--text2);width:200px">Country Database</td><td>${s.geoip_country||'Not found'}</td></tr>
+        <tr><td style="color:var(--text2)">ASN Database</td><td>${s.geoip_asn||'Not found'}</td></tr>
+        <tr><td style="color:var(--text2)">ISP Lookup</td><td><span class="pill pill-${s.isp_enabled?'green':'yellow'}">${s.isp_enabled?'Enabled':'Disabled'}</span></td></tr></table>
+      </div>
+
+      <div class="card"><h3>Login Attempts (Last 50)</h3>
+        <p style="color:var(--text2);font-size:13px">Recent login activity will be displayed here.</p>
+      </div>
+
+      <div class="card"><h3>Database Optimization</h3>
+        <p style="color:var(--text2);font-size:13px">Automatic database optimization can be scheduled from this panel.</p>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load system information.</p></div>'; }
+}
+
+// ── NEW: Click Servers ──
+async function renderClickServers(el) {
+  try {
+    const r = await fetch(API+'/api/admin/clickservers', {headers:authHeaders()});
+    if (!r.ok) { el.innerHTML = '<div class="card"><p>Failed to load click servers. Ensure ClickServer API key is configured in Integrations.</p></div>'; return; }
+    const d = await r.json();
+    el.innerHTML = `<div class="card"><h3>Click Server Domains</h3>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Manage your tracking domains and click server configuration.</p>
+      <div class="table-wrap"><table>
+        <tr><th>Domain</th><th>Status</th><th>Actions</th></tr>
+        ${(d.domains||[]).map(dm=>`<tr><td>${dm.domain||dm.name}</td><td><span class="pill pill-${dm.active?'green':'red'}">${dm.active?'Active':'Inactive'}</span></td><td><button class="btn btn-outline btn-sm" onclick="toggleDomain('${dm.domain||dm.name}',${!dm.active})">${dm.active?'Deactivate':'Activate'}</button></td></tr>`).join('')}
+        ${(!d.domains||d.domains.length===0)?'<tr><td colspan="3" style="color:var(--text2)">No domains configured</td></tr>':''}
+      </table></div>
+      <div style="margin-top:16px;font-size:13px;color:var(--text2)">
+        <p>Licenses: ${d.domains_used||0} / ${d.domains_available||0} used</p>
+        <div style="background:var(--bg);border-radius:4px;height:8px;margin-top:8px;overflow:hidden"><div style="background:var(--indigo);height:100%;width:${d.domains_available?((d.domains_used/d.domains_available)*100):0}%;border-radius:4px"></div></div>
       </div>
     </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load click servers.</p></div>'; }
 }
-function pill(text, type = 'info') {
-  return `<span class="pill p-${type}">${text}</span>`;
+
+async function toggleDomain(domain, activate) {
+  try {
+    const r = await fetch(API+'/api/admin/clickservers/toggle', {method:'POST', headers:authHeaders(), body:JSON.stringify({domain,activate})});
+    if (r.ok) navigate('clickservers'); else alert((await r.json()).error||'Failed');
+  } catch(e) { alert('Network error'); }
 }
-function pageHeader(title, subtitle) {
-  return `
-    <div class="mb-6">
-      <h1 class="text-2xl lg:text-3xl font-bold">${title}</h1>
-      ${subtitle ? `<p class="muted text-sm mt-1">${subtitle}</p>` : ''}
+
+// ── NEW: Documentation ──
+async function renderDocs(el) {
+  try {
+    const r = await fetch(API+'/api/docs', {headers:authHeaders()});
+    const d = await r.json();
+    const docs = d.docs || [];
+    el.innerHTML = `<div class="card"><h3>Documentation</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:12px">
+        ${docs.map(doc=>`<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:16px;cursor:pointer" onclick="showDoc('${doc.slug}')">
+          <div style="font-size:13px;font-weight:600">${doc.title}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px">${doc.category}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div id="doc-content"></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load documentation.</p></div>'; }
+}
+
+async function showDoc(slug) {
+  try {
+    const r = await fetch(API+'/api/docs/'+slug, {headers:authHeaders()});
+    const d = await r.json();
+    if (!r.ok) { alert(d.error); return; }
+    const el = document.getElementById('doc-content');
+    // Simple markdown → HTML conversion
+    let html = d.content
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+    el.innerHTML = `<div class="card"><h3>${d.title}</h3><div class="doc-content"><p>${html}</p></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:16px" onclick="document.getElementById('doc-content').innerHTML=''">← Back to docs</button></div>`;
+  } catch(e) { alert('Failed to load document'); }
+}
+
+// ── NEW: Help & Support ──
+async function renderHelp(el) {
+  el.innerHTML = `<div class="card"><h3>Help & Support</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:16px">
+      <a class="link" onclick="navigate('docs')" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:20px;display:block;text-decoration:none;color:var(--text)">
+        <h4 style="margin-bottom:8px">📖 Documentation</h4>
+        <p style="font-size:13px;color:var(--text2)">Guides, tutorials, and API reference</p>
+      </a>
+      <a href="https://github.com/tracking202/prosper202" target="_blank" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:20px;display:block;text-decoration:none;color:var(--text)">
+        <h4 style="margin-bottom:8px">🐙 GitHub</h4>
+        <p style="font-size:13px;color:var(--text2)">Source code and issue tracker</p>
+      </a>
+      <a onclick="navigate('docs')" class="link" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:20px;display:block;cursor:pointer;text-decoration:none;color:var(--text)">
+        <h4 style="margin-bottom:8px">📊 Attribution Guide</h4>
+        <p style="font-size:13px;color:var(--text2)">Multi-touch attribution engine guide</p>
+      </a>
+      <a onclick="navigate('docs')" class="link" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:20px;display:block;cursor:pointer;text-decoration:none;color:var(--text)">
+        <h4 style="margin-bottom:8px">🔗 API Integrations</h4>
+        <p style="font-size:13px;color:var(--text2)">Third-party integration setup guides</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="card"><h3>API Reference</h3>
+    <p style="font-size:13px;color:var(--text2)">Full API documentation with interactive testing available at:</p>
+    <a href="/api-docs" target="_blank" class="link" style="font-size:14px;margin-top:8px;display:block">/api-docs — Swagger UI</a>
+  </div>
+
+  <div class="card"><h3>GeoIP Lookup</h3>
+    <p style="font-size:13px;color:var(--text2)">Test IP geolocation:</p>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input type="text" id="geoip-input" placeholder="8.8.8.8" style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)">
+      <button class="btn btn-primary btn-sm" onclick="lookupGeoIP()">Lookup</button>
+    </div>
+    <div id="geoip-result" style="margin-top:12px"></div>
+  </div>`;
+}
+
+async function lookupGeoIP() {
+  const ip = document.getElementById('geoip-input').value.trim();
+  if (!ip) return;
+  try {
+    const r = await fetch(API+'/api/geo/'+ip, {headers:authHeaders()});
+    const d = await r.json();
+    document.getElementById('geoip-result').innerHTML = r.ok
+      ? `<div style="background:var(--panel2);border-radius:8px;padding:12px;font-size:13px">
+          <div><strong>IP:</strong> ${d.ip}</div>
+          <div><strong>Country:</strong> ${d.country||'—'} (${d.country_code||'—'})</div>
+          <div><strong>Continent:</strong> ${d.continent||'—'}</div>
+          <div><strong>ISP:</strong> ${d.isp||'—'} ${d.asn_number?'(AS'+d.asn_number+')':''}</div>
+        </div>`
+      : `<div style="color:var(--red)">${d.error}</div>`;
+  } catch(e) { document.getElementById('geoip-result').innerHTML = '<div style="color:var(--red)">Network error</div>'; }
+}
+
+// ── NEW: VIP Perks ──
+async function renderVipPerks(el) {
+  try {
+    const r = await fetch(API+'/api/settings/profile', {headers:authHeaders()});
+    const p = await r.json();
+    el.innerHTML = `<div class="card"><h3>VIP Perks Profile</h3>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Complete your profile to unlock exclusive offers, enhanced payouts, and premium support.</p>
+      <div style="background:var(--panel2);border-radius:8px;padding:16px;margin-bottom:16px">
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px">Current Status</div>
+        <span class="pill pill-${p.vip_perks_status?'green':'yellow'}">${p.vip_perks_status?'Completed':'Pending'}</span>
+      </div>
+      <div class="form-group"><label>Monthly Traffic Volume</label>
+        <select id="vip-traffic"><option value="">Select your range</option><option value="0-10k">0 - 10,000 clicks/month</option><option value="10k-50k">10,000 - 50,000 clicks/month</option><option value="50k-250k">50,000 - 250,000 clicks/month</option><option value="250k+">250,000+ clicks/month</option></select>
+      </div>
+      <div class="form-group"><label>Primary Verticals</label>
+        <select id="vip-vertical"><option value="">Select primary vertical</option><option value="ecommerce">E-Commerce</option><option value="finance">Finance / Crypto</option><option value="health">Health / Fitness</option><option value="gaming">Gaming</option><option value="education">Education</option><option value="other">Other</option></select>
+      </div>
+      <div class="form-group"><label>Preferred Payout Method</label>
+        <select id="vip-payout"><option value="">Select payout method</option><option value="wire">Wire Transfer</option><option value="crypto">Cryptocurrency</option><option value="paypal">PayPal</option><option value="wise">Wise</option></select>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="submitVipPerks()">Submit VIP Profile</button>
     </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Failed to load VIP Perks.</p></div>'; }
 }
 
-/* ──────────── PAGES ──────────── */
-async function renderOverview(target) {
-  const [stats, affiliates, earnings] = await Promise.all([
-    API.get('/api/admin/stats').catch(() => ({})),
-    API.get('/api/admin/affiliates?limit=5').catch(() => ({ data: [] })),
-    API.get('/api/admin/earnings?limit=5&status=pending').catch(() => ({ data: [] })),
-  ]);
-
-  target.innerHTML = `
-    ${pageHeader('Overview', 'Real-time snapshot of your affiliate network')}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6">
-      ${statCard({ label: 'Total Affiliates', value: fmt.num(stats.totalAffiliates), sub: '+' + fmt.num(stats.newAffiliates7d) + ' this week', accent: 'indigo' })}
-      ${statCard({ label: 'Active Clicks (24h)', value: fmt.num(stats.clicks24h), sub: fmt.pct(stats.clickChange) + ' vs yesterday', accent: 'green' })}
-      ${statCard({ label: 'Pending Payout', value: fmt.money(stats.pendingPayout), sub: fmt.num(stats.pendingCount) + ' requests', accent: 'yellow' })}
-      ${statCard({ label: 'Revenue (MTD)', value: fmt.money(stats.revenueMtd), sub: '+' + fmt.pct(stats.revenueGrowth) + ' MoM', accent: 'green' })}
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div class="panel rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold">Top Affiliates</h2>
-          <a href="#" data-page="affiliates" class="text-xs text-indigo-400">View all →</a>
-        </div>
-        <div class="space-y-3">
-          ${(affiliates.data || []).map(a => `
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full grad grid place-items-center text-white text-xs font-bold">
-                ${(a.username || a.email || '?')[0].toUpperCase()}
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium truncate">${a.username || a.email}</div>
-                <div class="muted text-xs">${a.tier || 'starter'} • ${fmt.num(a.clicks || 0)} clicks</div>
-              </div>
-              <div class="num text-sm font-semibold">${fmt.money(a.earnings || 0)}</div>
-            </div>`).join('') || '<div class="muted text-sm">No affiliates yet</div>'}
-        </div>
-      </div>
-
-      <div class="panel rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold">Pending Approvals</h2>
-          <a href="#" data-page="earnings" class="text-xs text-indigo-400">View all →</a>
-        </div>
-        <div class="space-y-3">
-          ${(earnings.data || []).map(e => `
-            <div class="flex items-center gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium truncate">${e.affiliate_name || e.username || 'Unknown'}</div>
-                <div class="muted text-xs">${fmt.date(e.created_at)} • ${e.source || 'conversion'}</div>
-              </div>
-              <div class="num text-sm font-semibold text-amber-400">${fmt.money(e.amount)}</div>
-              <button onclick="approveEarning(${e.id})" class="text-xs px-2 py-1 rounded grad text-white">Approve</button>
-            </div>`).join('') || '<div class="muted text-sm">All caught up ✓</div>'}
-        </div>
-      </div>
-    </div>
-  `;
-  // re-wire inline links
-  target.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', e => {
-    e.preventDefault();
-    const page = el.dataset.page;
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
-    loadPage(page);
-  }));
+async function submitVipPerks() {
+  alert('VIP Perks profile saved! Our team will review and upgrade your account.');
 }
 
-async function renderAffiliates(target) {
-  const r = await API.get('/api/admin/affiliates?limit=100');
-  const list = r.data || [];
-  target.innerHTML = `
-    ${pageHeader('Affiliates', list.length + ' total')}
-    <div class="panel rounded-2xl overflow-hidden">
-      <div class="p-4 border-b flex flex-col sm:flex-row gap-2" style="border-color: var(--border);">
-        <input id="aff-search" placeholder="Search..." class="flex-1 panel-2 rounded-lg px-3 py-2 text-sm" />
-        <select id="aff-tier" class="panel-2 rounded-lg px-3 py-2 text-sm">
-          <option value="">All tiers</option>
-          <option value="starter">Starter</option>
-          <option value="pro">Pro</option>
-          <option value="premium">Premium</option>
-        </select>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="muted text-xs uppercase tracking-wider">
-            <tr><th class="text-left p-3">User</th><th class="text-left p-3">Tier</th><th class="text-right p-3">Clicks</th><th class="text-right p-3">Conv.</th><th class="text-right p-3">Earnings</th><th class="text-left p-3">Joined</th></tr>
-          </thead>
-          <tbody id="aff-tbody">
-            ${list.map(a => `
-              <tr class="border-t hover:bg-white/[.02]" style="border-color: var(--border);">
-                <td class="p-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-full grad grid place-items-center text-white text-xs font-bold">${(a.username || a.email || '?')[0].toUpperCase()}</div>
-                    <div>
-                      <div class="font-medium">${a.username || a.email || '—'}</div>
-                      <div class="muted text-xs">${a.email || ''}</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-3">${pill(a.tier || 'starter', a.tier === 'premium' ? 'ok' : a.tier === 'pro' ? 'info' : 'warn')}</td>
-                <td class="p-3 text-right num">${fmt.num(a.clicks)}</td>
-                <td class="p-3 text-right num">${fmt.num(a.conversions)}</td>
-                <td class="p-3 text-right num font-semibold">${fmt.money(a.earnings)}</td>
-                <td class="p-3 muted text-xs">${fmt.date(a.joined_at || a.user_time)}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-  const filter = () => {
-    const q = document.getElementById('aff-search').value.toLowerCase();
-    const t = document.getElementById('aff-tier').value;
-    document.querySelectorAll('#aff-tbody tr').forEach(r => {
-      r.style.display = (!q || r.textContent.toLowerCase().includes(q)) && (!t || r.textContent.toLowerCase().includes(t)) ? '' : 'none';
-    });
-  };
-  document.getElementById('aff-search').addEventListener('input', filter);
-  document.getElementById('aff-tier').addEventListener('change', filter);
-}
-
-async function renderEarnings(target) {
-  const r = await API.get('/api/admin/earnings?limit=100');
-  const list = r.data || [];
-  const total = list.reduce((s, e) => s + Number(e.amount || 0), 0);
-  const pending = list.filter(e => e.status === 'pending').length;
-  target.innerHTML = `
-    ${pageHeader('Earnings', fmt.money(total) + ' total • ' + pending + ' pending')}
-    <div class="grid grid-cols-3 gap-3 mb-4">
-      ${statCard({ label: 'Total', value: fmt.money(total), accent: 'indigo' })}
-      ${statCard({ label: 'Pending', value: fmt.num(pending), accent: 'yellow' })}
-      ${statCard({ label: 'Approved', value: fmt.num(list.length - pending), accent: 'green' })}
-    </div>
-    <div class="panel rounded-2xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="muted text-xs uppercase tracking-wider">
-            <tr><th class="text-left p-3">Affiliate</th><th class="text-left p-3">Source</th><th class="text-right p-3">Amount</th><th class="text-left p-3">Status</th><th class="text-left p-3">Date</th><th></th></tr>
-          </thead>
-          <tbody>
-            ${list.map(e => `
-              <tr class="border-t" style="border-color: var(--border);">
-                <td class="p-3">${e.affiliate_name || e.username || '—'}</td>
-                <td class="p-3 muted text-xs">${e.source || '—'}</td>
-                <td class="p-3 text-right num font-semibold">${fmt.money(e.amount)}</td>
-                <td class="p-3">${pill(e.status, e.status === 'approved' ? 'ok' : e.status === 'paid' ? 'info' : 'warn')}</td>
-                <td class="p-3 muted text-xs">${fmt.date(e.created_at)}</td>
-                <td class="p-3 text-right">
-                  ${e.status === 'pending' ? `<button onclick="approveEarning(${e.id})" class="text-xs px-2 py-1 rounded grad text-white">Approve</button>` : ''}
-                </td>
-              </tr>`).join('') || '<tr><td colspan="6" class="p-6 text-center muted">No earnings yet</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-async function renderCommissions(target) {
-  const r = await API.get('/api/admin/commissions?limit=50').catch(() => ({ data: [] }));
-  target.innerHTML = `
-    ${pageHeader('Commissions', 'Recent commission ledger entries')}
-    <div class="panel rounded-2xl p-5">
-      <div class="space-y-2">
-        ${(r.data || []).map(c => `
-          <div class="flex items-center gap-3 panel-2 rounded-lg p-3">
-            <div class="flex-1 min-w-0">
-              <div class="text-sm font-medium truncate">${c.affiliate || c.affiliate_id} → ${c.offer || c.offer_id}</div>
-              <div class="muted text-xs">${fmt.date(c.created_at)} • ${c.tier || 'base'}</div>
-            </div>
-            <div class="num text-sm">${fmt.money(c.commission)}</div>
-            ${pill(c.status || 'pending', c.status === 'paid' ? 'ok' : 'warn')}
-          </div>`).join('') || '<div class="muted text-sm text-center py-8">No commissions yet</div>'}
-      </div>
-    </div>
-  `;
-}
-
-async function renderPayments(target) {
-  const r = await API.get('/api/admin/payments?limit=50').catch(() => ({ data: [] }));
-  target.innerHTML = `
-    ${pageHeader('Payments', 'Tripay payment transactions')}
-    <div class="panel rounded-2xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="muted text-xs uppercase tracking-wider">
-            <tr><th class="text-left p-3">Reference</th><th class="text-left p-3">User</th><th class="text-right p-3">Amount</th><th class="text-left p-3">Status</th><th class="text-left p-3">Tripay Ref</th><th class="text-left p-3">Paid</th></tr>
-          </thead>
-          <tbody>
-            ${(r.data || []).map(p => `
-              <tr class="border-t" style="border-color: var(--border);">
-                <td class="p-3 font-mono text-xs">${p.reference}</td>
-                <td class="p-3">#${p.user_id}</td>
-                <td class="p-3 text-right num font-semibold">${fmt.money(p.amount)}</td>
-                <td class="p-3">${pill(p.status, p.status === 'PAID' ? 'ok' : p.status === 'FAILED' ? 'err' : 'warn')}</td>
-                <td class="p-3 font-mono text-xs muted">${p.tripay_ref || '—'}</td>
-                <td class="p-3 muted text-xs">${fmt.date(p.paid_at)}</td>
-              </tr>`).join('') || '<tr><td colspan="6" class="p-6 text-center muted">No payments yet</td></tr>'}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-async function renderCampaigns(target) {
-  const r = await API.get('/api/admin/campaigns?limit=50').catch(() => ({ data: [] }));
-  target.innerHTML = `
-    ${pageHeader('Campaigns', 'Active affiliate campaigns')}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      ${(r.data || []).map(c => `
-        <div class="panel rounded-2xl p-4">
-          <div class="flex items-center justify-between mb-2">
-            <div class="font-semibold">${c.name || c.aff_campaign_name || '—'}</div>
-            ${pill(c.status || 'active', 'info')}
-          </div>
-          <div class="muted text-xs mb-3">${c.payout_type || 'CPA'} • ${fmt.money(c.payout)}</div>
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div><div class="num text-lg font-semibold">${fmt.num(c.clicks)}</div><div class="muted text-[10px] uppercase">Clicks</div></div>
-            <div><div class="num text-lg font-semibold">${fmt.num(c.conversions)}</div><div class="muted text-[10px] uppercase">Conv</div></div>
-            <div><div class="num text-lg font-semibold text-emerald-400">${fmt.money(c.revenue)}</div><div class="muted text-[10px] uppercase">Rev</div></div>
-          </div>
-        </div>`).join('') || '<div class="panel rounded-2xl p-6 muted text-sm text-center col-span-full">No campaigns yet</div>'}
-    </div>
-  `;
-}
-
-async function renderAttribution(target) {
-  const stats = await API.get('/api/admin/stats').catch(() => ({}));
-  const mockData = [
-    { affiliate: 'andi_pr', channel: 'TikTok', firstClick: 342, lastClick: 187, assisted: 124 },
-    { affiliate: 'rizki_88', channel: 'Instagram', firstClick: 287, lastClick: 204, assisted: 98 },
-    { affiliate: 'sari_co', channel: 'YouTube', firstClick: 198, lastClick: 156, assisted: 72 },
-    { affiliate: 'bumi_ads', channel: 'Facebook', firstClick: 165, lastClick: 91, assisted: 53 },
-    { affiliate: 'lara_shp', channel: 'Shopee', firstClick: 142, lastClick: 78, assisted: 41 },
-    { affiliate: 'dewi_ig', channel: 'Instagram', firstClick: 119, lastClick: 64, assisted: 33 },
-  ];
-  target.innerHTML = `
-    ${pageHeader('Attribution', 'Multi-touch attribution analysis')}
-    <div class="grid grid-cols-3 gap-3 mb-4">
-      ${statCard({ label: 'First Click', value: fmt.num(stats.clicks24h || 1253), sub: 'Last 24h', accent: 'indigo' })}
-      ${statCard({ label: 'Last Click', value: fmt.num(stats.totalAffiliates || 780), sub: 'Conversions', accent: 'green' })}
-      ${statCard({ label: 'Assisted', value: fmt.num(421), sub: 'Multi-touch', accent: 'yellow' })}
-    </div>
-    <div class="panel rounded-2xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="muted text-xs uppercase tracking-wider">
-            <tr><th class="text-left p-3">Affiliate</th><th class="text-left p-3">Channel</th><th class="text-right p-3">First Click</th><th class="text-right p-3">Last Click</th><th class="text-right p-3">Assisted</th></tr>
-          </thead>
-          <tbody>
-            ${mockData.map(r => `
-              <tr class="border-t" style="border-color: var(--border);">
-                <td class="p-3 font-medium">${r.affiliate}</td>
-                <td class="p-3">${pill(r.channel, r.channel === 'TikTok' ? 'info' : r.channel === 'Instagram' ? 'ok' : 'warn')}</td>
-                <td class="p-3 text-right num">${fmt.num(r.firstClick)}</td>
-                <td class="p-3 text-right num">${fmt.num(r.lastClick)}</td>
-                <td class="p-3 text-right num text-amber-400">${fmt.num(r.assisted)}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-async function renderClicks(target) {
-  const stats = await API.get('/api/admin/stats').catch(() => ({}));
-  const mockClicks = [
-    { time: '2026-06-04 14:32', ip: '103.142.xxx.xxx', affiliate: 'andi_pr', campaign: 'TikTok Summer', landing: '/promo/summer', redirect: '/offer/shopee' },
-    { time: '2026-06-04 14:28', ip: '182.1.xxx.xxx', affiliate: 'rizki_88', campaign: 'IG Stories', landing: '/promo/ig-stories', redirect: '/offer/tokopedia' },
-    { time: '2026-06-04 14:15', ip: '36.72.xxx.xxx', affiliate: 'sari_co', campaign: 'YouTube Review', landing: '/promo/youtube', redirect: '/offer/lazada' },
-    { time: '2026-06-04 13:58', ip: '114.125.xxx.xxx', affiliate: 'bumi_ads', campaign: 'Facebook Ads', landing: '/promo/fb-ads', redirect: '/offer/shopee' },
-    { time: '2026-06-04 13:42', ip: '202.158.xxx.xxx', affiliate: 'lara_shp', campaign: 'Shopee Live', landing: '/promo/shopee-live', redirect: '/offer/shopee' },
-    { time: '2026-06-04 13:30', ip: '180.244.xxx.xxx', affiliate: 'dewi_ig', campaign: 'IG Reels', landing: '/promo/ig-reels', redirect: '/offer/tokopedia' },
-  ];
-  target.innerHTML = `
-    ${pageHeader('Click Tracker', 'Real-time click tracking and analytics')}
-    <div class="grid grid-cols-3 gap-3 mb-4">
-      ${statCard({ label: 'Clicks Today', value: fmt.num(stats.clicks24h || 847), accent: 'indigo' })}
-      ${statCard({ label: 'Unique IPs', value: fmt.num(632), accent: 'green' })}
-      ${statCard({ label: 'Avg CTR', value: fmt.pct(0.034), accent: 'yellow' })}
-    </div>
-    <div class="panel rounded-2xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="muted text-xs uppercase tracking-wider">
-            <tr><th class="text-left p-3">Time</th><th class="text-left p-3">IP</th><th class="text-left p-3">Affiliate</th><th class="text-left p-3">Campaign</th><th class="text-left p-3">Landing Page</th><th class="text-left p-3">Redirect</th></tr>
-          </thead>
-          <tbody>
-            ${mockClicks.map(c => `
-              <tr class="border-t" style="border-color: var(--border);">
-                <td class="p-3 font-mono text-xs">${c.time}</td>
-                <td class="p-3 font-mono text-xs muted">${c.ip}</td>
-                <td class="p-3 font-medium">${c.affiliate}</td>
-                <td class="p-3">${pill(c.campaign, 'info')}</td>
-                <td class="p-3 text-xs muted">${c.landing}</td>
-                <td class="p-3 text-xs muted">${c.redirect}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-async function renderOffers(target) {
-  const r = await API.get('/api/admin/campaigns?limit=50').catch(() => ({ data: [] }));
-  const list = r.data || [];
-  const mockOffers = [
-    { name: 'Shopee Summer Sale', payout: 75000, affiliate: 'andi_pr', status: 'active', clicks: 2841, conversions: 47, epc: 0.83 },
-    { name: 'Tokopedia Flash Deal', payout: 50000, affiliate: 'rizki_88', status: 'active', clicks: 1563, conversions: 28, epc: 0.72 },
-    { name: 'Lazada Payday', payout: 60000, affiliate: 'sari_co', status: 'paused', clicks: 982, conversions: 15, epc: 0.54 },
-    { name: 'Bukalapak Promo', payout: 35000, affiliate: 'bumi_ads', status: 'active', clicks: 641, conversions: 11, epc: 0.41 },
-    { name: 'IG Stories Campaign', payout: 45000, affiliate: 'lara_shp', status: 'active', clicks: 523, conversions: 8, epc: 0.36 },
-    { name: 'YouTube Review Bounty', payout: 80000, affiliate: 'dewi_ig', status: 'draft', clicks: 0, conversions: 0, epc: 0 },
-  ];
-  target.innerHTML = `
-    ${pageHeader('Offers', 'Manage affiliate offers and campaigns')}
-    <div class="panel rounded-2xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="muted text-xs uppercase tracking-wider">
-            <tr><th class="text-left p-3">Offer Name</th><th class="text-right p-3">Payout</th><th class="text-left p-3">Affiliate</th><th class="text-left p-3">Status</th><th class="text-right p-3">Clicks</th><th class="text-right p-3">Conversions</th><th class="text-right p-3">EPC</th></tr>
-          </thead>
-          <tbody>
-            ${mockOffers.map(o => `
-              <tr class="border-t" style="border-color: var(--border);">
-                <td class="p-3 font-medium">${o.name}</td>
-                <td class="p-3 text-right num font-semibold">${fmt.money(o.payout)}</td>
-                <td class="p-3">${o.affiliate}</td>
-                <td class="p-3">${pill(o.status, o.status === 'active' ? 'ok' : o.status === 'paused' ? 'warn' : 'info')}</td>
-                <td class="p-3 text-right num">${fmt.num(o.clicks)}</td>
-                <td class="p-3 text-right num">${fmt.num(o.conversions)}</td>
-                <td class="p-3 text-right num text-emerald-400">Rp ${o.epc.toFixed(2)}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-async function renderUsers(target) {
-  const r = await API.get('/api/admin/users?limit=50').catch(() => ({ data: [] }));
-  const list = r.data || [];
-  const mockUsers = list.length > 0 ? list : [
-    { name: 'Andi Pratama', email: 'andi@example.com', role: 'admin', date_added: Math.floor(Date.now()/1000 - 86400*90) },
-    { name: 'Rizki Setiawan', email: 'rizki@example.com', role: 'affiliate', date_added: Math.floor(Date.now()/1000 - 86400*60) },
-    { name: 'Sari Dewi', email: 'sari@example.com', role: 'affiliate', date_added: Math.floor(Date.now()/1000 - 86400*30) },
-    { name: 'Bumi Aditya', email: 'bumi@example.com', role: 'affiliate', date_added: Math.floor(Date.now()/1000 - 86400*14) },
-    { name: 'Lara Shopee', email: 'lara@example.com', role: 'viewer', date_added: Math.floor(Date.now()/1000 - 86400*7) },
-  ];
-  target.innerHTML = `
-    ${pageHeader('Users', 'Manage user accounts and permissions')}
-    <div class="panel rounded-2xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="muted text-xs uppercase tracking-wider">
-            <tr><th class="text-left p-3">Name</th><th class="text-left p-3">Email</th><th class="text-left p-3">Role</th><th class="text-left p-3">Date Added</th><th class="text-right p-3">Actions</th></tr>
-          </thead>
-          <tbody>
-            ${mockUsers.map(u => `
-              <tr class="border-t" style="border-color: var(--border);">
-                <td class="p-3 font-medium">${u.name || u.username || '—'}</td>
-                <td class="p-3 muted text-xs">${u.email || '—'}</td>
-                <td class="p-3">${pill(u.role || 'affiliate', u.role === 'admin' ? 'ok' : u.role === 'affiliate' ? 'info' : 'warn')}</td>
-                <td class="p-3 muted text-xs">${fmt.date(u.date_added || u.joined_at || u.user_time)}</td>
-                <td class="p-3 text-right">
-                  <button class="text-xs px-2 py-1 rounded panel-2 hover:bg-indigo-500/20 hover:text-indigo-400">Edit</button>
-                </td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-async function renderReports(target) {
-  const stats = await API.get('/api/admin/stats').catch(() => ({}));
-  target.innerHTML = `
-    ${pageHeader('Reports', 'Detailed performance reports')}
-    <div class="grid grid-cols-3 gap-3 mb-4">
-      ${statCard({ label: 'Total Revenue', value: fmt.money(stats.revenueMtd || 42500000), sub: 'This month', accent: 'green' })}
-      ${statCard({ label: 'Total Clicks', value: fmt.num(stats.clicks24h || 12840), sub: 'All time', accent: 'indigo' })}
-      ${statCard({ label: 'Avg EPC', value: 'Rp 0.62', sub: 'Earnings per click', accent: 'yellow' })}
-    </div>
-    <div class="panel rounded-2xl p-5">
-      <h2 class="font-semibold mb-4">Report Generator</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="text-xs muted uppercase tracking-wider block mb-1">Date Range</label>
-          <select class="w-full panel-2 rounded-lg px-3 py-2 text-sm">
-            <option>Last 7 days</option>
-            <option>Last 30 days</option>
-            <option selected>Last 90 days</option>
-            <option>This year</option>
-            <option>All time</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs muted uppercase tracking-wider block mb-1">Report Type</label>
-          <select class="w-full panel-2 rounded-lg px-3 py-2 text-sm">
-            <option>Affiliate Performance</option>
-            <option>Revenue Summary</option>
-            <option>Click Analytics</option>
-            <option>Commission Ledger</option>
-            <option>Payout History</option>
-          </select>
-        </div>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <button class="px-4 py-2 rounded-lg grad text-white text-sm font-semibold hover:opacity-95">Generate Report</button>
-        <button class="px-4 py-2 rounded-lg panel-2 text-sm muted hover:text-white">Export CSV</button>
-      </div>
-    </div>
-  `;
-}
-
-async function renderSettings(target) {
-  const siteName = localStorage.getItem('1ai_site_name') || '1AI Affiliate';
-  const siteUrl = localStorage.getItem('1ai_site_url') || 'https://aff.1ai.id';
-  const timezone = localStorage.getItem('1ai_timezone') || 'Asia/Jakarta';
-  const apiKey = localStorage.getItem('1ai_token') || '';
-  const maskedKey = apiKey ? apiKey.slice(0, 8) + '...' + '•'.repeat(20) : 'Not configured';
-  target.innerHTML = `
-    ${pageHeader('Settings', 'Platform configuration')}
-    <div class="space-y-4">
-      <div class="panel rounded-2xl p-5">
-        <h2 class="font-semibold mb-4">General Settings</h2>
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs muted uppercase tracking-wider block mb-1">Site Name</label>
-            <div class="panel-2 rounded-lg px-3 py-2 text-sm">${siteName}</div>
-          </div>
-          <div>
-            <label class="text-xs muted uppercase tracking-wider block mb-1">Site URL</label>
-            <div class="panel-2 rounded-lg px-3 py-2 text-sm font-mono">${siteUrl}</div>
-          </div>
-          <div>
-            <label class="text-xs muted uppercase tracking-wider block mb-1">Timezone</label>
-            <div class="panel-2 rounded-lg px-3 py-2 text-sm">${timezone}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel rounded-2xl p-5">
-        <h2 class="font-semibold mb-4">API Settings</h2>
-        <div>
-          <label class="text-xs muted uppercase tracking-wider block mb-1">API Key</label>
-          <div class="panel-2 rounded-lg px-3 py-2 text-sm font-mono">${maskedKey}</div>
-          <p class="muted text-xs mt-1">API key is masked for security. Contact admin to rotate.</p>
-        </div>
-      </div>
-
-      <div class="panel rounded-2xl p-5">
-        <h2 class="font-semibold mb-4">Notification Settings</h2>
-        <div class="space-y-3">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked class="w-4 h-4 rounded border-gray-600 bg-[var(--panel2)] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0" />
-            <div>
-              <div class="text-sm">Email notifications</div>
-              <div class="muted text-xs">Receive email for new affiliate signups</div>
-            </div>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked class="w-4 h-4 rounded border-gray-600 bg-[var(--panel2)] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0" />
-            <div>
-              <div class="text-sm">Payout alerts</div>
-              <div class="muted text-xs">Get notified when payout requests are submitted</div>
-            </div>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" class="w-4 h-4 rounded border-gray-600 bg-[var(--panel2)] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0" />
-            <div>
-              <div class="text-sm">Weekly digest</div>
-              <div class="muted text-xs">Weekly summary of platform performance</div>
-            </div>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" class="w-4 h-4 rounded border-gray-600 bg-[var(--panel2)] text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0" />
-            <div>
-              <div class="text-sm">Fraud alerts</div>
-              <div class="muted text-xs">Immediate notification on suspicious activity</div>
-            </div>
-          </label>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-/* ──────────── ACTIONS ──────────── */
-window.approveEarning = async (id) => {
+// ── Approve earning (shared) ──
+async function approveEarning(id) {
   if (!confirm('Approve this earning?')) return;
   try {
-    await API.post('/api/admin/earnings/' + id + '/approve');
-    loadPage('overview');
-  } catch (e) { alert('Failed: ' + e.message); }
-};
-
-/* ──────────── BOOT ──────────── */
-if (API.token()) showApp(); else showLogin();
+    const r = await fetch(API+'/api/admin/earnings/'+id+'/approve', {method:'POST', headers:authHeaders()});
+    if (r.ok) navigate(currentPage); else alert((await r.json()).error);
+  } catch(e) { alert('Failed to approve'); }
+}

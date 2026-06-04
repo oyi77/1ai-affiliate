@@ -1,0 +1,58 @@
+/** Static content pages: Attribution, Clicks, Reports */
+window.PageRenderers = window.PageRenderers || {};
+
+PageRenderers.attribution = async function(el) {
+  try {
+    const s = await API.get('/api/admin/stats');
+    el.innerHTML = `${DOM.pageHeader('Multi-Touch Attribution', 'First-touch, last-touch, and assisted conversions')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Total Clicks', value:s.total_clicks||0 })}
+        ${DOM.statCard({ label:'Attributed Conversions', value:s.attributed_conversions||0, accent:'green' })}
+        ${DOM.statCard({ label:'Assisted Conversions', value:s.assisted_conversions||0, accent:'yellow' })}
+      </div>
+      <div class="card"><p style="color:var(--text2);font-size:13px">Multi-touch attribution data populates as clicks and conversions are tracked through the system.</p></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load attribution data.</p></div>'; }
+};
+
+PageRenderers.clicks = async function(el) {
+  try {
+    const s = await API.get('/api/admin/stats');
+    el.innerHTML = `${DOM.pageHeader('Click Tracker', 'Real-time click monitoring')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Clicks Today', value:s.clicks_today||s.active_clicks_24h||0 })}
+        ${DOM.statCard({ label:'Unique IPs', value:s.unique_ips||0, accent:'green' })}
+        ${DOM.statCard({ label:'Avg CTR', value:(s.avg_ctr||0)+'%', accent:'yellow' })}
+      </div>
+      <div class="card"><p style="color:var(--text2);font-size:13px">Click data populates as traffic flows through your tracking links.</p></div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load click data.</p></div>'; }
+};
+
+PageRenderers.reports = async function(el) {
+  try {
+    const s = await API.get('/api/admin/stats');
+    el.innerHTML = `${DOM.pageHeader('Reports', 'Generate and export performance reports')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Revenue MTD', value:'Rp '+(s.revenue_mtd||0).toLocaleString() })}
+        ${DOM.statCard({ label:'Total Clicks', value:s.total_clicks||0, accent:'green' })}
+        ${DOM.statCard({ label:'Avg EPC', value:'Rp '+(s.avg_epc||0).toFixed(2), accent:'yellow' })}
+      </div>
+      <div class="card"><h3>Report Generator</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Date Range</label>
+            <select id="report-range">
+              <option value="7d">Last 7 Days</option><option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option><option value="mtd">Month to Date</option><option value="ytd">Year to Date</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Report Type</label>
+            <select id="report-type">
+              <option value="summary">Summary</option><option value="clicks">Click Details</option>
+              <option value="conversions">Conversions</option><option value="payouts">Payouts</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="alert('Report generation coming soon')">Generate</button>
+        <button class="btn btn-outline btn-sm" style="margin-left:8px" onclick="alert('CSV export coming soon')">Export CSV</button>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load report data.</p></div>'; }
+};

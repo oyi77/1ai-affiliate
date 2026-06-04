@@ -102,14 +102,14 @@ if (isset($_POST['maxmind'])) {
 	}
 
 	if ($_POST['maxmind'] == "true") {
-		if (file_exists(substr(__DIR__, 0, -12) . '/config/geo/GeoIP2-ISP.mmdb') || file_exists(substr(__DIR__, 0, -12) . '/config/geo/GeoIPISP.dat')) {
+		if (file_exists(substr(__DIR__, 0, -12) . '/config/geo/GeoLite2-ASN.mmdb')) {
 			$mysql['user_id'] = $db->real_escape_string((string) $_SESSION['user_id']);
 			$sql = "UPDATE users_pref SET maxmind_isp='1' WHERE user_id='" . $mysql['user_id'] . "'";
 			$result = _mysqli_query($sql);
 			if ($slack)
 				$slack->push('maxmind_isp_changed', ['user' => $username, 'type' => 'Activated']);
 		} else {
-			echo "ISP Database file doesn't exist. Upload GeoIP2-ISP.mmdb (or legacy GeoIPISP.dat) to /config/geo/ folder.";
+			echo "ASN database file doesn't exist. Upload GeoLite2-ASN.mmdb (from Loyalsoldier/geoip) to /config/geo/ folder.";
 		}
 	}
 
@@ -481,9 +481,9 @@ function CronJobLastExecution($datetime, $full = false)
 
 <div class="row account">
 	<div class="col-xs-12">
-		<h6>MaxMind ISP/Carrier Lookup</h6>
-		<span class="infotext"><span><a href="http://click202.com/tracking_support/redirect/dl.php?t202id=9159015&t202kw=p202setup" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/maxmind_logo-202.png"></a></span><br>To turn on ISP/Carrier lookup feature, you need
-			to <strong><a href="http://click202.com/tracking_support/redirect/dl.php?t202id=9159015&t202kw=p202setup" target="_blank">buy MaxMind ISP database</a></strong> and upload (GeoIP2-ISP.mmdb or legacy GeoIPISP.dat) to <code><?php echo getTrackingDomain() . get_absolute_url() . 'config/geo/'; ?></code>
+		<h6>ISP/Carrier Lookup (Loyalsoldier/geoip)</h6>
+		<span class="infotext"><span>ISP/ASN lookup is powered by <strong><a href="https://github.com/Loyalsoldier/geoip" target="_blank">Loyalsoldier/geoip</a></strong> (free, auto-updated weekly).</span><br>
+			GeoIP databases: <code>Country.mmdb</code> (country lookup) and <code>GeoLite2-ASN.mmdb</code> (ISP/ASN lookup) should be in <code><?php echo getTrackingDomain() . get_absolute_url() . 'config/geo/'; ?></code>
 			folder.<br />(Settings will take place after 5 minutes in live
 			traffic)
 		</span>

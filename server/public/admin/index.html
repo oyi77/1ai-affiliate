@@ -1,183 +1,185 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>1AI Affiliate Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0b0d12;
-      --panel: #131720;
-      --panel2: #1a1f2c;
-      --border: #232a3a;
-      --text: #e7eaf3;
-      --muted: #8b93a7;
-      --accent: #6366f1;
-      --accent2: #22d3ee;
-      --green: #10b981;
-      --red: #ef4444;
-      --yellow: #f59e0b;
+      --bg: #0f1117; --panel: #161b22; --panel2: #1c2333; --border: #30363d;
+      --text: #e6edf3; --text2: #8b949e; --indigo: #6366f1; --indigo2: #818cf8;
+      --green: #3fb950; --red: #f85149; --yellow: #d29922; --blue: #58a6ff;
     }
-    html, body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
-    .panel { background: var(--panel); border: 1px solid var(--border); }
-    .panel-2 { background: var(--panel2); border: 1px solid var(--border); }
-    .muted { color: var(--muted); }
-    .grad { background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%); }
-    .stat-card { transition: transform .15s ease, box-shadow .15s ease; }
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,.15); }
-    .pill { padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
-    .p-ok { background: rgba(16,185,129,.15); color: #34d399; }
-    .p-warn { background: rgba(245,158,11,.15); color: #fbbf24; }
-    .p-err { background: rgba(239,68,68,.15); color: #f87171; }
-    .p-info { background: rgba(99,102,241,.15); color: #a5b4fc; }
-    .nav-item { transition: background .12s ease, color .12s ease; }
-    .nav-item.active { background: var(--panel2); color: var(--text); }
-    .nav-item:hover { background: var(--panel2); }
-    .skeleton { background: linear-gradient(90deg, #1a1f2c 0%, #232a3a 50%, #1a1f2c 100%); background-size: 200% 100%; animation: sk 1.4s infinite; }
-    @keyframes sk { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 0 rgba(16,185,129,.6); animation: pulse 2s infinite; }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
-      70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
-      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
+    .sidebar { width:240px; background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:50; transition:transform .3s; overflow-y:auto; }
+    .sidebar-header { padding:20px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .sidebar-header .logo { width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg,var(--indigo),var(--indigo2)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#fff; }
+    .sidebar-header h1 { font-size:14px; font-weight:600; white-space:nowrap; }
+    .status-dot { width:8px; height:8px; border-radius:50%; background:var(--green); margin-left:auto; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .nav-section { padding:8px 0; }
+    .nav-section-label { padding:8px 16px; font-size:11px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:8px 16px; cursor:pointer; transition:background .15s; color:var(--text2); font-size:13px; text-decoration:none; }
+    .nav-item:hover { background:var(--panel2); color:var(--text); }
+    .nav-item.active { background:rgba(99,102,241,.15); color:var(--indigo2); }
+    .nav-item svg { width:18px; height:18px; flex-shrink:0; }
+    .main { margin-left:240px; flex:1; min-height:100vh; }
+    .topbar { padding:16px 24px; border-bottom:1px solid var(--border); background:var(--panel); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:40; }
+    .topbar h2 { font-size:16px; font-weight:600; }
+    .topbar-right { display:flex; align-items:center; gap:12px; }
+    .topbar-right span { font-size:12px; color:var(--text2); }
+    .topbar-right button { background:none; border:1px solid var(--border); color:var(--text2); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; }
+    .topbar-right button:hover { background:var(--panel2); color:var(--text); }
+    .content { padding:24px; }
+    .login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg); }
+    .login-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:32px; width:360px; }
+    .login-card h2 { text-align:center; margin-bottom:24px; font-size:20px; }
+    .form-group { margin-bottom:16px; }
+    .form-group label { display:block; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px; }
+    .form-group input, .form-group select { width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:14px; }
+    .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--indigo); }
+    .btn { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; transition:all .15s; }
+    .btn-primary { background:var(--indigo); color:#fff; width:100%; }
+    .btn-primary:hover { background:var(--indigo2); }
+    .btn-sm { padding:6px 12px; font-size:12px; }
+    .btn-success { background:var(--green); color:#fff; }
+    .btn-danger { background:var(--red); color:#fff; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text2); }
+    .btn-outline:hover { background:var(--panel2); color:var(--text); }
+    .error-msg { color:var(--red); font-size:13px; text-align:center; margin-top:8px; display:none; }
+    .success-msg { color:var(--green); font-size:13px; text-align:center; margin-top:8px; display:none; }
+    .card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:16px; }
+    .card h3 { font-size:14px; font-weight:600; margin-bottom:12px; }
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+    .stat-card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:16px; position:relative; overflow:hidden; }
+    .stat-card .label { font-size:12px; color:var(--text2); margin-bottom:4px; position:relative; }
+    .stat-card .value { font-size:24px; font-weight:700; position:relative; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:13px; }
+    th { color:var(--text2); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; }
+    .pill-green { background:rgba(63,185,80,.15); color:var(--green); }
+    .pill-yellow { background:rgba(210,153,34,.15); color:var(--yellow); }
+    .pill-red { background:rgba(248,81,73,.15); color:var(--red); }
+    .pill-blue { background:rgba(88,166,255,.15); color:var(--blue); }
+    .pill-indigo { background:rgba(99,102,241,.15); color:var(--indigo2); }
+    .skeleton { background:linear-gradient(90deg,var(--panel2) 25%,var(--panel) 50%,var(--panel2) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; height:16px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .hamburger { display:none; background:none; border:none; color:var(--text); cursor:pointer; padding:8px; }
+    .hamburger svg { width:24px; height:24px; }
+    .scrim { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; }
+    @media(max-width:768px){
+      .sidebar{transform:translateX(-100%)} .sidebar.open{transform:translateX(0)} .main{margin-left:0}
+      .hamburger{display:block} .scrim.open{display:block}
     }
-    .num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-thumb { background: #2a3142; border-radius: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
+    .link { color:var(--indigo2); text-decoration:none; cursor:pointer; }
+    .link:hover { text-decoration:underline; }
+    .form-row { display:flex; gap:12px; margin-bottom:16px; }
+    .form-row .form-group { flex:1; }
+    .doc-content { line-height:1.7; }
+    .doc-content h1,.doc-content h2,.doc-content h3 { margin:1.5em 0 .5em; }
+    .doc-content p { margin-bottom:.8em; }
+    .doc-content code { background:var(--bg); padding:2px 6px; border-radius:4px; font-size:13px; }
+    .integration-card { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+    .integration-card h4 { font-size:13px; font-weight:600; margin-bottom:8px; }
+    .integration-card .desc { font-size:12px; color:var(--text2); margin-bottom:12px; }
   </style>
 </head>
-<body class="min-h-screen">
-
+<body>
   <!-- LOGIN -->
-  <div id="login-view" class="min-h-screen grid place-items-center px-4">
-    <div class="w-full max-w-sm panel rounded-2xl p-6">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 rounded-xl grad grid place-items-center text-white font-bold">1A</div>
-        <div>
-          <div class="font-bold text-lg">1AI Affiliate</div>
-          <div class="muted text-xs">Tracker</div>
-        </div>
+  <div id="login-view" class="login-wrap">
+    <div class="login-card">
+      <div style="text-align:center;margin-bottom:20px"><div class="logo" style="width:48px;height:48px;margin:0 auto;font-size:18px">1A</div></div>
+      <h2>1AI Affiliate Tracker</h2>
+      <div id="login-form">
+        <div class="form-group"><label>Username or Email</label><input type="text" id="login-user" placeholder="admin"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••"></div>
+        <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
+        <div id="login-err" class="error-msg"></div>
+        <div style="text-align:center;margin-top:12px"><a class="link" onclick="showForgotPassword()">Forgot password?</a></div>
       </div>
-      <form id="login-form" class="space-y-3">
-        <div>
-          <label class="text-xs muted">Username</label>
-          <input id="login-user" type="text" autocomplete="username" required
-            class="w-full mt-1 panel-2 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        </div>
-        <div>
-          <label class="text-xs muted">Password</label>
-          <input id="login-pass" type="password" autocomplete="current-password" required
-            class="w-full mt-1 panel-2 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        </div>
-        <button type="submit" class="w-full grad rounded-lg py-2.5 text-sm font-semibold text-white hover:opacity-95">
-          Sign in
-        </button>
-        <div id="login-err" class="text-xs text-red-400 hidden"></div>
-      </form>
+      <div id="forgot-form" style="display:none">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Enter your username and email to receive a password reset key.</p>
+        <div class="form-group"><label>Username</label><input type="text" id="forgot-user" placeholder="admin"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="forgot-email" placeholder="admin@example.com"></div>
+        <button class="btn btn-primary" onclick="doForgotPassword()">Send Reset Key</button>
+        <div id="forgot-msg" class="error-msg"></div>
+        <div style="text-align:center;margin-top:12px"><a class="link" onclick="showLoginForm()">Back to login</a></div>
+      </div>
+      <div id="reset-form" style="display:none">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Enter the reset key sent to your email and your new password.</p>
+        <div class="form-group"><label>Reset Key</label><input type="text" id="reset-key" placeholder="abc123..."></div>
+        <div class="form-group"><label>New Password</label><input type="password" id="reset-pass" placeholder="Min 6 characters"></div>
+        <button class="btn btn-primary" onclick="doResetPassword()">Reset Password</button>
+        <div id="reset-msg" class="error-msg"></div>
+        <div id="reset-success" class="success-msg"></div>
+        <div style="text-align:center;margin-top:12px"><a class="link" onclick="showLoginForm()">Back to login</a></div>
+      </div>
     </div>
   </div>
 
-  <!-- APP -->
-  <div id="app-view" class="hidden min-h-screen">
-    <!-- mobile top bar -->
-    <header class="lg:hidden sticky top-0 z-30 panel border-b flex items-center justify-between px-4 h-14">
-      <button id="menu-btn" class="p-2 -ml-2" aria-label="Open menu">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-      </button>
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-lg grad grid place-items-center text-white text-xs font-bold">1A</div>
-        <span class="font-semibold text-sm">1AI Affiliate</span>
+  <!-- APP SHELL -->
+  <div id="app" style="display:none">
+    <div class="scrim" id="scrim" onclick="Router.toggleSidebar()"></div>
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">1A</div><h1>1AI Tracker</h1><div class="status-dot"></div>
       </div>
-      <div class="w-9"></div>
-    </header>
-
-    <div class="flex">
-      <!-- sidebar -->
-      <aside id="sidebar" class="fixed lg:sticky top-0 lg:top-0 z-40 lg:z-auto h-screen w-64 panel border-r -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
-        <div class="p-4 flex items-center gap-3 border-b" style="border-color: var(--border);">
-          <div class="w-9 h-9 rounded-lg grad grid place-items-center text-white font-bold">1A</div>
-          <div>
-            <div class="font-semibold text-sm">1AI Affiliate</div>
-            <div class="muted text-[10px] uppercase tracking-wider">Tracker</div>
-          </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Analytics</div>
+        <div class="nav-item active" data-page="overview" onclick="Router.navigate('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
+        <div class="nav-item" data-page="attribution" onclick="Router.navigate('attribution')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Attribution</div>
+        <div class="nav-item" data-page="clicks" onclick="Router.navigate('clicks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>Clicks</div>
+        <div class="nav-item" data-page="campaigns" onclick="Router.navigate('campaigns')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Campaigns</div>
+        <div class="nav-item" data-page="offers" onclick="Router.navigate('offers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Offers</div>
+        <div class="nav-item" data-page="reports" onclick="Router.navigate('reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Affiliates</div>
+        <div class="nav-item" data-page="affiliates" onclick="Router.navigate('affiliates')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Affiliates</div>
+        <div class="nav-item" data-page="earnings" onclick="Router.navigate('earnings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Earnings</div>
+        <div class="nav-item" data-page="commissions" onclick="Router.navigate('commissions')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Commissions</div>
+        <div class="nav-item" data-page="payments" onclick="Router.navigate('payments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Payments</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">System</div>
+        <div class="nav-item" data-page="profile" onclick="Router.navigate('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+        <div class="nav-item" data-page="integrations" onclick="Router.navigate('integrations')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Integrations</div>
+        <div class="nav-item" data-page="admin" onclick="Router.navigate('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Admin</div>
+        <div class="nav-item" data-page="clickservers" onclick="Router.navigate('clickservers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>Servers</div>
+        <div class="nav-item" data-page="docs" onclick="Router.navigate('docs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h6z"/></svg>Docs</div>
+        <div class="nav-item" data-page="help" onclick="Router.navigate('help')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help</div>
+        <div class="nav-item" data-page="vipperks" onclick="Router.navigate('vipperks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>VIP Perks</div>
+        <div class="nav-item" data-page="users" onclick="Router.navigate('users')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</div>
+      </div>
+    </nav>
+    <div class="main">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="hamburger" onclick="Router.toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <h2 id="page-title">Overview</h2>
         </div>
-        <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-          <a href="#" data-page="overview" class="nav-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-            Overview
-          </a>
-          <a href="#" data-page="affiliates" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm14 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Affiliates
-          </a>
-          <a href="#" data-page="earnings" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Earnings
-          </a>
-          <a href="#" data-page="commissions" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 4 4 5-5"/></svg>
-            Commissions
-          </a>
-          <a href="#" data-page="payments" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-            Payments
-          </a>
-          <a href="#" data-page="campaigns" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            Campaigns
-          </a>
-          <a href="#" data-page="attribution" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Attribution
-          </a>
-          <a href="#" data-page="clicks" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
-            Click Tracker
-          </a>
-          <a href="#" data-page="offers" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-            Offers
-          </a>
-          <a href="#" data-page="users" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/></svg>
-            Users
-          </a>
-          <a href="#" data-page="reports" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Reports
-          </a>
-          <a href="#" data-page="settings" class="nav-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm muted">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.361 2.329-1.361 2.754 0a1.474 1.474 0 002.087.905c1.262-.5 2.466.873 1.77 1.976a1.474 1.474 0 00.617 2.16c1.255.553 1.255 2.133 0 2.686a1.474 1.474 0 00-.617 2.16c.696 1.103-.508 2.476-1.77 1.976a1.474 1.474 0 00-2.087.905c-.425 1.361-2.328 1.361-2.754 0a1.474 1.474 0 00-2.087-.905c-1.262.5-2.466-.873-1.77-1.976a1.474 1.474 0 00-.617-2.16c-1.255-.553-1.255-2.133 0-2.686a1.474 1.474 0 00.617-2.16c-.696-1.103.508-2.476 1.77-1.976a1.474 1.474 0 002.087-.905z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Settings
-          </a>
-        </nav>
-        <div class="p-3 border-t" style="border-color: var(--border);">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="pulse-dot"></div>
-            <span class="muted text-xs">System healthy</span>
-          </div>
-          <div id="me" class="text-xs muted mb-2"></div>
-          <button id="logout" class="w-full text-xs px-3 py-2 rounded-lg panel-2 hover:bg-red-500/10 hover:text-red-400">
-            Sign out
-          </button>
+        <div class="topbar-right">
+          <span id="me"></span>
+          <button onclick="doLogout()">Sign Out</button>
         </div>
-      </aside>
-
-      <!-- main -->
-      <main class="flex-1 min-w-0 p-4 lg:p-8 max-w-7xl">
-        <div id="page"></div>
-      </main>
+      </div>
+      <div class="content" id="page-content"></div>
     </div>
   </div>
 
-  <!-- mobile scrim -->
-  <div id="scrim" class="hidden lg:hidden fixed inset-0 z-30 bg-black/60"></div>
-
-  <script src="/assets/app.js"></script>
+  <script src="/assets/js/core/api.js"></script>
+  <script src="/assets/js/core/auth.js"></script>
+  <script src="/assets/js/core/dom.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/core/auth-flow.js"></script>
+  <!-- Page modules -->
+  <script src="/assets/js/pages/actions.js"></script>
+  <script src="/assets/js/pages/table-pages.js"></script>
+  <script src="/assets/js/pages/overview.js"></script>
+  <script src="/assets/js/pages/analytics.js"></script>
+  <script src="/assets/js/pages/system.js"></script>
 </body>
 </html>

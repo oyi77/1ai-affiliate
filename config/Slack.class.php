@@ -141,8 +141,8 @@ class Slack {
       //Delete Click Data
       'click_data_deleted' => '#[user] deleted all click data prior to: [date]',
 
-      //MaxMind ISP/Carrier Lookup
-      'maxmind_isp_changed' => '#[user] [type] MaxMind ISP/Carrier Lookup',
+      //ISP/Carrier Lookup
+      'maxmind_isp_changed' => '#[user] [type] ISP/Carrier Lookup',
 
       //Failed Login Attempt
       'failed_login' => 'Failed Login Attempt:\n - Username: [username]\n - IP Address: [ip]',

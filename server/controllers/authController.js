@@ -1,6 +1,10 @@
 const pool = require('../db/mysql');
 const { generateToken } = require('../middleware/auth');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+
+// Password reset key expiry: 3 days (in seconds)
+const RESET_KEY_EXPIRY = 3 * 24 * 60 * 60;
 
 /**
  * Login using users table (same DB as PHP tracking platform).
@@ -95,4 +99,130 @@ async function getMe(req, res) {
   }
 }
 
-module.exports = { login, getMe };
+/**
+ * Forgot password — generates a reset key and returns it.
+ * In production, this would email the user. For now, returns the key directly.
+ */
+async function forgotPassword(req, res) {
+  const { username, email } = req.body;
+  if (!username || !email) {
+    return res.status(400).json({ error: 'Username and email required' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT user_id, user_name, user_email FROM users WHERE user_name = ? AND user_email = ?',
+      [username, email]
+    );
+
+    if (rows.length === 0) {
+      // Don't reveal whether user exists
+      return res.json({ message: 'If the account exists, a reset key has been generated.' });
+    }
+
+    const user = rows[0];
+    const resetKey = crypto.randomBytes(32).toString('hex');
+    const resetTime = Math.floor(Date.now() / 1000);
+
+    await pool.query(
+      'UPDATE users SET user_pass_key = ?, user_pass_time = ? WHERE user_id = ?',
+      [resetKey, resetTime, user.user_id]
+    );
+
+    // In production: send email with reset link containing the key
+    // For now: return the key directly for testing
+    res.json({
+      message: 'Reset key generated.',
+      key: resetKey,
+      // Remove in production:
+      user_id: user.user_id
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * Reset password — verifies reset key (not expired) and sets new password.
+ */
+async function resetPassword(req, res) {
+  const { key, password } = req.body;
+  if (!key || !password) {
+    return res.status(400).json({ error: 'Reset key and new password required' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT user_id, user_pass_key, user_pass_time FROM users WHERE user_pass_key = ?',
+      [key]
+    );
+
+    if (rows.length === 0) {
+      return res.status(400).json({ error: 'Invalid or expired reset key' });
+    }
+
+    const user = rows[0];
+    const now = Math.floor(Date.now() / 1000);
+
+    if (!user.user_pass_time || (now - user.user_pass_time) > RESET_KEY_EXPIRY) {
+      // Clear the key so it can't be reused
+      await pool.query('UPDATE users SET user_pass_key = NULL, user_pass_time = 0 WHERE user_id = ?', [user.user_id]);
+      return res.status(400).json({ error: 'Reset key has expired. Please request a new one.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      'UPDATE users SET user_pass = ?, user_pass_key = NULL, user_pass_time = 0 WHERE user_id = ?',
+      [hashedPassword, user.user_id]
+    );
+
+    res.json({ message: 'Password has been reset successfully.' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * Change password for authenticated user.
+ */
+async function changePassword(req, res) {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Current password and new password required' });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT user_pass FROM users WHERE user_id = ?',
+      [req.user.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const valid = await bcrypt.compare(currentPassword, rows[0].user_pass);
+    if (!valid) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET user_pass = ? WHERE user_id = ?', [hashedPassword, req.user.id]);
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+module.exports = { login, getMe, forgotPassword, resetPassword, changePassword };
