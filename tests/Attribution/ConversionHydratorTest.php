@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Attribution;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\Repository\Mysql\ConversionHydrator;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionHydrator;
 
 final class ConversionHydratorTest extends TestCase
 {

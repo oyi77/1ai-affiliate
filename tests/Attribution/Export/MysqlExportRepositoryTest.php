@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Attribution\Export;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\Export\ExportFormat;
-use Prosper202\Attribution\Export\ExportJob;
-use Prosper202\Attribution\Export\ExportStatus;
-use Prosper202\Attribution\Repository\Mysql\MysqlExportRepository;
-use Prosper202\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Export\ExportFormat;
+use OneAIAffiliate\Attribution\Export\ExportJob;
+use OneAIAffiliate\Attribution\Export\ExportStatus;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlExportRepository;
+use OneAIAffiliate\Attribution\ScopeType;
 
 final class MysqlExportRepositoryTest extends TestCase
 {

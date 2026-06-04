@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Repository;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Repository\Cached\CachedLocationRepository;
-use Prosper202\Repository\InMemory\InMemoryLocationRepository;
-use Prosper202\Repository\LocationRepositoryInterface;
+use OneAIAffiliate\Repository\Cached\CachedLocationRepository;
+use OneAIAffiliate\Repository\InMemory\InMemoryLocationRepository;
+use OneAIAffiliate\Repository\LocationRepositoryInterface;
 
 final class LocationRepositoryContractTest extends TestCase
 {

@@ -34,7 +34,7 @@ class SystemController
 
         return [
             'data' => [
-                'prosper202_version' => $row['version'] ?? 'unknown',
+                'oneai_affiliate_version' => $row['version'] ?? 'unknown',
                 'php_version'        => PHP_VERSION,
                 'mysql_version'      => $this->db->server_info,
                 'api_version'        => 'v3',

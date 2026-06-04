@@ -1,6 +1,6 @@
 <?php
 /**
- * Prosper202 Version Configuration
+ * 1ai-Affiliate Version Configuration
  * Single source of truth for version management
  */
 declare(strict_types=1);
@@ -26,8 +26,8 @@ $version = PROSPER202_VERSION;
  * @param string|null $compare_version Version to compare against (defaults to current version)
  * @return bool Result of version comparison
  */
-if (!function_exists('prosper202_version_compare')) {
-    function prosper202_version_compare(string $operator, ?string $compare_version = null): bool {
+if (!function_exists('oneai_affiliate_version_compare')) {
+    function oneai_affiliate_version_compare(string $operator, ?string $compare_version = null): bool {
         $compare_against = $compare_version ?? PROSPER202_VERSION;
         return version_compare(PROSPER202_VERSION, $compare_against, $operator);
     }

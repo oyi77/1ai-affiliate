@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Crud;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Crud\InMemoryCrudRepository;
-use Prosper202\Crud\TableConfig;
+use OneAIAffiliate\Crud\InMemoryCrudRepository;
+use OneAIAffiliate\Crud\TableConfig;
 use RuntimeException;
 
 final class CrudRepositoryTest extends TestCase

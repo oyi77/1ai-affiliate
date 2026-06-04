@@ -2716,8 +2716,8 @@ aff_network_id=values(aff_network_id)";
                 $full_day[] = $row['hourstart'] + 3599;
                 $hours = 0;
 
-                $mysql['time_from'] = $db->real_escape_string($full_day[0]);
-                $mysql['time_to'] = $db->real_escape_string($full_day[1]);
+                $mysql['time_from'] = $db->real_escape_string((string) $full_day[0]);
+                $mysql['time_to'] = $db->real_escape_string((string) $full_day[1]);
 
                 $sql = "INSERT INTO 202_dataengine_job SET time_from = '" . $mysql['time_from'] . "', time_to = '" . $mysql['time_to'] . "'";
                 $res = $db->query($sql);

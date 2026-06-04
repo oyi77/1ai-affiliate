@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 use Throwable;
 

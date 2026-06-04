@@ -12,7 +12,7 @@ Advanced LP on the other hand was designed for multiple offers and/or multiple p
 
 If you're in doubt about which one you need, Advanced LP is a safer bet.
 
-If you have a different setup than what is described above, likely Prosper202 will still work but you'd have to pay for support for us to assist you in your unique setup.
+If you have a different setup than what is described above, likely 1ai-Affiliate will still work but you'd have to pay for support for us to assist you in your unique setup.
 
 ## Simple LP
 

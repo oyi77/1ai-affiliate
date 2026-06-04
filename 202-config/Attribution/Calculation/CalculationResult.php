@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Calculation;
+namespace OneAIAffiliate\Attribution\Calculation;
 
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\Touchpoint;
 
 /**
  * Aggregated output for a strategy execution.

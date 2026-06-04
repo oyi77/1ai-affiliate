@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Analytics;
+namespace OneAIAffiliate\Attribution\Analytics;
 
 /**
  * Helpers that convert analytics DTOs into serialisable array payloads.

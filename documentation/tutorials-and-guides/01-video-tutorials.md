@@ -8,12 +8,12 @@ Below are some of the included videos we think you'll find useful:
 
 ## Setting Up Rule Based Redirection
 
-**Video:** [Prosper202 Pro Tutorial: Setting Rules Based Redirection](https://www.youtube.com/watch?v=f_lSpq_Sme0&feature=youtu.be)
+**Video:** [1ai-Affiliate Pro Tutorial: Setting Rules Based Redirection](https://www.youtube.com/watch?v=f_lSpq_Sme0&feature=youtu.be)
 
 ## Setting Up A/B or Split Testing
 
-**Video:** [Prosper202 Pro Tutorial: Setting Up A Split-Test (A/B Testing)](https://www.youtube.com/watch?v=QTc0wvDEfeE&feature=youtu.be)
+**Video:** [1ai-Affiliate Pro Tutorial: Setting Up A Split-Test (A/B Testing)](https://www.youtube.com/watch?v=QTc0wvDEfeE&feature=youtu.be)
 
 ## Dynamic Cost Tokens
 
-**Video:** [Prosper202 Tutorial: Cost Tracking With Dynamic Cost Tokens](https://www.youtube.com/watch?v=3zAkfME7BB8&feature=youtu.be)
+**Video:** [1ai-Affiliate Tutorial: Cost Tracking With Dynamic Cost Tokens](https://www.youtube.com/watch?v=3zAkfME7BB8&feature=youtu.be)

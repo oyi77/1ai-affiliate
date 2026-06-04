@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Export;
+namespace OneAIAffiliate\Attribution\Export;
 
-use Prosper202\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\Snapshot;
 
 final class SnapshotExporter
 {

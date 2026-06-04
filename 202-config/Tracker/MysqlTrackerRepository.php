@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Tracker;
+namespace OneAIAffiliate\Tracker;
 
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Database\Connection;
 
 final class MysqlTrackerRepository implements TrackerRepositoryInterface
 {

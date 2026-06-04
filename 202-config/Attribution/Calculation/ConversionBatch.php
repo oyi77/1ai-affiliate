@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Calculation;
+namespace OneAIAffiliate\Attribution\Calculation;
 
 /**
  * Groups conversions for a specific timeframe and scope for calculation.

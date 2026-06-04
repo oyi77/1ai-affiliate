@@ -3,7 +3,7 @@
 This guide walks through enabling and operating the new Advanced Attribution Engine. It covers prerequisites, configuration, job scheduling, reporting, and troubleshooting so teams can roll the feature out with confidence.
 
 ## 1. Prerequisites
-- Prosper202 version 1.9.56 or higher (installers/upgraders include the attribution schema and cron job).
+- 1ai-Affiliate version 1.9.56 or higher (installers/upgraders include the attribution schema and cron job).
 - PHP 8.3 or higher with PDO/MySQLi extensions enabled.
 - Access to the command line for running `php` and scheduling cron tasks.
 - Users require the new permissions:
@@ -29,7 +29,7 @@ The core service is executed via `202-cronjobs/attribution-rebuild.php`.
 **Recommended schedule**: run hourly.
 ```
 # Example cron entry (run at 15 minutes past every hour)
-15 * * * * /usr/bin/php /path/to/prosper202/202-cronjobs/attribution-rebuild.php >> /var/log/prosper202/attribution-cron.log 2>&1
+15 * * * * /usr/bin/php /path/to/1ai-affiliate/202-cronjobs/attribution-rebuild.php >> /var/log/1ai-affiliate/attribution-cron.log 2>&1
 ```
 
 ### CLI Options
@@ -88,4 +88,4 @@ See the dedicated [Advanced Attribution Troubleshooting Guide](./15-advanced-att
 - Document sandbox workflows in product tutorials when the UI ships.
 - Review [Advanced Attribution Scaling](./16-advanced-attribution-scaling.md) before rolling out to large datasets.
 
-For questions or escalation, contact the Attribution Working Group on Slack (`#prosper202-attribution`).
+For questions or escalation, contact the Attribution Working Group on Slack (`#1ai-affiliate-attribution`).

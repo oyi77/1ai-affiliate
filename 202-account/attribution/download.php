@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Prosper202\Attribution\ExportFormat;
-use Prosper202\Attribution\Repository\Mysql\MysqlExportJobRepository;
+use OneAIAffiliate\Attribution\ExportFormat;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlExportJobRepository;
 
 include_once str_repeat('../', 1) . '202-config/connect.php';
 

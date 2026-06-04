@@ -6,7 +6,7 @@ require_once(__DIR__ . '/functions.php');
 
 //check to see if the sample config file exists
 if (!file_exists(substr(__DIR__, 0, -10) . '/202-config-sample.php')) {
-	_die('Sorry, I need a 202-config-sample.php file to work from. Please re-upload this file from your Prosper202 installation.');
+	_die('Sorry, I need a 202-config-sample.php file to work from. Please re-upload this file from your 1ai-Affiliate installation.');
 }
 
 
@@ -16,7 +16,7 @@ $configFile = file(substr(__DIR__, 0, -10) . '/202-config-sample.php');
 
 //check to see if the directory is writable
 if (!is_writable(substr(__DIR__, 0, -10) . '/')) {
-	_die("Sorry, I can't write to the directory. You'll have to either change the permissions on your Prosper202 directory or create your 202-config.php manually.");
+	_die("Sorry, I can't write to the directory. You'll have to either change the permissions on your 1ai-Affiliate directory or create your 202-config.php manually.");
 }
 
 
@@ -74,8 +74,8 @@ switch ($step) {
 		info_top();
 ?>
 		<div class="main col-xs-7 install">
-			<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
-			<small>Welcome to Prosper202. Before getting started, we need some information about your database. You will need to know the following items before proceeding.</small>
+			<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
+			<small>Welcome to 1ai-Affiliate. Before getting started, we need some information about your database. You will need to know the following items before proceeding.</small>
 			<br></br>
 			<small>
 				<ul>
@@ -115,15 +115,15 @@ switch ($step) {
 
 		?>
 		<div class="main col-xs-7 install">
-			<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
+			<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
 			<small><?php echo $msg; ?></small>
 
 			<form method="post" action="<?php echo $action; ?>" class="form-horizontal" role="form" style="margin-top:10px;">
 				<div class="form-group" style="margin-bottom: 0px;">
 					<label for="dbname" class="col-xs-4 control-label" style="text-align:left"><strong>Database Name:</strong></label>
 					<div class="col-xs-8" style="margin-top: 5px;">
-						<input type="text" class="form-control input-sm" id="dbname" name="dbname" value="<?php echo ($odbname ?? 'prosper202'); ?>">
-						<span class="help-block" style="font-size: 10px;">The name of the database you want to run Prosper202 in.</span>
+						<input type="text" class="form-control input-sm" id="dbname" name="dbname" value="<?php echo ($odbname ?? 'oneai_affiliate'); ?>">
+						<span class="help-block" style="font-size: 10px;">The name of the database you want to run 1ai-Affiliate in.</span>
 					</div>
 				</div>
 
@@ -222,7 +222,7 @@ switch ($step) {
 				<li>Are you sure that the database server is running?</li>
 			</ul>
 			</small> 
-			<p><small>If you're unsure what these terms mean you should probably contact your host. If you still need help, please visit the <a href='http://support.tracking202.com/how-to-set-up-and-use-prosper202-pro/installing-prosper202?utm_source=db-install-error'>Prosper202 Support Site</a>.</small> </p>
+			<p><small>If you're unsure what these terms mean you should probably contact your host. If you still need help, please visit the <a href='http://support.tracking202.com/how-to-set-up-and-use-oneai_affiliate-pro/installing-oneai_affiliate?utm_source=db-install-error'>1ai-Affiliate Support Site</a>.</small> </p>
 			<p><a href='setup-config.php?step=1' class='btn btn-sm btn-p202 btn-block'>Go back and enter your database credentials again!</a></p>
 		");
 		}
@@ -246,5 +246,5 @@ switch ($step) {
 		fclose($handle);
 		chmod(substr(__DIR__, 0, -10) . '/202-config.php', 0666);
 
-			_die("<p>All right sparky! You've made it through this part of the installation. Prosper202 can now communicate with your database. If you are ready, go ahead and <a class='btn btn-xs btn-p202' href=\"install.php\">run the install!</a></p>");
+			_die("<p>All right sparky! You've made it through this part of the installation. 1ai-Affiliate can now communicate with your database. If you are ready, go ahead and <a class='btn btn-xs btn-p202' href=\"install.php\">run the install!</a></p>");
 	}

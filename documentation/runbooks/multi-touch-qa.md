@@ -13,7 +13,7 @@ This runbook covers operational validation for the multi-touch attribution stack
    - `202_conversion_touchpoints` with `conv_id`, `click_id`, ordered `position`, and secondary indexes for conversion and click lookups.【F:202-config/functions-install.php†L224-L235】
    - Attribution tables (`202_attribution_models`, `202_attribution_settings`, `202_attribution_snapshots`, `202_attribution_touchpoints`, `202_attribution_audit`) for model metadata, defaults, hourly aggregates, credits, and audit history.【F:202-config/functions-install.php†L237-L316】
 2. Confirm `202_conversion_logs` still tracks the base conversion row referenced by journeys, including `click_id`, `conv_time`, and soft-delete flag for purges.【F:202-config/functions-install.php†L203-L221】
-3. For upgrades, run Dashboard → System Checks to ensure the attribution cron health check passes after schema verification.【F:documentation/tutorials-and-guides/05-upgrading-prosper202.md†L11-L16】
+3. For upgrades, run Dashboard → System Checks to ensure the attribution cron health check passes after schema verification.【F:documentation/tutorials-and-guides/05-upgrading-1ai-affiliate.md†L11-L16】
 
 ## 2. Feature Toggles & Configuration
 
@@ -56,7 +56,7 @@ This runbook covers operational validation for the multi-touch attribution stack
 
    > **Note:** If the hourly attribution cron is not configured or fails to run, snapshots and touchpoints will become stale, attribution data will not reflect recent conversions or model changes, and dashboards/BI exports may show outdated or incomplete results. This can lead to inaccurate reporting and missed attribution events. Ensure the cron is scheduled and monitored for successful completion.
    ```cron
-   15 * * * * /usr/bin/php /path/to/prosper202/202-cronjobs/attribution-rebuild.php >> /var/log/prosper202/attribution-cron.log 2>&1
+   15 * * * * /usr/bin/php /path/to/1ai-affiliate/202-cronjobs/attribution-rebuild.php >> /var/log/1ai-affiliate/attribution-cron.log 2>&1
    ```
    CLI options include `--user`, `--start`, and `--end` for targeted reruns.【F:documentation/tutorials-and-guides/14-advanced-attribution-engine.md†L26-L40】
 

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository;
+namespace OneAIAffiliate\Attribution\Repository;
 
-use Prosper202\Attribution\ExportJob;
-use Prosper202\Attribution\ExportStatus;
+use OneAIAffiliate\Attribution\ExportJob;
+use OneAIAffiliate\Attribution\ExportStatus;
 
 /**
  * Persists and retrieves attribution export jobs.

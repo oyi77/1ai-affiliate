@@ -74,4 +74,4 @@ This guide tracks the remaining work to deliver the Advanced Attribution Engine 
 4. Once all checkboxes are marked, the feature is ready for GA release.
 
 ## Contact
-Questions or updates?  (`#prosper202-attribution
+Questions or updates?  (`#1ai-affiliate-attribution

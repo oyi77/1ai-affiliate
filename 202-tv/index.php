@@ -5,7 +5,7 @@ include_once(str_repeat("../", 1) . '202-config/connect.php');
 
 AUTH::require_user();
 
-template_top('Prosper202 ClickServer TV202');
+template_top('1ai-Affiliate ClickServer TV202');
 ?>
 
 <div class="row home">

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Repository;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Repository\Cached\CachedDeviceRepository;
-use Prosper202\Repository\DeviceRepositoryInterface;
-use Prosper202\Repository\InMemory\InMemoryDeviceRepository;
+use OneAIAffiliate\Repository\Cached\CachedDeviceRepository;
+use OneAIAffiliate\Repository\DeviceRepositoryInterface;
+use OneAIAffiliate\Repository\InMemory\InMemoryDeviceRepository;
 
 final class DeviceRepositoryContractTest extends TestCase
 {

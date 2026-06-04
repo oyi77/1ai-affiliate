@@ -16,7 +16,7 @@ class ConfigTestCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription('Test connectivity to the remote Prosper202 instance');
+        $this->setDescription('Test connectivity to the remote 1ai-Affiliate instance');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

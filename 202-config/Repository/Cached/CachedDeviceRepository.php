@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository\Cached;
+namespace OneAIAffiliate\Repository\Cached;
 
 use Closure;
-use Prosper202\Repository\DeviceRepositoryInterface;
+use OneAIAffiliate\Repository\DeviceRepositoryInterface;
 
 final class CachedDeviceRepository implements DeviceRepositoryInterface
 {

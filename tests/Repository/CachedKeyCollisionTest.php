@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Repository;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Repository\Cached\CachedLocationRepository;
-use Prosper202\Repository\Cached\CachedTrackingRepository;
-use Prosper202\Repository\InMemory\InMemoryLocationRepository;
-use Prosper202\Repository\InMemory\InMemoryTrackingRepository;
+use OneAIAffiliate\Repository\Cached\CachedLocationRepository;
+use OneAIAffiliate\Repository\Cached\CachedTrackingRepository;
+use OneAIAffiliate\Repository\InMemory\InMemoryLocationRepository;
+use OneAIAffiliate\Repository\InMemory\InMemoryTrackingRepository;
 
 final class CachedKeyCollisionTest extends TestCase
 {

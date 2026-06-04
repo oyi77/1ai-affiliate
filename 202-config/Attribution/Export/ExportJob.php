@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Export;
+namespace OneAIAffiliate\Attribution\Export;
 
-use Prosper202\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\ScopeType;
 
 final class ExportJob
 {

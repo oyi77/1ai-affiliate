@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Settings;
+namespace OneAIAffiliate\Attribution\Settings;
 
-use Prosper202\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\ScopeType;
 
 /**
  * Value object describing attribution settings for a given scope.

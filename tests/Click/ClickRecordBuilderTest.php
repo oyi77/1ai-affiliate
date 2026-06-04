@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Click;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Click\ClickRecord;
-use Prosper202\Click\ClickRecordBuilder;
+use OneAIAffiliate\Click\ClickRecord;
+use OneAIAffiliate\Click\ClickRecordBuilder;
 
 final class ClickRecordBuilderTest extends TestCase
 {

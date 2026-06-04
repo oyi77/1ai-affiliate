@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 /**
  * Standalone attribution models migration script
- * Run this after configuring Prosper202 database settings
+ * Run this after configuring 1ai-Affiliate database settings
  */
 
-echo "Prosper202 Attribution Models Migration\n";
+echo "1ai-Affiliate Attribution Models Migration\n";
 echo "=======================================\n\n";
 
 $rootDir = dirname(__DIR__, 2);
 
 // Check if this is being run in the correct directory
 if (!file_exists($rootDir . '/202-config.php')) {
-    echo "Error: This script must be run from the Prosper202 root directory\n";
+    echo "Error: This script must be run from the 1ai-Affiliate root directory\n";
     echo "   Expected to find 202-config.php in: " . $rootDir . "\n";
     echo "   Usage: php 202-config/migrations/run_attribution_migration_standalone.php\n";
     exit(1);
@@ -139,7 +139,7 @@ try {
 
 echo "\n🚀 Attribution system is ready to use!\n";
 echo "Next steps:\n";
-echo "1. Access Prosper202 setup section\n";
+echo "1. Access 1ai-Affiliate setup section\n";
 echo "2. Navigate to Setup > Attribution Models\n";
 echo "3. Create your first attribution model\n";
 echo "4. Assign models to campaigns\n\n";

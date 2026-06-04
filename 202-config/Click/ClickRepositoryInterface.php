@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Click;
+namespace OneAIAffiliate\Click;
 
 interface ClickRepositoryInterface
 {

@@ -27,8 +27,8 @@ final class DlTest extends TestCase
         $this->capturedHeaders = [];
         
         // Set default server variables
-        $_SERVER['HTTP_HOST'] = 'test.prosper202.com';
-        $_SERVER['SERVER_NAME'] = 'test.prosper202.com';
+        $_SERVER['HTTP_HOST'] = 'test.1ai-affiliate.com';
+        $_SERVER['SERVER_NAME'] = 'test.1ai-affiliate.com';
         $_SERVER['REQUEST_URI'] = '/tracking202/redirect/dl.php';
         $_SERVER['HTTP_X_FORWARDED_FOR'] = '127.0.0.1';
         

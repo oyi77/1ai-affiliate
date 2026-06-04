@@ -6,7 +6,7 @@ Below you'll find three available scripts. **[iFrame](02-script-tutorials.md#sec
 
 ## iFrame Script
 
-Here is the correct code to use for iframing an offer with Tracking202. The Prosper202 self-hosted version will be slightly different, but its the exact same idea. Place the Javascript at the end, and have the iframe src set to the landing page outbound link, not the php redirect code.
+Here is the correct code to use for iframing an offer with Tracking202. The 1ai-Affiliate self-hosted version will be slightly different, but its the exact same idea. Place the Javascript at the end, and have the iframe src set to the landing page outbound link, not the php redirect code.
 [block:code]
 {
 "codes": [
@@ -73,7 +73,7 @@ Anywhere you now call <? echo $keyword; ?> in your .php file, it will print out 
 
 ## Landing Page Load Time Analysis
 
-With quality scoring, taking into account how fast your landing page loads, is increasingly more important to build faster loading landing pages. And to analyze that we have a simple script, the same one we use on Prosper202.com (see below) that displays at the bottom of each page: how long it took to load. Below is the script that shows how to set this up.
+With quality scoring, taking into account how fast your landing page loads, is increasingly more important to build faster loading landing pages. And to analyze that we have a simple script, the same one we use on 1ai-Affiliate.com (see below) that displays at the bottom of each page: how long it took to load. Below is the script that shows how to set this up.
 
 **Landing Page Code**
 [block:code]

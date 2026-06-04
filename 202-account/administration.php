@@ -264,7 +264,7 @@ function CronJobLastExecution($datetime, $full = false)
 					<div class="panel-body">
 
 						<p>
-							Prosper202 Version: <span class="pull-right"><?php echo $version; ?></span>
+							1ai-Affiliate Version: <span class="pull-right"><?php echo $version; ?></span>
 						</p>
 						<p>
 							PHP Version: <span class="pull-right"><?php echo phpversion(); ?></span>
@@ -384,7 +384,7 @@ function CronJobLastExecution($datetime, $full = false)
 		<h6>Database Management</h6>
 	</div>
 	<div class="col-xs-4" style="padding-top: 6px;">
-		<small>Current Prosper202 Database Size: <span
+		<small>Current 1ai-Affiliate Database Size: <span
 				class="label label-primary"><?php echo database_size(); ?></span>
 		</small>
 	</div>
@@ -455,7 +455,7 @@ function CronJobLastExecution($datetime, $full = false)
 	<div class="col-xs-12">
 		<h6>AutoCron Settings</h6>
 		<span class="infotext">AutoCron is enabled by default, after you
-			install Prosper202 Pro. You can change settings here.</span>
+			install 1ai-Affiliate Pro. You can change settings here.</span>
 	</div>
 
 	<div class="col-xs-12">

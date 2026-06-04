@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution;
+namespace OneAIAffiliate\Attribution;
 
 /**
  * Enumerates the export formats supported by attribution snapshot jobs.

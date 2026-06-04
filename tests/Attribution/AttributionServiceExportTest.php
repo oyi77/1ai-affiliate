@@ -8,13 +8,13 @@ require_once __DIR__ . '/Support/RepositoryFakes.php';
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\AttributionService;
-use Prosper202\Attribution\ExportFormat;
-use Prosper202\Attribution\ExportJob;
-use Prosper202\Attribution\ExportStatus;
-use Prosper202\Attribution\Repository\ExportJobRepositoryInterface;
-use Prosper202\Attribution\Repository\NullAuditRepository;
-use Prosper202\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\AttributionService;
+use OneAIAffiliate\Attribution\ExportFormat;
+use OneAIAffiliate\Attribution\ExportJob;
+use OneAIAffiliate\Attribution\ExportStatus;
+use OneAIAffiliate\Attribution\Repository\ExportJobRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\NullAuditRepository;
+use OneAIAffiliate\Attribution\ScopeType;
 use Tests\Attribution\Support\InMemoryModelRepository;
 use Tests\Attribution\Support\InMemorySnapshotRepository;
 use Tests\Attribution\Support\InMemoryTouchpointRepository;
@@ -110,7 +110,7 @@ final class AttributionServiceExportTest extends TestCase
 
     /**
      * Builds an in-memory export job repository backed by the authoritative
-     * Prosper202\Attribution\ExportJob value object. Defined as an anonymous
+     * 1ai-Affiliate\Attribution\ExportJob value object. Defined as an anonymous
      * class so it never collides with the like-named fakes declared in sibling
      * test files that share the Tests\Attribution namespace.
      */

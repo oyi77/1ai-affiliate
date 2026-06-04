@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository\Cached;
+namespace OneAIAffiliate\Repository\Cached;
 
 use Closure;
-use Prosper202\Repository\LocationRepositoryInterface;
-use Prosper202\Repository\Mysql\MysqlLocationRepository;
+use OneAIAffiliate\Repository\LocationRepositoryInterface;
+use OneAIAffiliate\Repository\Mysql\MysqlLocationRepository;
 
 final class CachedLocationRepository implements LocationRepositoryInterface
 {

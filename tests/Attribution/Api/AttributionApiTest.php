@@ -21,20 +21,20 @@ namespace {
 namespace Tests\Attribution\Api {
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\AttributionService;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
-use Prosper202\Attribution\Repository\TouchpointRepositoryInterface;
-use Prosper202\Attribution\Repository\NullAuditRepository;
-use Prosper202\Attribution\Repository\ExportJobRepositoryInterface;
-use Prosper202\Attribution\ExportJob;
-use Prosper202\Attribution\ExportFormat;
-use Prosper202\Attribution\ExportStatus;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\AttributionService;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\TouchpointRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\NullAuditRepository;
+use OneAIAffiliate\Attribution\Repository\ExportJobRepositoryInterface;
+use OneAIAffiliate\Attribution\ExportJob;
+use OneAIAffiliate\Attribution\ExportFormat;
+use OneAIAffiliate\Attribution\ExportStatus;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\Touchpoint;
 use Slim\Http\Body;
 use Slim\Http\Environment;
 use Slim\Http\Request;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Analytics;
+namespace OneAIAffiliate\Attribution\Analytics;
 
 /**
  * Container aggregating the analytics response pieces served by the API.

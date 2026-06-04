@@ -28,7 +28,7 @@ function ipAddress($ip_address): stdClass
 // Add prosper_log function
 function prosper_log($category, $message): void {
     // Simple logging function - you can expand this as needed
-    error_log("[Prosper202][$category] $message");
+    error_log("[1ai-Affiliate][$category] $message");
 }
 
 function get_absolute_url(): string
@@ -43,7 +43,7 @@ function _die($message): never
 {
 
 	info_top();
-	echo '<div class="main col-xs-7"><center><img src="' . get_absolute_url() . '202-img/prosper202.png"></center>';
+	echo '<div class="main col-xs-7"><center><img src="' . get_absolute_url() . '202-img/oneai_affiliate.png"></center>';
 	echo $message;
 	echo '</div>';
 	info_bottom();
@@ -150,7 +150,7 @@ function upgrade_needed(): bool
 {
 
 	// Call static methods
-	$mysql_version = PROSPER202::prosper202_version();
+	$mysql_version = PROSPER202::oneai_affiliate_version();
 	$php_version = PROSPER202::php_version();
 	if ($mysql_version != $php_version) {
 		return true;
@@ -169,7 +169,7 @@ function info_top(): void
 
 	<head>
 
-		<title>Prosper202 ClickServer</title>
+		<title>1ai-Affiliate ClickServer</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="description" content="description" />
 		<meta name="keywords" content="keywords" />
@@ -405,10 +405,10 @@ function info_top(): void
 								$FilesUpdated = false;
 
 								if (temp_exists()) {
-									$downloadUpdate = @file_put_contents(__DIR__ . '/temp/prosper202_' . $latest_version . '.zip', $GetUpdate);
+									$downloadUpdate = @file_put_contents(__DIR__ . '/temp/oneai_affiliate_' . $latest_version . '.zip', $GetUpdate);
 									if ($downloadUpdate) {
 										$zip = new ZipArchive();
-										$zipResult = $zip->open(__DIR__ . '/temp/prosper202_' . $latest_version . '.zip');
+										$zipResult = $zip->open(__DIR__ . '/temp/oneai_affiliate_' . $latest_version . '.zip');
 
 										if ($zipResult === TRUE) {
 											$basePath = realpath(dirname(__DIR__));

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
-use Prosper202\Attribution\Calculation\ConversionRecord;
-use Prosper202\Attribution\Calculation\ConversionTouchpoint;
+use OneAIAffiliate\Attribution\Calculation\ConversionRecord;
+use OneAIAffiliate\Attribution\Calculation\ConversionTouchpoint;
 
 /**
  * Transforms raw conversion and journey rows into domain value objects.

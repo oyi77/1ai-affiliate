@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Attribution;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\InMemoryAttributionRepository;
+use OneAIAffiliate\Attribution\InMemoryAttributionRepository;
 use RuntimeException;
 
 final class AttributionRepositoryTest extends TestCase

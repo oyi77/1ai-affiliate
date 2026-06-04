@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Repository;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Repository\Cached\CachedTrackingRepository;
-use Prosper202\Repository\InMemory\InMemoryTrackingRepository;
-use Prosper202\Repository\TrackingRepositoryInterface;
+use OneAIAffiliate\Repository\Cached\CachedTrackingRepository;
+use OneAIAffiliate\Repository\InMemory\InMemoryTrackingRepository;
+use OneAIAffiliate\Repository\TrackingRepositoryInterface;
 use RuntimeException;
 
 final class TrackingRepositoryContractTest extends TestCase

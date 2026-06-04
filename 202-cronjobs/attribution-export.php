@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Prosper202\Attribution\ExportFormat;
-use Prosper202\Attribution\ExportJob;
-use Prosper202\Attribution\ExportStatus;
-use Prosper202\Attribution\Repository\Mysql\MysqlExportJobRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlSnapshotRepository;
-use Prosper202\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\ExportFormat;
+use OneAIAffiliate\Attribution\ExportJob;
+use OneAIAffiliate\Attribution\ExportStatus;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlExportJobRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlSnapshotRepository;
+use OneAIAffiliate\Attribution\Snapshot;
 
 require_once __DIR__ . '/../202-config/connect.php';
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -256,7 +256,7 @@ function dispatchWebhook(ExportJob $job, array $fileInfo): array
 
     if ($webhook->secret !== null) {
         $signature = hash_hmac('sha256', $json, $webhook->secret);
-        $headers[] = 'X-Prosper202-Signature: ' . $signature;
+        $headers[] = 'X-1ai-Affiliate-Signature: ' . $signature;
     }
 
     $ch = curl_init($webhook->url);

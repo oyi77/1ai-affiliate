@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Tracker;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Database\Connection;
-use Prosper202\Tracker\MysqlTrackerRepository;
+use OneAIAffiliate\Database\Connection;
+use OneAIAffiliate\Tracker\MysqlTrackerRepository;
 use Tests\Support\FakeMysqliConnection;
 
 final class MysqlTrackerRepositoryTest extends TestCase

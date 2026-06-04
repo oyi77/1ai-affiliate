@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Conversion;
+namespace OneAIAffiliate\Conversion;
 
 use RuntimeException;
 

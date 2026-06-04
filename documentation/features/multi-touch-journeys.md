@@ -1,6 +1,6 @@
 # Multi-touch Journey Storage and Hydration
 
-Prosper202 now persists full click journeys for every conversion so attribution strategies can operate on complete paths instead of single-touch snapshots.
+1ai-Affiliate now persists full click journeys for every conversion so attribution strategies can operate on complete paths instead of single-touch snapshots.
 
 ## Schema
 

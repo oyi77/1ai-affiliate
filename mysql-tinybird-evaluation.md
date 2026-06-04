@@ -4,11 +4,11 @@
 
 ### Does it make sense? No, not as a full replacement.
 
-Prosper202 has **70+ InnoDB tables**, **141 INSERT sites**, **188 UPDATE/DELETE sites**, and **13 files using transactions**. It's an OLTP+OLAP hybrid. Tinybird is a ClickHouse-based OLAP engine — append-only, no transactions, no UPDATE/DELETE, no foreign keys.
+1ai-Affiliate has **70+ InnoDB tables**, **141 INSERT sites**, **188 UPDATE/DELETE sites**, and **13 files using transactions**. It's an OLTP+OLAP hybrid. Tinybird is a ClickHouse-based OLAP engine — append-only, no transactions, no UPDATE/DELETE, no foreign keys.
 
 **Fundamental mismatches:**
 
-| Prosper202 needs | Tinybird provides |
+| 1ai-Affiliate needs | Tinybird provides |
 |---|---|
 | ACID transactions (click tracking writes 5-10 tables atomically) | No transactions |
 | UPDATE/DELETE (campaign CRUD, user management, RBAC) | Append-only (ReplacingMergeTree at best) |
@@ -80,7 +80,7 @@ final readonly class MysqlTouchpointRepository implements TouchpointRepositoryIn
 
 The Attribution module already established the right pattern. The goal is to propagate it everywhere, incrementally, without a big-bang rewrite.
 
-### Layer 1: Database Foundation (`Prosper202\Database`)
+### Layer 1: Database Foundation (`1ai-Affiliate\Database`)
 
 **New files to create:**
 
@@ -99,7 +99,7 @@ The Attribution module already established the right pattern. The goal is to pro
    - `$db->transaction(function($conn) { ... })` with automatic rollback on exception
    - Replaces the 13 manual `begin_transaction`/`commit`/`rollback` blocks
 
-### Layer 2: Repository Interfaces (`Prosper202\Repository`)
+### Layer 2: Repository Interfaces (`1ai-Affiliate\Repository`)
 
 One repository per domain entity, following the Attribution pattern:
 
@@ -117,8 +117,8 @@ One repository per domain entity, following the Attribution pattern:
 | `ConversionRepository` | Already exists in Attribution module |
 
 Each gets:
-- An interface in `Prosper202\Repository\`
-- A MySQL implementation in `Prosper202\Repository\Mysql\`
+- An interface in `1ai-Affiliate\Repository\`
+- A MySQL implementation in `1ai-Affiliate\Repository\Mysql\`
 - A null implementation for testing
 
 ### Layer 3: Migrate Incrementally

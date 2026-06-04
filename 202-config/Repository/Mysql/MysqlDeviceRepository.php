@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository\Mysql;
+namespace OneAIAffiliate\Repository\Mysql;
 
-use Prosper202\Database\Connection;
-use Prosper202\Repository\DeviceRepositoryInterface;
+use OneAIAffiliate\Database\Connection;
+use OneAIAffiliate\Repository\DeviceRepositoryInterface;
 
 final class MysqlDeviceRepository implements DeviceRepositoryInterface
 {

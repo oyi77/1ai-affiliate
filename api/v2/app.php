@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Api\Attribution\Controller;
-use Prosper202\Attribution\AttributionService;
-use Prosper202\Attribution\AttributionServiceFactory;
+use OneAIAffiliate\Attribution\AttributionService;
+use OneAIAffiliate\Attribution\AttributionServiceFactory;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -287,7 +287,7 @@ function authorize_attribution_request(array $params, string $permission): array
         ];
     }
 
-    // @phpstan-ignore-next-line prosper202.directStmtCall -- raw mysqli in free function; no Connection wrapper class exists in this codebase
+    // @phpstan-ignore-next-line oneai_affiliate.directStmtCall -- raw mysqli in free function; no Connection wrapper class exists in this codebase
     $stmt->bind_param('s', $apiKey);
     $stmt->execute();
     $result = $stmt->get_result();

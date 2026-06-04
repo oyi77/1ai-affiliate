@@ -2,34 +2,34 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution;
+namespace OneAIAffiliate\Attribution;
 
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\AuditRepositoryInterface;
-use Prosper202\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
-use Prosper202\Attribution\Repository\Mysql\ConversionJourneyRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlAuditRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlConversionRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlModelRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlSnapshotRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlTouchpointRepository;
-use Prosper202\Attribution\Repository\NullConversionRepository;
-use Prosper202\Attribution\Repository\NullModelRepository;
-use Prosper202\Attribution\Repository\NullSettingsRepository;
-use Prosper202\Attribution\Repository\NullSnapshotRepository;
-use Prosper202\Attribution\Repository\NullTouchpointRepository;
-use Prosper202\Attribution\Repository\NullAuditRepository;
-use Prosper202\Attribution\Repository\NullExportJobRepository;
-use Prosper202\Attribution\Repository\SettingsRepositoryInterface;
-use Prosper202\Attribution\Repository\Mysql\MysqlSettingRepository;
-use Prosper202\Attribution\Service\AttributionSettingsService as SettingsService;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
-use Prosper202\Attribution\Repository\TouchpointRepositoryInterface;
-use Prosper202\Attribution\Repository\ConversionRepositoryInterface;
-use Prosper202\Attribution\AttributionJobRunner;
-use Prosper202\Attribution\Repository\ExportJobRepositoryInterface;
-use Prosper202\Attribution\Repository\Mysql\MysqlExportJobRepository;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\AuditRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionJourneyRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlAuditRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlConversionRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlModelRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlSnapshotRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlTouchpointRepository;
+use OneAIAffiliate\Attribution\Repository\NullConversionRepository;
+use OneAIAffiliate\Attribution\Repository\NullModelRepository;
+use OneAIAffiliate\Attribution\Repository\NullSettingsRepository;
+use OneAIAffiliate\Attribution\Repository\NullSnapshotRepository;
+use OneAIAffiliate\Attribution\Repository\NullTouchpointRepository;
+use OneAIAffiliate\Attribution\Repository\NullAuditRepository;
+use OneAIAffiliate\Attribution\Repository\NullExportJobRepository;
+use OneAIAffiliate\Attribution\Repository\SettingsRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlSettingRepository;
+use OneAIAffiliate\Attribution\Service\AttributionSettingsService as SettingsService;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\TouchpointRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ConversionRepositoryInterface;
+use OneAIAffiliate\Attribution\AttributionJobRunner;
+use OneAIAffiliate\Attribution\Repository\ExportJobRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlExportJobRepository;
+use OneAIAffiliate\Database\Connection;
 
 /**
  * Simple factory used to wire default attribution services.

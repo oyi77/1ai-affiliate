@@ -14,7 +14,7 @@ template_top('Help Resources');  ?>
 			<div class="col-xs-8">
 				<h6>Help Resources</h6>
 
-				<p><small>Here are some places you can find help regarding Tracking202 & Prosper202</small></p>
+				<p><small>Here are some places you can find help regarding Tracking202 & 1ai-Affiliate</small></p>
 				
 				<p><small><em>Tracking202 Tutorials:</em> <a href="http://support.tracking202.com/" target="_blank">http://support.tracking202.com/</a></small></p>
 				
@@ -22,7 +22,7 @@ template_top('Help Resources');  ?>
 				
 				<p><small><em>Tracking202 Videos:</em> <a href="http://tracking202.com/videos/" target="_blank">http://tracking202.com/videos/</a></small></p>
 
-				<p><small><em>Prosper202 Blog:</em> <a href="http://prosper.tracking202.com/blog/" target="_blank">http://prosper.tracking202.com/blog/</a></small></p>
+				<p><small><em>1ai-Affiliate Blog:</em> <a href="http://prosper.tracking202.com/blog/" target="_blank">http://prosper.tracking202.com/blog/</a></small></p>
 
 				<h6 class="mt-30">Advanced Attribution</h6>
 				<p><small><em>Setup Guide:</em> <a href="docs.php?doc=attribution-engine" target="_blank">Advanced Attribution Engine</a></small></p>

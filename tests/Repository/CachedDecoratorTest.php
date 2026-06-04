@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Repository;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Repository\Cached\CachedDeviceRepository;
-use Prosper202\Repository\Cached\CachedLocationRepository;
-use Prosper202\Repository\Cached\CachedTrackingRepository;
-use Prosper202\Repository\InMemory\InMemoryDeviceRepository;
-use Prosper202\Repository\InMemory\InMemoryLocationRepository;
-use Prosper202\Repository\InMemory\InMemoryTrackingRepository;
+use OneAIAffiliate\Repository\Cached\CachedDeviceRepository;
+use OneAIAffiliate\Repository\Cached\CachedLocationRepository;
+use OneAIAffiliate\Repository\Cached\CachedTrackingRepository;
+use OneAIAffiliate\Repository\InMemory\InMemoryDeviceRepository;
+use OneAIAffiliate\Repository\InMemory\InMemoryLocationRepository;
+use OneAIAffiliate\Repository\InMemory\InMemoryTrackingRepository;
 
 final class CachedDecoratorTest extends TestCase
 {
@@ -18,8 +18,8 @@ final class CachedDecoratorTest extends TestCase
     {
         $innerCalls = 0;
         $delegate = new InMemoryDeviceRepository();
-        $inner = new class ($innerCalls, $delegate) implements \Prosper202\Repository\DeviceRepositoryInterface {
-            public function __construct(private int &$calls, private \Prosper202\Repository\DeviceRepositoryInterface $delegate)
+        $inner = new class ($innerCalls, $delegate) implements \OneAIAffiliate\Repository\DeviceRepositoryInterface {
+            public function __construct(private int &$calls, private \OneAIAffiliate\Repository\DeviceRepositoryInterface $delegate)
             {
             }
 

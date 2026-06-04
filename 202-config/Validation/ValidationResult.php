@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Validation;
+namespace OneAIAffiliate\Validation;
 
 /**
  * Immutable value object representing the result of a validation operation.

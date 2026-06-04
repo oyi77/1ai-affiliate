@@ -8,7 +8,7 @@ use mysqli;
 use mysqli_result;
 use mysqli_stmt;
 use PHPUnit\Framework\TestCase;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 
 /**

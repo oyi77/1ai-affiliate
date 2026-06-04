@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Prosper202\Database;
+namespace OneAIAffiliate\Database;
 
 use mysqli;
-use Prosper202\Database\Schema\PartitionStrategy;
-use Prosper202\Database\Exceptions\PartitionException;
+use OneAIAffiliate\Database\Schema\PartitionStrategy;
+use OneAIAffiliate\Database\Exceptions\PartitionException;
 
 /**
  * Handles creation of database partitions for high-volume tables.

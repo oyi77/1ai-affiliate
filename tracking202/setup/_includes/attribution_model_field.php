@@ -26,8 +26,8 @@ try {
     require_once dirname(__DIR__, 3) . '/202-config/Attribution/AttributionIntegrationService.php';
 
     // Create the model repository and integration service directly
-    $modelRepository = new \Prosper202\Attribution\Repository\Mysql\MysqlModelRepository($db, $db);
-    $integrationService = new \Prosper202\Attribution\AttributionIntegrationService(
+    $modelRepository = new \OneAIAffiliate\Attribution\Repository\Mysql\MysqlModelRepository($db, $db);
+    $integrationService = new \OneAIAffiliate\Attribution\AttributionIntegrationService(
         $modelRepository,
         $db
     );

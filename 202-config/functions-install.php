@@ -2,14 +2,14 @@
 declare(strict_types=1);
 
 /**
- * Prosper202 Database Installation Functions
+ * 1ai-Affiliate Database Installation Functions
  *
  * This file provides backward-compatible installation methods that delegate
  * to the new modular schema installation classes.
  *
- * @see \Prosper202\Database\SchemaInstaller
- * @see \Prosper202\Database\PartitionInstaller
- * @see \Prosper202\Database\DataSeeder
+ * @see \OneAIAffiliate\Database\SchemaInstaller
+ * @see \OneAIAffiliate\Database\PartitionInstaller
+ * @see \OneAIAffiliate\Database\DataSeeder
  */
 
 set_time_limit(0);
@@ -19,9 +19,9 @@ include_once(__DIR__ . '/functions-upgrade.php');
 // Autoload the new Database classes
 // Note: These are also available via Composer autoload if vendor/autoload.php is loaded
 spl_autoload_register(function (string $class): void {
-    // Handle Prosper202\Database namespace
-    if (str_starts_with($class, 'Prosper202\\Database\\')) {
-        $relativePath = str_replace('Prosper202\\Database\\', '', $class);
+    // Handle 1ai-Affiliate\Database namespace
+    if (str_starts_with($class, '1ai-Affiliate\\Database\\')) {
+        $relativePath = str_replace('1ai-Affiliate\\Database\\', '', $class);
         $relativePath = str_replace('\\', DIRECTORY_SEPARATOR, $relativePath);
         $filePath = __DIR__ . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . $relativePath . '.php';
 
@@ -31,9 +31,9 @@ spl_autoload_register(function (string $class): void {
     }
 });
 
-use Prosper202\Database\SchemaInstaller;
-use Prosper202\Database\PartitionInstaller;
-use Prosper202\Database\DataSeeder;
+use OneAIAffiliate\Database\SchemaInstaller;
+use OneAIAffiliate\Database\PartitionInstaller;
+use OneAIAffiliate\Database\DataSeeder;
 
 /**
  * Legacy installation class maintained for backward compatibility.
@@ -48,7 +48,7 @@ class INSTALL
     /**
      * Install all database tables and seed initial data.
      *
-     * This method creates all 70+ database tables required by Prosper202
+     * This method creates all 70+ database tables required by 1ai-Affiliate
      * and populates them with initial seed data (roles, permissions, etc.).
      *
      * @throws RuntimeException If database connection fails

@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use Prosper202\Attribution\AttributionServiceFactory;
-use Prosper202\Attribution\Repository\Mysql\ConversionJourneyRepository;
+use OneAIAffiliate\Attribution\AttributionServiceFactory;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionJourneyRepository;
 
 //write out a transparent 1x1 gif
 header("content-type: image/gif"); 
@@ -10,7 +10,7 @@ header('Content-Length: 43');
 header('Cache-Control: no-cache, no-store, max-age=0, must-revalidate');
 header('Expires: Sun, 03 Feb 2008 05:00:00 GMT'); // Date in the past
 header("Pragma: no-cache");
-header('P3P: CP="Prosper202 does not have a P3P policy"');
+header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
 echo base64_decode("R0lGODlhAQABAIAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==");
 
 include_once(substr(__DIR__, 0,-19) . '/202-config/connect2.php');

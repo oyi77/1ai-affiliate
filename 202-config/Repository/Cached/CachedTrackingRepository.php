@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository\Cached;
+namespace OneAIAffiliate\Repository\Cached;
 
 use Closure;
-use Prosper202\Repository\TrackingRepositoryInterface;
+use OneAIAffiliate\Repository\TrackingRepositoryInterface;
 
 final class CachedTrackingRepository implements TrackingRepositoryInterface
 {

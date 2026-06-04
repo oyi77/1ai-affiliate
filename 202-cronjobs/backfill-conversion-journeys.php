@@ -3,8 +3,8 @@
 
 declare(strict_types=1);
 
-use Prosper202\Attribution\AttributionServiceFactory;
-use Prosper202\Attribution\Repository\Mysql\ConversionJourneyRepository;
+use OneAIAffiliate\Attribution\AttributionServiceFactory;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionJourneyRepository;
 
 /**
  * @param array<int, ?int> $cache

@@ -75,7 +75,7 @@ if (($_POST['start_upgrade'] ?? '') === '1') {
 		$error = true;
 	}
 
-	if (!$error && version_compare(PROSPER202::prosper202_version(), '1.9.3', '<')) {
+	if (!$error && version_compare(PROSPER202::oneai_affiliate_version(), '1.9.3', '<')) {
 
 		$date = DateTime::createFromFormat('d-m-Y', $_POST['date_from'] ?? '');
 		if (!$date) {
@@ -91,7 +91,7 @@ if (($_POST['start_upgrade'] ?? '') === '1') {
 	//Do check for landing page upgrade to ssl 
 	$ssl_upgrade = '1'; //default to upgrade ssl
 
-	if (version_compare(PROSPER202::prosper202_version(), PROSPER202_VERSION, '<')) {
+	if (version_compare(PROSPER202::oneai_affiliate_version(), PROSPER202_VERSION, '<')) {
 		if (isset($_POST['lp_ssl']) && $_POST['lp_ssl'] == 0) {
 			$ssl_upgrade = '0';  //set to no upgrade if users doesn't want it
 		}
@@ -112,11 +112,11 @@ if (($_POST['start_upgrade'] ?? '') === '1') {
 
 				if (temp_exists()) {
 					$log .= "Created /202-config/temp/ directory.\n";
-					$downloadUpdate = @file_put_contents(substr(__DIR__, 0, -12) . '/202-config/temp/prosper202_' . $latest_version . '.zip', $GetUpdate);
+					$downloadUpdate = @file_put_contents(substr(__DIR__, 0, -12) . '/202-config/temp/oneai_affiliate_' . $latest_version . '.zip', $GetUpdate);
 					if ($downloadUpdate) {
 						$log .= "Update downloaded and saved!\n";
 
-						$zip = @zip_open(substr(__DIR__, 0, -12) . '/202-config/temp/prosper202_' . $latest_version . '.zip');
+						$zip = @zip_open(substr(__DIR__, 0, -12) . '/202-config/temp/oneai_affiliate_' . $latest_version . '.zip');
 
 						if ($zip) {
 							$log .= "\nUpdate process started...\n";
@@ -217,9 +217,9 @@ if ($update_needed == true) {
 	} ?>
 
 	<div class="main col-xs-7 install">
-		<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
-		<h6>1-Click Prosper202 Upgrade</h6>
-		<small>A new Prosper202 version is available. You can auto upgrade your installation or do it manually, by downloading the latest version at <a href="https://my.tracking202.com/clickserver/download/latest/paid" target="_blank">Prosper202.com</a>. Version details are below.</small>
+		<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
+		<h6>1-Click 1ai-Affiliate Upgrade</h6>
+		<small>A new 1ai-Affiliate version is available. You can auto upgrade your installation or do it manually, by downloading the latest version at <a href="https://my.tracking202.com/clickserver/download/latest/paid" target="_blank">1ai-Affiliate.com</a>. Version details are below.</small>
 		<br><br />
 		<div class="row" style="margin-bottom: 10px;">
 			<div class="col-xs-3"><span class="label label-default">Current version:</span></div>
@@ -274,16 +274,16 @@ if ($update_needed == true) {
 			<form method="post" action="" class="form-inline">
 				<input type="hidden" name="start_upgrade" value="1" />
 				<input type="hidden" name="token" value="<?php echo htmlspecialchars((string) ($_SESSION['token'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
-				<?php if (version_compare(PROSPER202::prosper202_version(), '1.9.3', '<')) { ?>
+				<?php if (version_compare(PROSPER202::oneai_affiliate_version(), '1.9.3', '<')) { ?>
 					<div class="form-group">
 						<label for="date_from">Choose a date from which to process clicks for new Data Engine:</label>
 						<input type="text" class="form-control input-sm" id="date_from" name="date_from" placeholder="dd-mm-yyyy">
 					</div>
 					<br></br>
 				<?php } ?>
-				<?php if (version_compare(PROSPER202::prosper202_version(), PROSPER202_VERSION, '<')) { ?>
+				<?php if (version_compare(PROSPER202::oneai_affiliate_version(), PROSPER202_VERSION, '<')) { ?>
 					<div class="form-group">
-						Google Chrome 80+ requires all landing pages to be HTTPS, or your tracking won't work. Can Prosper202 automatically upgrade your old landing page URLs to HTTPS?<br />
+						Google Chrome 80+ requires all landing pages to be HTTPS, or your tracking won't work. Can 1ai-Affiliate automatically upgrade your old landing page URLs to HTTPS?<br />
 						<br></br>
 						<div class="form-group">
 							<label for="lp_ssl" class="radio-inline" style="line-height:1.3">
@@ -298,7 +298,7 @@ if ($update_needed == true) {
 					</div>
 					<br></br>
 				<?php } ?>
-				<button class="btn btn-lg btn-p202 btn-block" type="submit">Upgrade Prosper202<span class="fui-check-inverted pull-right"></span></button>
+				<button class="btn btn-lg btn-p202 btn-block" type="submit">Upgrade 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
 			</form>
 			<br>
 			<span class="infotext"><i>We highly recommended you make a backup of your database, before upgrading.<br>
@@ -306,7 +306,7 @@ if ($update_needed == true) {
 		<?php } else {
 			unset($_SESSION['user_id']); ?>
 			<h6>Success!</h6>
-			<small>Prosper202 has been upgraded! You can now <a href="<?php echo get_absolute_url(); ?>202-account/signout.php">Log In</a>.</small>
+			<small>1ai-Affiliate has been upgraded! You can now <a href="<?php echo get_absolute_url(); ?>202-account/signout.php">Log In</a>.</small>
 
 		<?php } ?>
 	</div>
@@ -320,5 +320,5 @@ if ($update_needed == true) {
 <?php info_bottom();
 } else {
 	_die("<h6>Already Upgraded</h6>
-			<small>Your Prosper202 version $version is already upgraded.</small> <a href='./'> Log In Again</a>");
+			<small>Your 1ai-Affiliate version $version is already upgraded.</small> <a href='./'> Log In Again</a>");
 } ?>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Validation;
+namespace OneAIAffiliate\Validation;
 
 use mysqli;
 

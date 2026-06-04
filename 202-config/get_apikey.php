@@ -11,7 +11,7 @@ if (is_installed() == true) {
 		exit;
 	} else {
 		_die("<h6>Already Installed</h6>
-    <small>You appear to have already installed Prosper202. To reinstall please clear your old database tables first. <a href='/202-login.php'>Login Now</a></small>");
+    <small>You appear to have already installed 1ai-Affiliate. To reinstall please clear your old database tables first. <a href='/202-login.php'>Login Now</a></small>");
 	}
 }
 
@@ -20,23 +20,23 @@ $error = ['user_email' => false];
 
 info_top(); ?>
 <div class="main col-xs-7 install">
-	<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
+	<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
 
 	<?php if ($html['user_api'] == '') { ?>
 		<h6>Let's Start Off By Getting Your API Key</h6>
-		<small>Your API Key Activates Prosper202 ClickServer & more. You'll need an active paid subscription to continue. Don't worry if you don't have a subscription yet, you'll be able to get one on the next few screens.</small>
+		<small>Your API Key Activates 1ai-Affiliate ClickServer & more. You'll need an active paid subscription to continue. Don't worry if you don't have a subscription yet, you'll be able to get one on the next few screens.</small>
 		<br><br>
 		<small><strong>IMPORTANT:</strong> Never share your private API key with anyone, it's linked directly to your payment information.</small>
 	<?php } else { ?>
 		<h6>Great We Found Your API Key!</h6>
-		<small>Now, let's get that saved and move on to the next step of the Prosper202 ClickServer Installation</small>
+		<small>Now, let's get that saved and move on to the next step of the 1ai-Affiliate ClickServer Installation</small>
 		<br><br>
 		<small><strong>REMEMBER:</strong> Never share your private API key with anyone.</small>
 	<?php } ?>
 	<br><br>
 	<form method=post action="" id="getapikey" class="form-horizontal" role="form">
 			<div class="form-group">
-			<label for="user_api" class="col-xs-4 control-label"><strong>Prosper202 API Key:</strong><br> <small></label>
+			<label for="user_api" class="col-xs-4 control-label"><strong>1ai-Affiliate API Key:</strong><br> <small></label>
 			<div class="col-xs-8">
 				<input type="text" class="form-control input-sm" style="color:black;" id="user_api" name="user_api" value="<?php echo $html['user_api']; ?>" placeholder="Click Button To Get Your API Key" readonly>
 			</div>
@@ -45,7 +45,7 @@ info_top(); ?>
 		<?php if ($html['user_api'] == '') { ?>
 			<a class="btn btn-lg btn-p202 btn-block" href="https://my.tracking202.com/api/customers/login?redirect=get-api">Click Here For Your API Key<span class="fui-check-inverted pull-right"></a>
 		<?php } else { ?>
-			<button class="btn btn-lg btn-p202 btn-block" type="submit">Save API Key & Install Prosper202 ClickServer<span class="fui-check-inverted pull-right"></span></button>
+			<button class="btn btn-lg btn-p202 btn-block" type="submit">Save API Key & Install 1ai-Affiliate ClickServer<span class="fui-check-inverted pull-right"></span></button>
 		<?php } ?>
 
 	</form>

@@ -9,8 +9,8 @@ if (!is_numeric($t202id) || (int)$t202id <= 0) die();
 include_once(substr(__DIR__, 0, -21) . '/202-config/connect2.php');
 include_once(substr(__DIR__, 0, -21) . '/202-config/class-dataengine-slim.php');
 
-$locationRepo = \Prosper202\Repository\LookupRepositoryFactory::location($db);
-$trackingRepo = \Prosper202\Repository\LookupRepositoryFactory::tracking($db);
+$locationRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::location($db);
+$trackingRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::tracking($db);
 
 // Enable processing to continue even if the client disconnects.
 // This is necessary to ensure that critical operations, such as database updates
@@ -499,8 +499,8 @@ if ($device_id['type'] == '4') {
 
 
 // Pre-allocate click_id (single DB write before redirect for minimal latency)
-$conn = \Prosper202\Repository\LookupRepositoryFactory::connection($db);
-$clickRepo = new \Prosper202\Click\MysqlClickRepository($conn);
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+$clickRepo = new \OneAIAffiliate\Click\MysqlClickRepository($conn);
 $click_id = $clickRepo->allocateClickId();
 $mysql['click_id'] = (string) $click_id;
 $mysql['click_alp'] = 0;
@@ -578,7 +578,7 @@ $computeAndRecordClick = function () use (&$mysql, $custom_var_ids, $trackingRep
 	$mysql['click_redirect_site_url_id'] = (string) $click_redirect_site_url_id;
 
 	// Record click via repository (all 9 tables in one atomic transaction)
-	$clickRecord = \Prosper202\Click\ClickRecordBuilder::fromLegacyArray($mysql);
+	$clickRecord = \OneAIAffiliate\Click\ClickRecordBuilder::fromLegacyArray($mysql);
 	$clickRecord->clickId = $click_id;
 	$clickRepo->recordClick($clickRecord);
 };

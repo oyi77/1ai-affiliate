@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\PHPStan\Rules;
+namespace OneAIAffiliate\PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
@@ -62,7 +62,7 @@ final class ForbidDirectMysqliStmtCallRule implements Rule
 
         return [
             RuleErrorBuilder::message(self::FORBIDDEN_METHODS[$methodName])
-                ->identifier('prosper202.directStmtCall')
+                ->identifier('oneai_affiliate.directStmtCall')
                 ->build(),
         ];
     }

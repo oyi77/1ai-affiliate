@@ -306,7 +306,7 @@ foreach ($rule_row as $rule) {
 			} else if ($rule_redirect_row['redirect_lp'] != null) {
 				$redirects[] = ['rule_id' => $mysql['rule_id'], 'redirect_id' => $rule_redirect_row['id'], 'type' => 'lp', 'landing_page_id' => $rule_redirect_row['landing_page_id'],'landing_page_url' => $rule_redirect_row['landing_page_url'], 'weight' => $rule_redirect_row['weight'], 'aff_campaign_id' => $rule_redirect_row['aff_campaign_id'], 'aff_campaign_payout' => $rule_redirect_row['aff_campaign_payout'], 'aff_campaign_cloaking' => $rule_redirect_row['aff_campaign_cloaking']];
 			} else if ($rule_redirect_row['auto_monetizer'] != null) {
-				$redirects[] = ['rule_id' => $mysql['rule_id'], 'redirect_id' => $rule_redirect_row['id'], 'type' => 'monetizer', 'monetizer_url' => 'http://prosper202.com', 'weight' => $rule_redirect_row['weight'], 'aff_campaign_id' => $rule_redirect_row['aff_campaign_id'], 'aff_campaign_payout' => $rule_redirect_row['aff_campaign_payout'], 'aff_campaign_cloaking' => $rule_redirect_row['aff_campaign_cloaking']];
+				$redirects[] = ['rule_id' => $mysql['rule_id'], 'redirect_id' => $rule_redirect_row['id'], 'type' => 'monetizer', 'monetizer_url' => 'http://oneai_affiliate.com', 'weight' => $rule_redirect_row['weight'], 'aff_campaign_id' => $rule_redirect_row['aff_campaign_id'], 'aff_campaign_payout' => $rule_redirect_row['aff_campaign_payout'], 'aff_campaign_cloaking' => $rule_redirect_row['aff_campaign_cloaking']];
 			}
 		}
 
@@ -371,7 +371,7 @@ $ruleDefaults = [
 	'redirect_id' => 0,
 	'auto_monetizer' => null,
 	'type' => 'url',
-	'monetizer_url' => 'http://prosper202.com'
+	'monetizer_url' => 'http://oneai_affiliate.com'
 ];
 
 $rule = array_merge($ruleDefaults, is_array($rule) ? $rule : []);
@@ -692,7 +692,7 @@ if ($rule['aff_campaign_id'] != null) {
 	} else if ($rule['type'] == 'lp') {
 		$redirect_site_url = $rule['landing_page_url'];
 	} else if ($rule['type'] == 'auto_monetizer') {
-		$redirect_site_url = "http://prosper202.com";
+		$redirect_site_url = "http://oneai_affiliate.com";
 	} else if ($rule['default_url'] != null) {
 		$redirect_site_url = $rule['default_url'];
 	} else if ($rule['default_lp'] != null) {

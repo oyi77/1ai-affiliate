@@ -1,6 +1,6 @@
 # Reporting
 
-We're going to do a quick rundown of all the reporting available in this section. Please feel free to explore Prosper202 to get a better understanding of what you are looking at beyond what is written here.
+We're going to do a quick rundown of all the reporting available in this section. Please feel free to explore 1ai-Affiliate to get a better understanding of what you are looking at beyond what is written here.
 
 ## Overview
 
@@ -8,7 +8,7 @@ Overview in general gives you a bird’s-eye view of your overall campaign perfo
 
 **Campaign Overview**
 
-By default, when you click on your Prosper202 CS link, the first screen you see is the general overview tab, specifically on Campaign Overview, with a general breakdown of your overall campaign performance. This screen gives you a general look over how all your campaigns are doing.
+By default, when you click on your 1ai-Affiliate CS link, the first screen you see is the general overview tab, specifically on Campaign Overview, with a general breakdown of your overall campaign performance. This screen gives you a general look over how all your campaigns are doing.
 ![Screen Shot 2015-12-03 at 10.31.03 AM.png](../images/reporting-1.png)
 ## Breakdown Overview
 

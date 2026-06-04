@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Prosper202\Database;
+namespace OneAIAffiliate\Database;
 
 use mysqli;
-use Prosper202\Database\Schema\TableRegistry;
+use OneAIAffiliate\Database\Schema\TableRegistry;
 
 /**
  * Seeds initial data into newly created database tables.

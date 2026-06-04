@@ -16,8 +16,8 @@ class ConfigSetUrlCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription('Set the remote Prosper202 URL')
-            ->addArgument('url', InputArgument::REQUIRED, 'The base URL of your Prosper202 installation');
+        $this->setDescription('Set the remote 1ai-Affiliate URL')
+            ->addArgument('url', InputArgument::REQUIRED, 'The base URL of your 1ai-Affiliate installation');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

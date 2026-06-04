@@ -93,7 +93,7 @@ if (!empty($error['user_pass_key'])) {
 <?php info_top(); ?>
 <div class="row">
 	<div class="main col-xs-4">
-		<center><img src="202-img/prosper202.png"></center>
+		<center><img src="202-img/oneai_affiliate.png"></center>
 		<center><span class="infotext">Please create a new password and verify it to proceed.</span></center>
 		<form class="form-signin form-horizontal" role="form" method="post" action="">
 			<div class="form-group">

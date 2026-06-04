@@ -13,7 +13,7 @@ template_top();  ?>
 			<?php if (isset($_SESSION['user_pref_ad_settings']) && $_SESSION['user_pref_ad_settings'] != 'hide_all') { ?>
 				<div class="col-xs-12">
 					<h6 class="h6-home">Special Offers <span class="glyphicon glyphicon-tags home-icons"></span></h6>
-					<iframe class="advertise" src="<?php echo TRACKING202_ADS_URL; ?>/prosper202-home/?t202aid=<?php echo $_SESSION['user_cirrus_link']; ?>" scrolling="no" frameborder="0"></iframe>
+					<iframe class="advertise" src="<?php echo TRACKING202_ADS_URL; ?>/oneai_affiliate-home/?t202aid=<?php echo $_SESSION['user_cirrus_link']; ?>" scrolling="no" frameborder="0"></iframe>
 
 				</div>
 			<?php } ?>
@@ -34,7 +34,7 @@ template_top();  ?>
 						<a href="<?php echo get_absolute_url(); ?>tracking202/"><img src="<?php echo get_absolute_url(); ?>202-img/new/icons/shield.svg"></a>
 					</div>
 					<div class="col-xs-10">
-						<a href="<?php echo get_absolute_url(); ?>tracking202/">Prosper202 ClickServer</a><br /><span>Advanced conversion tracking & optimization software.</span>
+						<a href="<?php echo get_absolute_url(); ?>tracking202/">1ai-Affiliate ClickServer</a><br /><span>Advanced conversion tracking & optimization software.</span>
 					</div>
 				</div>
 				<div class="row app-row">
@@ -50,7 +50,7 @@ template_top();  ?>
 						<a href="<?php echo get_absolute_url(); ?>202-Mobile"><img src="<?php echo get_absolute_url(); ?>202-img/new/icons/responsive.svg" style="margin-left: 8px;"></a>
 					</div>
 					<div class="col-xs-10">
-						<a href="<?php echo get_absolute_url(); ?>202-Mobile">Mobile202</a><br /><span>View your stats with mobile version of Prosper202</span>
+						<a href="<?php echo get_absolute_url(); ?>202-Mobile">Mobile202</a><br /><span>View your stats with mobile version of 1ai-Affiliate</span>
 					</div>
 				</div>
 				<div class="row app-row">

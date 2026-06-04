@@ -1,6 +1,6 @@
 # Scaling the Advanced Attribution Engine
 
-This note summarises infrastructure and operational guidance for high-volume Prosper202 deployments using the Advanced Attribution Engine.
+This note summarises infrastructure and operational guidance for high-volume 1ai-Affiliate deployments using the Advanced Attribution Engine.
 
 ## Database Tuning
 - **Indexes:**

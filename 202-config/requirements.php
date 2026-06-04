@@ -11,7 +11,7 @@ $db = $db ?? null;
 //check to see if this is already installed, if so don't do anything
 if (is_installed() == true) {
 		_die("<h6>Already Installed</h6>
-			  <small>You appear to have already installed Prosper202. To reinstall please clear your old database tables first. <a href='/202-login.php'>Login Now</a></small>");
+			  <small>You appear to have already installed 1ai-Affiliate. To reinstall please clear your old database tables first. <a href='/202-login.php'>Login Now</a></small>");
 }
 
     // Get Database version
@@ -21,13 +21,13 @@ if (is_installed() == true) {
 	    $mysqlversion = $match[1];
 	    $dbwording="MariaDB >= 10.6";
 	    if ((version_compare($mysqlversion, '10.6') < 0)) {
-	        $version_error['mysqlversion'] = 'Prosper202 requires MariaDB 10.6, or newer.';
+	        $version_error['mysqlversion'] = '1ai-Affiliate requires MariaDB 10.6, or newer.';
 	    }
 	}
 	else{
 	    $dbwording="MySQL >= 8.0";
 	    if ((version_compare($mysqlversion, '8.0') < 0)) {
-	        $version_error['mysqlversion'] = 'Prosper202 requires MySQL 8.0, or newer.';
+	        $version_error['mysqlversion'] = '1ai-Affiliate requires MySQL 8.0, or newer.';
 	    }
 	     
 	}
@@ -35,16 +35,16 @@ if (is_installed() == true) {
 	$html['mysqlversion'] = htmlentities((string) $mysqlversion, ENT_QUOTES, 'UTF-8');
 
         if (!php_version_supported()) {
-                $version_error['phpversion'] = 'Prosper202 requires PHP ' . PROSPER202_MIN_PHP_VERSION . ', or newer.';
+                $version_error['phpversion'] = '1ai-Affiliate requires PHP ' . PROSPER202_MIN_PHP_VERSION . ', or newer.';
         }
 
 
 	if (!function_exists('curl_version')) { 
-		$version_error['curl'] = 'Prosper202 requires CURL to be installed.';
+		$version_error['curl'] = '1ai-Affiliate requires CURL to be installed.';
 	}  
 	
 	if (!function_exists('xml_parser_create')) {
-		$version_error['xml_parser_create'] = 'Prosper202 requires xml_parser_create() function to be installed.';
+		$version_error['xml_parser_create'] = '1ai-Affiliate requires xml_parser_create() function to be installed.';
 	}
 
 	// Check if partitioning is supported by querying INFORMATION_SCHEMA.PARTITIONS
@@ -60,11 +60,11 @@ if (is_installed() == true) {
  
 info_top(); ?>
 	<div class="main col-xs-7 install">
-	<center><img src="<?php echo get_absolute_url();?>202-img/prosper202.png"></center>
+	<center><img src="<?php echo get_absolute_url();?>202-img/oneai_affiliate.png"></center>
 	<h6>Hey There!</h6>
-	<small>Before we get started, let's make sure your server is optimized for the ultimate Prosper202 ClickServer Performance.</small>
+	<small>Before we get started, let's make sure your server is optimized for the ultimate 1ai-Affiliate ClickServer Performance.</small>
 	<br></br>
-	<h6>For Best Performance - Host With The Prosper202 Official Hosting Partners:</h6>
+	<h6>For Best Performance - Host With The 1ai-Affiliate Official Hosting Partners:</h6>
 	<?php 
 		$partners_data = getData('https://my.tracking202.com/api/v2/hostings');
 		$partners = [];
@@ -78,9 +78,9 @@ info_top(); ?>
 			$partners = [
 				[
 					'title' => 'Visit Official Hosting Partners',
-					'description' => 'Get recommended hosting for Prosper202',
+					'description' => 'Get recommended hosting for 1ai-Affiliate',
 					'url' => 'https://my.tracking202.com/hosting',
-					'thumb' => '202-img/prosper202.png'
+					'thumb' => '202-img/oneai_affiliate.png'
 				]
 			];
 		}
@@ -147,9 +147,9 @@ info_top(); ?>
 	</table>
 	
 	<?php if($version_error) { ?>
-	<h4 style="color:#e74c3c">Your current host does not meet the Prosper202 Server Requirements! <br><br>Please switch to an Official Hosting Partner below to continue without issues:</h4>
+	<h4 style="color:#e74c3c">Your current host does not meet the 1ai-Affiliate Server Requirements! <br><br>Please switch to an Official Hosting Partner below to continue without issues:</h4>
 	<br></br>
-	<h6>Prosper202 Official Hosting Partners:</h6>
+	<h6>1ai-Affiliate Official Hosting Partners:</h6>
 
 	<?php 
 		foreach ($partners as $partner) { ?>
@@ -168,7 +168,7 @@ info_top(); ?>
 	?>
 	
 	<?php } else { ?>
-	<a href="<?php echo get_absolute_url();?>202-config/get_apikey.php" class="btn btn-lg btn-block btn-p202" target="_blank" id="202_lb_install_btn">Install Prosper202 ClickServer Now <span class="glyphicon glyphicon-chevron-right"></span></a>
+	<a href="<?php echo get_absolute_url();?>202-config/get_apikey.php" class="btn btn-lg btn-block btn-p202" target="_blank" id="202_lb_install_btn">Install 1ai-Affiliate ClickServer Now <span class="glyphicon glyphicon-chevron-right"></span></a>
 	<?php } ?>	
 
 	</div>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository;
+namespace OneAIAffiliate\Attribution\Repository;
 
 final class NullAuditRepository implements AuditRepositoryInterface
 {

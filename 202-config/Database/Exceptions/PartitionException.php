@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Prosper202\Database\Exceptions;
+namespace OneAIAffiliate\Database\Exceptions;
 
 use RuntimeException;
 

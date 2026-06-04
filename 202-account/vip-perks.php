@@ -20,9 +20,9 @@ $survey_data = getSurveyData($user_data['install_hash']);
 	<div class="col-xs-4">
 		<div class="panel panel-default account_left">
 			<div class="panel-body">
-			    Wouldn't you love to have new campaign opportunities, private campaigns, business relationships, discounts and special offers and more handed to you? Now you can with the Prosper202 VIP Perk program. <br></br>
+			    Wouldn't you love to have new campaign opportunities, private campaigns, business relationships, discounts and special offers and more handed to you? Now you can with the 1ai-Affiliate VIP Perk program. <br></br>
 
-				Fill out your profile information to customize your Prosper202 VIP Perks experience. The information will be used to uniquely match you up with coupons, discounts, and enhanced payouts or exclusive offers.
+				Fill out your profile information to customize your 1ai-Affiliate VIP Perks experience. The information will be used to uniquely match you up with coupons, discounts, and enhanced payouts or exclusive offers.
 			</div>
 		</div>
 	</div>

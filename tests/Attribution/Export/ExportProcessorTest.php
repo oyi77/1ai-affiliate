@@ -7,13 +7,13 @@ namespace Tests\Attribution\Export;
 require_once __DIR__ . '/../Support/RepositoryFakes.php';
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\Export\ExportFormat;
-use Prosper202\Attribution\Export\ExportJob;
-use Prosper202\Attribution\Export\ExportProcessor;
-use Prosper202\Attribution\Export\ExportStatus;
-use Prosper202\Attribution\Export\SnapshotExporter;
-use Prosper202\Attribution\Export\WebhookDispatcher;
-use Prosper202\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Export\ExportFormat;
+use OneAIAffiliate\Attribution\Export\ExportJob;
+use OneAIAffiliate\Attribution\Export\ExportProcessor;
+use OneAIAffiliate\Attribution\Export\ExportStatus;
+use OneAIAffiliate\Attribution\Export\SnapshotExporter;
+use OneAIAffiliate\Attribution\Export\WebhookDispatcher;
+use OneAIAffiliate\Attribution\ScopeType;
 use Tests\Attribution\Support\InMemoryExportRepository;
 use Tests\Attribution\Support\InMemoryModelRepository;
 use Tests\Attribution\Support\InMemorySnapshotRepository;
@@ -37,7 +37,7 @@ final class ExportProcessorTest extends TestCase
         $this->modelRepository = new InMemoryModelRepository();
         $this->snapshotRepository = new InMemorySnapshotRepository();
 
-        $this->exportPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'prosper202-export-tests';
+        $this->exportPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . '1ai-affiliate-export-tests';
         if (is_dir($this->exportPath)) {
             $this->recursiveDelete($this->exportPath);
         }

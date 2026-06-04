@@ -9,7 +9,7 @@ if (!class_exists('DataEngine')) {
 class PROSPER202
 {
 
-    public static function prosper202_version()
+    public static function oneai_affiliate_version()
     {
         $database = DB::getInstance();
         $db = $database->getConnection();
@@ -24,14 +24,14 @@ class PROSPER202
         }
 
         $version_row = $version_result->fetch_assoc();
-        $prosper202_version = $version_row['version'] ?? null;
+        $oneai_affiliate_version = $version_row['version'] ?? null;
 
         // if there is no mysql version, this is an older 1.0.0-1.0.2 release, just return version 1.0.0 for simplicitly sake
-        if (! $prosper202_version) {
-            $prosper202_version = '1.0.2';
+        if (! $oneai_affiliate_version) {
+            $oneai_affiliate_version = '1.0.2';
         }
 
-        return $prosper202_version;
+        return $oneai_affiliate_version;
     }
 
     public static function php_version()
@@ -76,11 +76,11 @@ class UPGRADE
         }
 
         // get the old version using static methods
-        $prosper202_version = PROSPER202::prosper202_version();
+        $oneai_affiliate_version = PROSPER202::oneai_affiliate_version();
         $php_version = PROSPER202::php_version();
 
         // if the mysql is 1.0.2, upgrade to 1.0.3
-        if ($prosper202_version == '1.0.2') {
+        if ($oneai_affiliate_version == '1.0.2') {
 
             // create the new mysql version table
             $sql = "CREATE TABLE IF NOT EXISTS `202_version` (
@@ -132,32 +132,32 @@ class UPGRADE
             $result = _mysqli_query($sql);
 
             // now set the new mysql version
-            $prosper202_version = '1.0.3';
+            $oneai_affiliate_version = '1.0.3';
         }
 
         // upgrade from 1.0.3 to 1.0.4
-        if ($prosper202_version == '1.0.3') {
+        if ($oneai_affiliate_version == '1.0.3') {
             $sql = "UPDATE 202_version SET version='1.0.4'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.0.4';
+            $oneai_affiliate_version = '1.0.4';
         }
 
         // upgrade from 1.0.4 to 1.0.5
-        if ($prosper202_version == '1.0.4') {
+        if ($oneai_affiliate_version == '1.0.4') {
             $sql = "UPDATE 202_version SET version='1.0.5'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.0.5';
+            $oneai_affiliate_version = '1.0.5';
         }
 
         // upgrade from 1.0.5 to 1.0.6
-        if ($prosper202_version == '1.0.5') {
+        if ($oneai_affiliate_version == '1.0.5') {
             $sql = "UPDATE 202_version SET version='1.0.6'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.0.6';
+            $oneai_affiliate_version = '1.0.6';
         }
 
         // upgrade from 1.0.6 to 1.1.0 - here we had some database modifications to make it scale better.
-        if ($prosper202_version == '1.0.6') {
+        if ($oneai_affiliate_version == '1.0.6') {
 
             // this is upgrading things to BIGINT
             $result = _mysqli_query("ALTER TABLE `202_clicks` 			CHANGE `click_id` `click_id` BIGINT UNSIGNED NOT NULL");
@@ -189,25 +189,25 @@ class UPGRADE
             // mysql version set to 1.1.0 now
             $sql = "UPDATE 202_version SET version='1.1.0'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.1.0';
+            $oneai_affiliate_version = '1.1.0';
         }
 
         // upgrade from 1.1.0 to 1.1.1
-        if ($prosper202_version == '1.1.0') {
+        if ($oneai_affiliate_version == '1.1.0') {
             $sql = "UPDATE 202_version SET version='1.1.1'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.1.1';
+            $oneai_affiliate_version = '1.1.1';
         }
 
         // upgrade from 1.1.1 to 1.1.2
-        if ($prosper202_version == '1.1.1') {
+        if ($oneai_affiliate_version == '1.1.1') {
             $sql = "UPDATE 202_version SET version='1.1.2'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.1.2';
+            $oneai_affiliate_version = '1.1.2';
         }
 
         // upgrade from 1.1.2 to 1.2.0
-        if ($prosper202_version == '1.1.2') {
+        if ($oneai_affiliate_version == '1.1.2') {
 
             $result = _mysqli_query("	 CREATE TABLE IF NOT EXISTS `202_rotations` (
 										  `aff_campaign_id` mediumint(8) unsigned NOT NULL,
@@ -259,50 +259,50 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.2.0'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.2.0';
+            $oneai_affiliate_version = '1.2.0';
         }
 
         // upgrade from 1.2.0 to 1,2,1
-        if ($prosper202_version == '1.2.0') {
+        if ($oneai_affiliate_version == '1.2.0') {
             $sql = "UPDATE 202_version SET version='1.2.1'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.2.1';
+            $oneai_affiliate_version = '1.2.1';
         }
 
         // upgrade from 1.2.1 to 1.3.0
-        if ($prosper202_version == '1.2.1') {
+        if ($oneai_affiliate_version == '1.2.1') {
 
             $result = _mysqli_query(" 	ALTER TABLE  `202_users` ADD  `user_api_key` VARCHAR( 255 ) NOT NULL AFTER  `user_pass_time` ; ");
             $result = _mysqli_query(" 	ALTER TABLE  `202_users` ADD  `user_stats202_app_key` VARCHAR( 255 ) NOT NULL AFTER  `user_api_key` ; ");
             $sql = "UPDATE 202_version SET version='1.3.0'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.3.0';
+            $oneai_affiliate_version = '1.3.0';
         }
 
         // upgrade from 1.3.0 to 1.3.1
-        if ($prosper202_version == '1.3.0') {
+        if ($oneai_affiliate_version == '1.3.0') {
 
             $result = _mysqli_query(" 	ALTER TABLE  `202_clicks_spy` ENGINE = InnoDB ");
             $result = _mysqli_query(" 	ALTER TABLE  `202_last_ips` ENGINE = InnoDB ");
 
             $sql = "UPDATE 202_version SET version='1.3.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.3.1';
+            $oneai_affiliate_version = '1.3.1';
         }
 
         // upgrade from 1.3.1 to 1.3.2
-        if ($prosper202_version == '1.3.1') {
+        if ($oneai_affiliate_version == '1.3.1') {
 
             $result = _mysqli_query(" 	ALTER TABLE  `202_clicks_spy` ENGINE = InnoDB ");
             $result = _mysqli_query(" 	ALTER TABLE  `202_last_ips` ENGINE = InnoDB ");
 
             $sql = "UPDATE 202_version SET version='1.3.2'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.3.2';
+            $oneai_affiliate_version = '1.3.2';
         }
 
         // upgrade from 1.3.2 to 1.4
-        if ($prosper202_version == '1.3.2') {
+        if ($oneai_affiliate_version == '1.3.2') {
 
             $result = _mysqli_query("	ALTER TABLE 202_users_pref ADD COLUMN `user_tracking_domain` varchar(255) NOT NULL DEFAULT '';");
             $result = _mysqli_query("	ALTER TABLE 202_users_pref ADD COLUMN `user_pref_group_1` tinyint(3);");
@@ -323,11 +323,11 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.4'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.4';
+            $oneai_affiliate_version = '1.4';
         }
 
         // upgrade from 1.4 to 1.4.1
-        if ($prosper202_version == '1.4') {
+        if ($oneai_affiliate_version == '1.4') {
             $result = _mysqli_query(" 	CREATE TABLE `202_tracking_c1` (
 										  `c1_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 										  `c1` varchar(50) NOT NULL,
@@ -357,11 +357,11 @@ class UPGRADE
 										) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
             $sql = "UPDATE 202_version SET version='1.4.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.4.1';
+            $oneai_affiliate_version = '1.4.1';
         }
 
         // upgrade from 1.4.1 to 1.4.2
-        if ($prosper202_version == '1.4.1') {
+        if ($oneai_affiliate_version == '1.4.1') {
             $result = _mysqli_query(" 	 DROP TABLE `202_clicks_tracking`; ");
 
             $result = _mysqli_query(" 	 CREATE TABLE `202_clicks_tracking` (
@@ -375,38 +375,38 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.4.2'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.4.2';
+            $oneai_affiliate_version = '1.4.2';
         }
 
         // upgrade from 1.4.2 to 1.4.3
-        if ($prosper202_version == '1.4.2') {
+        if ($oneai_affiliate_version == '1.4.2') {
 
             $result = _mysqli_query(" 	ALTER TABLE  `202_clicks_spy` ENGINE = InnoDB ");
             $result = _mysqli_query(" 	ALTER TABLE  `202_last_ips` ENGINE = InnoDB ");
 
             $sql = "UPDATE 202_version SET version='1.4.3'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.4.3';
+            $oneai_affiliate_version = '1.4.3';
         }
 
         // upgrade from 1.4.3 to 1.5
-        if ($prosper202_version == '1.4.3') {
+        if ($oneai_affiliate_version == '1.4.3') {
 
             $sql = "UPDATE 202_version SET version='1.5'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.5';
+            $oneai_affiliate_version = '1.5';
         }
 
         // upgrade from 1.5 to 1.5.1
-        if ($prosper202_version == '1.5') {
+        if ($oneai_affiliate_version == '1.5') {
 
             $sql = "UPDATE 202_version SET version='1.5.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.5.1';
+            $oneai_affiliate_version = '1.5.1';
         }
 
         // upgrade from 1.5.1 to 1.6
-        if ($prosper202_version == '1.5.1') {
+        if ($oneai_affiliate_version == '1.5.1') {
 
             $result = _mysqli_query("CREATE TABLE IF NOT EXISTS `202_alerts` (
 			  `prosper_alert_id` int(11) NOT NULL,
@@ -425,31 +425,31 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.6'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.6';
+            $oneai_affiliate_version = '1.6';
         }
 
         // upgrade from 1.6 beta to 1.6.1 stable
-        if ($prosper202_version == '1.6') {
+        if ($oneai_affiliate_version == '1.6') {
 
             $sql = "UPDATE 202_version SET version='1.6.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.6.1';
+            $oneai_affiliate_version = '1.6.1';
         }
 
         // upgrade from 1.6.1 to 1.6.2 beta
-        if ($prosper202_version == '1.6.1') {
+        if ($oneai_affiliate_version == '1.6.1') {
 
             $sql = "UPDATE 202_version SET version='1.6.2'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.6.2';
+            $oneai_affiliate_version = '1.6.2';
         }
 
         // upgrade from 1.6.2 to 1.7 beta
-        if ($prosper202_version == '1.6.2') {
+        if ($oneai_affiliate_version == '1.6.2') {
 
             $sql = "UPDATE 202_version SET version='1.7'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.7';
+            $oneai_affiliate_version = '1.7';
 
             $sql = "CREATE TABLE IF NOT EXISTS `202_pixel_types` (
   			  `pixel_type_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT ,
@@ -492,11 +492,11 @@ class UPGRADE
         }
 
         // upgrade from 1.7 beta to 1.7.1 beta
-        if ($prosper202_version == '1.7') {
+        if ($oneai_affiliate_version == '1.7') {
 
             $sql = "UPDATE 202_version SET version='1.7.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.7.1';
+            $oneai_affiliate_version = '1.7.1';
             $sql = "CREATE TABLE IF NOT EXISTS `202_sort_keywords_lpctr` (
   			  `sort_keyword_id` int(10) unsigned NOT NULL auto_increment,
   			  `user_id` mediumint(8) unsigned NOT NULL,
@@ -595,19 +595,19 @@ class UPGRADE
         }
 
         // upgrade from 1.7.1 to 1.7.2 beta
-        if ($prosper202_version == '1.7.1') {
+        if ($oneai_affiliate_version == '1.7.1') {
 
             $sql = "UPDATE 202_version SET version='1.7.2'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.7.2';
+            $oneai_affiliate_version = '1.7.2';
         }
 
         // upgrade from 1.7.2 to 1.7.3
-        if ($prosper202_version == '1.7.2') {
+        if ($oneai_affiliate_version == '1.7.2') {
 
             $sql = "UPDATE 202_version SET version='1.7.3'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.7.3';
+            $oneai_affiliate_version = '1.7.3';
             $sql = "ALTER TABLE `202_users` MODIFY COLUMN `user_timezone` VARCHAR(50) NOT NULL default 'Pacific/Pitcairn';";
             $result = _mysqli_query($sql);
             $sql = "UPDATE `202_users` SET user_timezone='Pacific/Pitcairn' WHERE user_id=1";
@@ -623,11 +623,11 @@ class UPGRADE
         }
 
         // upgrade from 1.7.3 to 1.7.4
-        if ($prosper202_version == '1.7.3') {
+        if ($oneai_affiliate_version == '1.7.3') {
 
             $sql = "UPDATE 202_version SET version='1.7.4'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.7.4';
+            $oneai_affiliate_version = '1.7.4';
             $sql = "ALTER TABLE `202_users_pref` ADD COLUMN `cb_key` VARCHAR(250) NOT NULL;";
             $result = _mysqli_query($sql);
             $sql = "ALTER TABLE `202_users_pref` ADD COLUMN `cb_verified` tinyint(1) NOT NULL default '0';";
@@ -635,49 +635,49 @@ class UPGRADE
         }
 
         // upgrade from 1.7.4 to 1.7.5
-        if ($prosper202_version == '1.7.4') {
+        if ($oneai_affiliate_version == '1.7.4') {
 
             $sql = "UPDATE 202_version SET version='1.7.5'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.7.5';
+            $oneai_affiliate_version = '1.7.5';
         }
 
         // upgrade from 1.7.5 to 1.7.6
-        if ($prosper202_version == '1.7.5') {
+        if ($oneai_affiliate_version == '1.7.5') {
 
             $sql = "UPDATE 202_version SET version='1.7.6'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.7.6';
+            $oneai_affiliate_version = '1.7.6';
             $sql = "ALTER TABLE `202_users` ADD COLUMN `clickserver_api_key` VARCHAR(250) NOT NULL;";
             $result = _mysqli_query($sql);
         }
 
         // upgrade from 1.7.6 to 1.8.0
-        if ($prosper202_version == '1.7.6') {
+        if ($oneai_affiliate_version == '1.7.6') {
 
             $sql = "UPDATE 202_version SET version='1.8.0'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.0';
+            $oneai_affiliate_version = '1.8.0';
         }
 
         // upgrade from 1.8.0 to 1.8.1
-        if ($prosper202_version == '1.8.0') {
+        if ($oneai_affiliate_version == '1.8.0') {
 
             $sql = "UPDATE 202_version SET version='1.8.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.1';
+            $oneai_affiliate_version = '1.8.1';
         }
 
         // upgrade from 1.8.1 to 1.8.2
-        if ($prosper202_version == '1.8.1') {
+        if ($oneai_affiliate_version == '1.8.1') {
 
             $sql = "UPDATE 202_version SET version='1.8.2'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.2';
+            $oneai_affiliate_version = '1.8.2';
         }
 
         // upgrade from 1.8.2 to 1.8.2.1
-        if ($prosper202_version == '1.8.2') {
+        if ($oneai_affiliate_version == '1.8.2') {
 
             $sql = "DROP TABLE IF EXISTS 202_locations";
             $result = _mysqli_query($sql);
@@ -906,11 +906,11 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.8.2.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.2.1';
+            $oneai_affiliate_version = '1.8.2.1';
         }
 
         // upgrade from 1.8.2.1 to 1.8.2.2
-        if ($prosper202_version == '1.8.2.1') {
+        if ($oneai_affiliate_version == '1.8.2.1') {
 
             $sql = "ALTER TABLE `202_clicks_advance` ADD COLUMN `region_id` bigint(20) unsigned NOT NULL;";
             $result = _mysqli_query($sql);
@@ -947,11 +947,11 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.8.2.2'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.2.2';
+            $oneai_affiliate_version = '1.8.2.2';
         }
 
         // upgrade from 1.8.2.2 to 1.8.3
-        if ($prosper202_version == '1.8.2.2') {
+        if ($oneai_affiliate_version == '1.8.2.2') {
 
             $sql = "CREATE TABLE IF NOT EXISTS `202_rotators` (
 			  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -1016,32 +1016,32 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.8.3'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.3';
+            $oneai_affiliate_version = '1.8.3';
         }
 
         // upgrade from 1.8.3 to 1.8.3.1
-        if ($prosper202_version == '1.8.3') {
+        if ($oneai_affiliate_version == '1.8.3') {
             $sql = "UPDATE 202_version SET version='1.8.3.1'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.3.1';
+            $oneai_affiliate_version = '1.8.3.1';
         }
 
         // upgrade from 1.8.3.1 to 1.8.3.2
-        if ($prosper202_version == '1.8.3.1') {
+        if ($oneai_affiliate_version == '1.8.3.1') {
             $sql = "UPDATE 202_version SET version='1.8.3.2'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.3.2';
+            $oneai_affiliate_version = '1.8.3.2';
         }
 
         // upgrade from 1.8.3.2 to 1.8.3.3
-        if ($prosper202_version == '1.8.3.2') {
+        if ($oneai_affiliate_version == '1.8.3.2') {
             $sql = "UPDATE 202_version SET version='1.8.3.3'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.3.3';
+            $oneai_affiliate_version = '1.8.3.3';
         }
 
         // upgrade from 1.8.3.3 to 1.8.4
-        if ($prosper202_version == '1.8.3.3') {
+        if ($oneai_affiliate_version == '1.8.3.3') {
 
             $sql = "ALTER TABLE `202_clicks` MODIFY `rotator_id` int(10) unsigned NOT NULL;";
             $result = _mysqli_query($sql);
@@ -1101,60 +1101,60 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.8.4'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.4';
+            $oneai_affiliate_version = '1.8.4';
         }
 
         // upgrade from 1.8.4 to 1.8.5
-        if ($prosper202_version == '1.8.4') {
+        if ($oneai_affiliate_version == '1.8.4') {
             $sql = "UPDATE 202_version SET version='1.8.5'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.5';
+            $oneai_affiliate_version = '1.8.5';
         }
 
         // upgrade from 1.8.5 to 1.8.6
-        if ($prosper202_version == '1.8.5') {
+        if ($oneai_affiliate_version == '1.8.5') {
             $sql = "UPDATE 202_version SET version='1.8.6'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.6';
+            $oneai_affiliate_version = '1.8.6';
         }
 
         // upgrade from 1.8.6 to 1.8.7
-        if ($prosper202_version == '1.8.6') {
+        if ($oneai_affiliate_version == '1.8.6') {
             $sql = "UPDATE 202_version SET version='1.8.7'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.7';
+            $oneai_affiliate_version = '1.8.7';
         }
 
         // upgrade from 1.8.7 to 1.8.8
-        if ($prosper202_version == '1.8.7') {
+        if ($oneai_affiliate_version == '1.8.7') {
             $sql = "UPDATE 202_version SET version='1.8.8'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.8';
+            $oneai_affiliate_version = '1.8.8';
         }
 
         // upgrade from 1.8.8 to 1.8.9
-        if ($prosper202_version == '1.8.8') {
+        if ($oneai_affiliate_version == '1.8.8') {
             $sql = "UPDATE 202_version SET version='1.8.9'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.9';
+            $oneai_affiliate_version = '1.8.9';
         }
 
         // upgrade from 1.8.9 to 1.8.10
-        if ($prosper202_version == '1.8.9') {
+        if ($oneai_affiliate_version == '1.8.9') {
             $sql = "UPDATE 202_version SET version='1.8.10'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.10';
+            $oneai_affiliate_version = '1.8.10';
         }
 
         //upgrade from 1.8.10 to 1.8.11
-        if ($prosper202_version == '1.8.10') {
+        if ($oneai_affiliate_version == '1.8.10') {
             $sql = "UPDATE 202_version SET version='1.8.11'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.8.11';
+            $oneai_affiliate_version = '1.8.11';
         }
 
         // upgrade from 1.8.11/12/13/14/15/16 to 1.9.0
-        if ($prosper202_version == '1.8.11' || $prosper202_version == '1.8.12' || $prosper202_version == '1.8.13' || $prosper202_version == '1.8.14' || $prosper202_version == '1.8.15' || $prosper202_version == '1.8.16') {
+        if ($oneai_affiliate_version == '1.8.11' || $oneai_affiliate_version == '1.8.12' || $oneai_affiliate_version == '1.8.13' || $oneai_affiliate_version == '1.8.14' || $oneai_affiliate_version == '1.8.15' || $oneai_affiliate_version == '1.8.16') {
             $sql = "CREATE TABLE IF NOT EXISTS `202_dirty_hours` (
           `id` int(11) NOT NULL AUTO_INCREMENT,
           `ppc_account_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -1290,11 +1290,11 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.0'; ";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.0';
+            $oneai_affiliate_version = '1.9.0';
         }
 
         // upgrade from 1.9.0 to 1.9.1
-        if ($prosper202_version == '1.9.0') {
+        if ($oneai_affiliate_version == '1.9.0') {
 
             $sql = "ALTER TABLE `202_rotator_rules` ADD COLUMN `redirect_lp` int(11) DEFAULT NULL;";
             $result = _mysqli_query($sql);
@@ -1310,19 +1310,19 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.1'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.1';
+            $oneai_affiliate_version = '1.9.1';
         }
 
         // upgrade from 1.9.0 to 1.9.1
-        if ($prosper202_version == '1.9.1') {
+        if ($oneai_affiliate_version == '1.9.1') {
 
             $sql = "UPDATE 202_version SET version='1.9.2'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.2';
+            $oneai_affiliate_version = '1.9.2';
         }
 
         // upgrade from 1.9.2 to 1.9.3
-        if ($prosper202_version == '1.9.2') {
+        if ($oneai_affiliate_version == '1.9.2') {
 
             $sql = "ALTER TABLE `202_trackers` ADD COLUMN `click_cpa` decimal(7,5) DEFAULT NULL;";
             $result = _mysqli_query($sql);
@@ -1371,11 +1371,11 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.3'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.3';
+            $oneai_affiliate_version = '1.9.3';
         }
 
         // upgrade from 1.9.3 to 1.9.4
-        if ($prosper202_version == '1.9.3') {
+        if ($oneai_affiliate_version == '1.9.3') {
 
             $sql = "DROP TABLE 202_charts";
             $result = _mysqli_query($sql);
@@ -1403,11 +1403,11 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.4'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.4';
+            $oneai_affiliate_version = '1.9.4';
         }
 
         // upgrade from 1.9.4 to 1.9.5
-        if ($prosper202_version == '1.9.4') {
+        if ($oneai_affiliate_version == '1.9.4') {
 
             $sql = "ALTER TABLE 202_users ENGINE = INNODB";
             $result = _mysqli_query($sql);
@@ -1627,10 +1627,10 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.5'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.5';
+            $oneai_affiliate_version = '1.9.5';
         }
 
-        if ($prosper202_version == '1.9.5') {
+        if ($oneai_affiliate_version == '1.9.5') {
 
             $sql = "CREATE TABLE `202_clicks_rotator` (
                   `click_id` bigint(20) unsigned NOT NULL,
@@ -1814,10 +1814,10 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.6'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.6';
+            $oneai_affiliate_version = '1.9.6';
         }
 
-        if ($prosper202_version == '1.9.6') {
+        if ($oneai_affiliate_version == '1.9.6') {
 
             $sql = "ALTER TABLE 202_users_pref ADD COLUMN `user_daily_email` char(2) NOT NULL DEFAULT '07'";
             $result = _mysqli_query($sql);
@@ -1833,38 +1833,38 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.7'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.7';
+            $oneai_affiliate_version = '1.9.7';
         }
 
-        if ($prosper202_version == '1.9.7') {
+        if ($oneai_affiliate_version == '1.9.7') {
 
             $sql = "UPDATE 202_version SET version='1.9.8'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.8';
+            $oneai_affiliate_version = '1.9.8';
         }
 
-        if ($prosper202_version == '1.9.8') {
+        if ($oneai_affiliate_version == '1.9.8') {
 
             $sql = "UPDATE 202_version SET version='1.9.9'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.9';
+            $oneai_affiliate_version = '1.9.9';
         }
 
-        if ($prosper202_version == '1.9.9') {
+        if ($oneai_affiliate_version == '1.9.9') {
 
             $sql = "UPDATE 202_version SET version='1.9.10'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.10';
+            $oneai_affiliate_version = '1.9.10';
         }
 
-        if ($prosper202_version == '1.9.10') {
+        if ($oneai_affiliate_version == '1.9.10') {
 
             $sql = "UPDATE 202_version SET version='1.9.11'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.11';
+            $oneai_affiliate_version = '1.9.11';
         }
 
-        if ($prosper202_version == '1.9.11') {
+        if ($oneai_affiliate_version == '1.9.11') {
             $sql = "ALTER TABLE 202_rotators ADD COLUMN `public_id` int(11) NOT NULL";
             $result = _mysqli_query($sql);
 
@@ -1878,45 +1878,45 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.12'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.12';
+            $oneai_affiliate_version = '1.9.12';
         }
 
-        if ($prosper202_version == '1.9.12') {
+        if ($oneai_affiliate_version == '1.9.12') {
 
             $sql = "UPDATE 202_version SET version='1.9.13'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.13';
+            $oneai_affiliate_version = '1.9.13';
         }
 
-        if ($prosper202_version == '1.9.13') {
+        if ($oneai_affiliate_version == '1.9.13') {
 
             $sql = "UPDATE 202_version SET version='1.9.14'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.14';
+            $oneai_affiliate_version = '1.9.14';
         }
 
-        if ($prosper202_version == '1.9.14') {
+        if ($oneai_affiliate_version == '1.9.14') {
 
             $sql = "UPDATE 202_version SET version='1.9.15'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.15';
+            $oneai_affiliate_version = '1.9.15';
         }
 
-        if ($prosper202_version == '1.9.15') {
+        if ($oneai_affiliate_version == '1.9.15') {
 
             $sql = "UPDATE 202_version SET version='1.9.16'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.16';
+            $oneai_affiliate_version = '1.9.16';
         }
 
-        if ($prosper202_version == '1.9.16') {
+        if ($oneai_affiliate_version == '1.9.16') {
 
             $sql = "UPDATE 202_version SET version='1.9.17'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.17';
+            $oneai_affiliate_version = '1.9.17';
         }
 
-        if ($prosper202_version == '1.9.17') {
+        if ($oneai_affiliate_version == '1.9.17') {
             $sql = "CREATE TABLE IF NOT EXISTS `202_dni_networks` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
               `user_id` mediumint(8) unsigned NOT NULL,
@@ -1938,10 +1938,10 @@ class UPGRADE
 
             $sql = "UPDATE 202_version SET version='1.9.18'";
             $result = _mysqli_query($sql);
-            $prosper202_version = '1.9.18';
+            $oneai_affiliate_version = '1.9.18';
         }
 
-        if ($prosper202_version == '1.9.18') {
+        if ($oneai_affiliate_version == '1.9.18') {
 
             $sql = "
 				CREATE TABLE `202_auth_keys` (
@@ -1959,10 +1959,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.19'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.19';
+            $oneai_affiliate_version = '1.9.19';
         }
 
-        if ($prosper202_version == '1.9.19') {
+        if ($oneai_affiliate_version == '1.9.19') {
 
             $sql = "ALTER TABLE `202_dni_networks` ADD COLUMN `shortDescription` varchar(255) NOT NULL, ADD COLUMN `favIcon` varchar(255) NOT NULL";
             $result = _mysqli_query($sql);
@@ -1970,18 +1970,18 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.20'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.20';
+            $oneai_affiliate_version = '1.9.20';
         }
 
-        if ($prosper202_version == '1.9.20') {
+        if ($oneai_affiliate_version == '1.9.20') {
 
             $sql = "UPDATE 202_version SET version='1.9.21'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.21';
+            $oneai_affiliate_version = '1.9.21';
         }
 
-        if ($prosper202_version == '1.9.21') {
+        if ($oneai_affiliate_version == '1.9.21') {
 
             $sql = "DROP INDEX ppc_network_id ON 202_ppc_network_variables";
             $result = _mysqli_query($sql);
@@ -1999,50 +1999,50 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.22'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.22';
+            $oneai_affiliate_version = '1.9.22';
         }
 
-        if ($prosper202_version == '1.9.22') {
+        if ($oneai_affiliate_version == '1.9.22') {
 
             $sql = "UPDATE 202_version SET version='1.9.23'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.23';
+            $oneai_affiliate_version = '1.9.23';
         }
 
-        if ($prosper202_version == '1.9.23') {
+        if ($oneai_affiliate_version == '1.9.23') {
 
             $sql = "UPDATE 202_version SET version='1.9.24'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.24';
+            $oneai_affiliate_version = '1.9.24';
         }
 
-        if ($prosper202_version == '1.9.24') {
+        if ($oneai_affiliate_version == '1.9.24') {
 
             $sql = "UPDATE 202_version SET version='1.9.25'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.25';
+            $oneai_affiliate_version = '1.9.25';
         }
 
-        if ($prosper202_version == '1.9.25') {
+        if ($oneai_affiliate_version == '1.9.25') {
 
             $sql = "UPDATE 202_version SET version='1.9.26'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.26';
+            $oneai_affiliate_version = '1.9.26';
         }
 
-        if ($prosper202_version == '1.9.26') {
+        if ($oneai_affiliate_version == '1.9.26') {
 
             $sql = "UPDATE 202_version SET version='1.9.27'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.27';
+            $oneai_affiliate_version = '1.9.27';
         }
 
-        if ($prosper202_version == '1.9.27') {
+        if ($oneai_affiliate_version == '1.9.27') {
 
             $sql = "ALTER TABLE 202_users DROP `leave_behind_page_url`";
             $result = _mysqli_query($sql);
@@ -2056,10 +2056,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.28'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.28';
+            $oneai_affiliate_version = '1.9.28';
         }
 
-        if ($prosper202_version == '1.9.28') {
+        if ($oneai_affiliate_version == '1.9.28') {
 
             $sql = "ALTER TABLE `202_users_pref` ADD COLUMN `user_pref_subid` bigint(20) unsigned DEFAULT NULL";
             $result = _mysqli_query($sql);
@@ -2067,10 +2067,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.29'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.29';
+            $oneai_affiliate_version = '1.9.29';
         }
 
-        if ($prosper202_version == '1.9.29' || $prosper202_version == '1.9.30' || $prosper202_version == '1.9.30a' || $prosper202_version == '1.9.30b') {
+        if ($oneai_affiliate_version == '1.9.29' || $oneai_affiliate_version == '1.9.30' || $oneai_affiliate_version == '1.9.30a' || $oneai_affiliate_version == '1.9.30b') {
 
             $sql = "ALTER TABLE `202_conversion_logs` ADD COLUMN `transaction_id` varchar(255) DEFAULT NULL, ADD COLUMN `click_payout` decimal(11,5) NOT NULL, ADD COLUMN `deleted` tinyint(4) NOT NULL DEFAULT '0'";
             $result = _mysqli_query($sql);
@@ -2102,7 +2102,7 @@ class UPGRADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.30b';
+            $oneai_affiliate_version = '1.9.30b';
 
             //Move data from variable_sets into variable_sets2
             $sql = "SELECT * from 202_variable_sets";
@@ -2136,15 +2136,15 @@ class UPGRADE
             }
         }
 
-        if ($prosper202_version == '1.9.30' || $prosper202_version == '1.9.30a' || $prosper202_version == '1.9.30b') {
+        if ($oneai_affiliate_version == '1.9.30' || $oneai_affiliate_version == '1.9.30a' || $oneai_affiliate_version == '1.9.30b') {
 
             $sql = "UPDATE 202_version SET version='1.9.31'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.31';
+            $oneai_affiliate_version = '1.9.31';
         }
 
-        if ($prosper202_version == '1.9.31') {
+        if ($oneai_affiliate_version == '1.9.31') {
             $sql = "CREATE TABLE `202_ad_network_feeds` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
               `user_id` mediumint(8) NOT NULL,
@@ -2177,18 +2177,18 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.32'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.32';
+            $oneai_affiliate_version = '1.9.32';
         }
 
-        if ($prosper202_version == '1.9.32') {
+        if ($oneai_affiliate_version == '1.9.32') {
 
             $sql = "UPDATE 202_version SET version='1.9.33'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.33';
+            $oneai_affiliate_version = '1.9.33';
         }
 
-        if ($prosper202_version == '1.9.33') {
+        if ($oneai_affiliate_version == '1.9.33') {
             $sql = "CREATE TABLE `202_ad_feed_contentad_tokens` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
               `feed_id` int(11) NOT NULL,
@@ -2248,10 +2248,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.34'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.34';
+            $oneai_affiliate_version = '1.9.34';
         }
 
-        if ($prosper202_version == '1.9.34') {
+        if ($oneai_affiliate_version == '1.9.34') {
 
             $sql = "ALTER TABLE `202_users_pref` ADD COLUMN `revcontent_user_id` varchar(250) DEFAULT NULL, ADD COLUMN `revcontent_user_secret` varchar(250) DEFAULT NULL";
             $result = _mysqli_query($sql);
@@ -2275,10 +2275,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.35'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.35';
+            $oneai_affiliate_version = '1.9.35';
         }
 
-        if ($prosper202_version == '1.9.35') {
+        if ($oneai_affiliate_version == '1.9.35') {
             $sql = "ALTER TABLE `202_users_pref` ADD COLUMN `facebook_ads_linked` int(1) NOT NULL DEFAULT '0'";
             $result = _mysqli_query($sql);
 
@@ -2310,26 +2310,26 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.36'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.36';
+            $oneai_affiliate_version = '1.9.36';
         }
 
-        if ($prosper202_version == '1.9.36') {
+        if ($oneai_affiliate_version == '1.9.36') {
 
             $sql = "UPDATE 202_version SET version='1.9.37'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.37';
+            $oneai_affiliate_version = '1.9.37';
         }
 
-        if ($prosper202_version == '1.9.37') {
+        if ($oneai_affiliate_version == '1.9.37') {
 
             $sql = "UPDATE 202_version SET version='1.9.38'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.38';
+            $oneai_affiliate_version = '1.9.38';
         }
 
-        if ($prosper202_version == '1.9.38') {
+        if ($oneai_affiliate_version == '1.9.38') {
 
             $sql = "ALTER TABLE `202_users_pref` ADD COLUMN `user_pref_ad_settings` varchar(11) NOT NULL DEFAULT 'show_all'";
             $result = _mysqli_query($sql);
@@ -2341,10 +2341,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.39'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.39';
+            $oneai_affiliate_version = '1.9.39';
         }
 
-        if ($prosper202_version == '1.9.39') {
+        if ($oneai_affiliate_version == '1.9.39') {
 
             $sql = "ALTER TABLE 202_landing_pages ADD COLUMN leave_behind_page_url varchar(255) NOT NULL DEFAULT ''";
             $result = _mysqli_query($sql);
@@ -2352,10 +2352,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.40'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.40';
+            $oneai_affiliate_version = '1.9.40';
         }
 
-        if ($prosper202_version == '1.9.40') {
+        if ($oneai_affiliate_version == '1.9.40') {
 
             $sql = "ALTER TABLE 202_ppc_accounts ADD COLUMN `ppc_account_default` tinyint(1) unsigned NOT NULL DEFAULT '0'";
             $result = _mysqli_query($sql);
@@ -2366,10 +2366,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.41'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.41';
+            $oneai_affiliate_version = '1.9.41';
         }
 
-        if ($prosper202_version == '1.9.41') {
+        if ($oneai_affiliate_version == '1.9.41') {
 
             $sql = "INSERT INTO 202_users_pref(user_id) SELECT user_id from `202_users` where `user_id` not in (select user_id from 202_users_pref)";
             $result = _mysqli_query($sql);
@@ -2377,37 +2377,37 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.42'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.42';
+            $oneai_affiliate_version = '1.9.42';
         }
 
-        if ($prosper202_version == '1.9.42') {
+        if ($oneai_affiliate_version == '1.9.42') {
 
 
             $sql = "UPDATE 202_version SET version='1.9.43'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.43';
+            $oneai_affiliate_version = '1.9.43';
         }
 
-        if ($prosper202_version == '1.9.43') {
+        if ($oneai_affiliate_version == '1.9.43') {
 
 
             $sql = "UPDATE 202_version SET version='1.9.44'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.44';
+            $oneai_affiliate_version = '1.9.44';
         }
 
-        if ($prosper202_version == '1.9.44') {
+        if ($oneai_affiliate_version == '1.9.44') {
 
 
             $sql = "UPDATE 202_version SET version='1.9.45'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.45';
+            $oneai_affiliate_version = '1.9.45';
         }
 
-        if ($prosper202_version == '1.9.45') {
+        if ($oneai_affiliate_version == '1.9.45') {
 
             //This is a fix for 1.9.44 not setting this up for new installs
             $sql = "ALTER TABLE 202_ppc_accounts ADD COLUMN `ppc_account_default` tinyint(1) unsigned NOT NULL DEFAULT '0'";
@@ -2419,19 +2419,19 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.46'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.46';
+            $oneai_affiliate_version = '1.9.46';
         }
 
-        if ($prosper202_version == '1.9.46') {
+        if ($oneai_affiliate_version == '1.9.46') {
 
 
             $sql = "UPDATE 202_version SET version='1.9.47'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.47';
+            $oneai_affiliate_version = '1.9.47';
         }
 
-        if ($prosper202_version == '1.9.47') {
+        if ($oneai_affiliate_version == '1.9.47') {
 
             $sql = "ALTER TABLE 202_users ADD COLUMN `user_public_publisher_id` varchar(10) DEFAULT NULL";
             $result = _mysqli_query($sql);
@@ -2448,18 +2448,18 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.48'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.48';
+            $oneai_affiliate_version = '1.9.48';
         }
 
-        if ($prosper202_version == '1.9.48') {
+        if ($oneai_affiliate_version == '1.9.48') {
 
             $sql = "UPDATE 202_version SET version='1.9.49'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.49';
+            $oneai_affiliate_version = '1.9.49';
         }
 
-        if ($prosper202_version == '1.9.49') {
+        if ($oneai_affiliate_version == '1.9.49') {
 
             $sql = "ALTER TABLE 202_users ADD COLUMN `user_dash_email` varchar(100) NOT NULL";
             $result = _mysqli_query($sql);
@@ -2467,10 +2467,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.50'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.50';
+            $oneai_affiliate_version = '1.9.50';
         }
 
-        if ($prosper202_version == '1.9.50') {
+        if ($oneai_affiliate_version == '1.9.50') {
 
             $sql = "ALTER TABLE 202_cpa_trackers ADD PRIMARY KEY (`click_id`)";
             $result = _mysqli_query($sql);
@@ -2516,10 +2516,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.51'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.51';
+            $oneai_affiliate_version = '1.9.51';
         }
 
-        if ($prosper202_version == '1.9.51') {
+        if ($oneai_affiliate_version == '1.9.51') {
 
 
             //set collations and char set
@@ -2581,11 +2581,11 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.52'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.52';
+            $oneai_affiliate_version = '1.9.52';
         }
 
 
-        if ($prosper202_version == '1.9.52') {
+        if ($oneai_affiliate_version == '1.9.52') {
 
             $sql = "ALTER TABLE 202_users_pref ADD COLUMN `ipqs_api_key` varchar(250) DEFAULT NULL";
             $result = _mysqli_query($sql);
@@ -2593,10 +2593,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.53'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.53';
+            $oneai_affiliate_version = '1.9.53';
         }
 
-        if ($prosper202_version == '1.9.53') {
+        if ($oneai_affiliate_version == '1.9.53') {
             $sql = "CREATE TABLE IF NOT EXISTS `202_bot202_facebook_pixel_assistant` (
                 `b202_fbpa_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
                 `landing_page_id` mediumint(8) unsigned NOT NULL,
@@ -2636,10 +2636,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.54'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.54';
+            $oneai_affiliate_version = '1.9.54';
         }
 
-        if ($prosper202_version == '1.9.54') {
+        if ($oneai_affiliate_version == '1.9.54') {
 
             $sql = "DROP TABLE IF EXISTS `202_bot202_facebook_pixel_click_events`";
             $result = _mysqli_query($sql);
@@ -2694,10 +2694,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.55'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.55';
+            $oneai_affiliate_version = '1.9.55';
         }
 
-        if ($prosper202_version == '1.9.55') {
+        if ($oneai_affiliate_version == '1.9.55') {
 
             // Create dashboard content cache table
             $sql = "CREATE TABLE IF NOT EXISTS `202_dashboard_content` (
@@ -2732,10 +2732,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.56'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.56';
+            $oneai_affiliate_version = '1.9.56';
         }
 
-        if ($prosper202_version == '1.9.56') {
+        if ($oneai_affiliate_version == '1.9.56') {
 
             $sql = "CREATE TABLE IF NOT EXISTS `202_attribution_models` (
               `model_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -2922,10 +2922,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.56'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.56';
+            $oneai_affiliate_version = '1.9.56';
         }
 
-        if ($prosper202_version == '1.9.56') {
+        if ($oneai_affiliate_version == '1.9.56') {
 
             $sql = "CREATE TABLE IF NOT EXISTS `202_conversion_touchpoints` (
               `touchpoint_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -2943,10 +2943,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.57'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.57';
+            $oneai_affiliate_version = '1.9.57';
         }
 
-        if ($prosper202_version == '1.9.57') {
+        if ($oneai_affiliate_version == '1.9.57') {
 
             $database = DB::getInstance();
             $connection = $database->getConnection();
@@ -3023,10 +3023,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.58'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.58';
+            $oneai_affiliate_version = '1.9.58';
         }
 
-        if ($prosper202_version == '1.9.58') {
+        if ($oneai_affiliate_version == '1.9.58') {
 
             $sql = "CREATE TABLE IF NOT EXISTS `202_attribution_exports` (
               `export_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -3059,10 +3059,10 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.59'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.59';
+            $oneai_affiliate_version = '1.9.59';
         }
 
-        if ($prosper202_version == '1.9.59') {
+        if ($oneai_affiliate_version == '1.9.59') {
 
             $sql = "CREATE TABLE IF NOT EXISTS `202_sync_jobs` (
               `sync_job_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -3184,14 +3184,14 @@ class UPGRADE
             $sql = "UPDATE 202_version SET version='1.9.60'";
             $result = _mysqli_query($sql);
 
-            $prosper202_version = '1.9.60';
+            $oneai_affiliate_version = '1.9.60';
         }
 
         //This will enable p202 to downgrade to this version if installed over a newer version
-        if ($prosper202_version > '1.9.60') {
+        if ($oneai_affiliate_version > '1.9.60') {
 
-            $prosper202_version = '1.9.60';
-            $sql = "UPDATE 202_version SET version='" . $prosper202_version . "'";
+            $oneai_affiliate_version = '1.9.60';
+            $sql = "UPDATE 202_version SET version='" . $oneai_affiliate_version . "'";
             $result = _mysqli_query($sql);
         }
 

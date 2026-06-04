@@ -44,13 +44,13 @@ require_once dirname(__DIR__, 2) . '/202-config/Validation/ValidationResult.php'
 require_once dirname(__DIR__, 2) . '/202-config/Validation/ValidationException.php';
 require_once dirname(__DIR__, 2) . '/202-config/Validation/SetupFormValidator.php';
 
-use Prosper202\Attribution\AttributionService;
-use Prosper202\Attribution\AttributionServiceFactory;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Validation\SetupFormValidator;
-use Prosper202\Validation\ValidationException;
+use OneAIAffiliate\Attribution\AttributionService;
+use OneAIAffiliate\Attribution\AttributionServiceFactory;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Validation\SetupFormValidator;
+use OneAIAffiliate\Validation\ValidationException;
 
 /**
  * Controller for managing attribution models in the setup section.
@@ -80,10 +80,10 @@ class AttributionController extends SetupController
         $readConnection = $db?->getConnectionro();
         
         if ($writeConnection instanceof \mysqli) {
-            $this->modelRepository = new \Prosper202\Attribution\Repository\Mysql\MysqlModelRepository($writeConnection, $readConnection);
+            $this->modelRepository = new \OneAIAffiliate\Attribution\Repository\Mysql\MysqlModelRepository($writeConnection, $readConnection);
             $this->validator = new SetupFormValidator($writeConnection);
         } else {
-            $this->modelRepository = new \Prosper202\Attribution\Repository\NullModelRepository();
+            $this->modelRepository = new \OneAIAffiliate\Attribution\Repository\NullModelRepository();
             // Fallback to global $db for validator if DB connection fails
             global $db;
             $this->validator = new SetupFormValidator($db instanceof \mysqli ? $db : new \mysqli());

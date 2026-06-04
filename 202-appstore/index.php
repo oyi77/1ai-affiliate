@@ -4,7 +4,7 @@ include_once(str_repeat("../", 1).'202-config/connect.php');
 
 AUTH::require_user(); 
 
-template_top('Prosper202 ClickServer App Store');  
+template_top('1ai-Affiliate ClickServer App Store');  
 
 	if ($_POST['update_clickserver_api_key'] == '1') {
 
@@ -54,7 +54,7 @@ template_top('Prosper202 ClickServer App Store');
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Your Prosper202 ClickServer API Key Is Needed To Activate The App Store</h4>
+        <h4 class="modal-title" id="myModalLabel">Your 1ai-Affiliate ClickServer API Key Is Needed To Activate The App Store</h4>
       </div>
       <div class="modal-body">
        <!--  If you've ever registered on the Tracking202.com site, you can quickly login below get your ClickServer API Key. If not, register below to automatically get an API Key. --> 
@@ -69,7 +69,7 @@ template_top('Prosper202 ClickServer App Store');
 
 <div class="row home">
   <div class="col-xs-12">
-  	<h4><img src="<?php echo get_absolute_url();?>202-img/new/icons/building.svg" alt="ribbon" class="tile-hot-ribbon"> Prosper202 App Store - 1-Click Install Apps & Services</h4>
+  	<h4><img src="<?php echo get_absolute_url();?>202-img/new/icons/building.svg" alt="ribbon" class="tile-hot-ribbon"> 1ai-Affiliate App Store - 1-Click Install Apps & Services</h4>
 	
   </div>
 </div>
@@ -78,12 +78,12 @@ template_top('Prosper202 ClickServer App Store');
 if ($html['clickserver_api_key']!=''){?>
  <div class="row account">
 	<div class="col-xs-12">
-		<h6>Your Prosper202 ClickServer API Key Is Needed To Activate The App Store</h6>
+		<h6>Your 1ai-Affiliate ClickServer API Key Is Needed To Activate The App Store</h6>
 	</div>
 	<div class="col-xs-4">
 		<div class="panel panel-default account_left">
 			<div class="panel-body">
-			    Update your Prosper202 ClickServer API Key. Warning: NEVER share your Prosper202 ClickServer API key with anyone!
+			    Update your 1ai-Affiliate ClickServer API Key. Warning: NEVER share your 1ai-Affiliate ClickServer API key with anyone!
 			</div>
 		</div>
 	</div>

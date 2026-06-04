@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Lightweight device detection using User-Agent string matching.
  *
  * Replaces the third-party Mobile_Detect library with a minimal
- * implementation covering the mobile/tablet checks used by Prosper202.
+ * implementation covering the mobile/tablet checks used by 1ai-Affiliate.
  */
 class DeviceDetect
 {

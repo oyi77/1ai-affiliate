@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution;
+namespace OneAIAffiliate\Attribution;
 
 /**
  * Describes the entity scope an attribution snapshot or setting applies to.

@@ -143,7 +143,7 @@ switch ($case) {
 				if (!$click_payouts[$click_id]) 	$click_payouts[$click_id] = $click_payout;
 				else 							$click_payouts[$click_id] = $click_payout + $click_payouts[$click_id];
 				
-				#now upload each row into prosper202 and update the subids accordingly
+				#now upload each row into oneai_affiliate and update the subids accordingly
 				$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 				$mysql['click_id'] = $db->real_escape_string($click_id);
 				$mysql['click_payout'] = $db->real_escape_string($click_payouts[$click_id]);

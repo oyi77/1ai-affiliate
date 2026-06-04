@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Tracker;
+namespace OneAIAffiliate\Tracker;
 
 final class InMemoryTrackerRepository implements TrackerRepositoryInterface
 {

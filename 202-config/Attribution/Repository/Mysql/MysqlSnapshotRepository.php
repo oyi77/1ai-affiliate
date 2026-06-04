@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 
 final readonly class MysqlSnapshotRepository implements SnapshotRepositoryInterface

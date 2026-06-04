@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Prosper202\Database\Schema;
+namespace OneAIAffiliate\Database\Schema;
 
 /**
- * Registry of all table names in the Prosper202 database.
+ * Registry of all table names in the 1ai-Affiliate database.
  * Use these constants instead of magic strings to prevent typos and enable IDE auto-completion.
  */
 final class TableRegistry

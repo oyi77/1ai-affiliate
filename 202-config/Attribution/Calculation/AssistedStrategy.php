@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Calculation;
+namespace OneAIAffiliate\Attribution\Calculation;
 
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\Touchpoint;
 
 final class AssistedStrategy implements AttributionStrategyInterface
 {

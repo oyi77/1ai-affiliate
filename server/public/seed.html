@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<script>
+// Bridge: receive token via postMessage from parent test, set localStorage
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.t) {
+    localStorage.setItem('jwt', e.data.t);
+    document.body.textContent = 'ready:' + e.data.t.slice(0,10);
+  }
+});
+</script>
+</body>
+</html>

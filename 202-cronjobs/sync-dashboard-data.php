@@ -6,7 +6,7 @@
  * and caches it locally for fast page loads.
  * 
  * Run this via cron every 15-30 minutes.
- * Example (quarter-hour cadence): 0,15,30,45 * * * * /usr/bin/php /path/to/prosper202/202-cronjobs/sync-dashboard-data.php
+ * Example (quarter-hour cadence): 0,15,30,45 * * * * /usr/bin/php /path/to/oneai_affiliate/202-cronjobs/sync-dashboard-data.php
  */
 
 declare(strict_types=1);

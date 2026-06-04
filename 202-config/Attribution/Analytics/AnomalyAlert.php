@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Analytics;
+namespace OneAIAffiliate\Attribution\Analytics;
 
 /**
  * Lightweight DTO describing an anomaly detected for the dashboard.

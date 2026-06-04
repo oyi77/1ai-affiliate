@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-use Prosper202\Attribution\AttributionServiceFactory;
-use Prosper202\Attribution\Repository\Mysql\ConversionJourneyRepository;
-header('P3P: CP="Prosper202 does not have a P3P policy"');
+use OneAIAffiliate\Attribution\AttributionServiceFactory;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionJourneyRepository;
+header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
 include_once(substr(__DIR__, 0,-19) . '/202-config/connect2.php');
 include_once(substr(__DIR__, 0,-19) . '/202-config/class-dataengine-slim.php');
 include_once(substr(__DIR__, 0,-19) . '/202-config/static-endpoint-helpers.php');

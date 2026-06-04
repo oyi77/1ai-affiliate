@@ -3,10 +3,10 @@
 
 declare(strict_types=1);
 
-use Prosper202\Attribution\Repository\Mysql\ConversionJourneyRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlSettingRepository;
-use Prosper202\Attribution\Settings\Setting;
-use Prosper202\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionJourneyRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlSettingRepository;
+use OneAIAffiliate\Attribution\Settings\Setting;
+use OneAIAffiliate\Attribution\ScopeType;
 
 require_once __DIR__ . '/../202-config/connect.php';
 

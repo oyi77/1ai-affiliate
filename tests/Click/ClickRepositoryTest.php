@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Click;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Click\ClickRecord;
-use Prosper202\Click\InMemoryClickRepository;
-use Prosper202\Click\NullClickRepository;
+use OneAIAffiliate\Click\ClickRecord;
+use OneAIAffiliate\Click\InMemoryClickRepository;
+use OneAIAffiliate\Click\NullClickRepository;
 
 final class ClickRepositoryTest extends TestCase
 {

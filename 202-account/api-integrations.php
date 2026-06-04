@@ -351,7 +351,7 @@ template_top('API Integrations');
 			<div class="col-xs-12">
 				<div class="panel panel-default account_left">
 					<div class="panel-body">
-						If you wish to search, apply and setup offers directly from your Prosper202 dashboard, use Direct Network Integration to link Prosper202 with our offers API. This will allow you to search, apply and setup offers from various networks without leaving your Prosper202 dashboard.
+						If you wish to search, apply and setup offers directly from your 1ai-Affiliate dashboard, use Direct Network Integration to link 1ai-Affiliate with our offers API. This will allow you to search, apply and setup offers from various networks without leaving your 1ai-Affiliate dashboard.
 					</div>
 				</div>
 			</div>
@@ -729,7 +729,7 @@ template_top('API Integrations');
 			<div class="col-xs-12">
 				<div class="panel panel-default account_left">
 					<div class="panel-body">
-						If you wish to send notifications into Slack enter your <strong>Slack</strong> incoming webhook url. To receive notifications from Slack, use the <strong>Prosper202</strong> Incoming Webhook URL.
+						If you wish to send notifications into Slack enter your <strong>Slack</strong> incoming webhook url. To receive notifications from Slack, use the <strong>1ai-Affiliate</strong> Incoming Webhook URL.
 					</div>
 				</div>
 			</div>
@@ -744,7 +744,7 @@ template_top('API Integrations');
 	</div>
 
 	<div class="col-xs-8">
-		<strong><small>Prosper202 Incoming Webhook URL Is:</small></strong><br />
+		<strong><small>1ai-Affiliate Incoming Webhook URL Is:</small></strong><br />
 		<div class="row">
 
 			<form class="form-horizontal" role="form" method="post" action="">

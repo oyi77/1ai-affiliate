@@ -6,16 +6,16 @@ namespace Tests\Attribution;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\AttributionService;
-use Prosper202\Attribution\ExportJob;
-use Prosper202\Attribution\ExportStatus;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\AuditRepositoryInterface;
-use Prosper202\Attribution\Repository\ExportJobRepositoryInterface;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\NullSnapshotRepository;
-use Prosper202\Attribution\Repository\NullTouchpointRepository;
+use OneAIAffiliate\Attribution\AttributionService;
+use OneAIAffiliate\Attribution\ExportJob;
+use OneAIAffiliate\Attribution\ExportStatus;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\AuditRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ExportJobRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\NullSnapshotRepository;
+use OneAIAffiliate\Attribution\Repository\NullTouchpointRepository;
 
 final class AttributionServiceTest extends TestCase
 {

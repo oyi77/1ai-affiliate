@@ -26,7 +26,7 @@ final class AuthClassTest extends TestCase
 
         // Set default server variables
         $_SERVER['HTTP_USER_AGENT'] = 'PHPUnit Test Agent';
-        $_SERVER['HTTP_HOST'] = 'test.prosper202.com';
+        $_SERVER['HTTP_HOST'] = 'test.1ai-affiliate.com';
         $_SERVER['HTTPS'] = 'on';
 
         // Include the auth functions

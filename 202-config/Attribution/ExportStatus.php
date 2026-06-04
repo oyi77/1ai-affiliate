@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution;
+namespace OneAIAffiliate\Attribution;
 
 /**
  * Indicates the lifecycle state of an attribution export job.

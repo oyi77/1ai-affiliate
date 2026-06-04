@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Click;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Click\ClickRecord;
+use OneAIAffiliate\Click\ClickRecord;
 
 /**
  * Tests for MysqlClickRepository — the atomic 9-table click write.

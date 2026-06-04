@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 
 /**

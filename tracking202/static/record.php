@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 header('Content-type: application/javascript');
-header('P3P: CP="Prosper202 does not have a P3P policy"');
+header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
 include_once(substr(__DIR__, 0,-19) . '/202-config/connect2.php'); 
  
 //lets find out if this is an advance or simple landing page, so we can include the appropriate script for each

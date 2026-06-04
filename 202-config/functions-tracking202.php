@@ -3669,7 +3669,7 @@ function  upgrade_config()
 
     //check to see if the sample config file exists
     if (!file_exists('202-config-sample.php')) {
-        //_die('Sorry, I need a 202-config-sample.php file to work from. Please re-upload this file from your Prosper202 installation.');
+        //_die('Sorry, I need a 202-config-sample.php file to work from. Please re-upload this file from your 1ai-Affiliate installation.');
         return;
     }
 
@@ -3680,7 +3680,7 @@ function  upgrade_config()
 
     //check to see if the directory is writable
     if (!is_writable(substr(__DIR__, 0, -10) . '/')) {
-        // _die("Sorry your 202-config.php needs upgrading but I can't update it automatically because I can't write to the directory.<br>You'll have to either change the permissions on your Prosper202 directory or create your 202-config.php manually by copying from 202-config-sample.php.");
+        // _die("Sorry your 202-config.php needs upgrading but I can't update it automatically because I can't write to the directory.<br>You'll have to either change the permissions on your 1ai-Affiliate directory or create your 202-config.php manually by copying from 202-config-sample.php.");
         return;
     }
 

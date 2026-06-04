@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository;
+namespace OneAIAffiliate\Attribution\Repository;
 
-use Prosper202\Attribution\Export\ExportJob;
+use OneAIAffiliate\Attribution\Export\ExportJob;
 final class NullExportRepository implements ExportRepositoryInterface
 {
     public function create(ExportJob $job): ExportJob

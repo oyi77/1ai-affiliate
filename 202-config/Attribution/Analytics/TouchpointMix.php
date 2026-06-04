@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Analytics;
+namespace OneAIAffiliate\Attribution\Analytics;
 
 /**
  * Aggregated representation of touchpoint credit distribution for charting.

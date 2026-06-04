@@ -44,11 +44,11 @@ if (($_POST['start_upgrade'] ?? '') === '1') {
 
 		if (temp_exists()) {
 			$installlog .= "Created /202-config/temp/ directory.\n";
-			$downloadUpdate = @file_put_contents(substr(__DIR__, 0, -12) . '/202-config/temp/prosper202_' . $latest_version . '.zip', $GetUpdate);
+			$downloadUpdate = @file_put_contents(substr(__DIR__, 0, -12) . '/202-config/temp/oneai_affiliate_' . $latest_version . '.zip', $GetUpdate);
 			if ($downloadUpdate) {
 				$installlog .= "Update downloaded and saved!\n";
 
-				$zip = @zip_open(substr(__DIR__, 0, -12) . '/202-config/temp/prosper202_' . $latest_version . '.zip');
+				$zip = @zip_open(substr(__DIR__, 0, -12) . '/202-config/temp/oneai_affiliate_' . $latest_version . '.zip');
 
 				if ($zip) {
 					$installlog .= "\nUpdate process started...\n";
@@ -153,16 +153,16 @@ if (($_POST['start_upgrade'] ?? '') === '1') {
 if ($missing_api_key == true) {
 	info_top(); ?>
 	<div class="main col-xs-7 install">
-		<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
-		<h6>1-Click Prosper202 Upgrade</h6>
+		<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
+		<h6>1-Click 1ai-Affiliate Upgrade</h6>
 		<h4><?php echo $_SESSION['premium_p202_details']['headline']; ?></h4>
 		<small><?php echo $_SESSION['premium_p202_details']['body']; ?></small><br></br>
 		<small>Release date: <?php echo $_SESSION['premium_p202_details']['release-date']; ?></small>
 		<small>
-			<p style="color:red">Your Prosper202 Customer API key is missing.</p>
+			<p style="color:red">Your 1ai-Affiliate Customer API key is missing.</p>
 		</small>
 		<small>
-			<p>Sign up at Prosper202 Customer Dashboard and fill out your billing information!</p>
+			<p>Sign up at 1ai-Affiliate Customer Dashboard and fill out your billing information!</p>
 		</small>
 		<small>
 			<p>Save P202 Customer API key at Personal Settings!</p>
@@ -219,8 +219,8 @@ if ($missing_api_key == true) {
 	} ?>
 
 	<div class="main col-xs-7 install">
-		<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
-		<h6>1-Click Prosper202 Upgrade</h6>
+		<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
+		<h6>1-Click 1ai-Affiliate Upgrade</h6>
 		<h4><?php echo $_SESSION['premium_p202_details']['headline']; ?></h4>
 		<small><?php echo $_SESSION['premium_p202_details']['body']; ?></small><br></br>
 		<small>Release date: <?php echo $_SESSION['premium_p202_details']['release-date']; ?></small>
@@ -284,12 +284,12 @@ if ($missing_api_key == true) {
 if ($FilesUpdated == true) {
 		?>
 			<h6>Success!</h6>
-			<small>Prosper202 has been upgraded! You can now <a href="<?php echo get_absolute_url(); ?>202-account/signout.php">Log In</a>.</small>
+			<small>1ai-Affiliate has been upgraded! You can now <a href="<?php echo get_absolute_url(); ?>202-account/signout.php">Log In</a>.</small>
 		<?php
 		} else {
 		?>
 			<h6>Upgrade Failed!</h6>
-			<small>Prosper202 was unable to upgrade. Please make sure PHP hase the correct permissions to modifiy files. For help <a href="http://support.tracking202.com">check our support site</a>. You can continue using <a href="<?php echo get_absolute_url(); ?>202-account/signout.php">your old version</a>.</small>
+			<small>1ai-Affiliate was unable to upgrade. Please make sure PHP hase the correct permissions to modifiy files. For help <a href="http://support.tracking202.com">check our support site</a>. You can continue using <a href="<?php echo get_absolute_url(); ?>202-account/signout.php">your old version</a>.</small>
 		<?php
 
 		}
@@ -298,7 +298,7 @@ if ($FilesUpdated == true) {
 <?php  }
 if ($update_needed != true) {
 	_die("<h6>Already Upgraded</h6>
-			<small>Your Prosper202 version $version is already upgraded.</small> <a href='./'> Log In Again</a>");
+			<small>Your 1ai-Affiliate version $version is already upgraded.</small> <a href='./'> Log In Again</a>");
 }
 
 info_bottom(); ?>

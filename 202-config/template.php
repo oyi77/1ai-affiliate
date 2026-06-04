@@ -4,7 +4,7 @@ declare(strict_types=1);
 ob_start();
 
 /**
- * Render the standard Prosper202 page chrome.
+ * Render the standard 1ai-Affiliate page chrome.
  *
  * Historically template_top() accepted up to four loosely defined positional
  * arguments (title, meta description, keywords, body/body-class tweaks). Some
@@ -23,7 +23,7 @@ ob_start();
  *
  * Any unrecognised legacy positional arguments are ignored safely.
  *
- * @param string $title Page title (default: 'Prosper202 ClickServer')
+ * @param string $title Page title (default: '1ai-Affiliate ClickServer')
  * @param mixed ...$legacyArgs Variable number of legacy arguments:
  *   - $legacyArgs[0]: string|array Meta description OR options array
  *   - $legacyArgs[1]: string Meta keywords (legacy format only)
@@ -34,7 +34,7 @@ ob_start();
  * @return void
  * @since 1.0.0
  */
-function template_top($title = 'Prosper202 ClickServer', ...$legacyArgs): void
+function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): void
 {
 	global $navigation;
 
@@ -138,8 +138,8 @@ function template_top($title = 'Prosper202 ClickServer', ...$legacyArgs): void
 		<title><?php echo $title; ?></title>
 		<meta name="description" content="<?php echo htmlspecialchars($metaDescription, ENT_QUOTES, 'UTF-8'); ?>" />
 		<meta name="keywords" content="<?php echo htmlspecialchars($metaKeywords, ENT_QUOTES, 'UTF-8'); ?>" />
-		<meta name="copyright" content="Prosper202, Inc" />
-		<meta name="author" content="Prosper202, Inc" />
+		<meta name="copyright" content="1ai-Affiliate, Inc" />
+		<meta name="author" content="1ai-Affiliate, Inc" />
 		<meta name="MSSmartTagsPreventParsing" content="TRUE" />
 		<meta charset="utf-8">
 		<meta name="robots" content="noindex, nofollow" />
@@ -268,8 +268,8 @@ function template_top($title = 'Prosper202 ClickServer', ...$legacyArgs): void
   box-shadow: none;
   -webkit-transition: border .25s linear, color .25s linear, background-color .25s linear;
   transition: border .25s linear, color .25s linear, background-color .25s linear;">
-							<!-- this is the prosper202 top-left logo/banner placement -->
-							<iframe class="advertise-top-left" src="<?php echo TRACKING202_ADS_URL; ?>/prosper202-cs-topleft/?t202aid=<?php echo $_SESSION['user_cirrus_link'] ?? ''; ?>" scrolling="no" frameborder="0"></iframe>
+							<!-- this is the oneai_affiliate top-left logo/banner placement -->
+							<iframe class="advertise-top-left" src="<?php echo TRACKING202_ADS_URL; ?>/oneai_affiliate-cs-topleft/?t202aid=<?php echo $_SESSION['user_cirrus_link'] ?? ''; ?>" scrolling="no" frameborder="0"></iframe>
 						</div>
 					</div>
 					<div class="col-xs-9">
@@ -280,7 +280,7 @@ function template_top($title = 'Prosper202 ClickServer', ...$legacyArgs): void
 									} ?>><a href="<?php echo get_absolute_url(); ?>202-account/" id="HomePage"><span class="fui-home"></span> Home </a></li>
                                                                 <li <?php if (isset($navigation[1]) && $navigation[1] === 'tracking202') {
                                                                                 echo 'class="active";';
-                                                                        } ?>><a href="<?php echo get_absolute_url(); ?>tracking202/" id="ClickServerPage"><span class="fui-heart"></span> Prosper202 CS </a></li>
+                                                                        } ?>><a href="<?php echo get_absolute_url(); ?>tracking202/" id="ClickServerPage"><span class="fui-heart"></span> 1ai-Affiliate CS </a></li>
                                                                 <?php if (isset($userObj) && $userObj->hasPermission("view_attribution_reports")) { ?>
                                                                         <li <?php if (isset($navigation[1]) && isset($navigation[2]) && $navigation[1] === '202-account' && $navigation[2] === 'attribution.php') {
                                                                                         echo 'class="active";';
@@ -359,7 +359,7 @@ function template_top($title = 'Prosper202 ClickServer', ...$legacyArgs): void
 				<div style="clear: both;"></div>
 				<div class="row footer main">
 					<div class="col-xs-12">
-						Thank you for marketing with <a href="http://prosper202.com" target="_blank">Prosper202</a>
+						Thank you for marketing with <a href="http://oneai_affiliate.com" target="_blank">1ai-Affiliate</a>
 						&middot;
 						<a href="../202-account/help.php">Help</a>
 						&middot;
@@ -367,9 +367,9 @@ function template_top($title = 'Prosper202 ClickServer', ...$legacyArgs): void
 						&middot;
 
 						<?php if (isset($_SESSION['update_needed']) && $_SESSION['update_needed'] == true) { ?>
-							<strong class="bg-danger">Your Prosper202 ClickServer <?php echo $version; ?> is out of date. <a href="https://my.tracking202.com/api/customers/login" target="_blank">Download New Version</a>.</strong>
+							<strong class="bg-danger">Your 1ai-Affiliate ClickServer <?php echo $version; ?> is out of date. <a href="https://my.tracking202.com/api/customers/login" target="_blank">Download New Version</a>.</strong>
 						<?php } else { ?>
-							Your Prosper202 ClickServer <?php echo $version; ?> is up to date.
+							Your 1ai-Affiliate ClickServer <?php echo $version; ?> is up to date.
 						<?php } ?>
 
 						<br><br>Local time: <?php echo date(DATE_RFC2822); ?>
@@ -419,11 +419,11 @@ function template_top($title = 'Prosper202 ClickServer', ...$legacyArgs): void
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<div class="modal-header">
-								<h4 class="modal-title">Prosper202 VIP Perks</h4>
+								<h4 class="modal-title">1ai-Affiliate VIP Perks</h4>
 							</div>
 							<div class="modal-body">
-								<span class="infotext">Wouldn't you love to have new campaign opportunities, private campaigns, business relationships, discounts and special offers and more handed to you? Now you can with the Prosper202 VIP Perk program.<br></br>
-									Fill out your profile information to customize your Prosper202 VIP Perks experience. The information will be used to uniquely match you up with coupons, discounts, or exclusive offers.</span>
+								<span class="infotext">Wouldn't you love to have new campaign opportunities, private campaigns, business relationships, discounts and special offers and more handed to you? Now you can with the 1ai-Affiliate VIP Perk program.<br></br>
+									Fill out your profile information to customize your 1ai-Affiliate VIP Perks experience. The information will be used to uniquely match you up with coupons, discounts, or exclusive offers.</span>
 								<span id="perks-error" class="small error" style="display:none; position:absolute; right: 23px; margin-top: 39px;"><span class="fui-alert"></span> Whoops! Looks like you forget to answer some questions.</span>
 
 								<form class="form-horizontal" role="form" id="survey-form">

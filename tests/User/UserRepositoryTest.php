@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\User;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\User\InMemoryUserRepository;
+use OneAIAffiliate\User\InMemoryUserRepository;
 use RuntimeException;
 
 final class UserRepositoryTest extends TestCase

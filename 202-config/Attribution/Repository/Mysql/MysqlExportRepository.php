@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\Export\ExportFormat;
-use Prosper202\Attribution\Export\ExportJob;
-use Prosper202\Attribution\Export\ExportStatus;
-use Prosper202\Attribution\Repository\ExportRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\Export\ExportFormat;
+use OneAIAffiliate\Attribution\Export\ExportJob;
+use OneAIAffiliate\Attribution\Export\ExportStatus;
+use OneAIAffiliate\Attribution\Repository\ExportRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Database\Connection;
 
 final readonly class MysqlExportRepository implements ExportRepositoryInterface
 {

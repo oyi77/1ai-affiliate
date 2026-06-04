@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Database;
+namespace OneAIAffiliate\Database;
 
 /**
  * Bridges the existing DB singleton to the new Connection class.

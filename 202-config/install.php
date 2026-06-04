@@ -36,7 +36,7 @@ if (isset($_COOKIE['user_api'])) {
 if (is_installed() == true) {
 
 	_die("<h6>Already Installed</h6>
-			  <small>You appear to have already installed Prosper202. To reinstall please clear your old database tables first. <a href='" . get_absolute_url() . "202-login.php'>Login Now</a></small>");
+			  <small>You appear to have already installed 1ai-Affiliate. To reinstall please clear your old database tables first. <a href='" . get_absolute_url() . "202-login.php'>Login Now</a></small>");
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -181,7 +181,7 @@ if (!$success) {
 
 	$phpversion = phpversion();
 	if ($phpversion < 5.4) {
-		$version_error['phpversion'] = 'Prosper202 requires PHP 5.4, or newer.';
+		$version_error['phpversion'] = '1ai-Affiliate requires PHP 5.4, or newer.';
 	}
 
 	// Get Database version
@@ -191,19 +191,19 @@ if (!$success) {
 		$mysqlversion = $match[1];
 		$dbwording = "MariaDB >= 10.0.12";
 		if ((version_compare($mysqlversion, '10.0.12') < 0)) {
-			$version_error['mysqlversion'] = 'Prosper202 requires MariaDB 10.0.12, or newer.';
+			$version_error['mysqlversion'] = '1ai-Affiliate requires MariaDB 10.0.12, or newer.';
 		}
 	} else {
 		$dbwording = "MySQL >= 5.6";
 		if ((version_compare($mysqlversion, '5.6') < 0)) {
-			$version_error['mysqlversion'] = 'Prosper202 requires MySQL 5.6, or newer.';
+			$version_error['mysqlversion'] = '1ai-Affiliate requires MySQL 5.6, or newer.';
 		}
 	}
 
 	$html['mysqlversion'] = htmlentities((string) $mysqlversion, ENT_QUOTES, 'UTF-8');
 
 	if (!function_exists('curl_version')) {
-		$version_error['curl'] = 'Prosper202 requires CURL to be installed.';
+		$version_error['curl'] = '1ai-Affiliate requires CURL to be installed.';
 	}
 
 	if ($version_error) {
@@ -223,9 +223,9 @@ if (!$success) {
 		}
 	</style>
 	<div class="main col-xs-7 install">
-		<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
+		<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
 		<h6>Welcome</h6>
-		<small>Welcome to the five minute Prosper202 installation process! Just fill in the information below, and you'll be on your way to using the most powerful internet marketing applications in the world.</small>
+		<small>Welcome to the five minute 1ai-Affiliate installation process! Just fill in the information below, and you'll be on your way to using the most powerful internet marketing applications in the world.</small>
 		<br><br>
 		<small>Need Extra Help? Check out our <a href="http://support.tracking202.com/" target="_blank">ReadMe documentation</a>.</small>
 
@@ -233,7 +233,7 @@ if (!$success) {
 		<small>Please provide the following information. Don't worry, you can always change these settings later.</small>
 		<br><br>
 		<?php if (isset($error['general'])) echo $error['general']; ?>
-		<form method="post" action="" class="form-horizontal" role="form" id="install-prosper202">
+		<form method="post" action="" class="form-horizontal" role="form" id="install-oneai_affiliate">
 
 			<input type="hidden" class="form-control input-sm" id="user_api" name="user_api" value="<?php echo $html['user_api']; ?>">
 
@@ -329,9 +329,9 @@ if (!$success) {
 				</div>
 			</div>
 
-			<button class="btn btn-lg btn-p202 btn-block" type="submit">Install Prosper202 ClickServer<span class="fui-check-inverted pull-right"></span></button>
+			<button class="btn btn-lg btn-p202 btn-block" type="submit">Install 1ai-Affiliate ClickServer<span class="fui-check-inverted pull-right"></span></button>
 			<script type="text/javascript">
-				$('form#install-prosper202').submit(function() {
+				$('form#install-oneai_affiliate').submit(function() {
 					$(this).find(':input[type=submit]').prop('disabled', true);
 					$('body').css('cursor', 'wait');
 				});
@@ -347,9 +347,9 @@ if ($success) {
 
 	info_top(); ?>
 	<div class="main col-xs-7 install">
-		<center><img src="<?php echo get_absolute_url(); ?>202-img/prosper202.png"></center>
+		<center><img src="<?php echo get_absolute_url(); ?>202-img/oneai_affiliate.png"></center>
 		<h6>Success!</h6>
-		<small>Prosper202 has been installed. Now you can <a href="<?php echo get_absolute_url(); ?>202-login.php">log in</a>.</small><br></br>
+		<small>1ai-Affiliate has been installed. Now you can <a href="<?php echo get_absolute_url(); ?>202-login.php">log in</a>.</small><br></br>
 		<div class="row" style="margin-bottom: 10px;">
 			<div class="col-xs-3"><span class="label label-default">Username:</span></div>
 			<div class="col-xs-9"><span class="label label-primary"><?php echo $html['user_name']; ?></span></div>

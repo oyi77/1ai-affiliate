@@ -65,7 +65,7 @@ class DashboardAPI
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_USERAGENT => 'Prosper202-Dashboard/1.0',
+            CURLOPT_USERAGENT => '1ai-Affiliate-Dashboard/1.0',
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 3,
             CURLOPT_SSL_VERIFYPEER => true,

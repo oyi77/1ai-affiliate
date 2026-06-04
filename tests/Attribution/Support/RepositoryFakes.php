@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Attribution\Support;
 
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
-use Prosper202\Attribution\Repository\TouchpointRepositoryInterface;
-use Prosper202\Attribution\Export\ExportFormat;
-use Prosper202\Attribution\Export\ExportJob;
-use Prosper202\Attribution\Export\ExportStatus;
-use Prosper202\Attribution\Repository\ExportRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\TouchpointRepositoryInterface;
+use OneAIAffiliate\Attribution\Export\ExportFormat;
+use OneAIAffiliate\Attribution\Export\ExportJob;
+use OneAIAffiliate\Attribution\Export\ExportStatus;
+use OneAIAffiliate\Attribution\Repository\ExportRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\Touchpoint;
 
 /**
  * Shared in-memory fakes for attribution repositories used by the test suite.
@@ -303,7 +303,7 @@ final class InMemoryTouchpointRepository implements TouchpointRepositoryInterfac
 
 /**
  * In-memory fake for {@see ExportRepositoryInterface}, backed by the mutable
- * Prosper202\Attribution\Export\ExportJob value object that ExportProcessor
+ * 1ai-Affiliate\Attribution\Export\ExportJob value object that ExportProcessor
  * operates on. Job objects are stored by reference so that in-place mutations
  * performed by the processor (markCompleted/markFailed) are reflected once the
  * processor calls update(), mirroring the behaviour of MysqlExportRepository.

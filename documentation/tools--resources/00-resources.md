@@ -2,11 +2,11 @@
 
 ---------------------------------------------------------------------------------------------------------------------------
 
-## [WP Engine Premium Managed Wordpress Hosting](https://wpengine.com/?utm_source=wpe-prosper202-resourcespage)
+## [WP Engine Premium Managed Wordpress Hosting](https://wpengine.com/?utm_source=wpe-1ai-affiliate-resourcespage)
 
 Looking for the ultimate Wordpress Host? WP Engine offers fully managed Wordpress hosting, with super fast caching for the ultimate in performance. All plans come with exceptional expert WP support.
 
-**[Click here to sign up for WP Engine and try it for 60 days](https://wpengine.com/?utm_source=wpe-prosper202-resourcespage)**
+**[Click here to sign up for WP Engine and try it for 60 days](https://wpengine.com/?utm_source=wpe-1ai-affiliate-resourcespage)**
 
 ---------------------------------------------------------------------------------------------------------------------------
 <!-- 

@@ -28,8 +28,8 @@ GA_googleFetchAds();
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="description" />
 <meta name="keywords" content="keywords" />
-<meta name="copyright" content="Prosper202, Inc" />
-<meta name="author" content="Prosper202, Inc" />
+<meta name="copyright" content="1ai-Affiliate, Inc" />
+<meta name="author" content="1ai-Affiliate, Inc" />
 <meta name="MSSmartTagsPreventParsing" content="TRUE" />
 <meta name="viewport" content = "width=device-width ,  user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -51,7 +51,7 @@ GA_googleFetchAds();
 <body onload="setTimeout(function() { window.scrollTo(0, 1) }, 1);" id="ministats" class="ministats">
 	<div class="container" style="width: 100%;">
 	<div class="main_wrapper">
-		<center><img src="<?php echo get_absolute_url();?>202-img/prosper202.png"></center>
+		<center><img src="<?php echo get_absolute_url();?>202-img/oneai_affiliate.png"></center>
 		<div class="main">
 			<div class="row">
 	  		<div class="col-xs-12">

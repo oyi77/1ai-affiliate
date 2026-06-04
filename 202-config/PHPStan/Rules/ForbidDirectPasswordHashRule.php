@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\PHPStan\Rules;
+namespace OneAIAffiliate\PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
@@ -44,7 +44,7 @@ final class ForbidDirectPasswordHashRule implements Rule
                     'Direct password_hash() bypasses hash_user_pass(). '
                     . 'Use hash_user_pass() from functions-auth.php for consistent hashing. (CLAUDE.md #5)'
                 )
-                    ->identifier('prosper202.directPasswordHash')
+                    ->identifier('oneai_affiliate.directPasswordHash')
                     ->build(),
             ];
         }

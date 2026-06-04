@@ -2,7 +2,7 @@
 
 ## WordPress Plugin
 
-If you are using WordPress as your landing page, we have developed a WordPress plugin you can install with your WordPress that will integrate with Prosper202. Simply download the WordPress plugin below and follow the instructions inside the plugin once activated to enable it to work with your Prosper202 install.
+If you are using WordPress as your landing page, we have developed a WordPress plugin you can install with your WordPress that will integrate with 1ai-Affiliate. Simply download the WordPress plugin below and follow the instructions inside the plugin once activated to enable it to work with your 1ai-Affiliate install.
 
 ## Purchase of WP Plugin
 

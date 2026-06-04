@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository\InMemory;
+namespace OneAIAffiliate\Repository\InMemory;
 
-use Prosper202\Repository\DeviceRepositoryInterface;
+use OneAIAffiliate\Repository\DeviceRepositoryInterface;
 
 final class InMemoryDeviceRepository implements DeviceRepositoryInterface
 {

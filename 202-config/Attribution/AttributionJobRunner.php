@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution;
+namespace OneAIAffiliate\Attribution;
 
-use Prosper202\Attribution\Calculation\AttributionStrategyInterface;
-use Prosper202\Attribution\Calculation\ConversionBatch;
-use Prosper202\Attribution\Calculation\LastTouchStrategy;
-use Prosper202\Attribution\Calculation\TimeDecayStrategy;
-use Prosper202\Attribution\Calculation\PositionBasedStrategy;
-use Prosper202\Attribution\Calculation\AssistedStrategy;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\AuditRepositoryInterface;
-use Prosper202\Attribution\Repository\ConversionRepositoryInterface;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
-use Prosper202\Attribution\Repository\TouchpointRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\Calculation\AttributionStrategyInterface;
+use OneAIAffiliate\Attribution\Calculation\ConversionBatch;
+use OneAIAffiliate\Attribution\Calculation\LastTouchStrategy;
+use OneAIAffiliate\Attribution\Calculation\TimeDecayStrategy;
+use OneAIAffiliate\Attribution\Calculation\PositionBasedStrategy;
+use OneAIAffiliate\Attribution\Calculation\AssistedStrategy;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\AuditRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ConversionRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\TouchpointRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\Touchpoint;
 use RuntimeException;
 
 final readonly class AttributionJobRunner

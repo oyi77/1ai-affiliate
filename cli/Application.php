@@ -10,7 +10,7 @@ class Application extends ConsoleApplication
 {
     public function __construct()
     {
-        parent::__construct('p202 - Prosper202 CLI', '1.0.0');
+        parent::__construct('p202 - 1ai-Affiliate CLI', '1.0.0');
         $this->registerCommands();
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 include_once(substr(__DIR__, 0, -19) . '/202-config/connect.php');
 include_once(substr(__DIR__, 0, -19) . '/202-config/class-dataengine-slim.php');
 
-use Prosper202\Attribution\AttributionServiceFactory;
+use OneAIAffiliate\Attribution\AttributionServiceFactory;
 AUTH::require_user();
 
 if (!$userObj->hasPermission("access_to_update_section")) {
@@ -145,7 +145,7 @@ template_top('Update Subids'); ?>
 		</div>
 	</div>
 	<div class="col-xs-12">
-		<small>Here is where you can update your income for Prosper202, by importing your subids from your affiliate marketing reports.</small>
+		<small>Here is where you can update your income for 1ai-Affiliate, by importing your subids from your affiliate marketing reports.</small>
 	</div>
 </div>
 

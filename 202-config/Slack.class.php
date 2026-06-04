@@ -123,9 +123,9 @@ class Slack {
       'user_referer_changed' => '#[user] changed the Referer Preference setting from: [old_pref] to: [new_pref]',
       'user_pref_cloak_referer_changed' => '#[user] changed the Cloaked Referer setting from: [old_pref] to: [new_pref]',
       'user_email_changed' => '#[user] changed the main account email from: [old_email] to: [new_email]',
-      'user_added_app_api_key' => '#[user] created a Prosper202 App API Key',
-      'user_removed_app_api_key' => '#[user] removed a Prosper202 App API Key',
-      'user_updated_clickserver_api_key' => '#[user] entered a new Prosper202 ClickServer API Key',
+      'user_added_app_api_key' => '#[user] created a 1ai-Affiliate App API Key',
+      'user_removed_app_api_key' => '#[user] removed a 1ai-Affiliate App API Key',
+      'user_updated_clickserver_api_key' => '#[user] entered a new 1ai-Affiliate ClickServer API Key',
 
       //3rd Party Integrations
       'cb_key_updated' => '#[user] entered a new ClickBank Secret Key',
@@ -136,7 +136,7 @@ class Slack {
 	  'ipqs_api_key_updated' => '#[user] entered a new IPQualityScore API Key',
 
       //User Management
-      'user_management_user' => '#[user] [type] a Prosper202 ClickServer User: #[username] ([role])',
+      'user_management_user' => '#[user] [type] a 1ai-Affiliate ClickServer User: #[username] ([role])',
 
       //Delete Click Data
       'click_data_deleted' => '#[user] deleted all click data prior to: [date]',
@@ -165,7 +165,7 @@ class Slack {
   private function sendMessage($message) {
 
     $data = "payload=" . json_encode([
-            "channel"  		=> "#prosper202",
+            "channel"  		=> "#oneai_affiliate",
             "text"      	=> urlencode((string) $message),
             "username" 		=> $_SERVER['SERVER_NAME'],
             "icon_url"    	=> "https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-02-28/3879263534_1958d0336574bea6f52d_48.jpg"

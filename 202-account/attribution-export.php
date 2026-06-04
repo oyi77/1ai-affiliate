@@ -34,7 +34,7 @@ if (!$writeConnection instanceof \mysqli) {
     return;
 }
 
-$repository = new \Prosper202\Attribution\Repository\Mysql\MysqlExportRepository($writeConnection, $readConnection);
+$repository = new \OneAIAffiliate\Attribution\Repository\Mysql\MysqlExportRepository($writeConnection, $readConnection);
 $job = $repository->findById($exportId);
 
 if ($job === null || $job->userId !== (int) ($_SESSION['user_id'] ?? 0) || !hash_equals((string)$job->downloadToken, (string)$token)) {
@@ -43,7 +43,7 @@ if ($job === null || $job->userId !== (int) ($_SESSION['user_id'] ?? 0) || !hash
     return;
 }
 
-if ($job->status !== \Prosper202\Attribution\Export\ExportStatus::COMPLETED || $job->filePath === null || !is_file($job->filePath)) {
+if ($job->status !== \OneAIAffiliate\Attribution\Export\ExportStatus::COMPLETED || $job->filePath === null || !is_file($job->filePath)) {
     http_response_code(404);
     echo 'Export file is not available.';
     return;

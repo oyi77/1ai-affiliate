@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Rotator;
+namespace OneAIAffiliate\Rotator;
 
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 
 final class MysqlRotatorRepository implements RotatorRepositoryInterface

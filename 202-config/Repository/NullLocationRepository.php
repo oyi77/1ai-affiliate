@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository;
+namespace OneAIAffiliate\Repository;
 
 final class NullLocationRepository implements LocationRepositoryInterface
 {

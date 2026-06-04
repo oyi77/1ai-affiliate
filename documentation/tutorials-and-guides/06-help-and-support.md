@@ -2,16 +2,16 @@
 
 ## General Support
 
-Since Prosper202 is free to download and use, we no longer offer free live support. 
+Since 1ai-Affiliate is free to download and use, we no longer offer free live support. 
 
 If you require assistance, have questions, or need further help in any way, you can subscribe to one of our paid support plans found here:
 **http://join.tracking202.com**
 
-By subscribing to our paid support plan, you not only get help from us, but it also helps us cover costs and further development on improving Prosper202 for you. It keeps the bills paid and allows us to continue to give back to the community. As such, we apologize if you require assistance and cannot offer free support.
+By subscribing to our paid support plan, you not only get help from us, but it also helps us cover costs and further development on improving 1ai-Affiliate for you. It keeps the bills paid and allows us to continue to give back to the community. As such, we apologize if you require assistance and cannot offer free support.
 
 ## Support Plans Info
 
-Our paid support plans include live chat support within Prosper202 during our regular business hours (Pacific Time) Monday through Friday, excluding holidays, breaks, and weekends. They include general support, troubleshooting, setup, and campaign help.
+Our paid support plans include live chat support within 1ai-Affiliate during our regular business hours (Pacific Time) Monday through Friday, excluding holidays, breaks, and weekends. They include general support, troubleshooting, setup, and campaign help.
 
 If you reach us outside our normal business hours, we'll see the message when we return and will respond then.
 

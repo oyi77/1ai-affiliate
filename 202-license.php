@@ -1,8 +1,8 @@
-# Prosper202 License
+# 1ai-Affiliate License
 # Business Source License 1.1 (BUSL-1.1)
 #
 # Licensor:             Blue Terra LLC
-# Licensed Work:        Prosper202
+# Licensed Work:        1ai-Affiliate
 #
 # Additional Use Grant: You may use the Licensed Work for any purpose,
 #                       including production use, except you may not offer

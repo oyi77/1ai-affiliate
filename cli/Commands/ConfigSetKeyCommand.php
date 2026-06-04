@@ -17,7 +17,7 @@ class ConfigSetKeyCommand extends Command
     protected function configure(): void
     {
         $this->setDescription('Set the API key for authentication')
-            ->addArgument('key', InputArgument::REQUIRED, 'Your Prosper202 API key');
+            ->addArgument('key', InputArgument::REQUIRED, 'Your 1ai-Affiliate API key');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

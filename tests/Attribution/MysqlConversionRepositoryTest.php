@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Attribution;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\Repository\Mysql\ConversionHydrator;
-use Prosper202\Attribution\Repository\Mysql\ConversionJourneyRepository;
-use Prosper202\Attribution\Repository\Mysql\MysqlConversionRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionHydrator;
+use OneAIAffiliate\Attribution\Repository\Mysql\ConversionJourneyRepository;
+use OneAIAffiliate\Attribution\Repository\Mysql\MysqlConversionRepository;
 
 final class MysqlConversionRepositoryTest extends TestCase
 {

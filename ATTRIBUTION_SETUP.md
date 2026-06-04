@@ -1,6 +1,6 @@
 # Multi-Touch Attribution System Setup Guide
 
-This guide covers the setup and usage of the new multi-touch attribution system in Prosper202.
+This guide covers the setup and usage of the new multi-touch attribution system in 1ai-Affiliate.
 
 ## Overview
 
@@ -16,11 +16,11 @@ The multi-touch attribution system allows you to track and attribute conversions
 
 ## Installation Steps
 
-The multi-touch attribution system is **automatically installed** as part of Prosper202's standard upgrade process. No manual migration is required.
+The multi-touch attribution system is **automatically installed** as part of 1ai-Affiliate's standard upgrade process. No manual migration is required.
 
-### Automatic Installation via Prosper202 Upgrade
+### Automatic Installation via 1ai-Affiliate Upgrade
 
-The attribution system is integrated into Prosper202's core upgrade system (version 1.9.56+) and includes:
+The attribution system is integrated into 1ai-Affiliate's core upgrade system (version 1.9.56+) and includes:
 
 - `202_attribution_models` table creation
 - `202_attribution_snapshots` table creation  
@@ -33,9 +33,9 @@ The attribution system is integrated into Prosper202's core upgrade system (vers
 
 ### Verify Installation
 
-After running Prosper202's upgrade process:
+After running 1ai-Affiliate's upgrade process:
 
-1. Navigate to the Setup section in Prosper202 
+1. Navigate to the Setup section in 1ai-Affiliate 
 2. You should see "Attribution Models" in the setup navigation tabs
 3. Click on Attribution Models to access the management interface
 4. Each user should have a default "Last Touch Attribution" model created
@@ -45,11 +45,11 @@ After running Prosper202's upgrade process:
 If you need to install the attribution system independently (for development or testing), you can use the standalone migration script:
 
 ```bash
-cd /path/to/prosper202
+cd /path/to/1ai-affiliate
 php 202-config/migrations/run_attribution_migration_standalone.php
 ```
 
-**Note**: This is only for development environments. Production installations should use Prosper202's standard upgrade process.
+**Note**: This is only for development environments. Production installations should use 1ai-Affiliate's standard upgrade process.
 
 ### 4. Configure Permissions (Optional)
 
@@ -189,13 +189,13 @@ $success = $integrationService->updateCampaignAttributionModel(
 ### Installation Issues
 
 **Attribution Models tab not appearing:**
-- Verify Prosper202 upgrade to version 1.9.56+ completed successfully
+- Verify 1ai-Affiliate upgrade to version 1.9.56+ completed successfully
 - Check that user has `access_to_setup_section` permission
 - Ensure setup navigation include files are properly integrated
 - Verify database tables were created during upgrade
 
 **Database tables missing:**
-- Run Prosper202's standard upgrade process from Admin panel
+- Run 1ai-Affiliate's standard upgrade process from Admin panel
 - Check upgrade logs for any SQL errors during attribution table creation
 - Verify MySQL user has CREATE TABLE and ALTER TABLE privileges
 - Ensure database supports the required MySQL version (5.6+ or MariaDB 10.0.12+)
@@ -207,7 +207,7 @@ $success = $integrationService->updateCampaignAttributionModel(
 - Each user should automatically get a "Last Touch Attribution" default model
 
 **Manual installation issues (development only):**
-- Ensure you're running the script from the Prosper202 root directory
+- Ensure you're running the script from the 1ai-Affiliate root directory
 - Command should be: `php 202-config/migrations/run_attribution_migration_standalone.php`
 - Verify `202-config.php` exists and contains correct database credentials
 
@@ -250,4 +250,4 @@ For issues or questions:
 3. Test with simple Last Touch models first
 4. Review existing campaign attribution assignments
 
-The attribution system is designed to work alongside existing Prosper202 features without disruption to current tracking functionality.
+The attribution system is designed to work alongside existing 1ai-Affiliate features without disruption to current tracking functionality.

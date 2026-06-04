@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\Repository\TouchpointRepositoryInterface;
-use Prosper202\Attribution\Touchpoint;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\Repository\TouchpointRepositoryInterface;
+use OneAIAffiliate\Attribution\Touchpoint;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 
 final readonly class MysqlTouchpointRepository implements TouchpointRepositoryInterface

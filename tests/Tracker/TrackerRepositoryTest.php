@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Tracker;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Tracker\InMemoryTrackerRepository;
+use OneAIAffiliate\Tracker\InMemoryTrackerRepository;
 
 final class TrackerRepositoryTest extends TestCase
 {

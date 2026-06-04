@@ -298,7 +298,7 @@ $unSecuredUniversalPixelJS = '
 		</div>
 		<div class="panel-body">
 			<div class="alert alert-warning">
-				<i class="fa fa-star"></i> <strong>Smart Technology:</strong> Automatically fires your traffic source pixels in addition to Prosper202 tracking. 
+				<i class="fa fa-star"></i> <strong>Smart Technology:</strong> Automatically fires your traffic source pixels in addition to 1ai-Affiliate tracking. 
 				Includes fallback noscript version for maximum compatibility.
 			</div>
 			

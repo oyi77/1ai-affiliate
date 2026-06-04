@@ -3,7 +3,7 @@
 
 declare(strict_types=1);
 
-use Prosper202\Attribution\AttributionServiceFactory;
+use OneAIAffiliate\Attribution\AttributionServiceFactory;
 
 require_once __DIR__ . '/../202-config/connect.php';
 

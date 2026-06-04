@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\PHPStan\Rules;
+namespace OneAIAffiliate\PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Coalesce;
@@ -56,7 +56,7 @@ final class ForbidSilentJsonDecodeRule implements Rule
                 'json_decode(...) ?? [] silently discards malformed JSON. '
                 . 'Validate JSON and throw on parse errors instead. (CLAUDE.md #4)'
             )
-                ->identifier('prosper202.silentJsonDecode')
+                ->identifier('oneai_affiliate.silentJsonDecode')
                 ->build(),
         ];
     }

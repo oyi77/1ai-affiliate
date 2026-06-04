@@ -10,7 +10,7 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 			<div class="panel-heading" role="tab" id="headingOne">
 				<h4 class="panel-title">
 					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-						A New Version of Prosper202 Is Available!
+						A New Version of 1ai-Affiliate Is Available!
 					</a>
 					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne" style="float:right">&times;</a>
 				</h4>
@@ -36,7 +36,7 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 			<div class="panel-heading" role="tab" id="headingOne">
 				<h4 class="panel-title">
 					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-						A New Version of Prosper202 Is Available!
+						A New Version of 1ai-Affiliate Is Available!
 					</a>
 					<a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne" style="float:right">&times;</a>
 				</h4>
@@ -119,12 +119,12 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 							<p>Release date: <?php echo $_SESSION['premium_p202_details']['release-date']; ?> - <a href="#changelogs" id="see_changelogs" data-toggle="modal" data-target="#changelogsPremium" style="color:#428bca; font-weight:normal; margin-top: 15px;">See what's new</a></p>
 						</small>
 						<small>
-							<p style="color:red">Your Prosper202 Customer API key is missing.</p>
+							<p style="color:red">Your 1ai-Affiliate Customer API key is missing.</p>
 						</small>
 						<small>
 							<ul>
 								<li>
-									<p>1#: Sign up at Prosper202 Customer Dashboard and fill out your billing information!</br><a href="<?php echo $_SESSION['premium_p202_details']['register-link']; ?>" target="_blank" class="btn btn-xs btn-p202"><?php echo $_SESSION['premium_p202_details']['register-button-text']; ?></a></p>
+									<p>1#: Sign up at 1ai-Affiliate Customer Dashboard and fill out your billing information!</br><a href="<?php echo $_SESSION['premium_p202_details']['register-link']; ?>" target="_blank" class="btn btn-xs btn-p202"><?php echo $_SESSION['premium_p202_details']['register-button-text']; ?></a></p>
 								</li>
 								<li>
 									<p>2#: Submit your P202 Customer API key!</br>

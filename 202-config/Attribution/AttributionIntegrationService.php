@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution;
+namespace OneAIAffiliate\Attribution;
 
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
 use mysqli;
 
 /**
- * Service for integrating attribution models with existing Prosper202 features
+ * Service for integrating attribution models with existing 1ai-Affiliate features
  */
 class AttributionIntegrationService
 {

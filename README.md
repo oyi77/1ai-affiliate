@@ -1,12 +1,12 @@
-# Prosper202 ClickServer
+# 1ai-Affiliate ClickServer
 
 Self-hosted campaign tracking and marketing analytics platform. Track clicks, conversions, and revenue across any traffic source with full data ownership — your data stays on your servers.
 
-Since 2007, Prosper202 has helped marketers take control of their tracking with an open, self-hosted platform that works with any traffic source, any offer, and any network.
+Since 2007, 1ai-Affiliate has helped marketers take control of their tracking with an open, self-hosted platform that works with any traffic source, any offer, and any network.
 
 ## Key Features
 
-- **Self-Hosted & Full Source Code** — Run Prosper202 100% on your own servers for ultimate control of your proprietary data and marketing methods. Customize the full source code to meet your needs.
+- **Self-Hosted & Full Source Code** — Run 1ai-Affiliate 100% on your own servers for ultimate control of your proprietary data and marketing methods. Customize the full source code to meet your needs.
 - **Click & Conversion Tracking** — Real-time click capture with sub-ID parameters, referrer tracking, and automatic IP/UA logging. Server-to-server postback and pixel tracking with revenue, payout, and status fields.
 - **12+ Report Types** — Keywords, geo, device, browser, OS, referrer, ISP, landing page, and custom dimension reports. Track profit and loss, conversion metrics, EPC per keyword, per text ad, per referrer, and more.
 - **Multi-Touch Attribution** — Five attribution models including last-touch, time-decay, position-based, and algorithmic.
@@ -18,7 +18,7 @@ Since 2007, Prosper202 has helped marketers take control of their tracking with 
 - **Device Detection** — Automatically detect device types and models for full insights into mobile-targeted campaigns.
 - **Multi-Currency & Timezone** — Automatically convert payouts into your local currency and display reports in your local timezone.
 - **Google Ads Integration** — Offline conversion tracking with one-click CSV export. UTM parameters and GCLID values are automatically captured.
-- **WordPress Integration** — Two-way communication between WordPress and Prosper202, instantly setting up posts and pages as landing pages.
+- **WordPress Integration** — Two-way communication between WordPress and 1ai-Affiliate, instantly setting up posts and pages as landing pages.
 - **Deep Linking** — Boost conversion rates by deep linking directly into apps, reducing friction for users.
 - **Team Access** — Full role-based authentication with no limit on users and no per-seat costs.
 - **API & CLI Tools** — Full REST API and CLI tools designed for both human developers and AI agents. Automate campaign management, pull reports, and integrate with your existing tools. CLI-first design works seamlessly with AI coding agents like Claude Code, Codex, and OpenClaw.
@@ -36,8 +36,8 @@ Since 2007, Prosper202 has helped marketers take control of their tracking with 
 ### Quick Install
 
 ```bash
-git clone https://github.com/tracking202/prosper202.git
-cd prosper202
+git clone https://github.com/tracking202/1ai-affiliate.git
+cd 1ai-affiliate
 ./install.sh
 ```
 
@@ -49,8 +49,8 @@ The install script will:
 ### Docker
 
 ```bash
-git clone https://github.com/tracking202/prosper202.git
-cd prosper202
+git clone https://github.com/tracking202/1ai-affiliate.git
+cd 1ai-affiliate
 docker compose up -d
 ```
 
@@ -63,8 +63,8 @@ Dependencies are automatically installed on container startup.
 
 1. Clone and install dependencies:
    ```bash
-   git clone https://github.com/tracking202/prosper202.git
-   cd prosper202
+   git clone https://github.com/tracking202/1ai-affiliate.git
+   cd 1ai-affiliate
    composer install --no-dev
    ```
 
@@ -79,7 +79,7 @@ Dependencies are automatically installed on container startup.
    server {
        listen 80;
        server_name your-domain.com;
-       root /path/to/prosper202;
+       root /path/to/1ai-affiliate;
        index index.php index.html;
 
        location / {
@@ -115,7 +115,7 @@ Dependencies are automatically installed on container startup.
 
 ## API v3
 
-REST API under `/api/v3/` with bearer token authentication. Covers all Prosper202 entities: campaigns, networks, traffic sources, trackers, landing pages, text ads, clicks, conversions, rotators, attribution models, users, and system operations.
+REST API under `/api/v3/` with bearer token authentication. Covers all 1ai-Affiliate entities: campaigns, networks, traffic sources, trackers, landing pages, text ads, clicks, conversions, rotators, attribution models, users, and system operations.
 
 ```bash
 curl -H "Authorization: Bearer <api-key>" https://your-server/api/v3/campaigns
@@ -125,7 +125,7 @@ curl -H "Authorization: Bearer <api-key>" https://your-server/api/v3/campaigns
 
 ### PHP CLI (`bin/p202`)
 
-Symfony Console CLI for managing remote Prosper202 installations.
+Symfony Console CLI for managing remote 1ai-Affiliate installations.
 
 ```bash
 # Configure
@@ -198,7 +198,7 @@ cd go-cli && make test
 Business Source License 1.1 (BUSL-1.1) — see [LICENSE](LICENSE) for the full text.
 
 - **Licensor:** Blue Terra LLC
-- **Licensed Work:** Prosper202
+- **Licensed Work:** 1ai-Affiliate
 - **Additional Use Grant:** You may use the Licensed Work for any purpose, including production use, except you may not offer it as a hosted or managed service to third parties.
 - **Change Date:** 2031-02-22
 - **Change License:** GPL-2.0-or-later

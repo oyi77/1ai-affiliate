@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 info_top(); ?>
 <div class="row">
 	<div class="main col-xs-4">
-		<center><img src="202-img/prosper202.png"></center>
+		<center><img src="202-img/oneai_affiliate.png"></center>
 		<form class="form-signin form-horizontal" role="form" method="post" action="">
 			<div class="form-group <?php if (isset($error['user'])) echo "has-error"; ?>">
 				<?php if (isset($error['user'])) { ?>
@@ -211,7 +211,7 @@ info_top(); ?>
 					<h4 class="modal-title">Internet Explorer Detected</h4>
 				</div>
 				<div class="modal-body">
-					<p>Internet Explorer is not supported by Prosper202 version 1.8 and more.</p>
+					<p>Internet Explorer is not supported by 1ai-Affiliate version 1.8 and more.</p>
 					<p>Recommended browsers:</p>
 					<p>
 						<a href="http://www.google.com/chrome/" target="_blank">Google Chrome <img src="../202-img/chrome.png"></a>

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Attribution;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SettingsRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Service\AttributionSettingsService;
-use Prosper202\Attribution\Settings\Setting;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SettingsRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Service\AttributionSettingsService;
+use OneAIAffiliate\Attribution\Settings\Setting;
 
 final class AttributionSettingsServiceTest extends TestCase
 {

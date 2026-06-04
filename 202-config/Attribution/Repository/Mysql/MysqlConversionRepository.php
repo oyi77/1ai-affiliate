@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\Calculation\ConversionBatch;
-use Prosper202\Attribution\Repository\ConversionRepositoryInterface;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\Calculation\ConversionBatch;
+use OneAIAffiliate\Attribution\Repository\ConversionRepositoryInterface;
+use OneAIAffiliate\Database\Connection;
 
 final readonly class MysqlConversionRepository implements ConversionRepositoryInterface
 {

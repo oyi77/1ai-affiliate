@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Prosper202\Database\Tables;
+namespace OneAIAffiliate\Database\Tables;
 
-use Prosper202\Database\Schema\SchemaBuilder;
-use Prosper202\Database\Schema\SchemaDefinition;
-use Prosper202\Database\Schema\TableRegistry;
+use OneAIAffiliate\Database\Schema\SchemaBuilder;
+use OneAIAffiliate\Database\Schema\SchemaDefinition;
+use OneAIAffiliate\Database\Schema\TableRegistry;
 
 /**
  * Miscellaneous table definitions (locations, browsers, devices, export, dataengine, etc.).

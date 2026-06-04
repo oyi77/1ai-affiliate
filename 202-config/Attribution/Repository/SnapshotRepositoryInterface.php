@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository;
+namespace OneAIAffiliate\Attribution\Repository;
 
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Snapshot;
 
 /**
  * Stores computed attribution snapshots for reporting.

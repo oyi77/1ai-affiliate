@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Conversion;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Conversion\InMemoryConversionRepository;
+use OneAIAffiliate\Conversion\InMemoryConversionRepository;
 use RuntimeException;
 
 final class ConversionRepositoryTest extends TestCase

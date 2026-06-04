@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Service;
+namespace OneAIAffiliate\Attribution\Service;
 
 use Closure;
 use InvalidArgumentException;
-use Prosper202\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SettingsRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Settings\Setting;
+use OneAIAffiliate\Attribution\Repository\JourneyMaintenanceRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SettingsRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Settings\Setting;
 
 final class AttributionSettingsService
 {

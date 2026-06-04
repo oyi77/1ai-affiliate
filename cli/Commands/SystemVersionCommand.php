@@ -16,7 +16,7 @@ class SystemVersionCommand extends BaseCommand
     protected function configure(): void
     {
         parent::configure();
-        $this->setDescription('Show Prosper202 and system version info');
+        $this->setDescription('Show 1ai-Affiliate and system version info');
     }
 
     protected function handle(InputInterface $input, OutputInterface $output): int

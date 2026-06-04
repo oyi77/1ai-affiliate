@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\Repository\SettingsRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Settings\Setting;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\Repository\SettingsRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Settings\Setting;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 
 final class MysqlSettingRepository implements SettingsRepositoryInterface

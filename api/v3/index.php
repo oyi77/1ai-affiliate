@@ -303,6 +303,42 @@ try {
         $r->post('/{id}/exports',  fn($ctx) => ['_status' => 201] + $crud($cls)->scheduleExport((int)$ctx['id'], $payload));
     });
 
+    // ── Affiliates ────────────────────────────────────────────────────
+    $router->group('/affiliates', function (Router $r) use ($crud, &$queryParams, &$payload) {
+        $cls = \Api\V3\Controllers\AffiliatesController::class;
+        $r->get('',              fn() => $crud($cls)->list($queryParams));
+        $r->get('/{id}',         fn($ctx) => $crud($cls)->get($ctx));
+        $r->post('',             fn() => ['_status' => 201] + $crud($cls)->create($payload));
+        $r->put('/{id}',         fn($ctx) => $crud($cls)->update(['id' => $ctx['id']] + $payload));
+        $r->patch('/{id}/status', fn($ctx) => $crud($cls)->changeStatus(['id' => $ctx['id'], 'status' => $payload['status'] ?? '']));
+        $r->get('/{id}/links',   fn($ctx) => $crud($cls)->getLinks(['affiliate_id' => $ctx['id']]));
+        $r->post('/{id}/links',  fn($ctx) => $crud($cls)->createLink(['affiliate_id' => $ctx['id']] + $payload));
+        $r->get('/{id}/earnings', fn($ctx) => $crud($cls)->getEarnings(['affiliate_id' => $ctx['id']] + $queryParams));
+    });
+
+    // ── Offers ────────────────────────────────────────────────────────
+    $router->group('/offers', function (Router $r) use ($crud, &$queryParams, &$payload) {
+        $cls = \Api\V3\Controllers\OffersController::class;
+        $r->get('',              fn() => $crud($cls)->list($queryParams));
+        $r->get('/{id}',         fn($ctx) => $crud($cls)->get($ctx));
+        $r->post('',             fn() => ['_status' => 201] + $crud($cls)->create($payload));
+        $r->put('/{id}',         fn($ctx) => $crud($cls)->update(['id' => $ctx['id']] + $payload));
+        $r->post('/{id}/campaigns', fn($ctx) => $crud($cls)->linkCampaign(['offer_id' => $ctx['id'], 'campaign_id' => $payload['campaign_id'] ?? 0]));
+        $r->post('/{id}/affiliates', fn($ctx) => $crud($cls)->grantAccess(['offer_id' => $ctx['id']] + $payload));
+        $r->delete('/{id}/affiliates/{affiliateId}', fn($ctx) => $crud($cls)->revokeAccess(['offer_id' => $ctx['id'], 'affiliate_id' => $ctx['affiliateId']]));
+    });
+
+    // ── Commissions ──────────────────────────────────────────────────
+    $router->group('/commissions', function (Router $r) use ($crud, &$queryParams, &$payload) {
+        $cls = \Api\V3\Controllers\CommissionsController::class;
+        $r->get('/entries',   fn() => $crud($cls)->listEntries($queryParams));
+        $r->post('/approve',  fn() => $crud($cls)->approve($payload));
+        $r->post('/reject',   fn() => $crud($cls)->reject($payload));
+        $r->get('/batches',   fn() => $crud($cls)->listBatches($queryParams));
+        $r->post('/batches',  fn() => $crud($cls)->createBatch($payload));
+        $r->get('/batches/{batchRef}', fn($ctx) => $crud($cls)->getBatch(['batch_ref' => $ctx['batchRef']]));
+    }, [static function () use ($auth): void { $auth->requireAdmin(); }]);
+
     // ── Users (admin-gated writes, self-or-admin for reads) ──────────
     $router->group('/users', function (Router $r) use ($db, $auth, &$payload) {
         $make = fn() => new \Api\V3\Controllers\UsersController($db);
@@ -382,7 +418,7 @@ try {
 
     // ── API root ─────────────────────────────────────────────────────
     $router->get('/', fn() => [
-        'api' => 'Prosper202 API v3',
+        'api' => '1ai-Affiliate API v3',
         'endpoints' => [
             'versions'      => '/versions',
             'capabilities'  => '/capabilities',

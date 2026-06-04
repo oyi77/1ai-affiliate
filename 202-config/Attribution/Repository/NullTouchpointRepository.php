@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository;
+namespace OneAIAffiliate\Attribution\Repository;
 
-use Prosper202\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\Touchpoint;
 
 /**
  * Placeholder implementation until database-backed touchpoints land.

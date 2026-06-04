@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution;
+namespace OneAIAffiliate\Attribution;
 
 use InvalidArgumentException;
-use Prosper202\Attribution\Repository\AuditRepositoryInterface;
-use Prosper202\Attribution\Repository\ExportJobRepositoryInterface;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
-use Prosper202\Attribution\Repository\TouchpointRepositoryInterface;
-use Prosper202\Attribution\Analytics\AnalyticsSummary;
-use Prosper202\Attribution\Analytics\AnalyticsSnapshot;
-use Prosper202\Attribution\Analytics\TouchpointMix;
-use Prosper202\Attribution\Analytics\AnomalyAlert;
-use Prosper202\Attribution\Touchpoint;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Attribution\ExportJob;
-use Prosper202\Attribution\ExportFormat;
-use Prosper202\Attribution\ExportStatus;
-use Prosper202\Attribution\ExportWebhook;
+use OneAIAffiliate\Attribution\Repository\AuditRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ExportJobRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\TouchpointRepositoryInterface;
+use OneAIAffiliate\Attribution\Analytics\AnalyticsSummary;
+use OneAIAffiliate\Attribution\Analytics\AnalyticsSnapshot;
+use OneAIAffiliate\Attribution\Analytics\TouchpointMix;
+use OneAIAffiliate\Attribution\Analytics\AnomalyAlert;
+use OneAIAffiliate\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\ExportJob;
+use OneAIAffiliate\Attribution\ExportFormat;
+use OneAIAffiliate\Attribution\ExportStatus;
+use OneAIAffiliate\Attribution\ExportWebhook;
 
 /**
  * High-level façade for attribution operations consumed by controllers and CLI jobs.

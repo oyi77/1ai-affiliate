@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['api_key'])) {
 info_top(); ?>
 	<div class="row" style="position:absolute;left:1em;">
 	<div class="main col-xs-4" style="left:5em;width:400px;box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.1), 0 10px 30px 0 rgba(0, 0, 0, 0.2);">
-	  <center><img src="202-img/prosper202.png"></center>
+	  <center><img src="202-img/oneai_affiliate.png"></center>
 	  
 	  <?php if ($success): ?>
 		<br><center><p>API Key Successfully Saved!</p></center><br>
@@ -73,7 +73,7 @@ info_top(); ?>
 		<br>
 		<small class="text-muted">Note: If you're redirected back here, use the bypass link on the warning message.</small>
 	  <?php else: ?>
-		<br><center><p>Your Prosper202 ClickServer API License Key Is Missing or Expired</p></center><br>
+		<br><center><p>Your 1ai-Affiliate ClickServer API License Key Is Missing or Expired</p></center><br>
 		
 		<?php if ($has_existing_key): ?>
 		  <div class="alert alert-warning">

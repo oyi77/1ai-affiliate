@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Database;
+namespace OneAIAffiliate\Database;
 
 use mysqli;
 use mysqli_result;

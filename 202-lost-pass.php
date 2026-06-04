@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php } else { ?>
 	<div class="row">
 		<div class="main col-xs-4">
-			<center><img src="202-img/prosper202.png"></center>
+			<center><img src="202-img/oneai_affiliate.png"></center>
 			<center><span class="infotext">Please enter your username and e-mail address.<br />You will receive a new password via e-mail to <a href="<?php echo get_absolute_url(); ?>202-login.php">login</a> with.</span></center>
 			<form class="form-signin form-horizontal" role="form" method="post" action="">
 				<div class="form-group <?php if (isset($error['user'])) echo "has-error"; ?>">

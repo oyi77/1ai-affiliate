@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Prosper202\Database;
+namespace OneAIAffiliate\Database;
 
 /**
  * Value object representing the result of a database installation operation.

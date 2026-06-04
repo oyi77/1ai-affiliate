@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Crud;
+namespace OneAIAffiliate\Crud;
 
 /**
  * Generic CRUD repository for simple single-table entities.

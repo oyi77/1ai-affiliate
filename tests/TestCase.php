@@ -6,7 +6,7 @@ namespace Tests;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
- * Base test class with common utilities and mocks for Prosper202 tests
+ * Base test class with common utilities and mocks for 1ai-Affiliate tests
  */
 abstract class TestCase extends BaseTestCase
 {
@@ -28,8 +28,8 @@ abstract class TestCase extends BaseTestCase
         $this->originalSession = $_SESSION ?? [];
 
         // Set default server variables
-        $_SERVER['HTTP_HOST'] = 'test.prosper202.com';
-        $_SERVER['SERVER_NAME'] = 'test.prosper202.com';
+        $_SERVER['HTTP_HOST'] = 'test.1ai-affiliate.com';
+        $_SERVER['SERVER_NAME'] = 'test.1ai-affiliate.com';
         $_SERVER['REQUEST_URI'] = '/';
         $_SERVER['HTTP_USER_AGENT'] = 'PHPUnit Test Agent';
         $_SERVER['HTTP_X_FORWARDED_FOR'] = '127.0.0.1';

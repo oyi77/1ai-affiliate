@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 ## Project
-Prosper202 — PHP 8.3 affiliate tracking platform with REST API v3 (mysqli, PSR-4) and Symfony Console CLI.
+1ai-Affiliate — PHP 8.3 affiliate tracking platform with REST API v3 (mysqli, PSR-4) and Symfony Console CLI.
 
 ## Error patterns to avoid
 

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Database;
+namespace OneAIAffiliate\Database;
 
 use mysqli;
-use Prosper202\Database\Schema\SchemaDefinition;
-use Prosper202\Database\Tables\CoreTables;
-use Prosper202\Database\Tables\UserTables;
-use Prosper202\Database\Tables\ClickTables;
-use Prosper202\Database\Tables\TrackingTables;
-use Prosper202\Database\Tables\CampaignTables;
-use Prosper202\Database\Tables\AttributionTables;
-use Prosper202\Database\Tables\RotatorTables;
-use Prosper202\Database\Tables\AdNetworkTables;
-use Prosper202\Database\Tables\MiscTables;
-use Prosper202\Database\Tables\SyncTables;
-use Prosper202\Database\Exceptions\SchemaInstallException;
+use OneAIAffiliate\Database\Schema\SchemaDefinition;
+use OneAIAffiliate\Database\Tables\CoreTables;
+use OneAIAffiliate\Database\Tables\UserTables;
+use OneAIAffiliate\Database\Tables\ClickTables;
+use OneAIAffiliate\Database\Tables\TrackingTables;
+use OneAIAffiliate\Database\Tables\CampaignTables;
+use OneAIAffiliate\Database\Tables\AttributionTables;
+use OneAIAffiliate\Database\Tables\RotatorTables;
+use OneAIAffiliate\Database\Tables\AdNetworkTables;
+use OneAIAffiliate\Database\Tables\MiscTables;
+use OneAIAffiliate\Database\Tables\SyncTables;
+use OneAIAffiliate\Database\Exceptions\SchemaInstallException;
 
 /**
  * Orchestrates the creation of all database tables.

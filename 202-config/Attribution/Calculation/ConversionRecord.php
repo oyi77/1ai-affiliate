@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Calculation;
+namespace OneAIAffiliate\Attribution\Calculation;
 
 /**
  * Lightweight value object describing a conversion and its associated click context.

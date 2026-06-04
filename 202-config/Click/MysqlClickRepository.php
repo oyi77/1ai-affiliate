@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Click;
+namespace OneAIAffiliate\Click;
 
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Database\Connection;
 
 final class MysqlClickRepository implements ClickRepositoryInterface
 {

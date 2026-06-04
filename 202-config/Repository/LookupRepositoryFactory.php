@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository;
+namespace OneAIAffiliate\Repository;
 
 use mysqli;
-use Prosper202\Database\Connection;
-use Prosper202\Repository\Cached\CachedDeviceRepository;
-use Prosper202\Repository\Cached\CachedLocationRepository;
-use Prosper202\Repository\Cached\CachedTrackingRepository;
-use Prosper202\Repository\Mysql\MysqlDeviceRepository;
-use Prosper202\Repository\Mysql\MysqlLocationRepository;
-use Prosper202\Repository\Mysql\MysqlTrackingRepository;
+use OneAIAffiliate\Database\Connection;
+use OneAIAffiliate\Repository\Cached\CachedDeviceRepository;
+use OneAIAffiliate\Repository\Cached\CachedLocationRepository;
+use OneAIAffiliate\Repository\Cached\CachedTrackingRepository;
+use OneAIAffiliate\Repository\Mysql\MysqlDeviceRepository;
+use OneAIAffiliate\Repository\Mysql\MysqlLocationRepository;
+use OneAIAffiliate\Repository\Mysql\MysqlTrackingRepository;
 
 final class LookupRepositoryFactory
 {

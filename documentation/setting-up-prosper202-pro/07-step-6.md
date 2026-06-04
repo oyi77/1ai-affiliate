@@ -22,7 +22,7 @@ If I was targeting countries, I can type in the specific countries or I can also
 
 Below is a video tutorial of what was just covered:
 
-**Video:** [Prosper202 Pro Tutorial: Setting Rules Based Redirection](https://www.youtube.com/watch?v=f_lSpq_Sme0&feature=youtu.be)
+**Video:** [1ai-Affiliate Pro Tutorial: Setting Rules Based Redirection](https://www.youtube.com/watch?v=f_lSpq_Sme0&feature=youtu.be)
 
 ## Setting Up A/B or Split Testing
 
@@ -33,7 +33,7 @@ Once you've set up all the different URLs you want to split test, you can give t
 
 Below is a video tutorial of what was just covered:
 
-**Video:** [Prosper202 Pro Tutorial: Setting Up A Split-Test (A/B Testing)](https://www.youtube.com/watch?v=QTc0wvDEfeE&feature=youtu.be)
+**Video:** [1ai-Affiliate Pro Tutorial: Setting Up A Split-Test (A/B Testing)](https://www.youtube.com/watch?v=QTc0wvDEfeE&feature=youtu.be)
 
 In the latest update for Prosper, we now support more rules for targeting as well as targeting IP ranges. Please see below:
 ![Screen Shot 2016-04-12 at 4.07.17 PM.png](../images/step-6-4.png)

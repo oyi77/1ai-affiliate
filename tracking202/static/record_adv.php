@@ -7,8 +7,8 @@ header("Expires: -1");
 include_once(substr(__DIR__, 0, -19) . '/202-config/connect2.php');
 include_once(substr(__DIR__, 0, -19) . '/202-config/class-dataengine-slim.php');
 
-$locationRepo = \Prosper202\Repository\LookupRepositoryFactory::location($db);
-$trackingRepo = \Prosper202\Repository\LookupRepositoryFactory::tracking($db);
+$locationRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::location($db);
+$trackingRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::tracking($db);
 
 $_GET += [
 	'lpip' => '',
@@ -368,8 +368,8 @@ if ($device_id['type'] == '4') {
 
 
 // Pre-allocate click_id so we can compute click_id_public and site URLs
-$conn = \Prosper202\Repository\LookupRepositoryFactory::connection($db);
-$clickRepo = new \Prosper202\Click\MysqlClickRepository($conn);
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+$clickRepo = new \OneAIAffiliate\Click\MysqlClickRepository($conn);
 $click_id = $clickRepo->allocateClickId();
 $click_id_public = random_int(1, 9) . $click_id . random_int(1, 9);
 $mysql['click_id'] = (string) $click_id;
@@ -404,7 +404,7 @@ $mysql['click_cloaking_site_url_id'] = '0';
 $mysql['click_redirect_site_url_id'] = '0';
 
 // Record click via repository (replaces 9 raw INSERT statements with parameterized, transactional writes)
-$clickRecord = \Prosper202\Click\ClickRecordBuilder::fromLegacyArray($mysql);
+$clickRecord = \OneAIAffiliate\Click\ClickRecordBuilder::fromLegacyArray($mysql);
 $clickRecord->clickId = $click_id;
 $clickRepo->recordClick($clickRecord);
 

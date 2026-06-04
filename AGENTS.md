@@ -112,6 +112,17 @@ Cross-service tools chain multiple services (e.g., generate ad → create tracki
 - **1ai-content** (port 3000): AI Video Marketing — Telegram bot
 - **1ai-ebook** (port 8100): AI ebook pipeline — multi-language, novel, comics
 
+### 6 Gemini Content Tools (1ai-affiliate server :3001)
+6 affiliate-marketing content endpoints, all wired through `services/gemini.js` (circuit breaker):
+- `POST /api/content/banner` — banner concepts (headline/palette/layout/CTA)
+- `POST /api/content/carousel` — Instagram carousel slides
+- `POST /api/content/caption` — caption + alt versions + hashtags
+- `POST /api/content/brand-kit` — palette/fonts/voice/logo/tagline
+- `POST /api/content/ab-test` — 3 landing-page variants w/ predicted CTR
+- `POST /api/content/bg-remove` — optimized prompt for client-side bg removal
+
+Exposed via MCP hub: `content_banner`, `content_carousel`, `content_caption`, `content_brand_kit`, `content_ab_test`, `content_bg_remove`, `unified_content_funnel`.
+
 ## Quick Start
 
 ```bash

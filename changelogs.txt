@@ -27,7 +27,7 @@ Version 1.9.27
 -- New: Instant Deep Link Offer Setup via DNI (Direct Network Integration)
 -- New: Table for tracking subids is cleared daily for performance purposes
 -- New: Performance tweaks for referrer tracking table (New installations only)
--- New: Prosper202 Pro installs and Runs On Shared Hosting Plans
+-- New: 1ai-Affiliate Pro installs and Runs On Shared Hosting Plans
 -- Fix: Error with dropdowns not working with DNI has been fixed
 
 Version 1.9.26
@@ -35,17 +35,17 @@ Version 1.9.26
 -- Fixed: Alignment of dropdown values
 
 Version 1.9.25
--- New: Allow users on servers with no partition support to still install Prosper202 Pro
+-- New: Allow users on servers with no partition support to still install 1ai-Affiliate Pro
 -- New: Ability to run reports on traffic that come from no ppc networks (For example organic traffic)
 -- New: Added info on how to use Dynamic Content Segments on landing pages
 -- New: Ability to specify which url variable to use as the t202kw value
--- New: Quickly type and filter any of the data in Prosper202 drop downs
--- New: Optimize tables  with partitions for new installs of Prosper202 Pro
+-- New: Quickly type and filter any of the data in 1ai-Affiliate drop downs
+-- New: Optimize tables  with partitions for new installs of 1ai-Affiliate Pro
 -- New: Optimized code fo C1-C4 custom variables
 -- New: Skip option for VIP Perks modal
 -- Fixed: Reports pages will not show errors when there is no data
 -- Fixed: Only live landing pages show in dropdown
--- Fixed: Fixed various issues for users who have Prosper202 installed in subdirectories
+-- Fixed: Fixed various issues for users who have 1ai-Affiliate installed in subdirectories
 -- Update: Optimized custom variables reprots page
 
 Version 1.9.24
@@ -100,7 +100,7 @@ Version 1.9.19
 -- New: Direct Network Integration
 -- New: Remember me feature
 -- New: [[timestamp]] token
--- New: Check for Mcrypt on setup of Prosper202
+-- New: Check for Mcrypt on setup of 1ai-Affiliate
 -- New: Check for Mcrypt before user can setup Clickbank Integration
 -- Fixed: Checks for writable folder uses exact directory needed
 -- Fixed: Undefined constant error fixed in rotator
@@ -124,8 +124,8 @@ Version 1.9.16
 -- Fixed: Landing page bug tracking fixed
 
 Version 1.9.15
--- New: Support for installing Prosper202 in a subdirectory
--- New: Support for Official Prosper202 Wordpress Plugin
+-- New: Support for installing 1ai-Affiliate in a subdirectory
+-- New: Support for Official 1ai-Affiliate Wordpress Plugin
 -- New: ISP And Carrier information available in download report
 -- New: [[referer]] & [[referrer]] token support for all locations that accept tokens
 -- New: Landing page setup page now includes easy token insertion buttons
@@ -165,7 +165,7 @@ Version 1.9.11
 -- Fixed: Fixed problem with filtering by keyword
 -- Fixed: Rotator caused issues with saving updates when modifiying existing rules
 -- Fixed: Improved method of checking for partitions support
--- Fixed: Missing link to login page if Prosper202 is already installed
+-- Fixed: Missing link to login page if 1ai-Affiliate is already installed
 -- Fixed: Graph data displays better when set to show by hours
 
 Version 1.9.10
@@ -187,7 +187,7 @@ Version 1.9.10
 -- Fixed: Custom variables get added when generating links for landing pages
 
 Version 1.9.9
--- New: Prosper202 Pro Logo
+-- New: 1ai-Affiliate Pro Logo
 -- Updated:Smart redirector supports 'all' tag
 -- Updated: Smart Rotator renamed to Smart Redirector
 -- Fixed: Daily emails not sent if no data
@@ -225,12 +225,12 @@ Version 1.9.5
 -- New: Full user role implementation. with restrictions on what can be done in your p202
 -- New: You can clone an existing landing page
 -- New: Ability to dynamically displays ISP, Device, Postal code on landing page
--- New: Ability to to set cloaking option. You can either blank the referrer or show you Prosper202 Pro domain only
--- New: Auto upgrade Prosper202 Pro for any updates that don't modify the database in any way.
--- New: Slack Integration Phase 2 all actions performed in your P202 will be sent to a slack channel named Prosper202
+-- New: Ability to to set cloaking option. You can either blank the referrer or show you 1ai-Affiliate Pro domain only
+-- New: Auto upgrade 1ai-Affiliate Pro for any updates that don't modify the database in any way.
+-- New: Slack Integration Phase 2 all actions performed in your P202 will be sent to a slack channel named 1ai-Affiliate
 -- New: Before you could only display one Dynamic Content Segment on the page, now you can have as many as you want.
 -- New: Unlimited custom variables and tokens
--- New: Campaign overview shows overview like what we had in non Pro version of Prosper202
+-- New: Campaign overview shows overview like what we had in non Pro version of 1ai-Affiliate
 -- New: Status page in admin section for cron jobs. This will let you know when the last cron was run and help to debug when the job isn't setup correctly
 -- New: GCLID and utm variables will show in downloaded report in the visitors tab
 -- Improved: Parallel processing of conversion old data into new faster format
@@ -254,7 +254,7 @@ Version 1.9.4
 --New: Easy Display of Geo(Country, Region, City, Country Code), Keyword, C1-C4, All utm variable, Browser type, OS on your landing page
 --New: [[country]], [[country_code]], [[region]], [[city]] tokens for step 3, and postbacks
 --New: HTML5 Charts for account overview with ability to chart multiple data points on a campaign basis.
---New: Ability to add users to your Prosper202 account. Each person get's their own un/pw.
+--New: Ability to add users to your 1ai-Affiliate account. Each person get's their own un/pw.
 --New: Slack Integration Phase 1: Soon All important changes and notifications will be posted to the slack channel of your choice
 --Updated: On new installations keywords can be up to 150 characters instead of 50
 --Fixed: Display and Formatting bug for Firefox
@@ -271,7 +271,7 @@ Version 1.9.3
 --New: Updated UI Library
 --New: Updated UserAgent Parser to detect more browsers and bots
 --New: Ability to edit your tracking links after they have been created
---New: Prosper202 will now automatically import your old clicks into the new DataEngine Format
+--New: 1ai-Affiliate will now automatically import your old clicks into the new DataEngine Format
 --New: Filter by referer
 --Fixed: Bug in how leads were counted in campaign overview is fixed
 --Fixed: Excel Report download feature re-added 
@@ -293,11 +293,11 @@ Version 1.9.1
 --Fixed: DataEngine now updates for actions done on the update tab.
 
 Version 1.9.0
---New: DataEngine fast new reporting engine for Prosper202 Pro.
+--New: DataEngine fast new reporting engine for 1ai-Affiliate Pro.
 --New: Meta Referer set to origin for Cloaking.
 --New: Tokens for utm variables.
 --New: Support for google gclid and utm variables.
---New: Prosper202 App Store.
+--New: 1ai-Affiliate App Store.
 --New: Ability to set your own referer via t202ref=.
 --Improved: C1-4 variables can now store up to 350 characters.
 --Improved: Better more accurate firing of conversion pixels.
@@ -329,7 +329,7 @@ Version 1.8.8
 
 Version 1.8.7
 --Fixed bug: Cookie error for landing pages. Where subids were not being passed.
---Fixed bug: Prosper202 didn't notice an auto updated system initially.
+--Fixed bug: 1ai-Affiliate didn't notice an auto updated system initially.
 --Fixed bug: Versions were not being compared correctly for change logs.
 
 Version 1.8.6
@@ -337,7 +337,7 @@ Version 1.8.6
 --Fixed typo: Extra < on landing page screen
 
 Version 1.8.5
---New: Prosper202 will pass extra variables from your tracking links on to the campaign link. This makes it easier to pre-pop offers.
+--New: 1ai-Affiliate will pass extra variables from your tracking links on to the campaign link. This makes it easier to pre-pop offers.
 --Improved support for new traffic sources.
 --Minor speed improvement for users with large databases.
 --Added Missing Robots.txt.

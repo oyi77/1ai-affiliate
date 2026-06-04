@@ -325,13 +325,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				if ($_POST['cloak_referer'] != $user_row['user_pref_cloak_referer']) {
 
 					if ($user_row['user_pref_cloak_referer'] == 'origin') {
-						$from_type = 'Show Prosper202 Domain';
+						$from_type = 'Show 1ai-Affiliate Domain';
 					} else {
 						$from_type = 'Show Blank Referer';
 					}
 
 					if ($_POST['cloak_referer'] == 'origin') {
-						$to_type = 'Show Prosper202 Domain';
+						$to_type = 'Show 1ai-Affiliate Domain';
 					} else {
 						$to_type = 'Show Blank Referer';
 					}
@@ -623,7 +623,7 @@ $html = array_map('htmlentities', $user_row);
 				<?php } ?>
 
 				<?php if ($update_clickserver_api_key_done) { ?>
-					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> You have updated your Prosper202 ClickServer API Key</small></div>
+					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> You have updated your 1ai-Affiliate ClickServer API Key</small></div>
 				<?php } ?>
 
 				<?php if ($change_api_key) { ?>
@@ -645,7 +645,7 @@ $html = array_map('htmlentities', $user_row);
 																										?></small></div>
 				<?php } ?>
 				<?php if ($change_p202_customer_api_key) { ?>
-					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> Your submission was successful. Your Prosper202 customer API key have been saved.</small></div>
+					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> Your submission was successful. Your 1ai-Affiliate customer API key have been saved.</small></div>
 				<?php } ?>
 			</div>
 		</div>
@@ -799,7 +799,7 @@ $html = array_map('htmlentities', $user_row);
 								<?php if ($html['user_pref_cloak_referer'] == 'origin') {
 									echo 'selected=""';
 								} ?>
-								value="origin">Show Prosper202 Domain</option>
+								value="origin">Show 1ai-Affiliate Domain</option>
 							<option
 								<?php if ($html['user_pref_cloak_referer'] == 'never') {
 									echo 'selected=""';
@@ -928,12 +928,12 @@ $html = array_map('htmlentities', $user_row);
 
 	<div class="row account">
 		<div class="col-xs-12">
-			<h6>Prosper202 App API keys</h6>
+			<h6>1ai-Affiliate App API keys</h6>
 		</div>
 		<div class="col-xs-4">
 			<div class="panel panel-default account_left">
 				<div class="panel-body">
-					If you want to use the new Prosper202 API to get raw stats data, you need a valid API key. Tip: make a new API key for each integration
+					If you want to use the new 1ai-Affiliate API to get raw stats data, you need a valid API key. Tip: make a new API key for each integration
 				</div>
 			</div>
 		</div>
@@ -971,12 +971,12 @@ $html = array_map('htmlentities', $user_row);
 
 	<div class="row account">
 		<div class="col-xs-12">
-			<h6>Prosper202 Customer API Key</h6>
+			<h6>1ai-Affiliate Customer API Key</h6>
 		</div>
 		<div class="col-xs-4">
 			<div class="panel panel-default account_left">
 				<div class="panel-body">
-					If you want to use special mods and paid features built into Prosper202, sign up <a href="https://my.tracking202.com/api/customers/register">here</a>, fill out yout billing information, receive and insert your API key here.
+					If you want to use special mods and paid features built into 1ai-Affiliate, sign up <a href="https://my.tracking202.com/api/customers/register">here</a>, fill out yout billing information, receive and insert your API key here.
 				</div>
 			</div>
 		</div>

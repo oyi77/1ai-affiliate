@@ -1,10 +1,10 @@
-# Prosper202 ClickServer API
+# 1ai-Affiliate ClickServer API
 
-Currently, if you are a developer, you can use the Prosper202 ClickServer API to run reports without a UI and integrate it into your own applications. Below is the documentation available for the API.
+Currently, if you are a developer, you can use the 1ai-Affiliate ClickServer API to run reports without a UI and integrate it into your own applications. Below is the documentation available for the API.
 
 ## Locating your API Keys
 
-To generate or find your Prosper202 ClickServer API Key, simply log into Prosper, click on My Account > Personal Settings, and scroll down until you find the section labeled Prosper202 App API keys.
+To generate or find your 1ai-Affiliate ClickServer API Key, simply log into Prosper, click on My Account > Personal Settings, and scroll down until you find the section labeled 1ai-Affiliate App API keys.
 
 ## Generating API Keys
 
@@ -12,15 +12,15 @@ You can create multiple API keys. It’s best to create a new App API key for ev
 
 ## API Authentication
 
-The Prosper202 ClickServer uses a simple token based authentication system. The API keys that you generate are used to authenticate an app and allow the pulling of reports from your system. With that in mind it’s important to keep the tokens secure and limit token use to one per app or integration.
+The 1ai-Affiliate ClickServer uses a simple token based authentication system. The API keys that you generate are used to authenticate an app and allow the pulling of reports from your system. With that in mind it’s important to keep the tokens secure and limit token use to one per app or integration.
 
 ## API Endpoint
 
-The API endpoint for Prosper202 will depend upon your tracking domain, however the general form is as follows: **http://[[your-Prosper202-domain]]/api/v1/**
+The API endpoint for 1ai-Affiliate will depend upon your tracking domain, however the general form is as follows: **http://[[your-1ai-Affiliate-domain]]/api/v1/**
 
 ## Attribution API (Preview)
 
-Prosper202 1.9.56 introduces experimental attribution endpoints under `/api/v2/attribution`. These are RESTful and return JSON.
+1ai-Affiliate 1.9.56 introduces experimental attribution endpoints under `/api/v2/attribution`. These are RESTful and return JSON.
 
 | Method | Endpoint | Description | Required Permission |
 | ------ | -------- | ----------- | ------------------- |
@@ -56,7 +56,7 @@ The current valid values are as follows
 - carriers -­ Carrier and ISP report
 - landing_pages -­ Landing page report
 
-**Argument name:** apikey (Required) - API key generated in Prosper202 and used
+**Argument name:** apikey (Required) - API key generated in 1ai-Affiliate and used
 for authentication.
 
 **Argument name:** date_from (Optional) - Start date for the report you’d like to
@@ -76,4 +76,4 @@ returned.
 
 ## Example of a validly formatted API call
 
-**http://prosper202.com/api/v1/reports/?type=countries&apikey=6cvyz0ckgpylum2ira502jap6w6ou412&date_from=03/24/2014&date_to=04/27/2014&cid=1&c1=c1­var&c2=c2­var&c3=c3­var&c4=c4­var**
+**http://1ai-affiliate.com/api/v1/reports/?type=countries&apikey=6cvyz0ckgpylum2ira502jap6w6ou412&date_from=03/24/2014&date_to=04/27/2014&cid=1&c1=c1­var&c2=c2­var&c3=c3­var&c4=c4­var**

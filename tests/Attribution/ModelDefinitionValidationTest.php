@@ -6,8 +6,8 @@ namespace Tests\Attribution;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
 
 final class ModelDefinitionValidationTest extends TestCase
 {

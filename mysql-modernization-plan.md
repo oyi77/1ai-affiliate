@@ -3,7 +3,7 @@
 **Status:** Proposed
 **Author:** Engineering
 **Date:** 2026-03-01
-**Scope:** All database access in Prosper202
+**Scope:** All database access in 1ai-Affiliate
 
 ---
 
@@ -165,14 +165,14 @@ die();  // kills the process — no rollback of prior writes
 Every database-touching domain follows this structure:
 
 ```
-Prosper202\Repository\{Domain}RepositoryInterface     ← contract
-Prosper202\Repository\Mysql\Mysql{Domain}Repository    ← production implementation
-Prosper202\Repository\Null{Domain}Repository           ← test double
-Prosper202\Repository\Cached\Cached{Domain}Repository  ← optional: wraps Mysql impl (lookup tables only)
-Prosper202\Domain\{Entity}                             ← value object (complex domains only)
+1ai-Affiliate\Repository\{Domain}RepositoryInterface     ← contract
+1ai-Affiliate\Repository\Mysql\Mysql{Domain}Repository    ← production implementation
+1ai-Affiliate\Repository\Null{Domain}Repository           ← test double
+1ai-Affiliate\Repository\Cached\Cached{Domain}Repository  ← optional: wraps Mysql impl (lookup tables only)
+1ai-Affiliate\Domain\{Entity}                             ← value object (complex domains only)
 ```
 
-### 4.2 — `Prosper202\Database\Connection`
+### 4.2 — `1ai-Affiliate\Database\Connection`
 
 The single new abstraction. Consolidates boilerplate from the 9 existing Attribution repositories.
 
@@ -766,4 +766,4 @@ api/V3/Controllers/ReportsController.php                                 Phase 4
 | **V3 Router, Auth, Bootstrap** | Not in scope. These are HTTP-layer concerns, not data-access concerns. |
 | **CLI commands** | Already use the V3 API client. No direct DB access to migrate. |
 | **Table schema** | Zero DDL changes. Index additions, partitioning, and schema improvements are separate work with separate PRs and separate testing. |
-| **PSR-4 autoloading** | New namespaces follow existing `Prosper202\` prefix. No composer.json autoload changes needed. |
+| **PSR-4 autoloading** | New namespaces follow existing `1ai-Affiliate\` prefix. No composer.json autoload changes needed. |

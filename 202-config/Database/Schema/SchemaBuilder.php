@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Prosper202\Database\Schema;
+namespace OneAIAffiliate\Database\Schema;
 
 /**
  * Fluent builder for creating SchemaDefinition objects.

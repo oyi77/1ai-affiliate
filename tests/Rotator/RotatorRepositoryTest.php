@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Rotator;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Rotator\InMemoryRotatorRepository;
+use OneAIAffiliate\Rotator\InMemoryRotatorRepository;
 use RuntimeException;
 
 final class RotatorRepositoryTest extends TestCase

@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Tests\Attribution;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\AttributionJobRunner;
-use Prosper202\Attribution\Calculation\ConversionBatch;
-use Prosper202\Attribution\Calculation\ConversionRecord;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\Repository\ConversionRepositoryInterface;
-use Prosper202\Attribution\Repository\AuditRepositoryInterface;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
-use Prosper202\Attribution\Repository\TouchpointRepositoryInterface;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Snapshot;
-use Prosper202\Attribution\Touchpoint;
+use OneAIAffiliate\Attribution\AttributionJobRunner;
+use OneAIAffiliate\Attribution\Calculation\ConversionBatch;
+use OneAIAffiliate\Attribution\Calculation\ConversionRecord;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Repository\ConversionRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\AuditRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\TouchpointRepositoryInterface;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Snapshot;
+use OneAIAffiliate\Attribution\Touchpoint;
 
 final class AttributionJobRunnerTest extends TestCase
 {

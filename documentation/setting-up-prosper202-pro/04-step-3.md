@@ -20,7 +20,7 @@ Please note you should apply and already be an approved affiliate for these netw
 
 Log into AdCommunal and grab your API key by selecting APIs under Tools in the navigation bar as shown below:
 ![Screen Shot 2015-12-07 at 2.16.06 PM.png](../images/step-3-1.png)
-**Step 2: Click Over To The 3rd Party Integrations Page in Prosper202 Pro**
+**Step 2: Click Over To The 3rd Party Integrations Page in 1ai-Affiliate Pro**
 
 Click on My Account and select 3rd Party API Integrations as shown:
 ![3rd-party-integrations-menu.png](../images/step-3-2.png)
@@ -46,7 +46,7 @@ That's it, you're done. All the setup links and conversion tracking should be se
 
 ## Manual Campaign Setup
 
-The second method is the manual campaign setup and how Prosper202 historically works. If you are running campaigns on any other network that isn't a DNI partner, this is the method you would use to set up your campaigns.
+The second method is the manual campaign setup and how 1ai-Affiliate historically works. If you are running campaigns on any other network that isn't a DNI partner, this is the method you would use to set up your campaigns.
 
 **Category and Campaign Name**
 
@@ -71,7 +71,7 @@ As shown in the screenshot above, I selected AdCommunal as my network from the l
 
 **Rotate URLs**
 
-If you just downloaded the latest version of Prosper202, this step no longer exists. However if you upgraded from an older version and you previously had this step setup, it still here mostly for legacy reasons. Because we can rotate URLs or do split testing on a separate step later in our setup (Step 6), this step is no longer necessary and outdated. The new version is much more robust and has advance features so we highly recommend you upgrade if you haven't already. Regardless, if you are on an older version (keep in mind we don't support older versions), I generally would keep this option as No if you still have it and if you don't, don't worry about it. It's irrelevant to new Prosper202 installs.
+If you just downloaded the latest version of 1ai-Affiliate, this step no longer exists. However if you upgraded from an older version and you previously had this step setup, it still here mostly for legacy reasons. Because we can rotate URLs or do split testing on a separate step later in our setup (Step 6), this step is no longer necessary and outdated. The new version is much more robust and has advance features so we highly recommend you upgrade if you haven't already. Regardless, if you are on an older version (keep in mind we don't support older versions), I generally would keep this option as No if you still have it and if you don't, don't worry about it. It's irrelevant to new 1ai-Affiliate installs.
 
 **Campaign URL**
 
@@ -110,7 +110,7 @@ affiliate URL + & (ampersand symbol) + SubID parameter (unique to each network) 
 *Other Optional Tokens*
 
 The other optional token parameters and placeholders are available for use if you wish to track other parameters. They are not required. In general we recommend using c1-c4 for tracking any additional parameters. 
-[**Click here to read more about all the optional tokens**](../tutorials-and-guides/999-prosper202-tokens.md).
+[**Click here to read more about all the optional tokens**](../tutorials-and-guides/999-1ai-affiliate-tokens.md).
 
 Now included in Step 8 are input boxes for these tracking variables so you don't have to enter them here. In fact, we recommend inputting the extra variables in Step 8.
 
@@ -122,7 +122,7 @@ Next, you simply just enter how much the offer pays. In my case, $1.89. You can 
 
 **Cloaking**
 
-At the time of this writing, this option is still available but in future versions (possibly by the time you read this), it will likely be altered or removed. If you want to understand why, **[please click here to refer to our FAQ](../tutorials-and-guides/11-frequently-asked-questions-faq.md#section-does-prosper202-offer-cloaking-)**.
+At the time of this writing, this option is still available but in future versions (possibly by the time you read this), it will likely be altered or removed. If you want to understand why, **[please click here to refer to our FAQ](../tutorials-and-guides/11-frequently-asked-questions-faq.md#section-does-1ai-affiliate-offer-cloaking-)**.
 
 If you'd like, you can turn on cloaking but in all honesty, its probably best if you don't as most of the time people don't generally care to steal your campaign and if you're successful enough, people will find out what you're promoting. If anything, the redirects can cause your link to slow and on traffic sources where this matter (such as Google), it's more of a negative than a positive. I would generally leave this option off but up to you.
 

@@ -36,7 +36,7 @@ template_top('ClickServer Management');
 	<div class="col-xs-4">
 		<div class="panel panel-default account_left">
 			<div class="panel-body">
-				A complete list of all domains activated with your Prosper202 ClickServer API Key. From here you can activate and de-activate domains.
+				A complete list of all domains activated with your 1ai-Affiliate ClickServer API Key. From here you can activate and de-activate domains.
 			</div>
 		</div>
 	</div>

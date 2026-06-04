@@ -128,7 +128,7 @@ class RemoteApiClient
         $headers = [
             'Accept: application/json',
             'Content-Type: application/json',
-            'User-Agent: prosper202-server-sync/1.0',
+            'User-Agent: oneai_affiliate-server-sync/1.0',
         ];
         if ($this->apiKey !== '') {
             $headers[] = 'Authorization: Bearer ' . $this->apiKey;

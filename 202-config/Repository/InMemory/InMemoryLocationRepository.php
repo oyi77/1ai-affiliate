@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Repository\InMemory;
+namespace OneAIAffiliate\Repository\InMemory;
 
-use Prosper202\Repository\LocationRepositoryInterface;
+use OneAIAffiliate\Repository\LocationRepositoryInterface;
 
 final class InMemoryLocationRepository implements LocationRepositoryInterface
 {

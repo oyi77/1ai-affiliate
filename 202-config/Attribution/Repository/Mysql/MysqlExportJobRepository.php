@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository\Mysql;
+namespace OneAIAffiliate\Attribution\Repository\Mysql;
 
 use mysqli;
-use Prosper202\Attribution\ExportJob;
-use Prosper202\Attribution\Repository\ExportJobRepositoryInterface;
-use Prosper202\Database\Connection;
+use OneAIAffiliate\Attribution\ExportJob;
+use OneAIAffiliate\Attribution\Repository\ExportJobRepositoryInterface;
+use OneAIAffiliate\Database\Connection;
 use RuntimeException;
 
 final readonly class MysqlExportJobRepository implements ExportJobRepositoryInterface

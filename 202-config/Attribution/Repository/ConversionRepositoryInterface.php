@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository;
+namespace OneAIAffiliate\Attribution\Repository;
 
-use Prosper202\Attribution\Calculation\ConversionBatch;
+use OneAIAffiliate\Attribution\Calculation\ConversionBatch;
 
 interface ConversionRepositoryInterface
 {

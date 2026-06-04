@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Repository;
+namespace OneAIAffiliate\Attribution\Repository;
 
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
 
 /**
  * Persists and retrieves attribution model definitions.

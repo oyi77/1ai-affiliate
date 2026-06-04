@@ -4,7 +4,7 @@ include_once(substr(__DIR__, 0,-14) . '/202-config/connect.php');
 
 AUTH::require_user();
 
-template_top('Prosper202 ClickServer App Store');  ?>
+template_top('1ai-Affiliate ClickServer App Store');  ?>
 
 <style>
 /* Base Layout */

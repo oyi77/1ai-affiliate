@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Analytics;
+namespace OneAIAffiliate\Attribution\Analytics;
 
 /**
  * Immutable view model for a computed attribution snapshot exposed to the API.

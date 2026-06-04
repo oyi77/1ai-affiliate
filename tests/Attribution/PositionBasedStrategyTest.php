@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Attribution;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Attribution\Calculation\ConversionBatch;
-use Prosper202\Attribution\Calculation\ConversionRecord;
-use Prosper202\Attribution\Calculation\ConversionTouchpoint;
-use Prosper202\Attribution\Calculation\PositionBasedStrategy;
-use Prosper202\Attribution\ModelDefinition;
-use Prosper202\Attribution\ModelType;
+use OneAIAffiliate\Attribution\Calculation\ConversionBatch;
+use OneAIAffiliate\Attribution\Calculation\ConversionRecord;
+use OneAIAffiliate\Attribution\Calculation\ConversionTouchpoint;
+use OneAIAffiliate\Attribution\Calculation\PositionBasedStrategy;
+use OneAIAffiliate\Attribution\ModelDefinition;
+use OneAIAffiliate\Attribution\ModelType;
 
 final class PositionBasedStrategyTest extends TestCase
 {

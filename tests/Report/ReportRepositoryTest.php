@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Report;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Report\InMemoryReportRepository;
-use Prosper202\Report\ReportQuery;
+use OneAIAffiliate\Report\InMemoryReportRepository;
+use OneAIAffiliate\Report\ReportQuery;
 
 final class ReportRepositoryTest extends TestCase
 {

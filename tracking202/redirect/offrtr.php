@@ -410,7 +410,7 @@ if ($default == false) {
 				header('location: ' . $rule_redirect_row['redirect_url']);
 				die();
 			} else if ($rule_redirect_row['auto_monetizer'] != null) {
-				header('location: http://prosper202.com');
+				header('location: http://oneai_affiliate.com');
 				die();
 			}
 } else {
@@ -535,7 +535,7 @@ if ($default == false) {
 			header('location: ' . $rotator_row['default_url']);
 			die();
 		} else if ($rotator_row['auto_monetizer'] != null) {
-			header('location: http://prosper202.com');
+			header('location: http://oneai_affiliate.com');
 			die();
 		}
 

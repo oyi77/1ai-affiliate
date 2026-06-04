@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Prosper202\Attribution\Export;
+namespace OneAIAffiliate\Attribution\Export;
 
-use Prosper202\Attribution\Repository\ExportRepositoryInterface;
-use Prosper202\Attribution\Repository\ModelRepositoryInterface;
-use Prosper202\Attribution\Repository\SnapshotRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ExportRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\ModelRepositoryInterface;
+use OneAIAffiliate\Attribution\Repository\SnapshotRepositoryInterface;
 
 final readonly class ExportProcessor
 {

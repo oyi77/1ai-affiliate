@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Api\Attribution;
 
 use InvalidArgumentException;
-use Prosper202\Attribution\AttributionService;
-use Prosper202\Attribution\ModelType;
-use Prosper202\Attribution\ScopeType;
-use Prosper202\Attribution\Analytics\AnalyticsResponseTransformer;
+use OneAIAffiliate\Attribution\AttributionService;
+use OneAIAffiliate\Attribution\ModelType;
+use OneAIAffiliate\Attribution\ScopeType;
+use OneAIAffiliate\Attribution\Analytics\AnalyticsResponseTransformer;
 
 /**
  * Thin controller that prepares request parameters for the attribution service.

@@ -1,6 +1,6 @@
 # DNI Networks
 
-Below are Merchants that have direct DNI integration with Prosper202. If you are unfamiliar with what DNI integration is, please refer to the section on Direct Network Integrations on this site for more info.
+Below are Merchants that have direct DNI integration with 1ai-Affiliate. If you are unfamiliar with what DNI integration is, please refer to the section on Direct Network Integrations on this site for more info.
 
 If you are new to performance marketing or looking for campaigns to run promote, we highly recommend these companies to work with.
 

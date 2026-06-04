@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Rotator;
 
 use PHPUnit\Framework\TestCase;
-use Prosper202\Database\Connection;
-use Prosper202\Rotator\MysqlRotatorRepository;
+use OneAIAffiliate\Database\Connection;
+use OneAIAffiliate\Rotator\MysqlRotatorRepository;
 use Tests\Support\FakeMysqliConnection;
 
 final class MysqlRotatorRepositoryTest extends TestCase

@@ -1,6 +1,6 @@
 {
-  "name": "prosper202/prosper202",
-  "description": "Prosper202 ClickServer - Self-hosted tracking platform",
+  "name": "1ai-affiliate/1ai-affiliate",
+  "description": "1ai-Affiliate ClickServer - Self-hosted tracking platform",
   "type": "project",
   "license": "BUSL-1.1",
   "require": {
@@ -13,9 +13,9 @@
   },
   "autoload": {
     "psr-4": {
-      "Prosper202\\": "202-config/",
+      "OneAIAffiliate\\": "202-config/",
       "Tracking202\\": "tracking202/",
-      "Prosper202Interfaces\\": "202-interfaces/",
+      "OneAIAffiliateInterfaces\\": "202-interfaces/",
       "Api\\": "api/",
       "P202Cli\\": "cli/"
     }
