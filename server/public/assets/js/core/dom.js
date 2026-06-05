@@ -9,20 +9,19 @@ const DOM = (function() {
   }
 
   function statCard({ label, value, sub, accent = 'indigo' }) {
-    const accents = {
-      indigo: 'from-indigo-500/20 to-cyan-500/10',
-      green: 'from-emerald-500/20 to-teal-500/10',
-      yellow: 'from-amber-500/20 to-orange-500/10',
-      red: 'from-rose-500/20 to-pink-500/10',
+    const colors = {
+      indigo: { glow: 'rgba(99,102,241,.15)', line: '#6366f1' },
+      green:  { glow: 'rgba(63,185,80,.12)', line: '#3fb950' },
+      yellow: { glow: 'rgba(210,153,34,.12)', line: '#d29922' },
+      red:    { glow: 'rgba(248,81,73,.12)', line: '#f85149' },
+      blue:   { glow: 'rgba(88,166,255,.12)', line: '#58a6ff' },
     };
+    const c = colors[accent] || colors.indigo;
     return `
-      <div class="stat-card relative" style="overflow:hidden">
-        <div class="absolute inset-0 bg-gradient-to-br ${accents[accent] || accents.indigo} opacity-50"></div>
-        <div style="position:relative">
-          <div class="label">${label}</div>
-          <div class="value">${value}</div>
-          ${sub ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${sub}</div>` : ''}
-        </div>
+      <div class="stat-card" style="border-left:3px solid ${c.line}">
+        <div class="label">${label}</div>
+        <div class="value">${value}</div>
+        ${sub ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${sub}</div>` : ''}
       </div>`;
   }
 
@@ -48,5 +47,26 @@ const DOM = (function() {
     return `<span style="font-size:13px;color:${type==='ok'?'var(--green)':'var(--red)'}">${text}</span>`;
   }
 
-  return { skeleton, statCard, pageHeader, pill, table, msg };
+  function emptyState(title, message) {
+    return `<div class="card" style="text-align:center;padding:48px 20px">
+      <div style="font-size:40px;margin-bottom:12px;opacity:.3">—</div>
+      <h3 style="margin-bottom:6px">${title}</h3>
+      <p style="color:var(--text2);font-size:13px">${message}</p>
+    </div>`;
+  }
+
+  function badge(text, accent = 'indigo') {
+    const colors = {
+      indigo:  'var(--indigo)',
+      green:   'var(--green)',
+      yellow:  'var(--yellow)',
+      red:     'var(--red)',
+      blue:    'var(--blue)',
+    };
+    const c = colors[accent] || colors.indigo;
+    return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:${c}">
+      <span style="width:6px;height:6px;border-radius:50%;background:${c};display:inline-block"></span>${text}</span>`;
+  }
+
+  return { skeleton, statCard, pageHeader, pill, table, msg, emptyState, badge };
 })();

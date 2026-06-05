@@ -172,18 +172,18 @@ PageRenderers.help = async function(el) {
     <div class="card"><h3>Quick Links</h3>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:12px">
         ${[
-          ['/api-docs','📖','API Documentation','Interactive Swagger UI for all endpoints',true],
-          ['docs','📚','Tutorials & Guides','Attribution, integrations, setup',false],
-          ['admin','🛡️','System Status','Cron jobs, GeoIP, DB status',false],
-          ['https://github.com/Loyalsoldier/geoip','🌍','GeoIP Data','Free weekly database updates',true],
-        ].map(([href,icon,title,desc,ext]) =>
+          ['/api-docs','API Documentation','Interactive Swagger UI for all endpoints',true],
+          ['docs','Tutorials & Guides','Attribution, integrations, setup',false],
+          ['admin','System Status','Cron jobs, GeoIP, DB status',false],
+          ['https://github.com/Loyalsoldier/geoip','GeoIP Data','Free weekly database updates',true],
+        ].map(([href,title,desc,ext]) =>
           ext
             ? `<a href="${href}" target="_blank" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:20px;display:block;text-decoration:none;color:var(--text);cursor:pointer">
-                <h4 style="margin-bottom:8px">${icon} ${title}</h4>
+                <h4 style="margin-bottom:8px">${title}</h4>
                 <p style="font-size:13px;color:var(--text2)">${desc}</p>
               </a>`
             : `<div onclick="Router.navigate('${href}')" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:20px;display:block;cursor:pointer">
-                <h4 style="margin-bottom:8px">${icon} ${title}</h4>
+                <h4 style="margin-bottom:8px">${title}</h4>
                 <p style="font-size:13px;color:var(--text2)">${desc}</p>
               </div>`
         ).join('')}
