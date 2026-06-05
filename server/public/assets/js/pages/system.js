@@ -105,9 +105,14 @@ PageRenderers.admin = async function(el) {
         <tr><td style="color:var(--text2)">Total Clicks</td><td>${items.total_clicks||0}</td></tr></table>
       </div>
       <div class="card"><h3>Data Engine Queue</h3>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="flex:1;background:var(--bg);border-radius:4px;height:8px;overflow:hidden">
+            <div style="height:100%;background:var(--indigo);width:${items.dataengine_progress||0}%;transition:width .3s"></div>
+          </div>
+          <span style="font-size:13px;font-weight:600">${items.dataengine_progress||0}%</span>
+        </div>
         <table><tr><td style="color:var(--text2);width:180px">Total Jobs</td><td>${items.dataengine_total||0}</td></tr>
-        <tr><td style="color:var(--text2)">Completed</td><td>${items.dataengine_done||0}</td></tr>
-        <tr><td style="color:var(--text2)">Progress</td><td>${items.dataengine_progress||0}%</td></tr></table>
+        <tr><td style="color:var(--text2)">Completed</td><td>${items.dataengine_done||0}</td></tr></table>
       </div>
       <div class="card"><h3>GeoIP Database <span style="color:var(--text2);font-size:12px;font-weight:normal">(Loyalsoldier/geoip)</span></h3>
         <table>

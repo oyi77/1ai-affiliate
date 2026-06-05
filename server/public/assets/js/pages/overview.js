@@ -27,7 +27,7 @@ PageRenderers.overview = async function(el) {
         ${DOM.statCard({ label:'Revenue MTD', value: 'Rp '+(stats.revenue_mtd||0).toLocaleString(),
           sub: stats.revenue_growth ? `${(stats.revenue_growth >= 0 ? '+' : '')}${Math.round(stats.revenue_growth * 100)}% vs last month` : '', accent:'green' })}
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="overview-split">
         <div class="card"><h3>Top Affiliates</h3>
           ${affData.length
             ? DOM.table(
