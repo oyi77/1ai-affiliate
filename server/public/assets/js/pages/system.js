@@ -95,6 +95,7 @@ PageRenderers.admin = async function(el) {
   try {
     const s = await API.get('/api/admin/system');
     const items = s.data || s;
+    const cronTs = items.cron && items.cron.last_execution;
     el.innerHTML = `${DOM.pageHeader('System Admin', 'Server status and maintenance')}
       <div class="card"><h3>System Info</h3>
         <table><tr><td style="color:var(--text2);width:180px">Application</td><td><strong>1AI Affiliate Tracker</strong></td></tr>
@@ -102,7 +103,8 @@ PageRenderers.admin = async function(el) {
         <tr><td style="color:var(--text2)">PHP</td><td>${items.php_version||'Unavailable'}</td></tr>
         <tr><td style="color:var(--text2)">MySQL</td><td>${items.mysql_version||'Unavailable'}</td></tr>
         <tr><td style="color:var(--text2)">Node.js</td><td>${items.node_version||'Unavailable'}</td></tr>
-        <tr><td style="color:var(--text2)">Total Clicks</td><td>${items.total_clicks||0}</td></tr></table>
+        <tr><td style="color:var(--text2)">Total Clicks</td><td>${(items.total_clicks||0).toLocaleString()}</td></tr>
+        <tr><td style="color:var(--text2)">Cron Last Run</td><td>${cronTs ? new Date(cronTs * 1000).toLocaleString() : 'Never'}</td></tr></table>
       </div>
       <div class="card"><h3>Data Engine Queue</h3>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">

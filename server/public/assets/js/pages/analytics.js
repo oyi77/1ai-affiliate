@@ -6,9 +6,9 @@ PageRenderers.attribution = async function(el) {
     const s = await API.get('/api/admin/stats');
     el.innerHTML = `${DOM.pageHeader('Multi-Touch Attribution', 'First-touch, last-touch, and assisted conversions')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Total Clicks', value:s.total_clicks||0 })}
-        ${DOM.statCard({ label:'Attributed Conversions', value:s.attributed_conversions||0, accent:'green' })}
-        ${DOM.statCard({ label:'Assisted Conversions', value:s.assisted_conversions||0, accent:'yellow' })}
+        ${DOM.statCard({ label:'Total Clicks', value: (s.total_clicks||0).toLocaleString() })}
+        ${DOM.statCard({ label:'Attributed Conversions', value: (s.attributed_conversions||0).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Assisted Conversions', value: (s.assisted_conversions||0).toLocaleString(), accent:'yellow' })}
       </div>
       <div class="card"><p style="color:var(--text2);font-size:13px">Multi-touch attribution data populates as clicks and conversions are tracked through the system.</p></div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load attribution data.</p></div>'; }
@@ -48,7 +48,7 @@ PageRenderers.reports = async function(el) {
     el.innerHTML = `${DOM.pageHeader('Reports', 'Generate and export performance reports')}
       <div class="stat-grid">
         ${DOM.statCard({ label:'Revenue MTD', value:'Rp '+(s.revenue_mtd||0).toLocaleString() })}
-        ${DOM.statCard({ label:'Total Clicks', value:s.total_clicks||0, accent:'green' })}
+        ${DOM.statCard({ label:'Total Clicks', value: (s.total_clicks||0).toLocaleString(), accent:'green' })}
         ${DOM.statCard({ label:'Avg EPC', value:'Rp '+(s.avg_epc||0).toFixed(2), accent:'yellow' })}
       </div>
       <div class="card"><h3>Report Generator</h3>

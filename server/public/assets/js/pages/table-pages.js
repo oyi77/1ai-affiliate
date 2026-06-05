@@ -54,12 +54,13 @@ PageRenderers.users = makeTablePage('/api/admin/users?limit=50', 'Users', 'Regis
 ], ['Name','Email','Role','Added']);
 
 function makeTablePage(url, title, subtitle, mapFn, headers) {
+  const slug = title.toLowerCase();
   return async function(el) {
     try {
       const r = await API.get(url);
       const items = r.data || [];
       el.innerHTML = `${DOM.pageHeader(title, subtitle)}
-        <div class="card">${DOM.table(headers, items.map(mapFn))}</div>`;
-    } catch(e) { el.innerHTML = `<div class="card"><p>Unable to load ${title.toLowerCase()}.</p></div>`; }
+        <div class="card">${items.length ? DOM.table(headers, items.map(mapFn)) : DOM.emptyState('No data', `No ${slug} found. Data will appear here as it is collected.`)}</div>`;
+    } catch(e) { el.innerHTML = `<div class="card"><p>Unable to load ${slug}.</p></div>`; }
   };
 }
