@@ -56,8 +56,12 @@ window.Settings = {
       el.innerHTML = DOM.msg('ok','Password changed');
     } catch(e) { el.innerHTML = DOM.msg('err', e.message); }
   },
-  generateApiKey: async () => { try { await API.post('/api/settings/api-key'); Router.navigate('profile'); } catch(e) { alert(e.message); } },
-  removeApiKey: async () => { if (confirm('Remove API key?')) { try { await API.del('/api/settings/api-key'); Router.navigate('profile'); } catch(e) { alert(e.message); } } },
+  generateApiKey: async () => { try { await API.post('/api/settings/api-key'); Router.navigate('profile'); AppUI.toast('API key generated'); } catch(e) { AppUI.toast(e.message, 'err'); } },
+  removeApiKey: async () => {
+    const ok = await AppUI.confirm({ title: 'Remove API key', message: 'This will invalidate the current key. Any integrations using it will stop working.', confirmText: 'Remove', danger: true });
+    if (!ok) return;
+    try { await API.del('/api/settings/api-key'); Router.navigate('profile'); AppUI.toast('API key removed'); } catch(e) { AppUI.toast(e.message, 'err'); }
+  },
 };
 
 PageRenderers.integrations = async function(el) {
@@ -79,13 +83,13 @@ PageRenderers.integrations = async function(el) {
           <div style="display:flex;gap:8px;align-items:center">
             <input type="password" id="int-${i.key}" value="${d[i.key]||''}" placeholder="Enter key" style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px">
             <button class="btn btn-primary btn-sm" onclick="Settings.saveIntegration('${i.key}')">Save</button>
-            <button class="btn btn-outline btn-sm" onclick="Settings.toggleVis('int-${i.key}')">👁</button>
+            <button class="btn btn-outline btn-sm" onclick="Settings.toggleVis('int-${i.key}')">Show</button>
           </div>
         </div>`).join('')}`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load integrations.</p></div>'; }
 };
-Settings.saveIntegration = async (key) => { try { await API.put('/api/settings/integrations',{key,value:document.getElementById('int-'+key).value}); alert('Saved!'); } catch(e) { alert(e.message); } };
-Settings.toggleVis = (id) => { const e = document.getElementById(id); e.type = e.type==='password'?'text':'password'; };
+Settings.saveIntegration = async (key) => { try { await API.put('/api/settings/integrations',{key,value:document.getElementById('int-'+key).value}); AppUI.toast('Saved'); } catch(e) { AppUI.toast(e.message, 'err'); } };
+Settings.toggleVis = (id) => { const e = document.getElementById(id); e.type = e.type==='password'?'text':'password'; const btn = e.nextElementSibling.nextElementSibling; btn.textContent = e.type==='password'?'Show':'Hide'; };
 
 PageRenderers.admin = async function(el) {
   try {
@@ -94,10 +98,10 @@ PageRenderers.admin = async function(el) {
     el.innerHTML = `${DOM.pageHeader('System Admin', 'Server status and maintenance')}
       <div class="card"><h3>System Info</h3>
         <table><tr><td style="color:var(--text2);width:180px">Application</td><td><strong>1AI Affiliate Tracker</strong></td></tr>
-        <tr><td style="color:var(--text2)">DB Version</td><td>${items.version||'1.9.59'}</td></tr>
-        <tr><td style="color:var(--text2)">PHP</td><td>${items.php_version||'8.4'}</td></tr>
-        <tr><td style="color:var(--text2)">MySQL</td><td>${items.mysql_version||'8.0'}</td></tr>
-        <tr><td style="color:var(--text2)">Node.js</td><td>${items.node_version||'—'}</td></tr>
+        <tr><td style="color:var(--text2)">DB Version</td><td>${items.version||'Unavailable'}</td></tr>
+        <tr><td style="color:var(--text2)">PHP</td><td>${items.php_version||'Unavailable'}</td></tr>
+        <tr><td style="color:var(--text2)">MySQL</td><td>${items.mysql_version||'Unavailable'}</td></tr>
+        <tr><td style="color:var(--text2)">Node.js</td><td>${items.node_version||'Unavailable'}</td></tr>
         <tr><td style="color:var(--text2)">Total Clicks</td><td>${items.total_clicks||0}</td></tr></table>
       </div>
       <div class="card"><h3>Data Engine Queue</h3>
@@ -116,14 +120,25 @@ PageRenderers.admin = async function(el) {
 };
 
 PageRenderers.clickservers = async function(el) {
-  el.innerHTML = `${DOM.pageHeader('Click Servers', 'Domain management & license')}
-    <div class="card"><p style="color:var(--text2);font-size:13px">ClickServer domain management requires a valid ClickServer API key. Configure it in the <a class="link" onclick="Router.navigate('integrations')">Integrations</a> page, then domains will appear here.</p></div>
-    <div class="card"><h3>How ClickServers Work</h3>
-      <div style="color:var(--text2);font-size:13px;line-height:1.7">
-        <p>ClickServers handle redirect and tracking URLs. Each domain points to your tracker and records clicks, conversions, and attribution data.</p>
-        <p>Register domains via the ClickServer API and manage them from this dashboard.</p>
-      </div>
-    </div>`;
+  try {
+    const d = await API.get('/api/admin/clickservers');
+    el.innerHTML = `${DOM.pageHeader('Click Servers', 'Domain management & license')}
+      ${d.configured
+        ? `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3>Registered Domains (${d.domains_used})</h3>
+          </div>
+          ${d.domains.length
+            ? DOM.table(['Domain','Status','Created'], d.domains.map(dm => [dm.domain, DOM.pill(dm.status||'active', dm.status==='active'?'green':'yellow'), new Date(dm.created_at*1000).toLocaleDateString()]))
+            : '<p style="color:var(--text2);font-size:13px">No domains registered yet. Domains managed via ClickServer API will appear here.</p>'}
+          <p style="color:var(--text2);font-size:12px;margin-top:12px">${d.message}</p></div>`
+        : `<div class="card"><p style="color:var(--text2);font-size:13px">ClickServer domain management requires a valid ClickServer API key. Configure it in the <a class="link" onclick="Router.navigate('integrations')">Integrations</a> page, then domains will appear here.</p></div>`}
+      <div class="card"><h3>How ClickServers Work</h3>
+        <div style="color:var(--text2);font-size:13px;line-height:1.7">
+          <p>ClickServers handle redirect and tracking URLs. Each domain points to your tracker and records clicks, conversions, and attribution data.</p>
+          <p>Register domains via the ClickServer API and manage them from this dashboard.</p>
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load ClickServer data.</p></div>'; }
 };
 
 PageRenderers.docs = async function(el) {
@@ -197,22 +212,37 @@ Settings.lookupGeoIP = async () => {
 
 PageRenderers.vipperks = async function(el) {
   try {
-    const p = await API.get('/api/settings/profile');
+    const p = await API.get('/api/admin/vip');
     el.innerHTML = `${DOM.pageHeader('VIP Perks', 'Exclusive offers and enhanced payouts')}
       <div class="card"><h3>VIP Perks Profile</h3>
         <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Complete your profile to unlock exclusive offers, enhanced payouts, and premium support from top affiliate networks.</p>
         <div class="form-row">
           <div class="form-group"><label>Monthly Traffic</label>
-            <select id="vip-traffic"><option>0 - 10,000</option><option>10,000 - 50,000</option><option>50,000 - 250,000</option><option>250,000+</option></select>
+            <select id="vip-traffic">${['0 - 10,000','10,000 - 50,000','50,000 - 250,000','250,000+'].map(o => `<option ${p.monthly_traffic===o?'selected':''}>${o}</option>`).join('')}</select>
           </div>
           <div class="form-group"><label>Primary Vertical</label>
-            <select id="vip-vertical"><option>E-Commerce</option><option>Finance / Crypto</option><option>Health / Fitness</option><option>Gaming</option><option>Education</option><option>Other</option></select>
+            <select id="vip-vertical">${['E-Commerce','Finance / Crypto','Health / Fitness','Gaming','Education','Other'].map(o => `<option ${p.primary_vertical===o?'selected':''}>${o}</option>`).join('')}</select>
           </div>
         </div>
         <div class="form-group"><label>Preferred Payout</label>
-          <select id="vip-payout"><option>Wire Transfer</option><option>Cryptocurrency</option><option>PayPal</option><option>Wise</option></select>
+          <select id="vip-payout">${['Wire Transfer','Cryptocurrency','PayPal','Wise'].map(o => `<option ${p.preferred_payout===o?'selected':''}>${o}</option>`).join('')}</select>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="alert('VIP profile saved!')">Submit VIP Profile</button>
+        <button class="btn btn-primary btn-sm" onclick="Settings.saveVipProfile()">${p.status==='submitted'?'Update VIP Profile':'Submit VIP Profile'}</button>
+        ${p.updated_at ? `<span style="font-size:11px;color:var(--text2);margin-left:8px">Last updated: ${new Date(p.updated_at*1000).toLocaleDateString()}</span>` : ''}
+        <span id="vip-msg" style="display:inline-block;margin-left:8px"></span>
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load VIP Perks.</p></div>'; }
+};
+
+Settings.saveVipProfile = async () => {
+  const el = document.getElementById('vip-msg');
+  try {
+    await API.put('/api/admin/vip', {
+      monthly_traffic: document.getElementById('vip-traffic').value,
+      primary_vertical: document.getElementById('vip-vertical').value,
+      preferred_payout: document.getElementById('vip-payout').value,
+    });
+    AppUI.toast('VIP profile submitted');
+    Router.navigate('vipperks');
+  } catch(e) { AppUI.toast(e.message, 'err'); }
 };

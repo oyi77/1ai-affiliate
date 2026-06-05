@@ -36,17 +36,15 @@ const Router = (function() {
     const el = document.getElementById('page-content');
     el.innerHTML = DOM.skeleton();
 
-    // Import page renderer lazily — pages register themselves
     const renderer = window.PageRenderers && window.PageRenderers[page];
     if (renderer) {
       renderer(el).catch(e => {
         el.innerHTML = `<div class="card"><p>Failed to load page: ${e.message}</p></div>`;
       });
     } else {
-      el.innerHTML = `<div class="card"><p>Page "${page}" is not implemented yet.</p></div>`;
+      el.innerHTML = `<div class="card"><h3>Page renderer unavailable</h3><p style="color:var(--text2);font-size:13px">The dashboard could not load this section. Refresh the page and try again.</p></div>`;
     }
 
-    // Close mobile sidebar
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('scrim').classList.remove('open');
   }
@@ -56,8 +54,10 @@ const Router = (function() {
     document.getElementById('scrim').classList.toggle('open');
   }
 
-  // Initialize
-  if (Auth.isLoggedIn()) showApp();
+  function init() {
+    if (Auth.isLoggedIn()) showApp();
+    else showLogin();
+  }
 
-  return { showLogin, showApp, navigate, toggleSidebar, getCurrentPage: () => currentPage };
+  return { init, showLogin, showApp, navigate, toggleSidebar, getCurrentPage: () => currentPage };
 })();

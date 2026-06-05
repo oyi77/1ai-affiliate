@@ -51,8 +51,55 @@ PageRenderers.reports = async function(el) {
             </select>
           </div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="alert('Report generation coming soon')">Generate</button>
-        <button class="btn btn-outline btn-sm" style="margin-left:8px" onclick="alert('CSV export coming soon')">Export CSV</button>
-      </div>`;
+        <button class="btn btn-primary btn-sm" onclick="PageRenderers.loadReport()">Generate</button>
+        <button class="btn btn-outline btn-sm" style="margin-left:8px" onclick="PageRenderers.exportCsv()">Export CSV</button>
+      </div>
+      <div id="report-results" style="margin-top:16px"></div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load report data.</p></div>'; }
+};
+
+PageRenderers.loadReport = async () => {
+  const el = document.getElementById('report-results');
+  const range = document.getElementById('report-range').value;
+  const type = document.getElementById('report-type').value;
+  el.innerHTML = '<div class="skeleton" style="height:100px"></div>';
+  try {
+    const d = await API.get('/api/admin/reports?range=' + range + '&type=' + type);
+    if (type === 'summary') {
+      el.innerHTML = '<div class="card" style="margin-top:0"><h3>' + d.range + ' Summary</h3>' +
+        DOM.table(['Metric','Value'], d.rows.map(r => [r.metric, r.value.toLocaleString()])) +
+        '</div>';
+    } else {
+      el.innerHTML = '<div class="card" style="margin-top:0"><h3>' + d.type + ' (' + d.range + ')</h3>' +
+        '<div style="font-size:13px;color:var(--text2);margin-bottom:8px">' + d.rows.length + ' rows &middot; ' + Object.entries(d.totals).map(([k,v]) => k+': '+(typeof v==='number'?v.toLocaleString():v)).join(' &middot; ') + '</div>' +
+        DOM.table(d.headers, d.rows.map(r => d.headers.map(h => {
+          const v = r[h];
+          if (h === 'timestamp') return new Date(v * 1000).toLocaleString();
+          if (h === 'payout' || h === 'amount') return 'Rp ' + (Number(v)||0).toLocaleString();
+          return v;
+        }))) +
+        '</div>';
+    }
+    AppUI.toast('Report loaded');
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);font-size:13px">' + e.message + '</p>'; }
+};
+
+PageRenderers.exportCsv = async () => {
+  const range = document.getElementById('report-range').value;
+  const type = document.getElementById('report-type').value;
+  try {
+    const token = Auth.token();
+    const r = await fetch('/api/admin/reports.csv?range=' + range + '&type=' + type, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!r.ok) throw new Error('Export failed');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '1ai-' + type + '-' + range + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    AppUI.toast('CSV exported');
+  } catch(e) { AppUI.toast(e.message, 'err'); }
 };
