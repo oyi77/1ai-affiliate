@@ -98,7 +98,7 @@ async function updateProfile(req, res) {
  */
 async function generateApiKey(req, res) {
   try {
-    const apiKey = '1ai_' + crypto.randomBytes(30).toString('hex');
+    const apiKey = '1ai_' + crypto.randomBytes(29).toString('hex');  // 4 + 58 = 62 chars, fits VARCHAR(64)
 
     await pool.query('UPDATE users SET user_api_key = ? WHERE user_id = ?', [apiKey, req.user.id]);
 
