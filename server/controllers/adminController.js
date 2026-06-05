@@ -24,6 +24,7 @@ function toNumber(value) {
 
 function startExpression(range) {
   const allowed = {
+    '1d': 'UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY))',
     '7d': 'UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 7 DAY))',
     '30d': 'UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))',
     '90d': 'UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 90 DAY))',

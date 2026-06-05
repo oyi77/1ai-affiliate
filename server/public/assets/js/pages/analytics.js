@@ -16,14 +16,29 @@ PageRenderers.attribution = async function(el) {
 
 PageRenderers.clicks = async function(el) {
   try {
-    const s = await API.get('/api/admin/stats');
+    const [s, clicks] = await Promise.all([
+      API.get('/api/admin/stats'),
+      API.get('/api/admin/reports?type=clicks&range=1d'),
+    ]);
     el.innerHTML = `${DOM.pageHeader('Click Tracker', 'Real-time click monitoring')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Clicks Today', value:s.clicks_today||s.active_clicks_24h||0 })}
-        ${DOM.statCard({ label:'Unique IPs', value:s.unique_ips||0, accent:'green' })}
-        ${DOM.statCard({ label:'Avg CTR', value:(s.avg_ctr||0)+'%', accent:'yellow' })}
+        ${DOM.statCard({ label:'Clicks Today', value: (s.clicks_today||s.active_clicks_24h||0).toLocaleString() })}
+        ${DOM.statCard({ label:'Unique IPs', value: (s.unique_ips||0).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Avg CTR', value: (s.avg_ctr||0)+'%', accent:'yellow' })}
       </div>
-      <div class="card"><p style="color:var(--text2);font-size:13px">Click data populates as traffic flows through your tracking links.</p></div>`;
+      <div class="card"><h3>Recent Clicks</h3>
+        ${(clicks.rows||[]).length
+          ? DOM.table(
+            ['Campaign','IP','Payout','Time'],
+            clicks.rows.map(c => [
+              c.campaign_id||'-',
+              `<code>${c.ip||'-'}</code>`,
+              c.payout ? 'Rp '+(Number(c.payout)||0).toLocaleString() : '-',
+              new Date(c.timestamp*1000).toLocaleString()
+            ])
+          )
+          : DOM.emptyState('No clicks yet', 'Click data populates as traffic flows through your tracking links.')}
+      </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load click data.</p></div>'; }
 };
 

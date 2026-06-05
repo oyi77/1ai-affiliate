@@ -49,9 +49,18 @@ async function doResetPassword() {
   const msg = document.getElementById('reset-msg');
   const success = document.getElementById('reset-success');
   msg.style.display = 'none'; success.style.display = 'none';
+
+  const newPass = document.getElementById('reset-pass').value;
+  const confirm = document.getElementById('reset-confirm');
+  if (confirm && newPass !== confirm.value) {
+    msg.textContent = 'Passwords do not match';
+    msg.style.display = 'block';
+    return;
+  }
+
   try {
     const r = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: document.getElementById('reset-key').value, password: document.getElementById('reset-pass').value })
+      body: JSON.stringify({ key: document.getElementById('reset-key').value, password: newPass })
     });
     const d = await r.json();
     if (!r.ok) { msg.textContent = d.error; msg.style.display = 'block'; return; }

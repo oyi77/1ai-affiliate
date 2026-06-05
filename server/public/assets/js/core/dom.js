@@ -26,7 +26,7 @@ const DOM = (function() {
   }
 
   function pageHeader(title, subtitle) {
-    return `<div style="margin-bottom:24px">
+    return `<div class="page-header" style="margin-bottom:24px">
       <h1 style="font-size:24px;font-weight:700">${title}</h1>
       ${subtitle ? `<p style="color:var(--text2);font-size:13px;margin-top:4px">${subtitle}</p>` : ''}
     </div>`;
