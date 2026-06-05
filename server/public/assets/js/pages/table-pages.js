@@ -2,8 +2,8 @@
 window.PageRenderers = window.PageRenderers || {};
 
 PageRenderers.affiliates = makeTablePage('/api/admin/affiliates?limit=100', 'Affiliates', 'Manage your affiliates', d => [
-  [d.username||d.user_email, `<code>${d.affiliate_code}</code>`, DOM.pill({Starter:'indigo',Pro:'green',Premium:'yellow'}[d.tier]||'Starter','blue'), d.clicks||0, d.conversions||0, 'Rp '+(d.total_earnings||0).toLocaleString(), d.joined_at ? new Date(d.joined_at).toLocaleDateString() : '-'],
-], ['Name','Code','Tier','Clicks','Conversions','Earnings','Joined']);
+  [d.username||d.user_email, `<code>${d.affiliate_code}</code>`, DOM.pill({Starter:'indigo',Pro:'green',Premium:'yellow'}[d.tier]||'Starter','blue'), d.joined_at ? new Date(d.joined_at).toLocaleDateString() : '-'],
+], ['Name','Code','Tier','Joined']);
 
 PageRenderers.earnings = async function(el) {
   try {
@@ -38,7 +38,7 @@ PageRenderers.commissions = makeTablePage('/api/admin/commissions?limit=50', 'Co
 ], ['Affiliate','Source','Amount','Date']);
 
 PageRenderers.payments = makeTablePage('/api/admin/payments?limit=50', 'Payments', 'Payment history', d => [
-  [d.reference||d.id, d.user_email||d.user_id, 'Rp '+(d.amount||0).toLocaleString(), DOM.pill(d.status,{pending:'yellow',paid:'green',failed:'red'}[d.status]||'blue'), d.paid_at?new Date(d.paid_at).toLocaleDateString():'-'],
+  [d.reference||d.id, '#'+d.user_id, 'Rp '+(d.amount||0).toLocaleString(), DOM.pill(d.status,{pending:'yellow',paid:'green',failed:'red'}[d.status]||'blue'), d.paid_at?new Date(d.paid_at).toLocaleDateString():'-'],
 ], ['Reference','User','Amount','Status','Paid']);
 
 PageRenderers.campaigns = makeTablePage('/api/admin/campaigns?limit=50', 'Campaigns', 'Active campaigns', d => [

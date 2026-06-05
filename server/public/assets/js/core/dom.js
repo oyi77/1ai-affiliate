@@ -10,11 +10,11 @@ const DOM = (function() {
 
   function statCard({ label, value, sub, accent = 'indigo' }) {
     const colors = {
-      indigo: { glow: 'rgba(99,102,241,.15)', line: '#6366f1' },
-      green:  { glow: 'rgba(63,185,80,.12)', line: '#3fb950' },
-      yellow: { glow: 'rgba(210,153,34,.12)', line: '#d29922' },
-      red:    { glow: 'rgba(248,81,73,.12)', line: '#f85149' },
-      blue:   { glow: 'rgba(88,166,255,.12)', line: '#58a6ff' },
+      indigo: { line: '#6366f1' },
+      green:  { line: '#3fb950' },
+      yellow: { line: '#d29922' },
+      red:    { line: '#f85149' },
+      blue:   { line: '#58a6ff' },
     };
     const c = colors[accent] || colors.indigo;
     return `
@@ -32,7 +32,7 @@ const DOM = (function() {
     </div>`;
   }
 
-  function pill(text, type = 'info') {
+  function pill(text, type = 'indigo') {
     return `<span class="pill pill-${type}">${text}</span>`;
   }
 

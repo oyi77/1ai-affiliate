@@ -531,6 +531,478 @@
             },
           },
         },
+        '/api/auth/forgot-password': {
+          post: {
+            tags: ['Authentication'],
+            summary: 'Request password reset',
+            description: 'Accepts username and email. If matched, stores a reset key (3-day expiry) and returns it for testing. In production, email the key instead.',
+            operationId: 'authForgotPassword',
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['username', 'email'],
+                    properties: {
+                      username: { type: 'string', example: 'admin' },
+                      email: { type: 'string', example: 'admin@aitradepulse.com' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '200': {
+                description: 'Reset key generated (or generic message for security)',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        key: { type: 'string', description: 'Reset key (returned directly for dev/test)' },
+                      },
+                    },
+                  },
+                },
+              },
+              '400': { description: 'Missing username or email', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/auth/reset-password': {
+          post: {
+            tags: ['Authentication'],
+            summary: 'Reset password with key',
+            description: 'Accepts reset key and new password. Verifies key exists and is within 3-day expiry window, then updates password.',
+            operationId: 'authResetPassword',
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['key', 'password'],
+                    properties: {
+                      key: { type: 'string', description: 'Reset key from forgot-password', example: 'a1b2c3d4...' },
+                      password: { type: 'string', format: 'password', description: 'New password', example: 'newsecret' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '200': { description: 'Password updated', content: { 'application/json': { schema: { type: 'object', properties: { message: { type: 'string', example: 'Password updated' } } } } } },
+              '400': { description: 'Missing fields or invalid/expired key', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/auth/password': {
+          put: {
+            tags: ['Authentication'],
+            summary: 'Change password',
+            description: 'Change password for authenticated user. Requires current password verification.',
+            operationId: 'authChangePassword',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['currentPassword', 'newPassword'],
+                    properties: {
+                      currentPassword: { type: 'string', format: 'password', example: 'oldsecret' },
+                      newPassword: { type: 'string', format: 'password', example: 'newsecret' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '200': { description: 'Password changed', content: { 'application/json': { schema: { type: 'object', properties: { message: { type: 'string', example: 'Password updated' } } } } } },
+              '400': { description: 'Missing fields', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Current password incorrect', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/settings/profile': {
+          get: {
+            tags: ['Settings'],
+            summary: 'Get profile settings',
+            description: 'Returns authenticated user profile including email, timezone, role, API key status, and integration keys.',
+            operationId: 'settingsGetProfile',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': {
+                description: 'Profile data',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'integer', example: 1 },
+                        username: { type: 'string', example: 'admin' },
+                        email: { type: 'string', example: 'admin@aitradepulse.com' },
+                        timezone: { type: 'string', example: 'Asia/Jakarta' },
+                        role: { type: 'integer', example: 2 },
+                        api_key: { type: 'string', nullable: true, example: '1ai_a1b2c3...' },
+                        integrations: {
+                          type: 'object',
+                          properties: {
+                            cb_key: { type: 'string', nullable: true },
+                            jvzoo_secret_key: { type: 'string', nullable: true },
+                            zaxaa_api_signature: { type: 'string', nullable: true },
+                            ipqs_api_key: { type: 'string', nullable: true },
+                            maxmind_isp: { type: 'integer', example: 0 },
+                            auto_db_optimization_days: { type: 'integer', example: 0 },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+          put: {
+            tags: ['Settings'],
+            summary: 'Update profile',
+            description: 'Update email and timezone for authenticated user.',
+            operationId: 'settingsUpdateProfile',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      email: { type: 'string', example: 'admin@aitradepulse.com' },
+                      timezone: { type: 'string', example: 'Asia/Jakarta' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '200': { description: 'Profile updated', content: { 'application/json': { schema: { type: 'object', properties: { saved: { type: 'boolean', example: true } } } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/settings/api-key': {
+          post: {
+            tags: ['Settings'],
+            summary: 'Generate API key',
+            description: 'Generate a new REST API key (1ai_ prefix, 62 chars). Overwrites any existing key.',
+            operationId: 'settingsGenerateApiKey',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': { description: 'API key generated', content: { 'application/json': { schema: { type: 'object', properties: { api_key: { type: 'string', example: '1ai_a1b2c3...' } } } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+          delete: {
+            tags: ['Settings'],
+            summary: 'Remove API key',
+            description: 'Remove the current REST API key. Any integrations using it will stop working.',
+            operationId: 'settingsRemoveApiKey',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': { description: 'API key removed', content: { 'application/json': { schema: { type: 'object', properties: { removed: { type: 'boolean', example: true } } } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/settings/integrations': {
+          get: {
+            tags: ['Settings'],
+            summary: 'List integration keys',
+            description: 'Returns all stored integration keys for the authenticated user (ClickBank, JVZoo, Zaxaa, Slack, IPQS, ClickServer, License).',
+            operationId: 'settingsGetIntegrations',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': {
+                description: 'Integration keys',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        slack_webhook: { type: 'string', nullable: true },
+                        clickserver_api_key: { type: 'string', nullable: true },
+                        customer_api_key: { type: 'string', nullable: true },
+                        cb_key: { type: 'string', nullable: true },
+                        jvzoo_secret_key: { type: 'string', nullable: true },
+                        zaxaa_api_signature: { type: 'string', nullable: true },
+                        ipqs_api_key: { type: 'string', nullable: true },
+                      },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+          put: {
+            tags: ['Settings'],
+            summary: 'Save an integration key',
+            description: 'Save or update a single integration key. Body: { key: "slack_webhook", value: "https://hooks.slack.com/..." }',
+            operationId: 'settingsUpdateIntegration',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['key', 'value'],
+                    properties: {
+                      key: { type: 'string', description: 'Integration key name', example: 'slack_webhook' },
+                      value: { type: 'string', description: 'Integration key value', example: 'https://hooks.slack.com/...' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '200': { description: 'Key saved', content: { 'application/json': { schema: { type: 'object', properties: { saved: { type: 'boolean', example: true } } } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/reports': {
+          get: {
+            tags: ['Admin'],
+            summary: 'Generate a report',
+            description: 'Returns aggregated or detailed report data filtered by date range and type. Supports summary, clicks, conversions, and payouts types.',
+            operationId: 'adminReports',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'range', in: 'query', schema: { type: 'string', enum: ['1d', '7d', '30d', '90d', 'mtd', 'ytd'], default: '30d' }, description: 'Date range' },
+              { name: 'type', in: 'query', schema: { type: 'string', enum: ['summary', 'clicks', 'conversions', 'payouts'], default: 'summary' }, description: 'Report type' },
+            ],
+            responses: {
+              '200': {
+                description: 'Report data',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        range: { type: 'string', example: '30d' },
+                        type: { type: 'string', example: 'summary' },
+                        headers: { type: 'array', items: { type: 'string' }, example: ['metric', 'value'] },
+                        rows: { type: 'array', items: { type: 'object' } },
+                        totals: { type: 'object' },
+                        generated_at: { type: 'string', format: 'date-time' },
+                      },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/reports.csv': {
+          get: {
+            tags: ['Admin'],
+            summary: 'Export report as CSV',
+            description: 'Returns CSV file download with the same data as /api/admin/reports.',
+            operationId: 'adminReportsCsv',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            parameters: [
+              { name: 'range', in: 'query', schema: { type: 'string', enum: ['1d', '7d', '30d', '90d', 'mtd', 'ytd'], default: '30d' }, description: 'Date range' },
+              { name: 'type', in: 'query', schema: { type: 'string', enum: ['summary', 'clicks', 'conversions', 'payouts'], default: 'summary' }, description: 'Report type' },
+            ],
+            responses: {
+              '200': { description: 'CSV file download', content: { 'text/csv': { schema: { type: 'string', format: 'binary' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/system': {
+          get: {
+            tags: ['Admin'],
+            summary: 'System status',
+            description: 'Returns server versions, cron status, DataEngine queue progress, and GeoIP database info.',
+            operationId: 'adminSystem',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            responses: {
+              '200': {
+                description: 'System status',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        version: { type: 'string', example: '1.9.59' },
+                        php_version: { type: 'string', example: '8.4' },
+                        mysql_version: { type: 'string', example: '11.8.5-MariaDB' },
+                        node_version: { type: 'string', example: 'v22.22.2' },
+                        total_clicks: { type: 'integer', example: 5000 },
+                        cron: { type: 'object', properties: { last_execution: { type: 'integer', nullable: true, description: 'Unix timestamp', example: 1780603422 } } },
+                        dataengine_total: { type: 'integer', example: 100 },
+                        dataengine_done: { type: 'integer', example: 45 },
+                        dataengine_progress: { type: 'integer', example: 45 },
+                        geoip_country: { type: 'string', example: '8.1 MB' },
+                        geoip_asn: { type: 'string', example: '11.7 MB' },
+                        isp_enabled: { type: 'boolean', example: true },
+                      },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/clickservers': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List ClickServer domains',
+            description: 'Returns ClickServer configuration status and domain list for the authenticated user.',
+            operationId: 'adminClickServers',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': {
+                description: 'ClickServer status and domains',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        configured: { type: 'boolean', example: true },
+                        domains: { type: 'array', items: { type: 'object', properties: { id: { type: 'integer' }, domain: { type: 'string' }, status: { type: 'string' }, created_at: { type: 'integer' }, updated_at: { type: 'integer' } } } },
+                        domains_used: { type: 'integer', example: 3 },
+                        domains_available: { type: 'integer', nullable: true },
+                        message: { type: 'string', example: 'ClickServer domains loaded.' },
+                      },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/vip': {
+          get: {
+            tags: ['Admin'],
+            summary: 'Get VIP perks profile',
+            description: 'Returns VIP perks profile for the authenticated user (traffic, vertical, payout preference, status).',
+            operationId: 'adminVipGet',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': {
+                description: 'VIP profile',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        monthly_traffic: { type: 'string', example: '50,000 - 250,000' },
+                        primary_vertical: { type: 'string', example: 'Finance / Crypto' },
+                        preferred_payout: { type: 'string', example: 'Cryptocurrency' },
+                        notes: { type: 'string', nullable: true },
+                        status: { type: 'string', example: 'submitted' },
+                        updated_at: { type: 'integer', nullable: true, description: 'Unix timestamp' },
+                        install_hash: { type: 'string', nullable: true },
+                      },
+                    },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+          put: {
+            tags: ['Admin'],
+            summary: 'Save VIP perks profile',
+            description: 'Save or update VIP perks profile. Sets status to submitted on save.',
+            operationId: 'adminVipPut',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      monthly_traffic: { type: 'string', example: '50,000 - 250,000' },
+                      primary_vertical: { type: 'string', example: 'Finance / Crypto' },
+                      preferred_payout: { type: 'string', example: 'Cryptocurrency' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '200': { description: 'VIP profile saved', content: { 'application/json': { schema: { type: 'object', properties: { saved: { type: 'boolean', example: true }, status: { type: 'string', example: 'submitted' } } } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/docs': {
+          get: {
+            tags: ['Documentation'],
+            summary: 'List available documentation',
+            description: 'Returns an index of all available documentation files from documentation/ directory.',
+            operationId: 'docsIndex',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': {
+                description: 'Documentation index',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        docs: { type: 'array', items: { type: 'object', properties: { slug: { type: 'string' }, title: { type: 'string' }, category: { type: 'string' } } } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        '/api/docs/{slug}': {
+          get: {
+            tags: ['Documentation'],
+            summary: 'Get a documentation file',
+            description: 'Returns the content of a specific documentation markdown file by slug.',
+            operationId: 'docsGetBySlug',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'slug', in: 'path', required: true, schema: { type: 'string' }, description: 'Document slug (e.g. tutorials-and-guides/00-tutorial)' },
+            ],
+            responses: {
+              '200': {
+                description: 'Document content',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        slug: { type: 'string' },
+                        title: { type: 'string' },
+                        content: { type: 'string', description: 'Markdown content' },
+                      },
+                    },
+                  },
+                },
+              },
+              '404': { description: 'Document not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
         '/api/admin/stats': {
           get: {
             tags: ['Admin'],
@@ -903,6 +1375,20 @@
             summary: 'Tripay payment callback',
             description: 'Webhook called by Tripay when payment status changes. Authenticates via HMAC signature, not JWT. On PAID status, upgrades the affiliate to premium tier.',
             operationId: 'paymentCallback',
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentCallbackRequest' } } },
+            },
+            responses: {
+              '200': {
+                description: 'Callback processed',
+                content: {
+                  'application/json': {
+                    schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } },
+                  },
+                },
+              },
+            },
           },
         },
         '/api/geo/{ip}': {
@@ -975,27 +1461,14 @@
             },
           },
         },
-            requestBody: {
-              required: true,
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/PaymentCallbackRequest' } } },
-            },
-            responses: {
-              '200': {
-                description: 'Callback processed',
-                content: {
-                  'application/json': {
-                    schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } },
-                  },
-                },
-              },
-            },
-          },
-        },
+      },
       },
       tags: [
         { name: 'Health', description: 'Service health check' },
-        { name: 'Authentication', description: 'Login and user profile' },
+        { name: 'Authentication', description: 'Login, user profile, password management' },
         { name: 'Admin', description: 'Admin-only endpoints — require JWT Bearer + admin role, or X-API-Key' },
+        { name: 'Settings', description: 'Profile, API keys, integrations management' },
+        { name: 'Documentation', description: 'Documentation index and file serving' },
         { name: 'GeoIP', description: 'IP geolocation lookup using Loyalsoldier/geoip (free, weekly-updated)' },
         { name: 'Content', description: '6 Gemini-powered content generation tools for affiliate marketing' },
         { name: 'Payment', description: 'Tripay payment integration for affiliate subscriptions' },
