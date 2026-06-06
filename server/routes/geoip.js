@@ -101,4 +101,5 @@ router.get('/me/ip', authenticate, async (req, res) => {
   res.json(result);
 });
 
+router.lookupIp = lookupIp;
 module.exports = router;

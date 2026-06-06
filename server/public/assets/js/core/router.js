@@ -12,6 +12,10 @@ const Router = (function() {
     payments:'Payments', profile:'Profile & Settings', integrations:'API Integrations',
     admin:'System Admin', clickservers:'Click Servers', docs:'Documentation',
     help:'Help & Support', vipperks:'VIP Perks', users:'Users',
+    'ai-banner': 'AI Banner Generator', 'ai-carousel': 'AI IG Carousel Generator',
+    'ai-caption': 'AI Social Captions', 'ai-brand-kit': 'AI Brand Kit Generator',
+    'ai-ab-test': 'AI A/B Test Ideas', 'ai-bg-remove': 'AI BG Removal Prompt',
+    smartlink: 'Smartlink Generator', 'adv-integrations': 'Advertiser APIs'
   };
 
   function showLogin() {
@@ -23,6 +27,14 @@ const Router = (function() {
     document.getElementById('login-view').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     document.getElementById('me').textContent = Auth.user();
+    
+    const userRole = Auth.role();
+    document.querySelectorAll('[data-roles]').forEach(el => {
+      const allowedRoles = el.dataset.roles.split(',');
+      if (!allowedRoles.includes(userRole)) el.style.display = 'none';
+      else el.style.display = '';
+    });
+
     navigate('overview');
   }
 

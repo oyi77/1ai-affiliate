@@ -20,4 +20,8 @@ router.delete('/api-key', removeApiKey);
 router.get('/integrations', getIntegrations);
 router.put('/integrations', updateIntegration);
 
+// Postback Configuration
+router.get('/postback', getPostback);
+router.put('/postback', updatePostback);
+
 module.exports = router;

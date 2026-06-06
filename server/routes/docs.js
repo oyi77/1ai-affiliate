@@ -8,7 +8,7 @@ const DOC_DIRS = [
   'tutorials-and-guides',
   'features',
   'runbooks',
-  'setting-up-prosper202-pro',
+  'setting-up-prosper1ai-pro',
   'api',
   'tools--resources',
 ];

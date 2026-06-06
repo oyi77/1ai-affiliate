@@ -28,6 +28,10 @@ app.use('/api/content', require('./routes/content'));
 app.use('/api/geo', require('./routes/geoip'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
+app.use('/api/smartlink', require('./routes/smartlink'));
+
+// Shortlink / ClickServer (modern b202 equivalent)
+app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -55,7 +59,7 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`1AI Affiliate Tracker server on port ${PORT}`);
-  console.log(`Shared MySQL: ${process.env.DB_NAME || 'prosper202'}`);
+  console.log(`Shared MySQL: ${process.env.DB_NAME || 'Prosper1ai'}`);
 });
 
 module.exports = app;

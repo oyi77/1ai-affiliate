@@ -21,7 +21,7 @@ async function login(req, res) {
     const isEmail = email.includes('@');
     const column = isEmail ? 'user_email' : 'user_name';
     const [rows] = await pool.query(
-      `SELECT user_id, user_email, user_pass AS user_password, user_role FROM users WHERE ${column} = ?`,
+      `SELECT user_id, user_email, user_pass AS user_password, user_role FROM 1ai_users WHERE ${column} = ?`,
       [email]
     );
 
@@ -32,7 +32,6 @@ async function login(req, res) {
     const user = rows[0];
 
     // password_verify — PHP uses bcrypt by default
-    const bcrypt = require('bcryptjs');
     const valid = await bcrypt.compare(password, user.user_password);
     if (!valid) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -40,18 +39,33 @@ async function login(req, res) {
 
     // Check if user is also an affiliate
     const [affRows] = await pool.query(
-      'SELECT id, affiliate_code FROM affiliates WHERE user_id = ?',
+      'SELECT id, affiliate_code FROM 1ai_affiliates WHERE user_id = ?',
       [user.user_id]
     );
 
     const token = await generateToken(user);
 
+    const [existingKeys] = await pool.query(
+      'SELECT api_key FROM api_keys WHERE user_id = ? LIMIT 1',
+      [user.user_id]
+    );
+    let apiKey = existingKeys.length > 0 ? existingKeys[0].api_key : null;
+
+    if (!apiKey) {
+      apiKey = crypto.randomBytes(32).toString('hex');
+      await pool.query(
+        "INSERT INTO api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
+        [apiKey, user.user_id]
+      );
+    }
+
     res.json({
       token,
+      apiKey,
       user: {
         id: user.user_id,
         email: user.user_email,
-        role: (user.user_role === 2 || user.user_role === 'admin' || user.user_role === '1') ? 'admin' : 'user',
+        role: user.user_role,
         affiliate: affRows.length > 0 ? affRows[0] : null,
       },
     });
@@ -68,7 +82,7 @@ async function login(req, res) {
 async function getMe(req, res) {
   try {
     const [rows] = await pool.query(
-      'SELECT user_id, user_email, user_name, user_role FROM users WHERE user_id = ?',
+      'SELECT user_id, user_email, user_name, user_role FROM 1ai_users WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -82,8 +96,8 @@ async function getMe(req, res) {
         COALESCE(SUM(CASE WHEN ae.status IN ('pending','approved') THEN ae.payout_amount ELSE 0 END), 0) AS balance,
         COUNT(CASE WHEN ae.status IN ('pending','approved') THEN 1 ELSE NULL END) AS pending_conversions,
         COUNT(CASE WHEN ae.status = 'paid' THEN 1 ELSE NULL END) AS paid_conversions
-       FROM affiliates a
-       LEFT JOIN affiliate_earnings ae ON a.id = ae.affiliate_id
+       FROM 1ai_affiliates a
+       LEFT JOIN 1ai_affiliate_earnings ae ON a.id = ae.affiliate_id
        WHERE a.user_id = ?
        GROUP BY a.id`,
       [req.user.id]
@@ -111,7 +125,7 @@ async function forgotPassword(req, res) {
 
   try {
     const [rows] = await pool.query(
-      'SELECT user_id, user_name, user_email FROM users WHERE user_name = ? AND user_email = ?',
+      'SELECT user_id, user_name, user_email FROM 1ai_users WHERE user_name = ? AND user_email = ?',
       [username, email]
     );
 
@@ -125,7 +139,7 @@ async function forgotPassword(req, res) {
     const resetTime = Math.floor(Date.now() / 1000);
 
     await pool.query(
-      'UPDATE users SET user_pass_key = ?, user_pass_time = ? WHERE user_id = ?',
+      'UPDATE 1ai_users SET user_pass_key = ?, user_pass_time = ? WHERE user_id = ?',
       [resetKey, resetTime, user.user_id]
     );
 
@@ -157,7 +171,7 @@ async function resetPassword(req, res) {
 
   try {
     const [rows] = await pool.query(
-      'SELECT user_id, user_pass_key, user_pass_time FROM users WHERE user_pass_key = ?',
+      'SELECT user_id, user_pass_key, user_pass_time FROM 1ai_users WHERE user_pass_key = ?',
       [key]
     );
 
@@ -170,14 +184,14 @@ async function resetPassword(req, res) {
 
     if (!user.user_pass_time || (now - user.user_pass_time) > RESET_KEY_EXPIRY) {
       // Clear the key so it can't be reused
-      await pool.query('UPDATE users SET user_pass_key = NULL, user_pass_time = 0 WHERE user_id = ?', [user.user_id]);
+      await pool.query('UPDATE 1ai_users SET user_pass_key = NULL, user_pass_time = 0 WHERE user_id = ?', [user.user_id]);
       return res.status(400).json({ error: 'Reset key has expired. Please request a new one.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await pool.query(
-      'UPDATE users SET user_pass = ?, user_pass_key = NULL, user_pass_time = 0 WHERE user_id = ?',
+      'UPDATE 1ai_users SET user_pass = ?, user_pass_key = NULL, user_pass_time = 0 WHERE user_id = ?',
       [hashedPassword, user.user_id]
     );
 
@@ -202,7 +216,7 @@ async function changePassword(req, res) {
 
   try {
     const [rows] = await pool.query(
-      'SELECT user_pass FROM users WHERE user_id = ?',
+      'SELECT user_pass FROM 1ai_users WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -216,7 +230,7 @@ async function changePassword(req, res) {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await pool.query('UPDATE users SET user_pass = ? WHERE user_id = ?', [hashedPassword, req.user.id]);
+    await pool.query('UPDATE 1ai_users SET user_pass = ? WHERE user_id = ?', [hashedPassword, req.user.id]);
 
     res.json({ message: 'Password changed successfully' });
   } catch (err) {
@@ -225,4 +239,44 @@ async function changePassword(req, res) {
   }
 }
 
-module.exports = { login, getMe, forgotPassword, resetPassword, changePassword };
+/**
+ * Get current user's API key for PHP V3 API access.
+ */
+async function getApiKey(req, res) {
+  try {
+    const [rows] = await pool.query(
+      'SELECT api_key, scope FROM api_keys WHERE user_id = ? LIMIT 1',
+      [req.user.id]
+    );
+    if (rows.length === 0) {
+      return res.json({ configured: false, message: 'No API key configured.' });
+    }
+    res.json({ configured: true, api_key: rows[0].api_key, scope: rows[0].scope });
+  } catch (err) {
+    console.error('getApiKey error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+/**
+ * Generate a new API key (replaces existing one).
+ */
+async function regenerateApiKey(req, res) {
+  try {
+    const apiKey = crypto.randomBytes(32).toString('hex');
+    await pool.query(
+      'DELETE FROM api_keys WHERE user_id = ?',
+      [req.user.id]
+    );
+    await pool.query(
+      "INSERT INTO api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
+      [apiKey, req.user.id]
+    );
+    res.json({ api_key: apiKey, message: 'API key regenerated.' });
+  } catch (err) {
+    console.error('regenerateApiKey error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { login, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey };

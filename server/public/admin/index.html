@@ -4,138 +4,400 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>1AI Affiliate Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f1117; --panel: #161b22; --panel2: #1c2333; --border: #30363d;
-      --text: #e6edf3; --text2: #8b949e; --indigo: #6366f1; --indigo2: #818cf8;
-      --green: #3fb950; --red: #f85149; --yellow: #d29922; --blue: #58a6ff;
+      /* Premium Dark Mode Palette */
+      --bg: #090a0f;
+      --panel: rgba(22, 27, 34, 0.7);
+      --panel2: rgba(28, 35, 51, 0.8);
+      --panel-hover: rgba(40, 48, 68, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(99, 102, 241, 0.3);
+      --text: #f8fafc;
+      --text2: #94a3b8;
+      
+      /* Accents */
+      --indigo: #6366f1;
+      --indigo2: #818cf8;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+      
+      /* Glassmorphism */
+      --blur: blur(12px);
     }
+    
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; }
-    .sidebar { width:240px; background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:50; transition:transform .3s; overflow-y:auto; }
-    .sidebar-header { padding:20px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
-    .sidebar-header .logo { width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg,var(--indigo),var(--indigo2)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#fff; }
-    .sidebar-header h1 { font-size:14px; font-weight:600; white-space:nowrap; }
-    .status-dot { width:8px; height:8px; border-radius:50%; background:var(--green); margin-left:auto; animation:pulse 2s infinite; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      min-height: 100vh; 
+      display: block; 
+      overflow-x: hidden;
+    }
+    
+    /* Background animated gradients */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 50% 50%, rgba(99,102,241,0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(139,92,246,0.05) 0%, transparent 40%);
+      z-index: -1;
+      pointer-events: none;
+      animation: bgPulse 15s ease-in-out infinite alternate;
+    }
+    @keyframes bgPulse {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.1) translate(-2%, 2%); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* Sidebar */
+    .sidebar { 
+      width: 260px; 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border-right: 1px solid var(--border); 
+      display: flex; 
+      flex-direction: column; 
+      position: fixed; 
+      top: 0; left: 0; bottom: 0; 
+      z-index: 50; 
+      transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1); 
+      overflow-y: auto; 
+    }
+    .sidebar-header { 
+      padding: 24px 20px; 
+      border-bottom: 1px solid var(--border); 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      position: sticky;
+      top: 0;
+      background: var(--panel);
+      backdrop-filter: var(--blur);
+      z-index: 2;
+    }
+    .sidebar-header .logo { 
+      width: 40px; height: 40px; 
+      border-radius: 10px; 
+      background: linear-gradient(135deg, var(--indigo), var(--purple)); 
+      display: flex; align-items: center; justify-content: center; 
+      font-weight: 700; font-size: 16px; color: #fff; 
+      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+    .sidebar-header h1 { font-size: 16px; font-weight: 700; white-space: nowrap; letter-spacing: -0.02em; }
+    .status-dot { 
+      width: 8px; height: 8px; 
+      border-radius: 50%; 
+      background: var(--green); 
+      margin-left: auto; 
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite; 
+    }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .nav-section { padding:8px 0; }
-    .nav-section-label { padding:8px 16px; font-size:11px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
-    .nav-item { display:flex; align-items:center; gap:10px; padding:8px 16px; cursor:pointer; transition:background .15s; color:var(--text2); font-size:13px; text-decoration:none; }
-    .nav-item:hover { background:var(--panel2); color:var(--text); }
-    .nav-item.active { background:rgba(99,102,241,.15); color:var(--indigo2); }
-    .nav-item svg { width:18px; height:18px; flex-shrink:0; }
-    .main { margin-left:240px; width:calc(100% - 240px); min-height:100vh; display:flex; flex-direction:column; }
-    .content { padding:24px; flex:1; width:100%; box-sizing:border-box; }
-    .topbar { padding:16px 24px; border-bottom:1px solid var(--border); background:var(--panel); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:40; }
-    .topbar h2 { font-size:16px; font-weight:600; }
-    .topbar-right { display:flex; align-items:center; gap:12px; }
-    .topbar-right span { font-size:12px; color:var(--text2); }
-    .topbar-right button { background:none; border:1px solid var(--border); color:var(--text2); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; }
-    .topbar-right button:hover { background:var(--panel2); color:var(--text); }
-    .login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg); }
-    .login-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:32px; width:min(360px, 90vw); }
-    .login-card h2 { text-align:center; margin-bottom:24px; font-size:20px; }
-    .form-group { margin-bottom:16px; }
-    .form-group label { display:block; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px; }
-    .form-group input, .form-group select { width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:14px; }
-    .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--indigo); }
-    .btn { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; transition:all .15s; }
-    .btn-primary { background:var(--indigo); color:#fff; }
-    .btn-primary:hover { background:var(--indigo2); }
-    .btn-block { width:100%; }
-    .btn-sm { padding:6px 12px; font-size:12px; }
-    .btn-success { background:var(--green); color:#fff; }
-    .btn-danger { background:var(--red); color:#fff; }
-    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text2); }
-    .btn-outline:hover { background:var(--panel2); color:var(--text); }
-    .error-msg { color:var(--red); font-size:13px; text-align:center; margin-top:8px; display:none; }
-    .success-msg { color:var(--green); font-size:13px; text-align:center; margin-top:8px; display:none; }
-    .card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:16px; }
-    .card h3 { font-size:14px; font-weight:600; margin-bottom:12px; }
-    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
-    .stat-card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:16px; position:relative; overflow:hidden; }
-    .stat-card .label { font-size:12px; color:var(--text2); margin-bottom:4px; position:relative; }
-    .stat-card .value { font-size:24px; font-weight:700; position:relative; }
-    .table-wrap { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:13px; }
-    th { color:var(--text2); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; }
-    .pill-green { background:rgba(63,185,80,.15); color:var(--green); }
-    .pill-yellow { background:rgba(210,153,34,.15); color:var(--yellow); }
-    .pill-red { background:rgba(248,81,73,.15); color:var(--red); }
-    .pill-blue { background:rgba(88,166,255,.15); color:var(--blue); }
-    .pill-indigo { background:rgba(99,102,241,.15); color:var(--indigo2); }
-    .skeleton { background:linear-gradient(90deg,var(--panel2) 25%,var(--panel) 50%,var(--panel2) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; height:16px; }
+    
+    .nav-section { padding: 12px 0; }
+    .nav-section-label { 
+      padding: 12px 20px 8px; 
+      font-size: 11px; font-weight: 600; 
+      color: var(--text2); 
+      text-transform: uppercase; letter-spacing: 1px; 
+    }
+    .nav-item { 
+      display: flex; align-items: center; gap: 12px; 
+      padding: 10px 20px; 
+      margin: 2px 12px;
+      border-radius: 8px;
+      cursor: pointer; 
+      transition: all .2s ease; 
+      color: var(--text2); font-size: 13px; font-weight: 500; text-decoration: none; 
+    }
+    .nav-item:hover { 
+      background: rgba(255,255,255,0.05); 
+      color: var(--text); 
+      transform: translateX(4px);
+    }
+    .nav-item.active { 
+      background: linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%);
+      color: var(--indigo2); 
+      border-left: 3px solid var(--indigo);
+      padding-left: 17px;
+    }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; transition: color .2s; }
+    .nav-item.active svg { color: var(--indigo); }
+    
+    /* Main Content */
+    .main { 
+      margin-left: 260px; 
+      width: calc(100% - 260px); 
+      min-height: 100vh; 
+      display: flex; flex-direction: column; 
+    }
+    .topbar { 
+      padding: 16px 32px; 
+      border-bottom: 1px solid var(--border); 
+      background: rgba(9, 10, 15, 0.8); 
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      display: flex; align-items: center; justify-content: space-between; 
+      position: sticky; top: 0; z-index: 40; 
+    }
+    .topbar h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-right span { font-size: 13px; font-weight: 500; color: var(--text2); }
+    
+    .content { padding: 32px; flex: 1; width: 100%; }
+    
+    /* Buttons */
+    .btn { 
+      padding: 10px 18px; 
+      border: 1px solid transparent; 
+      border-radius: 8px; 
+      cursor: pointer; font-size: 13px; font-weight: 600; 
+      transition: all .2s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--indigo), var(--purple)); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+    }
+    .btn-primary:hover { 
+      box-shadow: 0 6px 16px rgba(99,102,241,0.4);
+      filter: brightness(1.1);
+    }
+    .btn-block { width: 100%; }
+    .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 6px; }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-outline { 
+      background: rgba(255,255,255,0.03); 
+      border: 1px solid var(--border); 
+      color: var(--text); 
+    }
+    .btn-outline:hover { 
+      background: rgba(255,255,255,0.08); 
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    /* Login */
+    .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); position: fixed; inset: 0; z-index: 100; }
+    .login-card { 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border); 
+      border-radius: 16px; 
+      padding: 40px; 
+      width: min(400px, 90vw); 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+      background: linear-gradient(90deg, var(--indigo), var(--purple), var(--pink));
+    }
+    .login-card h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+    
+    /* Forms */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select, .form-group textarea { 
+      width: 100%; padding: 12px 16px; 
+      background: rgba(0,0,0,0.2); 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      color: var(--text); font-size: 14px; 
+      transition: all .2s; 
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+      outline: none; 
+      border-color: var(--indigo); 
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15); 
+      background: rgba(0,0,0,0.4);
+    }
+    .form-row { display: flex; gap: 16px; margin-bottom: 20px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+    
+    /* Messages */
+    .error-msg { color: var(--red); font-size: 13px; text-align: center; margin-top: 12px; display: none; font-weight: 500; }
+    .success-msg { color: var(--green); font-size: 13px; text-align: center; margin-top: 12px; display: none; font-weight: 500; }
+    
+    /* Cards */
+    .card { 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 24px; 
+      margin-bottom: 24px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      transition: transform .2s, border-color .2s;
+    }
+    .card:hover { border-color: var(--border-glow); }
+    .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+    
+    /* Stats Grid */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .stat-card { 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 20px; 
+      position: relative; overflow: hidden; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+    .stat-card::after { 
+      content: ''; position: absolute; top: 0; right: 0; width: 60px; height: 100%; 
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03)); 
+      transform: skewX(-20deg) translateX(100%); transition: transform .5s;
+    }
+    .stat-card:hover::after { transform: skewX(-20deg) translateX(-100%); }
+    .stat-card .label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 8px; position: relative; }
+    .stat-card .value { font-size: 28px; font-weight: 700; position: relative; letter-spacing: -0.03em; }
+    
+    /* Tables */
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+    th { 
+      color: var(--text2); font-weight: 600; font-size: 11px; 
+      text-transform: uppercase; letter-spacing: 0.5px; 
+      background: rgba(255,255,255,0.02);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    
+    /* Pills/Badges */
+    .pill { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+    .pill-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+    .pill-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.2); }
+    .pill-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+    .pill-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+    .pill-indigo { background: rgba(99,102,241,0.15); color: var(--indigo2); border: 1px solid rgba(99,102,241,0.2); }
+    .pill-purple { background: rgba(139,92,246,0.15); color: var(--purple); border: 1px solid rgba(139,92,246,0.2); }
+    
+    /* Skeletons */
+    .skeleton { 
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); 
+      background-size: 200% 100%; 
+      animation: shimmer 1.5s infinite; 
+      border-radius: 8px; 
+    }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    .hamburger { display:none; background:none; border:none; color:var(--text); cursor:pointer; padding:8px; }
-    .hamburger svg { width:24px; height:24px; }
-    .scrim { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; }
-    @media(max-width:768px){
-      .sidebar{transform:translateX(-100%)} .sidebar.open{transform:translateX(0)} .main{margin-left:0;width:100%}
-      .hamburger{display:block} .scrim.open{display:block}
-      .topbar{padding:12px 16px} .topbar h2{font-size:14px}
-      .content{padding:16px}
-      .stat-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
-      .form-row{flex-direction:column;gap:8px}
-      .card{padding:14px}
-      th,td{padding:8px 6px;font-size:11px}
-      .topbar-right span{display:none}
-      .stat-card .value{font-size:20px}
-      .overview-split{grid-template-columns:1fr !important}
-      .btn-sm{padding:5px 10px;font-size:11px}
-      .page-header h1{font-size:18px !important}
+    
+    /* Mobile nav */
+    .hamburger { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 8px; border-radius: 6px; }
+    .hamburger:hover { background: rgba(255,255,255,0.1); }
+    .hamburger svg { width: 24px; height: 24px; }
+    .scrim { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 40; opacity: 0; transition: opacity .3s; }
+    
+    @media(max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); } 
+      .sidebar.open { transform: translateX(0); } 
+      .main { margin-left: 0; width: 100%; }
+      .hamburger { display: block; } 
+      .scrim.open { display: block; opacity: 1; }
+      .topbar { padding: 12px 20px; } 
+      .content { padding: 20px; }
+      .stat-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+      .overview-split { grid-template-columns: 1fr !important; }
     }
-    @media(max-width:600px){
-      .content{padding:12px}
-      .stat-grid{grid-template-columns:1fr 1fr;gap:8px}
-      .stat-card{padding:12px}
-      .stat-card .value{font-size:18px}
-      table{font-size:11px}
+    @media(max-width: 600px) {
+      .content { padding: 16px; }
+      .stat-grid { grid-template-columns: 1fr; gap: 12px; }
+      .form-row { flex-direction: column; gap: 12px; }
+      th, td { padding: 12px 10px; font-size: 12px; }
     }
-    .link { color:var(--indigo2); text-decoration:none; cursor:pointer; }
-    .link:hover { text-decoration:underline; }
-    .form-row { display:flex; gap:12px; margin-bottom:16px; }
-    .form-row .form-group { flex:1; }
-    .doc-content { line-height:1.7; }
-    .doc-content h1,.doc-content h2,.doc-content h3 { margin:1.5em 0 .5em; }
-    .doc-content p { margin-bottom:.8em; }
-    .doc-content code { background:var(--bg); padding:2px 6px; border-radius:4px; font-size:13px; }
-    .integration-card { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
-    .integration-card h4 { font-size:13px; font-weight:600; margin-bottom:8px; }
-    .integration-card .desc { font-size:12px; color:var(--text2); margin-bottom:12px; }
+    
+    .link { color: var(--indigo2); text-decoration: none; cursor: pointer; font-weight: 500; transition: color .2s; }
+    .link:hover { color: var(--text); text-decoration: underline; }
+    
+    code { 
+      background: rgba(255,255,255,0.05); 
+      padding: 4px 8px; 
+      border-radius: 6px; 
+      font-size: 12px; 
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; 
+      color: var(--pink);
+    }
+    
+    /* Toasts */
+    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; }
+    .toast { 
+      background: var(--panel2); 
+      border: 1px solid var(--border); 
+      color: var(--text); 
+      padding: 16px 20px; 
+      border-radius: 8px; 
+      font-size: 13px; font-weight: 500; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 12px;
+      transform: translateX(120%); transition: transform .3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .toast.show { transform: translateX(0); }
+    .toast-icon { width: 20px; height: 20px; flex-shrink: 0; }
+    .toast.success .toast-icon { color: var(--green); }
+    .toast.error .toast-icon { color: var(--red); }
+    .toast.info .toast-icon { color: var(--blue); }
   </style>
 </head>
 <body>
+  <!-- TOASTS -->
+  <div id="toast-container"></div>
+
   <!-- LOGIN -->
   <div id="login-view" class="login-wrap">
     <div class="login-card">
-      <div style="text-align:center;margin-bottom:20px"><div class="logo" style="width:48px;height:48px;margin:0 auto;font-size:18px">1A</div></div>
-      <h2>1AI Affiliate Tracker</h2>
+      <div style="text-align:center;margin-bottom:24px">
+        <div class="logo" style="width:56px;height:56px;margin:0 auto;font-size:22px;border-radius:14px;background:linear-gradient(135deg,var(--indigo),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 8px 24px rgba(99,102,241,0.4)">1A</div>
+      </div>
+      <h2>1AI Affiliate Hub</h2>
       <div id="login-form">
         <div class="form-group"><label>Username or Email</label><input type="text" id="login-user" placeholder="admin"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••"></div>
-        <button class="btn btn-primary btn-block" onclick="doLogin()">Sign In</button>
+        <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+        <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-top:8px">Sign In to Dashboard</button>
         <div id="login-err" class="error-msg"></div>
-        <div style="text-align:center;margin-top:12px"><a class="link" onclick="showForgotPassword()">Forgot password?</a></div>
+        <div style="text-align:center;margin-top:20px"><a class="link" onclick="showForgotPassword()">Forgot your password?</a></div>
       </div>
       <div id="forgot-form" style="display:none">
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Enter your username and email to receive a password reset key.</p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5;text-align:center">Enter your username and email to receive a secure reset key.</p>
         <div class="form-group"><label>Username</label><input type="text" id="forgot-user" placeholder="admin"></div>
         <div class="form-group"><label>Email</label><input type="email" id="forgot-email" placeholder="admin@example.com"></div>
         <button class="btn btn-primary btn-block" onclick="doForgotPassword()">Send Reset Key</button>
         <div id="forgot-msg" class="error-msg"></div>
-        <div style="text-align:center;margin-top:12px"><a class="link" onclick="showLoginForm()">Back to login</a></div>
+        <div style="text-align:center;margin-top:20px"><a class="link" onclick="showLoginForm()">← Back to login</a></div>
       </div>
       <div id="reset-form" style="display:none">
-        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Enter the reset key sent to your email and your new password.</p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5;text-align:center">Enter the reset key sent to your email and your new password.</p>
         <div class="form-group"><label>Reset Key</label><input type="text" id="reset-key" placeholder="abc123..."></div>
         <div class="form-group"><label>New Password</label><input type="password" id="reset-pass" placeholder="Min 6 characters"></div>
         <div class="form-group"><label>Confirm Password</label><input type="password" id="reset-confirm" placeholder="Re-enter password"></div>
         <button class="btn btn-primary btn-block" onclick="doResetPassword()">Reset Password</button>
         <div id="reset-msg" class="error-msg"></div>
         <div id="reset-success" class="success-msg"></div>
-        <div style="text-align:center;margin-top:12px"><a class="link" onclick="showLoginForm()">Back to login</a></div>
+        <div style="text-align:center;margin-top:20px"><a class="link" onclick="showLoginForm()">← Back to login</a></div>
       </div>
     </div>
   </div>
@@ -145,51 +407,56 @@
     <div class="scrim" id="scrim" onclick="Router.toggleSidebar()"></div>
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="logo">1A</div><h1>1AI Tracker</h1><div class="status-dot"></div>
+        <div class="logo">1A</div>
+        <h1>1AI Hub</h1>
+        <div class="status-dot"></div>
       </div>
-      <div class="nav-section">
+      <div class="nav-section" data-roles="admin,affiliate,advertiser">
         <div class="nav-section-label">Analytics</div>
-        <div class="nav-item active" data-page="overview" onclick="Router.navigate('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
-        <div class="nav-item" data-page="attribution" onclick="Router.navigate('attribution')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Attribution</div>
-        <div class="nav-item" data-page="clicks" onclick="Router.navigate('clicks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>Clicks</div>
-        <div class="nav-item" data-page="campaigns" onclick="Router.navigate('campaigns')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Campaigns</div>
-        <div class="nav-item" data-page="offers" onclick="Router.navigate('offers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Offers</div>
-        <div class="nav-item" data-page="reports" onclick="Router.navigate('reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports</div>
+        <div class="nav-item active" data-page="overview" data-roles="admin,affiliate,advertiser" onclick="Router.navigate('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
+        <div class="nav-item" data-page="attribution" data-roles="admin" onclick="Router.navigate('attribution')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Attribution</div>
+        <div class="nav-item" data-page="clicks" data-roles="admin" onclick="Router.navigate('clicks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>Live Clicks</div>
+        <div class="nav-item" data-page="campaigns" data-roles="admin,advertiser" onclick="Router.navigate('campaigns')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Campaigns</div>
+        <div class="nav-item" data-page="offers" data-roles="admin,affiliate,advertiser" onclick="Router.navigate('offers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Offers</div>
+        <div class="nav-item" data-page="reports" data-roles="admin" onclick="Router.navigate('reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports</div>
       </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Affiliates</div>
-        <div class="nav-item" data-page="affiliates" onclick="Router.navigate('affiliates')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Affiliates</div>
-        <div class="nav-item" data-page="earnings" onclick="Router.navigate('earnings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Earnings</div>
-        <div class="nav-item" data-page="commissions" onclick="Router.navigate('commissions')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Commissions</div>
-        <div class="nav-item" data-page="payments" onclick="Router.navigate('payments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Payments</div>
+      <div class="nav-section" data-roles="admin,affiliate">
+        <div class="nav-section-label">Affiliate Hub</div>
+        <div class="nav-item" data-page="smartlink" data-roles="admin,affiliate" onclick="Router.navigate('smartlink')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Smartlink Generator</div>
+        <div class="nav-item" data-page="earnings" data-roles="admin,affiliate" onclick="Router.navigate('earnings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>My Earnings</div>
+        <div class="nav-item" data-page="affiliates" data-roles="admin" onclick="Router.navigate('affiliates')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Manage Affiliates</div>
+        <div class="nav-item" data-page="commissions" data-roles="admin" onclick="Router.navigate('commissions')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Commissions Ledger</div>
+        <div class="nav-item" data-page="payments" data-roles="admin" onclick="Router.navigate('payments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Payments</div>
       </div>
-      <div class="nav-section">
+      <div class="nav-section" style="margin-bottom:24px" data-roles="admin">
         <div class="nav-section-label">System</div>
-        <div class="nav-item" data-page="profile" onclick="Router.navigate('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
-        <div class="nav-item" data-page="integrations" onclick="Router.navigate('integrations')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Integrations</div>
-        <div class="nav-item" data-page="admin" onclick="Router.navigate('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Admin</div>
-        <div class="nav-item" data-page="clickservers" onclick="Router.navigate('clickservers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>Servers</div>
-        <div class="nav-item" data-page="docs" onclick="Router.navigate('docs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h6z"/></svg>Docs</div>
-        <div class="nav-item" data-page="help" onclick="Router.navigate('help')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help</div>
-        <div class="nav-item" data-page="vipperks" onclick="Router.navigate('vipperks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>VIP Perks</div>
-        <div class="nav-item" data-page="users" onclick="Router.navigate('users')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</div>
+        <div class="nav-item" data-page="profile" onclick="Router.navigate('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+        <div class="nav-item" data-page="integrations" onclick="Router.navigate('integrations')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Integrations</div>
+        <div class="nav-item" data-page="networks" onclick="Router.navigate('networks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Ad Networks</div>
+        <div class="nav-item" data-page="admin" onclick="Router.navigate('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Admin Settings</div>
+        <div class="nav-item" data-page="clickservers" onclick="Router.navigate('clickservers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>Click Servers</div>
+        <div class="nav-item" data-page="docs" onclick="Router.navigate('docs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h6z"/></svg>API Docs</div>
       </div>
     </nav>
     <div class="main">
       <div class="topbar">
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="hamburger" onclick="Router.toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <div style="display:flex;align-items:center;gap:16px">
+          <button class="hamburger" onclick="Router.toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
           <h2 id="page-title">Overview</h2>
         </div>
         <div class="topbar-right">
-          <span id="me"></span>
-          <button onclick="doLogout()">Sign Out</button>
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(255,255,255,0.05);border-radius:20px;border:1px solid var(--border)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text2)"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="me">Admin</span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
         </div>
       </div>
       <div class="content" id="page-content"></div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/assets/js/core/api.js"></script>
   <script src="/assets/js/core/auth.js"></script>
   <script src="/assets/js/core/dom.js"></script>
@@ -201,6 +468,9 @@
   <script src="/assets/js/pages/overview.js"></script>
   <script src="/assets/js/pages/analytics.js"></script>
   <script src="/assets/js/pages/system.js"></script>
+  <script src="/assets/js/pages/ai-tools.js"></script>
+  <script src="/assets/js/pages/smartlink-generator.js"></script>
+  <script src="/assets/js/pages/advertiser-integrations.js"></script>
   <script>Router.init();</script>
 </body>
 </html>

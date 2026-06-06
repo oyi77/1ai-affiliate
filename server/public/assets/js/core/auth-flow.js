@@ -7,7 +7,9 @@ function doLogin() {
   }).then(r => r.json()).then(d => {
     if (d.token) {
       Auth.set(d.token);
+      if (d.apiKey) Auth.setApiKey(d.apiKey);
       Auth.setUser(d.user.email || d.user.id);
+      Auth.resetRole();
       Router.showApp();
     } else { err.textContent = d.error || 'Login failed'; err.style.display = 'block'; }
   }).catch(e => { err.textContent = 'Network error'; err.style.display = 'block'; });

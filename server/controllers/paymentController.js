@@ -43,7 +43,7 @@ async function createTransaction(req, res) {
     if (!result.success) throw new Error(result.message);
 
     await pool.query(
-      `INSERT INTO affiliate_payments (user_id, reference, amount, status, tripay_ref, created_at)
+      `INSERT INTO 1ai_affiliate_payments (user_id, reference, amount, status, tripay_ref, created_at)
        VALUES (?, ?, ?, 'UNPAID', ?, UNIX_TIMESTAMP())`,
       [req.user.id, result.data.reference, amount, result.data.reference]
     );
@@ -67,18 +67,18 @@ async function handleCallback(req, res) {
   const { reference, status } = req.body;
   if (status === 'PAID') {
     await pool.query(
-      `UPDATE affiliate_payments SET status = 'PAID', paid_at = UNIX_TIMESTAMP()
+      `UPDATE 1ai_affiliate_payments SET status = 'PAID', paid_at = UNIX_TIMESTAMP()
        WHERE tripay_ref = ?`,
       [reference]
     );
 
     const [rows] = await pool.query(
-      'SELECT user_id FROM affiliate_payments WHERE tripay_ref = ?',
+      'SELECT user_id FROM 1ai_affiliate_payments WHERE tripay_ref = ?',
       [reference]
     );
     if (rows.length > 0) {
       await pool.query(
-        `UPDATE affiliates SET tier = 'premium', updated_at = UNIX_TIMESTAMP()
+        `UPDATE 1ai_affiliates SET tier = 'premium', updated_at = UNIX_TIMESTAMP()
          WHERE user_id = ?`,
         [rows[0].user_id]
       );

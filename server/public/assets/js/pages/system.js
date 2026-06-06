@@ -131,9 +131,14 @@ PageRenderers.clickservers = async function(el) {
     const d = await API.get('/api/admin/clickservers');
     el.innerHTML = `${DOM.pageHeader('Click Servers', 'Domain management & license')}
       ${d.configured
-        ? `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <h3>Registered Domains (${d.domains_used})</h3>
-          </div>
+        ? `<div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3>Registered Domains (${d.domains_used})</h3>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:16px">
+              <input id="new-domain" placeholder="track.yourdomain.com" style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text)">
+              <button class="btn btn-primary btn-sm" onclick="Settings.addClickServer()">Add Domain</button>
+            </div>
           ${d.domains.length
             ? DOM.table(['Domain','Status','Created'], d.domains.map(dm => [dm.domain, DOM.pill(dm.status||'active', dm.status==='active'?'green':'yellow'), new Date(dm.created_at*1000).toLocaleDateString()]))
             : '<p style="color:var(--text2);font-size:13px">No domains registered yet. Domains managed via ClickServer API will appear here.</p>'}
@@ -146,6 +151,18 @@ PageRenderers.clickservers = async function(el) {
         </div>
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load ClickServer data.</p></div>'; }
+};
+
+Settings.addClickServer = async () => {
+  const domain = document.getElementById('new-domain').value.trim();
+  if (!domain) return;
+  try {
+    await API.post('/api/admin/clickservers', { domain });
+    AppUI.toast('Domain added successfully');
+    Router.navigate('clickservers');
+  } catch (err) {
+    AppUI.toast(err.message, 'err');
+  }
 };
 
 PageRenderers.docs = async function(el) {

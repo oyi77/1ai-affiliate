@@ -17,5 +17,8 @@
     "maxmind": "^5.0.6",
     "morgan": "^1.10",
     "mysql2": "^3.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
   }
 }

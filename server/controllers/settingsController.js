@@ -9,9 +9,9 @@ async function getProfile(req, res) {
   try {
     const [rows] = await pool.query(
       `SELECT user_id, user_name, user_email, user_timezone, user_api_key,
-              clickserver_api_key, p202_customer_api_key, user_slack_incoming_webhook,
+              clickserver_api_key, p1ai_customer_api_key, user_slack_incoming_webhook,
               user_role, user_date_added
-       FROM users WHERE user_id = ?`,
+       FROM 1ai_users WHERE user_id = ?`,
       [req.user.id]
     );
 
@@ -23,7 +23,7 @@ async function getProfile(req, res) {
 
     // Get integration keys from users_pref
     const [prefRows] = await pool.query(
-      'SELECT prefs FROM users_pref WHERE user_id = ?',
+      'SELECT prefs FROM 1ai_users_pref WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -42,7 +42,7 @@ async function getProfile(req, res) {
       role: user.user_role,
       api_key: user.user_api_key || null,
       clickserver_api_key: user.clickserver_api_key || null,
-      customer_api_key: user.p202_customer_api_key || null,
+      customer_api_key: user.p1ai_customer_api_key || null,
       slack_webhook: user.user_slack_incoming_webhook || null,
       date_added: user.user_date_added,
       integrations: {
@@ -84,7 +84,7 @@ async function updateProfile(req, res) {
     }
 
     values.push(req.user.id);
-    await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE user_id = ?`, values);
+    await pool.query(`UPDATE 1ai_users SET ${updates.join(', ')} WHERE user_id = ?`, values);
 
     res.json({ message: 'Profile updated successfully' });
   } catch (err) {
@@ -100,7 +100,7 @@ async function generateApiKey(req, res) {
   try {
     const apiKey = '1ai_' + crypto.randomBytes(29).toString('hex');  // 4 + 58 = 62 chars, fits VARCHAR(64)
 
-    await pool.query('UPDATE users SET user_api_key = ? WHERE user_id = ?', [apiKey, req.user.id]);
+    await pool.query('UPDATE 1ai_users SET user_api_key = ? WHERE user_id = ?', [apiKey, req.user.id]);
 
     res.json({ api_key: apiKey });
   } catch (err) {
@@ -114,7 +114,7 @@ async function generateApiKey(req, res) {
  */
 async function removeApiKey(req, res) {
   try {
-    await pool.query('UPDATE users SET user_api_key = NULL WHERE user_id = ?', [req.user.id]);
+    await pool.query('UPDATE 1ai_users SET user_api_key = NULL WHERE user_id = ?', [req.user.id]);
     res.json({ message: 'API key removed' });
   } catch (err) {
     console.error('removeApiKey error:', err);
@@ -128,7 +128,7 @@ async function removeApiKey(req, res) {
 async function getIntegrations(req, res) {
   try {
     const [prefRows] = await pool.query(
-      'SELECT prefs FROM users_pref WHERE user_id = ?',
+      'SELECT prefs FROM 1ai_users_pref WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -140,7 +140,7 @@ async function getIntegrations(req, res) {
     }
 
     const [userRows] = await pool.query(
-      'SELECT clickserver_api_key, p202_customer_api_key, user_slack_incoming_webhook FROM users WHERE user_id = ?',
+      'SELECT clickserver_api_key, p1ai_customer_api_key, user_slack_incoming_webhook FROM 1ai_users WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -153,7 +153,7 @@ async function getIntegrations(req, res) {
       ipqs_api_key: prefs.ipqs_api_key || null,
       slack_webhook: user.user_slack_incoming_webhook || null,
       clickserver_api_key: user.clickserver_api_key || null,
-      customer_api_key: user.p202_customer_api_key || null,
+      customer_api_key: user.p1ai_customer_api_key || null,
     });
   } catch (err) {
     console.error('getIntegrations error:', err);
@@ -164,6 +164,36 @@ async function getIntegrations(req, res) {
 /**
  * Update an integration key
  */
+/**
+ * Get postback configuration for the current user.
+ */
+async function getPostback(req, res) {
+  try {
+    const [rows] = await pool.query(
+      'SELECT postback_url FROM 1ai_users WHERE user_id = ?',
+      [req.user.id]
+    );
+    res.json({ url: rows[0]?.postback_url || null, configured: !!(rows[0]?.postback_url) });
+  } catch (err) {
+    console.error('getPostback error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+/**
+ * Update postback URL for the current user.
+ */
+async function updatePostback(req, res) {
+  const { url } = req.body;
+  try {
+    await pool.query('UPDATE 1ai_users SET postback_url = ? WHERE user_id = ?', [url, req.user.id]);
+    res.json({ url, message: 'Postback URL saved' });
+  } catch (err) {
+    console.error('updatePostback error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
 async function updateIntegration(req, res) {
   const { key, value } = req.body;
 
@@ -182,16 +212,16 @@ async function updateIntegration(req, res) {
     const userColumnMap = {
       slack_webhook: 'user_slack_incoming_webhook',
       clickserver_api_key: 'clickserver_api_key',
-      customer_api_key: 'p202_customer_api_key',
+      customer_api_key: 'p1ai_customer_api_key',
     };
 
     if (userTableKeys.includes(key)) {
       const col = userColumnMap[key];
-      await pool.query(`UPDATE users SET ${col} = ? WHERE user_id = ?`, [value, req.user.id]);
+      await pool.query(`UPDATE 1ai_users SET ${col} = ? WHERE user_id = ?`, [value, req.user.id]);
     } else {
       // Store in users_pref JSON
       const [prefRows] = await pool.query(
-        'SELECT prefs FROM users_pref WHERE user_id = ?',
+        'SELECT prefs FROM 1ai_users_pref WHERE user_id = ?',
         [req.user.id]
       );
 
@@ -203,9 +233,9 @@ async function updateIntegration(req, res) {
       prefs[key] = value;
 
       if (prefRows.length > 0) {
-        await pool.query('UPDATE users_pref SET prefs = ? WHERE user_id = ?', [JSON.stringify(prefs), req.user.id]);
+        await pool.query('UPDATE 1ai_users_pref SET prefs = ? WHERE user_id = ?', [JSON.stringify(prefs), req.user.id]);
       } else {
-        await pool.query('INSERT INTO users_pref (user_id, prefs) VALUES (?, ?)', [req.user.id, JSON.stringify(prefs)]);
+        await pool.query('INSERT INTO 1ai_users_pref (user_id, prefs) VALUES (?, ?)', [req.user.id, JSON.stringify(prefs)]);
       }
     }
 
@@ -223,4 +253,6 @@ module.exports = {
   removeApiKey,
   getIntegrations,
   updateIntegration,
+  getPostback,
+  updatePostback,
 };

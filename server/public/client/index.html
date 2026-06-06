@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1AI Affiliate Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      /* Premium Dark Mode Palette */
+      --bg: #090a0f;
+      --panel: rgba(22, 27, 34, 0.7);
+      --panel2: rgba(28, 35, 51, 0.8);
+      --panel-hover: rgba(40, 48, 68, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(99, 102, 241, 0.3);
+      --text: #f8fafc;
+      --text2: #94a3b8;
+
+      /* Accents */
+      --indigo: #6366f1;
+      --indigo2: #818cf8;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+
+      /* Glassmorphism */
+      --blur: blur(12px);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: block;
+      overflow-x: hidden;
+    }
+
+    /* Background animated gradients */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 50% 50%, rgba(99,102,241,0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(139,92,246,0.05) 0%, transparent 40%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Glassmorphism panels */
+    .glass {
+      background: var(--panel);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+      background: var(--panel2);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--border-glow);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 280px;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      z-index: 20;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      padding: 0 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text);
+    }
+
+    .sidebar-logo svg {
+      width: 28px;
+      height: 28px;
+      color: var(--indigo);
+    }
+
+    .nav-links {
+      padding: 0 24px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      color: var(--text2);
+      transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+      background: var(--panel-hover);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--indigo);
+      color: white;
+      font-weight: 600;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* Topbar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      width: calc(100% - 280px);
+      height: 64px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-menu {
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Main content */
+    .main-content {
+      margin-left: 280px;
+      padding: 96px 24px 24px;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 8px 0;
+      color: var(--indigo);
+    }
+
+    .stat-label {
+      color: var(--text2);
+      font-size: 0.875rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 220px;
+      }
+
+      .main-content {
+        margin-left: 220px;
+      }
+
+      .topbar {
+        width: calc(100% - 220px);
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .topbar {
+        width: 100%;
+      }
+
+      .hamburger {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Section -->
+  <div id="login-section">
+    <div style="max-width: 400px; margin: 100px auto; padding: 32px; background: var(--panel); border-radius: 16px; border: 1px solid var(--border)">
+      <h1 style="text-align: center; margin-bottom: 24px; color: var(--text)">Affiliate Portal</h1>
+      <div style="display: none" id="login-error" class="alert alert-danger"></div>
+      <div class="form-group" style="margin-bottom: 16px">
+        <input type="text" id="login-username" class="form-control" placeholder="Username" style="width: 100%; padding: 12px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px">
+      </div>
+      <div class="form-group" style="margin-bottom: 16px">
+        <input type="password" id="login-password" class="form-control" placeholder="Password" style="width: 100%; padding: 12px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px">
+      </div>
+      <button id="login-button" style="width: 100%; padding: 12px; background: var(--indigo); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer">Sign In</button>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" style="display: none">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>1AI Affiliate</span>
+      </div>
+      <div class="nav-links">
+        <a href="#dashboard" class="nav-item active">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="#smartlinks" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-5.656-5.656L12 12m-1.101 1.101L9 15 5 11 7.828 8.172 9 7.071M17 11l2 2m-2-8l2 2m-3.172 3.172L14 7.071m2.172 2.172L15 10.343m0 5.314a2 2 0 010 4 2 2 0 002 2H19a2 2 0 002-2V7a2 2 0 00-2-2h-2.5a2 2 0 01-1.716-1z" />
+          </svg>
+          Smartlinks
+        </a>
+        <a href="#offers" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          Offers
+        </a>
+        <a href="#earnings" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.745 1.025C15.54 9.843 16 10.977 16 12.125v.833c0 .609-.5 1.083-1.083 1.083H13.083c-.609 0-1.083-.509-1.083-1.117v-.828c0-.732-.31-1.379-.803-1.845l-.721-.683a2.953 2.953 0 00-2.561-.822m3.16.673-1.2 1.8-1.6 1.8-1.2 1.8h3.2M18 7.932c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2" />
+          </svg>
+          Earnings
+        </a>
+        <a href="#conversions" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          Conversions
+        </a>
+        <a href="#postback" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5h16M9 3v18m3-3V3" />
+          </svg>
+          Postback
+        </a>
+        <a href="#settings" class="nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          </svg>
+          Settings
+        </a>
+      </div>
+    </div>
+
+    <div class="topbar">
+      <h2 class="page-title">Dashboard</h2>
+      <div class="topbar-actions">
+        <div class="user-menu">
+          <span>Role: Affiliate</span>
+        </div>
+        <button id="signout-button" style="background: none; border: none; color: var(--text); cursor: pointer">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div id="content"></div>
+    </div>
+  </div>
+
+  <script src="/assets/js/core/api.js"></script>
+  <script src="/assets/js/core/auth.js"></script>
+  <script src="/assets/js/core/dom.js"></script>
+  <script src="/assets/js/client/pages.js"></script>
+  <script src="/assets/js/client/router.js"></script>
+  <script>
+    // Login form wiring
+    document.getElementById('login-button')?.addEventListener('click', async function() {
+      const err = document.getElementById('login-error');
+      err.style.display = 'none';
+      const email = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      if (!email || !password) { err.textContent = 'Username and password required'; err.style.display = 'block'; return; }
+      try {
+        const r = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password}) });
+        const d = await r.json();
+        if (d.token) {
+          Auth.set(d.token);
+          if (d.apiKey) Auth.setApiKey(d.apiKey);
+          Auth.setUser(d.user?.email || email);
+          Auth.resetRole();
+          document.getElementById('login-section').style.display = 'none';
+          document.getElementById('app').style.display = 'block';
+        } else { err.textContent = d.error || 'Login failed'; err.style.display = 'block'; }
+      } catch(e) { err.textContent = 'Network error'; err.style.display = 'block'; }
+    });
+    // Enter key on password field
+    document.getElementById('login-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-button').click(); });
+    document.getElementById('login-username')?.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+  </script>
+</body>
+</html>
