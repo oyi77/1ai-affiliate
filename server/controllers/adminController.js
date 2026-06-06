@@ -1,4 +1,6 @@
 const pool = require('../db/mysql');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 /**
  * Admin controller — dashboard data from the shared tracking database.
@@ -67,6 +69,42 @@ async function getUsers(req, res) {
     res.json({ data: rows });
   } catch (err) {
     console.error('getUsers error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function createUser(req, res) {
+  try {
+    const { email, name, role, password } = req.body;
+    if (!email || !password || !role) return res.status(400).json({ error: 'email, password, role required' });
+    if (!['admin', 'affiliate', 'advertiser'].includes(role)) return res.status(400).json({ error: 'role must be admin, affiliate, or advertiser' });
+
+    const [existing] = await pool.query('SELECT user_id FROM 1ai_users WHERE user_email = ?', [email]);
+    if (existing.length) return res.status(409).json({ error: 'User already exists' });
+
+    const hash = await bcrypt.hash(password, 10);
+    const appKey = crypto.randomBytes(16).toString('hex');
+    const [result] = await pool.query(
+      `INSERT INTO 1ai_users
+        (user_name, user_email, user_pass, user_role, user_date_added, user_active,
+         user_stats202_app_key, clickserver_api_key, install_hash, user_hash, modal_status, vip_perks_status)
+      VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), 1, ?, '', '', '', 0, 0)`,
+      [name || email.split('@')[0], email, hash, role, appKey]
+    );
+    const userId = result.insertId;
+
+    if (role === 'affiliate') {
+      const code = (name || email).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) + userId.toString().padStart(4, '0');
+      await pool.query(
+        'INSERT INTO 1ai_affiliates (user_id, affiliate_code, tier, created_at) VALUES (?, ?, ?, UNIX_TIMESTAMP())',
+        [userId, code, 'starter']
+      );
+      await pool.query('INSERT INTO 1ai_offer_affiliate_access (affiliate_id, offer_id) SELECT a.id, o.id FROM 1ai_affiliates a, 1ai_offers o WHERE a.user_id = ?', [userId]);
+    }
+
+    res.json({ success: true, user_id: userId, email, role });
+  } catch (err) {
+    console.error('createUser error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -147,18 +185,74 @@ async function approveEarning(req, res) {
 async function getStats(req, res) {
   try {
     const role = req.user.role;
-    if (role !== 'admin' && role !== 'manager') {
-       return res.json({
-          totalAffiliates: 0, newAffiliates7d: 0, clicks24h: 0, active_clicks_24h: 0,
-          clicks_today: 0, total_clicks: 0, unique_ips: 0, attributed_conversions: 0,
-          assisted_conversions: 0, avg_epc: 0, avg_ctr: 0, clickChange: 0, pendingPayout: 0,
-          pending_payout: 0, pendingCount: 0, pending_count: 0, revenueMtd: 0, revenue_mtd: 0,
-          revenueGrowth: 0, revenue_growth: 0, totalPaid: 0, total_paid: 0
-       });
+    const userId = req.user.id;
+
+    // Role-filtered queries
+    if (role === 'affiliate') {
+      // Affiliate sees only their own stats
+      const [affRows] = await pool.query('SELECT id FROM 1ai_affiliates WHERE user_id = ?', [userId]);
+      if (!affRows.length) return res.json({ clicks24h: 0, total_clicks: 0, unique_ips: 0, attributed_conversions: 0, revenueMtd: 0, revenue_mtd: 0, pendingPayout: 0, pending_payout: 0, pendingCount: 0, pending_count: 0, totalPaid: 0, total_paid: 0, avg_epc: 0, avg_ctr: 0, clickChange: 0, revenueGrowth: 0, revenue_growth: 0 });
+      const affId = affRows[0].id;
+
+      const [linkStats] = await pool.query(
+        'SELECT COALESCE(SUM(clicks),0) AS total_clicks, COALESCE(SUM(conversions),0) AS total_conversions FROM 1ai_affiliate_links WHERE affiliate_id = ?',
+        [affId]
+      );
+      const clicks24h = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_clicks WHERE click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY))`);
+      const myConversions = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_conversion_logs WHERE affiliate_id = ?`, [affId]);
+      const pendingEarn = await queryOne(`SELECT COUNT(*) AS total, COALESCE(SUM(payout_amount), 0) AS pending_amount FROM 1ai_affiliate_earnings WHERE affiliate_id = ? AND status = 'pending'`, [affId]);
+      const paidTotal = await queryOne(`SELECT COALESCE(SUM(payout_amount), 0) AS total_paid FROM 1ai_affiliate_earnings WHERE affiliate_id = ? AND status IN ('paid','approved')`, [affId]);
+      const revMtd = await queryOne(`SELECT COALESCE(SUM(payout_amount), 0) AS mtd FROM 1ai_affiliate_earnings WHERE affiliate_id = ? AND created_at >= UNIX_TIMESTAMP(DATE_FORMAT(NOW(), '%Y-%m-01'))`, [affId]);
+
+      return res.json({
+        clicks24h: toNumber(clicks24h.total),
+        total_clicks: toNumber(linkStats[0]?.total_clicks || 0),
+        unique_ips: 0,
+        attributed_conversions: toNumber(myConversions.total),
+        revenueMtd: toNumber(revMtd.mtd),
+        revenue_mtd: toNumber(revMtd.mtd),
+        pendingPayout: toNumber(pendingEarn.pending_amount),
+        pending_payout: toNumber(pendingEarn.pending_amount),
+        pendingCount: toNumber(pendingEarn.total),
+        pending_count: toNumber(pendingEarn.total),
+        totalPaid: toNumber(paidTotal.total_paid),
+        total_paid: toNumber(paidTotal.total_paid),
+        avg_epc: 0, avg_ctr: 0, clickChange: 0, revenueGrowth: 0, revenue_growth: 0,
+      });
     }
 
-    const affCount = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_affiliates WHERE status = 'active'`);
-    const newAff7d = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_affiliates WHERE status = 'active' AND created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 7 DAY))`);
+    if (role === 'advertiser') {
+      // Advertiser sees stats for their offers/campaigns
+      const offerIds = await queryRows('SELECT id FROM 1ai_offers WHERE advertiser_id = ?', [userId]);
+      const oIds = offerIds.map(o => o.id);
+      if (!oIds.length) return res.json({ clicks24h: 0, total_clicks: 0, unique_ips: 0, attributed_conversions: 0, revenueMtd: 0, revenue_mtd: 0, pendingPayout: 0, pending_payout: 0, pendingCount: 0, pending_count: 0, totalPaid: 0, total_paid: 0, avg_epc: 0, avg_ctr: 0, clickChange: 0, revenueGrowth: 0, revenue_growth: 0 });
+
+      // Get campaign IDs linked to the advertiser's offers
+      const campIds = await queryRows(`SELECT DISTINCT oc.aff_campaign_id FROM 1ai_offer_campaigns oc WHERE oc.offer_id IN (${oIds.join(',')})`);
+      const cIds = campIds.map(c => c.aff_campaign_id);
+      const campFilter = cIds.length ? `aff_campaign_id IN (${cIds.join(',')})` : '1=0';
+
+      const clicks24h = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_clicks WHERE click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY)) AND ${campFilter}`);
+      const myClicks = await queryOne(`SELECT COUNT(*) AS total, COUNT(DISTINCT click_ip) AS ips FROM 1ai_clicks WHERE ${campFilter}`);
+      const myConversions = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_conversion_logs WHERE ${campFilter}`);
+      const revMtd = await queryOne(`SELECT COALESCE(SUM(network_payout_snapshot), 0) AS mtd FROM 1ai_conversion_logs WHERE ${campFilter} AND conversion_time >= UNIX_TIMESTAMP(DATE_FORMAT(NOW(), '%Y-%m-01'))`);
+
+      return res.json({
+        clicks24h: toNumber(clicks24h.total),
+        total_clicks: toNumber(myClicks.total),
+        unique_ips: toNumber(myClicks.ips),
+        attributed_conversions: toNumber(myConversions.total),
+        revenueMtd: toNumber(revMtd.mtd),
+        revenue_mtd: toNumber(revMtd.mtd),
+        pendingPayout: 0, pending_payout: 0, pendingCount: 0, pending_count: 0,
+        totalPaid: 0, total_paid: 0,
+        avg_epc: 0, avg_ctr: 0, clickChange: 0, revenueGrowth: 0, revenue_growth: 0,
+      });
+    }
+
+    // Admin / Manager — full platform stats
+    const affCount = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_affiliates`);
+    const newAff7d = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_affiliates WHERE created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 7 DAY))`);
     const clicks24h = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_clicks WHERE click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY))`);
     const clicksPrev = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_clicks WHERE click_time BETWEEN UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 2 DAY)) AND UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY))`);
     const totalClicks = await queryOne(`SELECT COUNT(*) AS total FROM 1ai_clicks`);
@@ -271,7 +365,8 @@ async function getCampaigns(req, res) {
               COALESCE((SELECT SUM(click_payout) FROM 1ai_clicks WHERE aff_campaign_id = c.aff_campaign_id), 0) AS revenue
        FROM 1ai_aff_campaigns c
        LEFT JOIN 1ai_clicks ck ON c.aff_campaign_id = ck.aff_campaign_id
-       JOIN 1ai_offers o ON c.aff_campaign_id = o.aff_campaign_id
+       JOIN 1ai_offer_campaigns oc ON c.aff_campaign_id = oc.aff_campaign_id
+       JOIN 1ai_offers o ON oc.offer_id = o.id
        WHERE o.advertiser_id = ?
        GROUP BY c.aff_campaign_id
        ORDER BY c.aff_campaign_id DESC LIMIT ?`;
@@ -329,6 +424,7 @@ async function createOffer(req, res) {
     const { name, payout_amount, network_payout, network_id } = req.body;
     let adv_id = req.body.advertiser_id || null;
     
+    // Admin can explicitly set advertiser_id; advertisers always self-assign
     if (role === 'advertiser' || role === 'manager') {
        adv_id = req.user.id;
     }
@@ -338,9 +434,56 @@ async function createOffer(req, res) {
        VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP(), 'active')`,
       [name, payout_amount || 0, network_payout || payout_amount || 0, adv_id, network_id || null]
     );
-    res.json({ success: true });
+    const offerId = (await queryOne('SELECT LAST_INSERT_ID() AS id')).id;
+
+    res.json({ success: true, offer_id: offerId });
   } catch (err) {
     console.error('createOffer error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function linkOfferToCampaign(req, res) {
+  try {
+    const { offer_id, aff_campaign_id } = req.body;
+    if (!offer_id || !aff_campaign_id) return res.status(400).json({ error: 'offer_id and aff_campaign_id required' });
+    await pool.query(
+      'INSERT IGNORE INTO 1ai_offer_campaigns (offer_id, aff_campaign_id) VALUES (?, ?)',
+      [offer_id, aff_campaign_id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('linkOfferToCampaign error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getMargin(req, res) {
+  try {
+    const targetId = parseInt(req.params.userId) || req.user.id;
+    const row = await queryOne('SELECT m.*, u.user_name, u.user_email FROM 1ai_margin_config m JOIN 1ai_users u ON m.user_id = u.user_id WHERE m.user_id = ?', [targetId]);
+    if (!row || !row.user_id) return res.json({ user_id: targetId, margin_pct: 20.00, tier: 'starter', configured: false });
+    res.json({ user_id: row.user_id, user_name: row.user_name, user_email: row.user_email, margin_pct: row.margin_pct, tier: row.tier, created_at: row.created_at, configured: true });
+  } catch (err) {
+    console.error('getMargin error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function setMargin(req, res) {
+  try {
+    const { user_id, margin_pct, tier } = req.body;
+    if (!user_id) return res.status(400).json({ error: 'user_id required' });
+    const pct = Math.min(Math.max(parseFloat(margin_pct) || 20, 0), 100);
+    const t = tier || 'starter';
+    await pool.query(
+      `INSERT INTO 1ai_margin_config (user_id, margin_pct, tier, created_at) VALUES (?, ?, ?, UNIX_TIMESTAMP())
+       ON DUPLICATE KEY UPDATE margin_pct = VALUES(margin_pct), tier = VALUES(tier)`,
+      [user_id, pct, t]
+    );
+    res.json({ success: true, user_id, margin_pct: pct, tier: t });
+  } catch (err) {
+    console.error('setMargin error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -571,6 +714,7 @@ async function saveVipProfile(req, res) {
 
 module.exports = {
   getUsers,
+  createUser,
   getAffiliates,
   getEarnings,
   approveEarning,
@@ -587,6 +731,9 @@ module.exports = {
   saveVipProfile,
   getOffers,
   createOffer,
+  linkOfferToCampaign,
+  getMargin,
+  setMargin,
   getNetworks,
   createNetwork,
 };

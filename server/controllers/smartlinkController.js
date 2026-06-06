@@ -1,135 +1,71 @@
 const pool = require('../db/mysql');
 const crypto = require('crypto');
-const { lookupIp } = require('../routes/geoip');
 
-/**
- * Core routing engine implementation.
- * Compares Geo and Device rules.
- */
-async function processRouting(sl, subid, ip, userAgent) {
-  const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
-  const deviceType = isMobile ? 'mobile' : 'desktop';
-
-  // 1. Get the link
-  const [links] = await pool.query('SELECT * FROM 1ai_affiliate_links WHERE link_token = ? AND status = "active"', [sl]);
-  if (!links.length) throw new Error('Smartlink inactive or not found');
-  const link = links[0];
-
-  // 2. Lookup Geo
-  const geoData = await lookupIp(ip);
-  const countryCode = geoData.country_code || 'US';
-
-  // 3. Get active offers for the campaign
-  const [offers] = await pool.query(`
-    SELECT o.id, o.network_offer_id, o.payout, o.geo, o.traffic_allowed 
-    FROM 1ai_offers o
-    JOIN 1ai_offer_campaigns oc ON o.id = oc.offer_id
-    WHERE oc.campaign_id = ? AND o.status = 'active'
-  `, [link.campaign_id]);
-
-  if (!offers.length) throw new Error('No active offers found for this routing pool');
-
-  // 4. Filter offers based on Geo and Device
-  let validOffers = offers.filter(o => {
-    // Check Geo
-    const geoMatch = !o.geo || o.geo.includes(countryCode) || o.geo.includes('Global');
-    
-    // Check Traffic/Device
-    let deviceMatch = true;
-    if (o.traffic_allowed) {
-      try {
-        const rules = JSON.parse(o.traffic_allowed);
-        if (rules.device && !rules.device.includes(deviceType)) {
-          deviceMatch = false;
-        }
-      } catch (e) { /* ignore parse error */ }
-    }
-    
-    return geoMatch && deviceMatch;
-  });
-
-  // Fallback if strict filtering eliminated all offers
-  if (!validOffers.length) validOffers = offers;
-
-  // 5. Select offer
-  let selectedOffer = validOffers[Math.floor(Math.random() * validOffers.length)];
-  const clickId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-
-  // 6. Log Session
-  await pool.query(
-    'INSERT INTO 1ai_affiliate_sessions (link_token, click_id, affiliate_payout, tracked_at) VALUES (?, ?, ?, UNIX_TIMESTAMP())',
-    [sl, clickId, selectedOffer.payout]
-  ).catch(e => console.error("Session log error:", e));
-
-  // 7. Route URL (redirects to the PHP core tracker click receiver)
-  return `/tracking1ai/redirect/dl.php?t1aiid=${selectedOffer.id}&t1aisubid=${subid || ''}&c1=${clickId}`;
-}
-
-/**
- * Smartlink API route.
- */
-async function routeTraffic(req, res) {
-  const { sl, subid } = req.query;
-  if (!sl) return res.status(400).send('Invalid Smartlink');
-
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const userAgent = req.headers['user-agent'] || '';
-  
-  try {
-    const trackingUrl = await processRouting(sl, subid, ip, userAgent);
-    res.redirect(trackingUrl);
-  } catch (err) {
-    console.error('Smartlink API Error:', err);
-    res.status(500).send(err.message || 'Routing error');
-  }
-}
-
-/**
- * Shortlink/ClickServer modern b202 equivalent handler
- */
 async function routeTrafficByHash(req, res) {
-  const hash = req.params.hash;
-  const { subid } = req.query;
-  if (!hash) return res.status(400).send('Invalid Link');
-
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const userAgent = req.headers['user-agent'] || '';
+  const slug = req.params.slug;
+  const subid = req.query.subid || '';
+  if (!slug) return res.status(400).send('Invalid link');
 
   try {
-    const trackingUrl = await processRouting(hash, subid, ip, userAgent);
-    res.redirect(trackingUrl);
+    const [links] = await pool.query(
+      'SELECT id, affiliate_id, offer_id, slug, clicks FROM 1ai_affiliate_links WHERE slug = ?',
+      [slug]
+    );
+    if (!links.length) return res.status(404).send('Link not found');
+    const link = links[0];
+
+    const [offers] = await pool.query(
+      'SELECT id, name, payout, network_id, advertiser_id FROM 1ai_offers WHERE id = ? AND status = ?',
+      [link.offer_id, 'active']
+    );
+    if (!offers.length) return res.status(404).send('Offer not available');
+    const offer = offers[0];
+
+    const [campaigns] = await pool.query(
+      'SELECT oc.aff_campaign_id FROM 1ai_offer_campaigns oc WHERE oc.offer_id = ? LIMIT 1',
+      [offer.id]
+    );
+    const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : offer.id;
+    const clickId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+
+    // Record click in affiliate_links table
+    await pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]);
+
+    // Build redirect URL — use OFFER_BASE_URL env or a sensible default
+    const offerBase = process.env.OFFER_BASE_URL || 'https://example.com/affiliate';
+    const redirectUrl = `${offerBase}/offer/${offer.id}?aid=${link.affiliate_id}&cid=${campaignId}&click=${clickId}&subid=${subid}`;
+
+    res.redirect(redirectUrl);
   } catch (err) {
-    console.error('Shortlink Route Error:', err);
-    res.status(500).send(err.message || 'Routing error');
+    console.error('Smartlink route error:', err);
+    res.status(500).send('Routing error');
   }
 }
 
-/**
- * Generate a new Smartlink/Shortlink for an affiliate.
- */
 async function generateSmartlink(req, res) {
-  const { campaign_id } = req.body;
-  
-  try {
-    const [aff] = await pool.query('SELECT id FROM 1ai_affiliates WHERE user_id = ?', [req.user.id]);
-    const affiliate_id = aff.length ? aff[0].id : 1; // fallback to 1 for testing
+  const { offer_id } = req.body;
+  if (!offer_id) return res.status(400).json({ error: 'offer_id required' });
 
-    const token = crypto.randomBytes(6).toString('hex'); // 12 chars is good for shortlink
-    await pool.query(
-      'INSERT INTO 1ai_affiliate_links (affiliate_id, campaign_id, link_token, status, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())',
-      [affiliate_id, campaign_id || 1, token, 'active']
+  try {
+    const [aff] = await pool.query(
+      'SELECT id FROM 1ai_affiliates WHERE user_id = ?',
+      [req.user.id]
     );
-    
-    // Return both the modern shortlink and the API route
+    const affiliateId = aff.length ? aff[0].id : null;
+    if (!affiliateId) return res.status(403).json({ error: 'Affiliate profile not found' });
+
+    const slug = crypto.randomBytes(6).toString('hex');
+
+    await pool.query(
+      'INSERT INTO 1ai_affiliate_links (affiliate_id, offer_id, slug, created_at) VALUES (?, ?, ?, UNIX_TIMESTAMP())',
+      [affiliateId, offer_id, slug]
+    );
+
     const baseUrl = req.protocol + '://' + req.get('host');
-    res.json({ 
-      success: true, 
-      token, 
-      url: `${baseUrl}/go/${token}`,
-      api_url: `${baseUrl}/api/smartlink/route?sl=${token}`
-    });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.json({ success: true, slug, url: `${baseUrl}/go/${slug}` });
+  } catch (err) {
+    console.error('generateSmartlink error:', err);
+    res.status(500).json({ error: err.message });
   }
 }
 
@@ -137,10 +73,12 @@ async function listSmartlinks(req, res) {
   try {
     const [aff] = await pool.query('SELECT id FROM 1ai_affiliates WHERE user_id = ?', [req.user.id]);
     if (!aff.length) return res.json([]);
+
     const [links] = await pool.query(
-      `SELECT l.*, c.name AS campaignName
+      `SELECT l.id, l.slug, l.clicks, l.conversions, l.created_at,
+              o.name AS offer_name, o.payout AS offer_payout
        FROM 1ai_affiliate_links l
-       LEFT JOIN 1ai_campaigns c ON l.campaign_id = c.id
+       LEFT JOIN 1ai_offers o ON l.offer_id = o.id
        WHERE l.affiliate_id = ?
        ORDER BY l.created_at DESC`,
       [aff[0].id]
@@ -152,4 +90,79 @@ async function listSmartlinks(req, res) {
   }
 }
 
-module.exports = { routeTraffic, routeTrafficByHash, generateSmartlink, listSmartlinks };
+async function recordConversion(req, res) {
+  const { slug } = req.body;
+  if (!slug) return res.status(400).json({ error: 'slug required' });
+
+  try {
+    const [links] = await pool.query(
+      'SELECT l.id, l.affiliate_id, l.offer_id, o.payout, o.network_payout FROM 1ai_affiliate_links l JOIN 1ai_offers o ON l.offer_id = o.id WHERE l.slug = ?',
+      [slug]
+    );
+    if (!links.length) return res.status(404).json({ error: 'Link not found' });
+    const link = links[0];
+
+    const [campaigns] = await pool.query(
+      'SELECT oc.aff_campaign_id FROM 1ai_offer_campaigns oc WHERE oc.offer_id = ? LIMIT 1',
+      [link.offer_id]
+    );
+    const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : link.offer_id;
+
+    const networkPayout = parseFloat(link.network_payout) || 0;
+    const affiliatePayout = parseFloat(link.payout) || 0;
+    const marginAmount = networkPayout - affiliatePayout;
+
+    await pool.query(
+      `INSERT INTO 1ai_conversion_logs (aff_campaign_id, click_id, conversion_time, network_payout_snapshot, affiliate_payout_snapshot, margin_amount, affiliate_id, affiliate_status)
+       VALUES (?, ?, UNIX_TIMESTAMP(), ?, ?, ?, ?, 'approved')`,
+      [campaignId, Date.now(), networkPayout, affiliatePayout, marginAmount, link.affiliate_id]
+    );
+
+    await pool.query(
+      'INSERT INTO 1ai_affiliate_earnings (affiliate_id, source, payout_amount, status, created_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP())',
+      [link.affiliate_id, 'conversion', affiliatePayout, 'pending']
+    );
+
+    await pool.query(
+      'UPDATE 1ai_affiliate_links SET conversions = conversions + 1 WHERE id = ?',
+      [link.id]
+    );
+
+    res.json({ success: true, payout: affiliatePayout, margin: marginAmount });
+  } catch (err) {
+    console.error('recordConversion error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getSmartlinkStats(req, res) {
+  try {
+    const [aff] = await pool.query('SELECT id FROM 1ai_affiliates WHERE user_id = ?', [req.user.id]);
+    if (!aff.length) return res.json({ total_clicks: 0, total_conversions: 0, total_earnings: 0, pending_earnings: 0 });
+
+    const [linkStats] = await pool.query(
+      'SELECT COALESCE(SUM(clicks),0) AS total_clicks, COALESCE(SUM(conversions),0) AS total_conversions FROM 1ai_affiliate_links WHERE affiliate_id = ?',
+      [aff[0].id]
+    );
+    const [earnStats] = await pool.query(
+      `SELECT COALESCE(SUM(CASE WHEN status IN ('paid','approved') THEN payout_amount ELSE 0 END),0) AS total_earnings,
+              COALESCE(SUM(CASE WHEN status = 'pending' THEN payout_amount ELSE 0 END),0) AS pending_earnings
+       FROM 1ai_affiliate_earnings WHERE affiliate_id = ?`,
+      [aff[0].id]
+    );
+
+    res.json({
+      total_clicks: toNumber(linkStats[0]?.total_clicks || 0),
+      total_conversions: toNumber(linkStats[0]?.total_conversions || 0),
+      total_earnings: toNumber(earnStats[0]?.total_earnings || 0),
+      pending_earnings: toNumber(earnStats[0]?.pending_earnings || 0),
+    });
+  } catch (err) {
+    console.error('getSmartlinkStats error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+function toNumber(v) { return Number(v || 0); }
+
+module.exports = { routeTrafficByHash, generateSmartlink, listSmartlinks, recordConversion, getSmartlinkStats };
