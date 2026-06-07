@@ -1,6 +1,7 @@
 const pool = require('../db/mysql');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const { parsePostbackHeaders, validatePostbackUrl, normalizeInteger, isIntegerInRange } = require('./postbackController');
 
 /**
  * Admin controller — dashboard data from the shared tracking database.
@@ -714,12 +715,34 @@ async function saveVipProfile(req, res) {
 
 async function setOfferPostback(req, res) {
   const { offerId } = req.params;
-  const { postback_url, postback_enabled, postback_auth_type, postback_auth_value } = req.body;
+  const { postback_url, postback_enabled, postback_auth_type, postback_auth_value, postback_method, postback_headers, postback_timeout, postback_retries } = req.body;
+
+  if (postback_url && !validatePostbackUrl(postback_url)) {
+    return res.status(400).json({
+      error: 'Invalid postback URL format. Must be a valid HTTP or HTTPS URL.'
+    });
+  }
+
+  if (postback_method && !['GET', 'POST'].includes(postback_method.toUpperCase())) {
+    return res.status(400).json({ 
+      error: 'postback_method must be GET or POST' 
+    });
+  }
+
+  if (postback_timeout !== undefined && !isIntegerInRange(postback_timeout, 1, 60)) {
+    return res.status(400).json({ error: 'postback_timeout must be an integer between 1 and 60' });
+  }
+
+  if (postback_retries !== undefined && !isIntegerInRange(postback_retries, 0, 10)) {
+    return res.status(400).json({ error: 'postback_retries must be an integer between 0 and 10' });
+  }
 
   try {
+    const headersToStore = postback_headers ? JSON.stringify(parsePostbackHeaders(postback_headers)) : null;
+
     await pool.query(
-      `UPDATE 1ai_offers SET postback_url = ?, postback_enabled = ?, postback_auth_type = ?, postback_auth_value = ? WHERE id = ?`,
-      [postback_url || null, postback_enabled !== false, postback_auth_type || null, postback_auth_value || null, offerId]
+      `UPDATE 1ai_offers SET postback_url = ?, postback_enabled = ?, postback_auth_type = ?, postback_auth_value = ?, postback_method = ?, postback_headers = ?, postback_timeout = ?, postback_retries = ? WHERE id = ?`,
+      [postback_url || null, postback_enabled !== false, postback_auth_type || null, postback_auth_value || null, postback_method?.toUpperCase() || 'GET', headersToStore || '{}', normalizeInteger(postback_timeout, 10, 1, 60), normalizeInteger(postback_retries, 3, 0, 10), offerId]
     );
 
     res.json({ success: true, offer_id: offerId });
@@ -734,7 +757,7 @@ async function getOfferPostback(req, res) {
 
   try {
     const [offers] = await pool.query(
-      'SELECT postback_url, postback_enabled, postback_auth_type FROM 1ai_offers WHERE id = ?',
+      'SELECT postback_url, postback_enabled, postback_auth_type, postback_auth_value, postback_timeout, postback_method, postback_headers, postback_retries FROM 1ai_offers WHERE id = ?',
       [offerId]
     );
 
