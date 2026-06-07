@@ -22,7 +22,7 @@ final class Bootstrap
             define('ROOT_PATH', $root . '/');
         }
         if (!defined('CONFIG_PATH')) {
-            define('CONFIG_PATH . '/config');
+            define('CONFIG_PATH', $root . '/config');
         }
 
         $configFile = $root . '/config.php';
