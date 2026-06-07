@@ -164,7 +164,7 @@ template_top('Update CPC');  ?>
 
 		    <div class="form-group">
 				<div class="col-xs-12" style="margin-top: 10px;">
-					<input type="button" id="update-cpc" class="btn btn-sm btn-p202 btn-block" value="Update CPC">					
+					<input type="button" id="update-cpc" class="btn btn-sm btn-p1ai btn-block" value="Update CPC">					
 				</div>
 			</div>
 

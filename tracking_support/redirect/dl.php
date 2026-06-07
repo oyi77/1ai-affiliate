@@ -1,9 +1,9 @@
 <?php
 
 declare(strict_types=1);
-#only allow numeric t202ids, reject 0 as invalid
-$t202id = $_GET['t202id'] ?? '';
-if (!is_numeric($t202id) || (int)$t202id <= 0) die();
+#only allow numeric t1aiids, reject 0 as invalid
+$t1aiid = $_GET['t1aiid'] ?? '';
+if (!is_numeric($t1aiid) || (int)$t1aiid <= 0) die();
 
 # check to see if mysql connection works, if not fail over to cached stored redirect urls
 include_once(substr(__DIR__, 0, -21) . '/config/connect2.php');
@@ -97,83 +97,83 @@ if (!$db) $usedCachedRedirect = true;
 #the mysql server is down, use the cached redirect
 if ($usedCachedRedirect == true) {
 
-	$t202id = $_GET['t202id'];
+	$t1aiid = $_GET['t1aiid'];
 
-	//if a cached key is found for this t202id, redirect to that url
+	//if a cached key is found for this t1aiid, redirect to that url
 	if ($memcacheWorking) {
-		$getUrl = $memcache->get(md5('url_' . $t202id . systemHash()));
+		$getUrl = $memcache->get(md5('url_' . $t1aiid . systemHash()));
 		if ($getUrl) {
 
-			$new_url = str_replace("[[subid]]", "p202", $getUrl);
+			$new_url = str_replace("[[subid]]", "p1ai", $getUrl);
 
 			//c1 string replace for cached redirect
 			if (isset($_GET['c1']) && $_GET['c1'] != '') {
 				$new_url = str_replace("[[c1]]", $db->real_escape_string((string)$_GET['c1']), $new_url);
 			} else {
-				$new_url = str_replace("[[c1]]", "p202c1", $new_url);
+				$new_url = str_replace("[[c1]]", "p1aic1", $new_url);
 			}
 
 			//c2 string replace for cached redirect
 			if (isset($_GET['c2']) && $_GET['c2'] != '') {
 				$new_url = str_replace("[[c2]]", $db->real_escape_string((string)$_GET['c2']), $new_url);
 			} else {
-				$new_url = str_replace("[[c2]]", "p202c2", $new_url);
+				$new_url = str_replace("[[c2]]", "p1aic2", $new_url);
 			}
 
 			//c3 string replace for cached redirect
 			if (isset($_GET['c3']) && $_GET['c3'] != '') {
 				$new_url = str_replace("[[c3]]", $db->real_escape_string((string)$_GET['c3']), $new_url);
 			} else {
-				$new_url = str_replace("[[c3]]", "p202c3", $new_url);
+				$new_url = str_replace("[[c3]]", "p1aic3", $new_url);
 			}
 
 			//c4 string replace for cached redirect
 			if (isset($_GET['c4']) && $_GET['c4'] != '') {
 				$new_url = str_replace("[[c4]]", $db->real_escape_string((string)$_GET['c4']), $new_url);
 			} else {
-				$new_url = str_replace("[[c4]]", "p202c4", $new_url);
+				$new_url = str_replace("[[c4]]", "p1aic4", $new_url);
 			}
 
 			//gclid string replace for cached redirect
 			if (isset($_GET['gclid']) && $_GET['gclid'] != '') {
 				$new_url = str_replace("[[gclid]]", $db->real_escape_string((string)$_GET['gclid']), $new_url);
 			} else {
-				$new_url = str_replace("[[gclid]]", "p202gclid", $new_url);
+				$new_url = str_replace("[[gclid]]", "p1aigclid", $new_url);
 			}
 
 			//utm_source string replace for cached redirect
 			if (isset($_GET['utm_source']) && $_GET['utm_source'] != '') {
 				$new_url = str_replace("[[utm_source]]", $db->real_escape_string((string)$_GET['utm_source']), $new_url);
 			} else {
-				$new_url = str_replace("[[utm_source]]", "p202utm_source", $new_url);
+				$new_url = str_replace("[[utm_source]]", "p1aiutm_source", $new_url);
 			}
 
 			//utm_medium string replace for cached redirect
 			if (isset($_GET['utm_medium']) && $_GET['utm_medium'] != '') {
 				$new_url = str_replace("[[utm_medium]]", $db->real_escape_string((string)$_GET['utm_medium']), $new_url);
 			} else {
-				$new_url = str_replace("[[utm_medium]]", "p202utm_medium", $new_url);
+				$new_url = str_replace("[[utm_medium]]", "p1aiutm_medium", $new_url);
 			}
 
 			//utm_campaign string replace for cached redirect
 			if (isset($_GET['utm_campaign']) && $_GET['utm_campaign'] != '') {
 				$new_url = str_replace("[[utm_campaign]]", $db->real_escape_string((string)$_GET['utm_campaign']), $new_url);
 			} else {
-				$new_url = str_replace("[[utm_campaign]]", "p202utm_campaign", $new_url);
+				$new_url = str_replace("[[utm_campaign]]", "p1aiutm_campaign", $new_url);
 			}
 
 			//utm_term string replace for cached redirect
 			if (isset($_GET['utm_term']) && $_GET['utm_term'] != '') {
 				$new_url = str_replace("[[utm_term]]", $db->real_escape_string((string)$_GET['utm_term']), $new_url);
 			} else {
-				$new_url = str_replace("[[utm_term]]", "p202utm_term", $new_url);
+				$new_url = str_replace("[[utm_term]]", "p1aiutm_term", $new_url);
 			}
 
 			//utm_content string replace for cached redirect
 			if (isset($_GET['utm_content']) && $_GET['utm_content'] != '') {
 				$new_url = str_replace("[[utm_content]]", $db->real_escape_string((string)$_GET['utm_content']), $new_url);
 			} else {
-				$new_url = str_replace("[[utm_content]]", "p202utm_content", $new_url);
+				$new_url = str_replace("[[utm_content]]", "p1aiutm_content", $new_url);
 			}
 
 			header('location: ' . $new_url);
@@ -191,7 +191,7 @@ if ($usedCachedRedirect == true) {
 }
 
 //grab tracker data
-$mysql['tracker_id_public'] = $db->real_escape_string($t202id);
+$mysql['tracker_id_public'] = $db->real_escape_string($t1aiid);
 $tracker_sql = "SELECT trackers.user_id,
 						trackers.aff_campaign_id,
 						text_ad_id,
@@ -238,7 +238,7 @@ if (!$tracker_row) {
 if ($memcacheWorking) {
 
 	$url = $tracker_row['aff_campaign_url'];
-	$tid = $t202id;
+	$tid = $t1aiid;
 
 	$getKey = $memcache->get(md5('url_' . $tid . systemHash()));
 	if ($getKey === false) {
@@ -258,10 +258,10 @@ $mysql['aff_campaign_id'] = $db->real_escape_string((string)($tracker_row['aff_c
 $mysql['ppc_account_id'] = $db->real_escape_string((string)($tracker_row['ppc_account_id'] ?? '0'));
 $mysql['user_pref_dynamic_bid'] = $db->real_escape_string((string)($tracker_row['user_pref_dynamic_bid'] ?? '0'));
 // set cpc use dynamic variable if set or the default if not
-if (isset($_GET['t202b']) && $mysql['user_pref_dynamic_bid'] == '1') {
-	$_GET['t202b'] = ltrim((string) $_GET['t202b'], '$');
-	if (is_numeric($_GET['t202b'])) {
-		$bid = number_format((float)$_GET['t202b'], 5, '.', '');
+if (isset($_GET['t1aib']) && $mysql['user_pref_dynamic_bid'] == '1') {
+	$_GET['t1aib'] = ltrim((string) $_GET['t1aib'], '$');
+	if (is_numeric($_GET['t1aib'])) {
+		$bid = number_format((float)$_GET['t1aib'], 5, '.', '');
 		$mysql['click_cpc'] = $db->real_escape_string((string)$bid);
 	} else {
 		$mysql['click_cpc'] = $db->real_escape_string((string)($tracker_row['click_cpc'] ?? ''));
@@ -293,8 +293,8 @@ switch ($tracker_row['user_keyword_searched_or_bidded']) {
 		#try to get the bidded keyword first
 		if (isset($_GET['OVKEY'])) { //if this is a Y! keyword
 			$keyword = $db->real_escape_string((string)$_GET['OVKEY']);
-		} elseif (isset($_GET['t202kw'])) {
-			$keyword = $db->real_escape_string((string)$_GET['t202kw']);
+		} elseif (isset($_GET['t1aikw'])) {
+			$keyword = $db->real_escape_string((string)$_GET['t1aikw']);
 		} elseif (isset($_GET['target_passthrough'])) { //if this is a mediatraffic! keyword
 			$keyword = $db->real_escape_string((string)$_GET['target_passthrough']);
 		} else { //if this is a zango, or more keyword
@@ -336,16 +336,16 @@ switch ($tracker_row['user_keyword_searched_or_bidded']) {
 		} elseif (isset($_GET['words'])) { //if this is a Rambler, or more keyword
 			$keyword = $db->real_escape_string((string)$_GET['words']);
 		} else {
-			$keyword = $db->real_escape_string((string)($_GET['t202kw'] ?? ''));
+			$keyword = $db->real_escape_string((string)($_GET['t1aikw'] ?? ''));
 		}
 		break;
 }
 
-if (str_starts_with((string) $keyword, 't202var_')) {
-	$t202var = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
+if (str_starts_with((string) $keyword, 't1aivar_')) {
+	$t1aivar = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
 
-	if (isset($_GET[$t202var])) {
-		$keyword = $_GET[$t202var];
+	if (isset($_GET[$t1aivar])) {
+		$keyword = $_GET[$t1aivar];
 	}
 }
 
@@ -545,9 +545,9 @@ $computeAndRecordClick = function () use (&$mysql, $custom_var_ids, $trackingRep
 	}
 
 	// Compute site URLs
-	if ($tracker_row['user_pref_referer_data'] == 't202ref') {
-		if (isset($_GET['t202ref']) && $_GET['t202ref'] != '') {
-			$click_referer_site_url_id = $locationRepo->findOrCreateSiteUrl($_GET['t202ref']);
+	if ($tracker_row['user_pref_referer_data'] == 't1airef') {
+		if (isset($_GET['t1airef']) && $_GET['t1airef'] != '') {
+			$click_referer_site_url_id = $locationRepo->findOrCreateSiteUrl($_GET['t1airef']);
 		} else {
 			if (isset($referer_query['url'])) {
 				$click_referer_site_url_id = $locationRepo->findOrCreateSiteUrl($referer_query['url']);

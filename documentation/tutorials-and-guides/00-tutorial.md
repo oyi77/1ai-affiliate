@@ -18,4 +18,4 @@ Please review all of the video tutorials and our FAQ before contacting us with s
 ## Additional Support
 
 Please note that we do not offer free support and if you require assistance, you can subscribe to one of our support plans found here:
-http://join.tracking202.com
+http://join.tracking1ai.com

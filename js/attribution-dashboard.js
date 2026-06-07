@@ -474,7 +474,7 @@
           var link = document.createElement("a");
           link.href =
             siteBase +
-            "202-account/attribution/download.php?export_id=" +
+            "1ai-account/attribution/download.php?export_id=" +
             job.export_id;
           link.textContent = "Download";
           link.className = "btn btn-xs btn-success";

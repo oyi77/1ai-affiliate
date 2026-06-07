@@ -178,7 +178,7 @@ info_top(); ?>
 					<input type="checkbox" name="remember_me"> Remember me
 				</label>
 				<a href="<?php echo get_absolute_url(); ?>lost-pass.php" class="text-info forgot-text">I forgot my password/username</a>
-				<button class="btn btn-lg btn-p202 btn-block" type="submit">Sign in</button>
+				<button class="btn btn-lg btn-p1ai btn-block" type="submit">Sign in</button>
 			</div>
 		</form>
 		<!-- P1AI_CS_Login_Page_288x200 -->

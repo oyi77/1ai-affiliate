@@ -43,7 +43,7 @@ func TestLoadLegacyMigratesToDefaultProfile(t *testing.T) {
 	tmp := t.TempDir()
 	setTestHome(t, tmp)
 
-	dir := filepath.Join(tmp, ".p202")
+	dir := filepath.Join(tmp, ".p1ai")
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestLoadInvalidJSON(t *testing.T) {
 	tmp := t.TempDir()
 	setTestHome(t, tmp)
 
-	dir := filepath.Join(tmp, ".p202")
+	dir := filepath.Join(tmp, ".p1ai")
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func TestSaveCreatesDirectoryAndFile(t *testing.T) {
 		t.Fatalf("Save() error: %v", err)
 	}
 
-	dirPath := filepath.Join(tmp, ".p202")
+	dirPath := filepath.Join(tmp, ".p1ai")
 	info, err := os.Stat(dirPath)
 	if err != nil {
 		t.Fatalf("config dir not created: %v", err)
@@ -343,13 +343,13 @@ func TestDirAndPath(t *testing.T) {
 	setTestHome(t, tmp)
 
 	dir := Dir()
-	expectedDir := filepath.Join(tmp, ".p202")
+	expectedDir := filepath.Join(tmp, ".p1ai")
 	if dir != expectedDir {
 		t.Fatalf("Dir() = %q, want %q", dir, expectedDir)
 	}
 
 	path := Path()
-	expectedPath := filepath.Join(tmp, ".p202", "config.json")
+	expectedPath := filepath.Join(tmp, ".p1ai", "config.json")
 	if path != expectedPath {
 		t.Fatalf("Path() = %q, want %q", path, expectedPath)
 	}

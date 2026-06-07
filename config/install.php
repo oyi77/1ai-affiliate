@@ -227,7 +227,7 @@ if (!$success) {
 		<h6>Welcome</h6>
 		<small>Welcome to the five minute 1ai-Affiliate installation process! Just fill in the information below, and you'll be on your way to using the most powerful internet marketing applications in the world.</small>
 		<br><br>
-		<small>Need Extra Help? Check out our <a href="http://support.tracking202.com/" target="_blank">ReadMe documentation</a>.</small>
+		<small>Need Extra Help? Check out our <a href="http://support.tracking1ai.com/" target="_blank">ReadMe documentation</a>.</small>
 
 		<h6>Create your account</h6>
 		<small>Please provide the following information. Don't worry, you can always change these settings later.</small>
@@ -329,7 +329,7 @@ if (!$success) {
 				</div>
 			</div>
 
-			<button class="btn btn-lg btn-p202 btn-block" type="submit">Install 1ai-Affiliate ClickServer<span class="fui-check-inverted pull-right"></span></button>
+			<button class="btn btn-lg btn-p1ai btn-block" type="submit">Install 1ai-Affiliate ClickServer<span class="fui-check-inverted pull-right"></span></button>
 			<script type="text/javascript">
 				$('form#install-oneai_affiliate').submit(function() {
 					$(this).find(':input[type=submit]').prop('disabled', true);

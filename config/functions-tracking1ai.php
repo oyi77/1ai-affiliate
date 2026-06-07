@@ -308,7 +308,7 @@ function display_calendar($page, $show_time, $show_adv, $show_bottom, $show_limi
                         <div class="col-xs-12"></div>
                     </div>
 
-                    <?php if ($navigation[1] == 'tracking202') { ?>
+                    <?php if ($navigation[1] == 'tracking1ai') { ?>
                         <div class="row" style="text-align:left; <?php if ($show_adv == false) {
                                                                         echo 'display:none;';
                                                                     } ?>">
@@ -2846,7 +2846,7 @@ function clickserver_api_upgrade_url($key)
     // Will return the response, if false it print the response
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/auth/?apiKey=' . $key . '&clickserverId=' . base64_encode((string) $_SERVER['HTTP_HOST']));
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/auth/?apiKey=' . $key . '&clickserverId=' . base64_encode((string) $_SERVER['HTTP_HOST']));
     // Execute
     $result = curl_exec($ch);
 
@@ -2871,7 +2871,7 @@ function clickserver_api_key_validate($key)
     // Will return the response, if false it print the response
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/auth/?apiKey=' . $key . '&clickserverId=' . base64_encode((string) $_SERVER['HTTP_HOST']));
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/auth/?apiKey=' . $key . '&clickserverId=' . base64_encode((string) $_SERVER['HTTP_HOST']));
     // Execute
     $result = curl_exec($ch);
 
@@ -2894,7 +2894,7 @@ function api_key_validate($key)
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/validate-customers-key');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/validate-customers-key');
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -2955,7 +2955,7 @@ function getSurveyData($install_hash)
     // Will return the response, if false it print the response
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/deep/survey/' . $install_hash);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/deep/survey/' . $install_hash);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     // Execute
@@ -2975,7 +2975,7 @@ function updateSurveyData($install_hash, $post)
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/deep/survey/' . $install_hash);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/deep/survey/' . $install_hash);
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3001,7 +3001,7 @@ function rotator_data($query, $type)
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/deep/rotator/' . $type . '/' . $query);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/deep/rotator/' . $type . '/' . $query);
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3020,7 +3020,7 @@ function changelog(): array
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/clickserver/currentversion/paid/changelogs.php');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/clickserver/currentversion/paid/changelogs.php');
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3039,7 +3039,7 @@ function changelogPremium(): array
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/clickserver/currentversion/paid/changelogs.php');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/clickserver/currentversion/paid/changelogs.php');
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3062,7 +3062,7 @@ function callAutoCron($endpoint)
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/autocron/' . $endpoint . '/' . $domain);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/autocron/' . $endpoint . '/' . $domain);
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3093,7 +3093,7 @@ function registerDailyEmail($time, $timezone, $hash)
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/' . $hash . '/' . $domain . '/' . $set_time);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/' . $hash . '/' . $domain . '/' . $set_time);
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3114,7 +3114,7 @@ function tagUserByNetwork($install_hash, $type, $network)
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/tag/user/' . $install_hash . '/' . $type);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/tag/user/' . $install_hash . '/' . $type);
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3145,7 +3145,7 @@ function getAllDniNetworks($install_hash)
     // Initiate curl
     $ch = curl_init();
     // Set the url
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $install_hash . '/networks/all');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $install_hash . '/networks/all');
     // Disable SSL verification
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     // Will return the response, if false it print the response
@@ -3168,7 +3168,7 @@ function authDniNetworks($hash, $network, $key, $affId)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $hash . '/auth/' . $network);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/auth/' . $network);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3203,7 +3203,7 @@ function getDniOffers($hash, $network, $key, $affId, $offset, $limit, $sort_by, 
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $hash . '/offers/' . $network . '/all/' . $offset . '/' . $limit);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/offers/' . $network . '/all/' . $offset . '/' . $limit);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3223,7 +3223,7 @@ function getDniOfferById($hash, $network, $key, $affId, $id)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $hash . '/offers/' . $network . '/id/' . $id);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/offers/' . $network . '/id/' . $id);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3243,7 +3243,7 @@ function requestDniOfferAccess($hash, $network, $key, $affId, $id, $type)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $hash . '/offers/' . $network . '/' . $type . '/' . $id);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/offers/' . $network . '/' . $type . '/' . $id);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3263,7 +3263,7 @@ function submitDniOfferAnswers($hash, $network, $api_key, $affId, $id, $answers)
     ];
     $fields = http_build_query($fields);
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $hash . '/offers/' . $network . '/answers/' . $id);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/offers/' . $network . '/answers/' . $id);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3285,7 +3285,7 @@ function setupDniOffer($hash, $network, $key, $affId, $currency, $id, $ddlci)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $hash . '/offers/' . $network . '/setup/' . $id);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/offers/' . $network . '/setup/' . $id);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3298,7 +3298,7 @@ function setupDniOffer($hash, $network, $key, $affId, $currency, $id, $ddlci)
 function getDNICacheProgress($hash, $data)
 {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/dni/' . $hash . '/cache/progress');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/cache/progress');
     curl_setopt($ch, CURLOPT_HEADER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -3320,7 +3320,7 @@ function setupDniOfferTrack($hash, $network, $key, $affId, $id, $ddlci = false)
         'ddlci' => $ddlci
     ];
 
-    $url = 'https://my.tracking202.com/api/v2/dni/' . $hash . '/offers/' . $network . '/setup/track/';
+    $url = 'https://my.tracking1ai.com/api/v2/dni/' . $hash . '/offers/' . $network . '/setup/track/';
 
     if ($ddlci) {
         $url .= 'dl/';
@@ -3350,7 +3350,7 @@ function getForeignPayout($currency, $payout_currency, $payout)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/get-foreign-payout');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/get-foreign-payout');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3372,7 +3372,7 @@ function validateCustomersApiKey($key)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/validate-customers-key');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/validate-customers-key');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3395,7 +3395,7 @@ function validateRevContentCredentials($id, $secret)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/premium-p202/validate-revcontent-credentials');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/premium-p1ai/validate-revcontent-credentials');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3421,7 +3421,7 @@ function pushToRevContent($id, $secret, $boost, $boost_id, array $ads)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/premium-p202/push-revcontent');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/premium-p1ai/push-revcontent');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3445,7 +3445,7 @@ function pushToFacebook($api_key, $group, $ad_set_id, array $ads)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/premium-p202/facebook-ads/push-facebook/' . $api_key);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/premium-p1ai/facebook-ads/push-facebook/' . $api_key);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3461,7 +3461,7 @@ function pushToFacebook($api_key, $group, $ad_set_id, array $ads)
 function getFacebookCampaignsAndAdSets($api_key)
 {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/premium-p202/facebook-ads/get-ad-sets/' . $api_key);
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/premium-p1ai/facebook-ads/get-ad-sets/' . $api_key);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
@@ -3512,69 +3512,69 @@ function showHelp($page)
     $url = '';
     switch ($page) {
         case 'step1':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=7158893&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=7158893&t1aikw=";
             break;
         case 'step2':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=7158909&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=7158909&t1aikw=";
             break;
         case 'step3':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=3158915&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=3158915&t1aikw=";
             break;
         case 'step4':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=3158922&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=3158922&t1aikw=";
             break;
         case 'step5':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=2158936&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=2158936&t1aikw=";
             break;
         case 'step6':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=6158942&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=6158942&t1aikw=";
             break;
         case 'step7':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=5158952&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=5158952&t1aikw=";
             break;
         case 'slp':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=5158884&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=5158884&t1aikw=";
             break;
         case 'alp':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=3158798&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=3158798&t1aikw=";
             break;
         case 'step8':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=8158965&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=8158965&t1aikw=";
             break;
         case 'step9':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=4158973&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=4158973&t1aikw=";
             break;
         case 'overview':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=5158862&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=5158862&t1aikw=";
             break;
         case 'groupoverview':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=4158853&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=4158853&t1aikw=";
             break;
         case 'breakdown':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=3158819&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=3158819&t1aikw=";
             break;
         case 'dayparting':
         case 'weekparting':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=1158832&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=1158832&t1aikw=";
             break;
         case 'analyze':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=8158803&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=8158803&t1aikw=";
             break;
         case 'visitor':
         case 'spy':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=1158987&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=1158987&t1aikw=";
             break;
         case 'dni':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=3158846&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=3158846&t1aikw=";
             break;
         case 'clickbank':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=4158829&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=4158829&t1aikw=";
             break;
         case 'slack':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=1158876&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=1158876&t1aikw=";
             break;
         case 'update':
-            $url = "http://click202.com/tracking_support/redirect/dl.php?t202id=5158996&t202kw=";
+            $url = "http://click202.com/tracking_support/redirect/dl.php?t1aiid=5158996&t1aikw=";
             break;
     }
 
@@ -3647,7 +3647,7 @@ function getSetDashEmail($key)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/get-customers-email');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/get-customers-email');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
@@ -3796,42 +3796,42 @@ function generateTrackingLoaderSnippet(string $landing_page_id_public): string
 			var if202 = d.createElement("script");if202.src = url;if202.async = true;if202.id = id;
 			upxf.parentNode.insertBefore(if202, upxf);
 		};
-		var t = new URLSearchParams(window.location.search).get("t202id") || "";
-		load("//' . getTrackingDomain() . get_absolute_url() . 'tracking_support/static/landing.php?lpip=' . $landing_page_id_public . '&t202id=" + encodeURIComponent(t), "upxif");
+		var t = new URLSearchParams(window.location.search).get("t1aiid") || "";
+		load("//' . getTrackingDomain() . get_absolute_url() . 'tracking_support/static/landing.php?lpip=' . $landing_page_id_public . '&t1aiid=" + encodeURIComponent(t), "upxif");
 	}(document, "script"));
 	</script>';
 }
 
 /**
  * Return the list of dynamic content segment definitions.
- * Each entry maps a t202 element name to its human-readable description.
+ * Each entry maps a t1ai element name to its human-readable description.
  * This is the single source of truth used by both the help text renderer
- * and the tracking script's t202Data() function.
+ * and the tracking script's t1aiData() function.
  *
  * @return array<string, string> Element name => description
  */
 function getDynamicContentSegments(): array
 {
     return [
-        't202Country'      => "Visitor's Country",
-        't202CountryCode'  => "Visitor's Country Code",
-        't202Region'       => "Visitor's Region/State",
-        't202City'         => "Visitor's City",
-        't202Postal'       => "Visitor's Postal/Zip Code",
-        't202Browser'      => "Visitor's Browser",
-        't202OS'           => "Visitor's Operating System",
-        't202Device'       => "Visitor's Device Type",
-        't202ISP'          => "Visitor's ISP",
-        't202kw'           => 'Value passed in t202kw',
-        't202c1'           => 'Value passed in C1',
-        't202c2'           => 'Value passed in C2',
-        't202c3'           => 'Value passed in C3',
-        't202c4'           => 'Value passed in C4',
-        't202utm_source'   => 'Value passed in utm_source',
-        't202utm_medium'   => 'Value passed in utm_medium',
-        't202utm_term'     => 'Value passed in utm_term',
-        't202utm_content'  => 'Value passed in utm_content',
-        't202utm_campaign' => 'Value passed in utm_campaign',
+        't1aiCountry'      => "Visitor's Country",
+        't1aiCountryCode'  => "Visitor's Country Code",
+        't1aiRegion'       => "Visitor's Region/State",
+        't1aiCity'         => "Visitor's City",
+        't1aiPostal'       => "Visitor's Postal/Zip Code",
+        't1aiBrowser'      => "Visitor's Browser",
+        't1aiOS'           => "Visitor's Operating System",
+        't1aiDevice'       => "Visitor's Device Type",
+        't1aiISP'          => "Visitor's ISP",
+        't1aikw'           => 'Value passed in t1aikw',
+        't1aic1'           => 'Value passed in C1',
+        't1aic2'           => 'Value passed in C2',
+        't1aic3'           => 'Value passed in C3',
+        't1aic4'           => 'Value passed in C4',
+        't1aiutm_source'   => 'Value passed in utm_source',
+        't1aiutm_medium'   => 'Value passed in utm_medium',
+        't1aiutm_term'     => 'Value passed in utm_term',
+        't1aiutm_content'  => 'Value passed in utm_content',
+        't1aiutm_campaign' => 'Value passed in utm_campaign',
     ];
 }
 
@@ -3852,5 +3852,5 @@ function renderDynamicContentSegmentHelp(): void
 		   <span class="infotext">Currently Dynamic Content Segments can dynamically display the following information on your landing pages:
 		   <ul style="font-size: 12px;">' . $listItems . '</ul>
 		   So how easy is it to display the visitor\'s country on your landing page? Here\'s the html for it:<br/>
-		   <code>Welcome I see you are reading this from &lt;span name=&quot;t202Country&quot; t202Default=&apos;Your Country&apos;&gt;Your Country&lt;/span&gt;</code></span>');
+		   <code>Welcome I see you are reading this from &lt;span name=&quot;t1aiCountry&quot; t1aiDefault=&apos;Your Country&apos;&gt;Your Country&lt;/span&gt;</code></span>');
 }

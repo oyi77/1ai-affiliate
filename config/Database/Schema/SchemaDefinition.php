@@ -24,11 +24,11 @@ final readonly class SchemaDefinition
     ) {}
 
     /**
-     * Get the table name without the 202_ prefix.
+     * Get the table name without the 1ai_ prefix.
      */
     public function getShortName(): string
     {
-        return str_starts_with($this->tableName, '202_')
+        return str_starts_with($this->tableName, '1ai_')
             ? substr($this->tableName, 4)
             : $this->tableName;
     }

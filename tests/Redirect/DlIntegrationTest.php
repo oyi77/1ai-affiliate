@@ -18,7 +18,7 @@ class DlIntegrationTest extends TestCase
      */
     public function testInvalidTrackerIdReturnsEmpty(): void
     {
-        $ch = curl_init($this->baseUrl . '?t202id=0');
+        $ch = curl_init($this->baseUrl . '?t1aiid=0');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($ch, CURLOPT_HEADER, true);
@@ -38,7 +38,7 @@ class DlIntegrationTest extends TestCase
      */
     public function testNonNumericTrackerIdReturnsEmpty(): void
     {
-        $ch = curl_init($this->baseUrl . '?t202id=abc');
+        $ch = curl_init($this->baseUrl . '?t1aiid=abc');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($ch, CURLOPT_HEADER, true);
@@ -77,8 +77,8 @@ class DlIntegrationTest extends TestCase
     public function testAllParametersHandledWithoutErrors(): void
     {
         $params = [
-            't202id' => '0',
-            't202kw' => 'test keyword',
+            't1aiid' => '0',
+            't1aikw' => 'test keyword',
             'c1' => 'campaign1',
             'c2' => 'adgroup2', 
             'c3' => 'keyword3',
@@ -89,7 +89,7 @@ class DlIntegrationTest extends TestCase
             'utm_campaign' => 'summer_sale',
             'utm_term' => 'discount shoes',
             'utm_content' => 'text_ad_1',
-            't202b' => '1.50',
+            't1aib' => '1.50',
             'OVKEY' => 'yahoo keyword',
             'OVRAW' => 'yahoo raw',
             'target_passthrough' => 'media traffic',
@@ -106,7 +106,7 @@ class DlIntegrationTest extends TestCase
             'qt' => 'onet query',
             'k' => 'yam keyword',
             'words' => 'rambler words',
-            't202ref' => 'custom referer',
+            't1airef' => 'custom referer',
             'ua' => 'Mozilla/5.0 Test User Agent'
         ];
         
@@ -135,7 +135,7 @@ class DlIntegrationTest extends TestCase
      */
     public function testWithoutHttpReferer(): void
     {
-        $ch = curl_init($this->baseUrl . '?t202id=0&t202kw=test');
+        $ch = curl_init($this->baseUrl . '?t1aiid=0&t1aikw=test');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($ch, CURLOPT_HEADER, true);
@@ -158,12 +158,12 @@ class DlIntegrationTest extends TestCase
     public function testSpecialCharactersInParameters(): void
     {
         $params = [
-            't202id' => '0',
+            't1aiid' => '0',
             'c1' => 'test & special',
             'c2' => 'test < > chars',
             'c3' => 'test " quotes',
             'c4' => "test ' apostrophe",
-            't202kw' => 'keyword with spaces and %20 encoding'
+            't1aikw' => 'keyword with spaces and %20 encoding'
         ];
         
         $url = $this->baseUrl . '?' . http_build_query($params);
@@ -189,18 +189,18 @@ class DlIntegrationTest extends TestCase
     public function testNumericFormats(): void
     {
         $testCases = [
-            ['t202id' => '123', 'expected' => true],
-            ['t202id' => '0', 'expected' => true],
-            ['t202id' => '-1', 'expected' => true],
-            ['t202id' => '123.45', 'expected' => true],
-            ['t202id' => '1e5', 'expected' => true],
-            ['t202id' => '0xFF', 'expected' => false], // hex not numeric
-            ['t202id' => '123abc', 'expected' => false],
-            ['t202id' => '', 'expected' => false],
+            ['t1aiid' => '123', 'expected' => true],
+            ['t1aiid' => '0', 'expected' => true],
+            ['t1aiid' => '-1', 'expected' => true],
+            ['t1aiid' => '123.45', 'expected' => true],
+            ['t1aiid' => '1e5', 'expected' => true],
+            ['t1aiid' => '0xFF', 'expected' => false], // hex not numeric
+            ['t1aiid' => '123abc', 'expected' => false],
+            ['t1aiid' => '', 'expected' => false],
         ];
         
         foreach ($testCases as $test) {
-            $ch = curl_init($this->baseUrl . '?t202id=' . urlencode($test['t202id']));
+            $ch = curl_init($this->baseUrl . '?t1aiid=' . urlencode($test['t1aiid']));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_HEADER, true);

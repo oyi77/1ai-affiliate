@@ -1,6 +1,6 @@
 package main
 
-import "p202/cmd"
+import "p1ai/cmd"
 
 var version = "dev"
 

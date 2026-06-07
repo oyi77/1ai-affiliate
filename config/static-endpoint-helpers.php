@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-if (!function_exists('p202ResolveAdvertiserId')) {
+if (!function_exists('p1aiResolveAdvertiserId')) {
     /**
      * @return int|null
      */
-    function p202ResolveAdvertiserId(mysqli $db, int $campaignId)
+    function p1aiResolveAdvertiserId(mysqli $db, int $campaignId)
     {
         if ($campaignId <= 0) {
             return null;
@@ -41,8 +41,8 @@ if (!function_exists('p202ResolveAdvertiserId')) {
     }
 }
 
-if (!function_exists('p202RespondJsonError')) {
-    function p202RespondJsonError(int $code, string $message): void
+if (!function_exists('p1aiRespondJsonError')) {
+    function p1aiRespondJsonError(int $code, string $message): void
     {
         http_response_code($code);
         header('Content-Type: application/json');
@@ -51,10 +51,10 @@ if (!function_exists('p202RespondJsonError')) {
     }
 }
 
-const P1AI_POSTBACK_USER_AGENT = 'Mozilla/5.0 Postback202-Bot v1.8';
+const P1AI_POSTBACK_USER_AGENT = 'Mozilla/5.0 Postback1ai-Bot v1.8';
 
-if (!function_exists('p202ApplyConversionUpdate')) {
-    function p202ApplyConversionUpdate(
+if (!function_exists('p1aiApplyConversionUpdate')) {
+    function p1aiApplyConversionUpdate(
         mysqli $db,
         string $clickId,
         string $clickCpa,
@@ -81,9 +81,9 @@ if (!function_exists('p202ApplyConversionUpdate')) {
         $updateClicksSql .= "\n\t\tWHERE\n\t\t\t" . $where;
         if (!$db->query($updateClicksSql)) {
             try {
-                error_log('p202ApplyConversionUpdate: failed to update clicks: ' . $db->error);
+                error_log('p1aiApplyConversionUpdate: failed to update clicks: ' . $db->error);
             } catch (\Error $e) {
-                error_log('p202ApplyConversionUpdate: failed to update clicks (error inaccessible)');
+                error_log('p1aiApplyConversionUpdate: failed to update clicks (error inaccessible)');
             }
         }
 
@@ -94,9 +94,9 @@ if (!function_exists('p202ApplyConversionUpdate')) {
         $updateSpySql .= "\n\t\tWHERE\n\t\t\t" . $where;
         if (!$db->query($updateSpySql)) {
             try {
-                error_log('p202ApplyConversionUpdate: failed to update clicks_spy: ' . $db->error);
+                error_log('p1aiApplyConversionUpdate: failed to update clicks_spy: ' . $db->error);
             } catch (\Error $e) {
-                error_log('p202ApplyConversionUpdate: failed to update clicks_spy (error inaccessible)');
+                error_log('p1aiApplyConversionUpdate: failed to update clicks_spy (error inaccessible)');
             }
         }
 

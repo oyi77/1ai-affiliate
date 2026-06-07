@@ -22,11 +22,11 @@ The multi-touch attribution system is **automatically installed** as part of 1ai
 
 The attribution system is integrated into 1ai-Affiliate's core upgrade system (version 1.9.56+) and includes:
 
-- `202_attribution_models` table creation
-- `202_attribution_snapshots` table creation  
-- `202_attribution_touchpoints` table creation
-- `202_attribution_settings` table creation
-- `202_attribution_audit` table creation
+- `1ai_attribution_models` table creation
+- `1ai_attribution_snapshots` table creation  
+- `1ai_attribution_touchpoints` table creation
+- `1ai_attribution_settings` table creation
+- `1ai_attribution_audit` table creation
 - `attribution_model_id` field added to campaigns table
 - Default "Last Touch Attribution" model created for all users
 - Permission system integration
@@ -46,7 +46,7 @@ If you need to install the attribution system independently (for development or 
 
 ```bash
 cd /path/to/1ai-affiliate
-php 202-config/migrations/run_attribution_migration_standalone.php
+php 1ai-config/migrations/run_attribution_migration_standalone.php
 ```
 
 **Note**: This is only for development environments. Production installations should use 1ai-Affiliate's standard upgrade process.
@@ -54,8 +54,8 @@ php 202-config/migrations/run_attribution_migration_standalone.php
 ### 4. Configure Permissions (Optional)
 
 The attribution system uses the existing `access_to_setup_section` permission. If you need to restrict access further, you can modify the permission checks in:
-- `tracking202/setup/AttributionController.php`
-- `tracking202/setup/attribution_models.php`
+- `tracking1ai/setup/AttributionController.php`
+- `tracking1ai/setup/attribution_models.php`
 
 ## Usage Guide
 
@@ -102,27 +102,27 @@ The attribution system uses modern PHP 8+ patterns:
 
 ### Database Schema
 
-**202_attribution_models**
+**1ai_attribution_models**
 - Stores attribution model configurations
 - Links to users via `user_id`
 - JSON configuration in `weighting_config`
 
-**202_attribution_snapshots** 
+**1ai_attribution_snapshots** 
 - Captures attribution calculations
 - Links to models and conversions
 
-**202_attribution_touchpoints**
+**1ai_attribution_touchpoints**
 - Individual touchpoint data
 - Attribution credit distribution
 
-**202_aff_campaigns**
+**1ai_aff_campaigns**
 - Added `attribution_model_id` field
 - Foreign key to attribution models
 
 ### Integration Points
 
 **Setup Navigation**
-- Added to `tracking202/setup/_config/setup_nav.php`
+- Added to `tracking1ai/setup/_config/setup_nav.php`
 - Integrated with existing setup section
 
 **Campaign Forms**
@@ -201,15 +201,15 @@ $success = $integrationService->updateCampaignAttributionModel(
 - Ensure database supports the required MySQL version (5.6+ or MariaDB 10.0.12+)
 
 **Default models not created:**
-- Ensure `202_users` table has valid user records
+- Ensure `1ai_users` table has valid user records
 - Check that upgrade process completed without errors
 - Verify INSERT IGNORE statements executed successfully during upgrade
 - Each user should automatically get a "Last Touch Attribution" default model
 
 **Manual installation issues (development only):**
 - Ensure you're running the script from the 1ai-Affiliate root directory
-- Command should be: `php 202-config/migrations/run_attribution_migration_standalone.php`
-- Verify `202-config.php` exists and contains correct database credentials
+- Command should be: `php 1ai-config/migrations/run_attribution_migration_standalone.php`
+- Verify `1ai-config.php` exists and contains correct database credentials
 
 ### Permission Issues
 

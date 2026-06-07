@@ -146,10 +146,10 @@ final class TableRegistry
     // DNI tables
     public const string DNI_NETWORKS = 'dni_networks';
 
-    // Bot202 Facebook Pixel tables
-    public const string BOT202_FACEBOOK_PIXEL_ASSISTANT = 'botfacebook_pixel_assistant';
-    public const string BOT202_FACEBOOK_PIXEL_CONTENT_TYPE = 'botfacebook_pixel_content_type';
-    public const string BOT202_FACEBOOK_PIXEL_CLICK_EVENTS = 'botfacebook_pixel_click_events';
+    // Bot1ai Facebook Pixel tables
+    public const string BOT1ai_FACEBOOK_PIXEL_ASSISTANT = 'botfacebook_pixel_assistant';
+    public const string BOT1ai_FACEBOOK_PIXEL_CONTENT_TYPE = 'botfacebook_pixel_content_type';
+    public const string BOT1ai_FACEBOOK_PIXEL_CLICK_EVENTS = 'botfacebook_pixel_click_events';
 
     /**
      * Get all table names as an array.

@@ -8,22 +8,22 @@ $vars = explode(' ', base64_decode((string) RedirectHelper::getStringParam('202v
 if(isset($vars[1])){
 $_GET['pci']=$vars[1];
 $expire = time() + 2592000;
-@setcookie('tracking202subid',$vars[0], ['expires' => $expire, 'path' => '/', 'domain' => (string) $_SERVER['SERVER_NAME']]);
-@setcookie('tracking202subid_a_' . $vars[2],$vars[0], ['expires' => $expire, 'path' => '', 'domain' => (string) $_SERVER['SERVER_NAME']]);
-@setcookie('tracking202pci',$vars[1], ['expires' => $expire, 'path' => '/', 'domain' => (string) $_SERVER['SERVER_NAME']]);
+@setcookie('tracking1aisubid',$vars[0], ['expires' => $expire, 'path' => '/', 'domain' => (string) $_SERVER['SERVER_NAME']]);
+@setcookie('tracking1aisubid_a_' . $vars[2],$vars[0], ['expires' => $expire, 'path' => '', 'domain' => (string) $_SERVER['SERVER_NAME']]);
+@setcookie('tracking1aipci',$vars[1], ['expires' => $expire, 'path' => '/', 'domain' => (string) $_SERVER['SERVER_NAME']]);
 }
 $redirect_site_url='';
 
 
 // Simple LP redirect
 if (isset($_GET['lpip']) && is_numeric($_GET['lpip'])) {
-    if (isset($_COOKIE['tracking202outbound'])) {
-        $tracking202outbound = $_COOKIE['tracking202outbound'];
+    if (isset($_COOKIE['tracking1aioutbound'])) {
+        $tracking1aioutbound = $_COOKIE['tracking1aioutbound'];
     } else {
         require_once substr(__DIR__, 0, -21) . '/tracking_support/redirect/lp.php';
     }
 
-    RedirectHelper::redirect($tracking202outbound);
+    RedirectHelper::redirect($tracking1aioutbound);
 }
 
 // Advanced LP redirect

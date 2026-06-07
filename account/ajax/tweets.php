@@ -19,7 +19,7 @@ foreach ($tweets as $tweet) {
     
     // Only display items that are recent within 30 days
     if ($published_time > (time() - 60*60*24*30)) {
-        $title = str_replace('tracking202: ', '', $tweet['title'] ?? '');
+        $title = str_replace('tracking1ai: ', '', $tweet['title'] ?? '');
         $description = html2txt($tweet['description'] ?? '');
         $link = $tweet['link'] ?? '';
         $time_ago = human_time_diff($published_time); ?>

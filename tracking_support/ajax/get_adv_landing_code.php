@@ -98,9 +98,9 @@ $campaign_slack = '';
 //                       
 // -------------------------------------------------------------------
 			  
-$tracking202outbound = \'//'. getTrackingDomain() . get_absolute_url().'tracking_support/redirect/off.php?acip='.$aff_campaign_row['aff_campaign_id_public'].'&pci=\'.$_COOKIE[\'tracking202pci\']; 
+$tracking1aioutbound = \'//'. getTrackingDomain() . get_absolute_url().'tracking_support/redirect/off.php?acip='.$aff_campaign_row['aff_campaign_id_public'].'&pci=\'.$_COOKIE[\'tracking1aipci\']; 
 			 
-header(\'location: \'.$tracking202outbound);
+header(\'location: \'.$tracking1aioutbound);
 			  
 ?>';
 
@@ -136,9 +136,9 @@ header(\'location: \'.$tracking202outbound);
 //                       
 // -------------------------------------------------------------------
 			  
-$tracking202outbound = \'//'. getTrackingDomain() . get_absolute_url().'tracking_support/redirect/offrtr.php?rpi='.$rotator_row['public_id'].'\'; 
+$tracking1aioutbound = \'//'. getTrackingDomain() . get_absolute_url().'tracking_support/redirect/offrtr.php?rpi='.$rotator_row['public_id'].'\'; 
 			 
-header(\'location: \'.$tracking202outbound);
+header(\'location: \'.$tracking1aioutbound);
 			  
 ?>';
 

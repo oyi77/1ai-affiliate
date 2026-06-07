@@ -1,7 +1,7 @@
 -- Attribution Models Table Migration
--- Creates the 202_attribution_models table for storing user attribution model configurations
+-- Creates the 1ai_attribution_models table for storing user attribution model configurations
 
-CREATE TABLE IF NOT EXISTS `202_attribution_models` (
+CREATE TABLE IF NOT EXISTS `1ai_attribution_models` (
   `model_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `model_name` varchar(100) NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `202_attribution_models` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Attribution model definitions for multi-touch attribution';
 
 -- Create default "Last Touch" model for existing users
-INSERT IGNORE INTO `202_attribution_models` (
+INSERT IGNORE INTO `1ai_attribution_models` (
     `user_id`, 
     `model_name`, 
     `model_slug`, 
@@ -41,11 +41,11 @@ SELECT
     1 as is_default,
     UNIX_TIMESTAMP() as created_at,
     UNIX_TIMESTAMP() as updated_at
-FROM `202_users` 
+FROM `1ai_users` 
 WHERE `user_id` > 0;
 
 -- Attribution Snapshots Table (if not exists)
-CREATE TABLE IF NOT EXISTS `202_attribution_snapshots` (
+CREATE TABLE IF NOT EXISTS `1ai_attribution_snapshots` (
   `snapshot_id` int(11) NOT NULL AUTO_INCREMENT,
   `model_id` int(11) NOT NULL,
   `conversion_id` int(11) NOT NULL,
@@ -57,11 +57,11 @@ CREATE TABLE IF NOT EXISTS `202_attribution_snapshots` (
   PRIMARY KEY (`snapshot_id`),
   KEY `model_conversion` (`model_id`, `conversion_id`),
   KEY `user_date` (`user_id`, `snapshot_date`),
-  FOREIGN KEY (`model_id`) REFERENCES `202_attribution_models` (`model_id`) ON DELETE CASCADE
+  FOREIGN KEY (`model_id`) REFERENCES `1ai_attribution_models` (`model_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Attribution calculation snapshots';
 
 -- Attribution Touchpoints Table (if not exists)  
-CREATE TABLE IF NOT EXISTS `202_attribution_touchpoints` (
+CREATE TABLE IF NOT EXISTS `1ai_attribution_touchpoints` (
   `touchpoint_id` int(11) NOT NULL AUTO_INCREMENT,
   `snapshot_id` int(11) NOT NULL,
   `click_id` int(11) NOT NULL,
@@ -75,11 +75,11 @@ CREATE TABLE IF NOT EXISTS `202_attribution_touchpoints` (
   PRIMARY KEY (`touchpoint_id`),
   KEY `snapshot_position` (`snapshot_id`, `touchpoint_position`),
   KEY `click_attribution` (`click_id`, `attribution_credit`),
-  FOREIGN KEY (`snapshot_id`) REFERENCES `202_attribution_snapshots` (`snapshot_id`) ON DELETE CASCADE
+  FOREIGN KEY (`snapshot_id`) REFERENCES `1ai_attribution_snapshots` (`snapshot_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Individual touchpoints in attribution journeys';
 
 -- Attribution Settings/Audit Table (if not exists)
-CREATE TABLE IF NOT EXISTS `202_attribution_settings` (
+CREATE TABLE IF NOT EXISTS `1ai_attribution_settings` (
   `setting_id` int(11) NOT NULL AUTO_INCREMENT,
   `model_id` int(11) NOT NULL,
   `setting_name` varchar(50) NOT NULL,
@@ -88,21 +88,21 @@ CREATE TABLE IF NOT EXISTS `202_attribution_settings` (
   `updated_at` int(11) NOT NULL,
   PRIMARY KEY (`setting_id`),
   UNIQUE KEY `model_setting_unique` (`model_id`, `setting_name`),
-  FOREIGN KEY (`model_id`) REFERENCES `202_attribution_models` (`model_id`) ON DELETE CASCADE
+  FOREIGN KEY (`model_id`) REFERENCES `1ai_attribution_models` (`model_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Additional settings and audit data for attribution models';
 
 -- Add attribution model reference to campaigns table
-ALTER TABLE `202_aff_campaigns` 
+ALTER TABLE `1ai_aff_campaigns` 
 ADD COLUMN `attribution_model_id` int(11) DEFAULT NULL 
 AFTER `aff_campaign_cloaking`;
 
 -- Create index for attribution model lookups
-ALTER TABLE `202_aff_campaigns` 
+ALTER TABLE `1ai_aff_campaigns` 
 ADD INDEX `idx_attribution_model` (`attribution_model_id`);
 
 -- Add foreign key constraint (optional, for data integrity)
-ALTER TABLE `202_aff_campaigns` 
+ALTER TABLE `1ai_aff_campaigns` 
 ADD CONSTRAINT `fk_campaign_attribution_model` 
 FOREIGN KEY (`attribution_model_id`) 
-REFERENCES `202_attribution_models` (`model_id`) 
+REFERENCES `1ai_attribution_models` (`model_id`) 
 ON DELETE SET NULL;

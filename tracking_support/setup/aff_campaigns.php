@@ -523,7 +523,7 @@ template_top('Affiliate Campaigns Setup');
 					<?php if ($editing == true) { ?>
 						<div class="row">
 							<div class="col-xs-6">
-								<button class="btn btn-sm btn-p202 btn-block" type="submit">Edit</button>
+								<button class="btn btn-sm btn-p1ai btn-block" type="submit">Edit</button>
 							</div>
 							<div class="col-xs-6">
 								<input type="hidden" name="pixel_id" value="<?php echo $selected['pixel_id'] ?? ''; ?>">
@@ -531,7 +531,7 @@ template_top('Affiliate Campaigns Setup');
 							</div>
 						</div>
 					<?php } else { ?>
-						<button class="btn btn-sm btn-p202 btn-block" type="submit" id="addCampaign">Add</button>
+						<button class="btn btn-sm btn-p1ai btn-block" type="submit" id="addCampaign">Add</button>
 					<?php } ?>
 				</div>
 			</div>

@@ -39,7 +39,7 @@ func Dir() string {
 	if err != nil {
 		home = os.TempDir()
 	}
-	return filepath.Join(home, ".p202")
+	return filepath.Join(home, ".p1ai")
 }
 
 func Path() string {
@@ -93,10 +93,10 @@ func (c *Config) Validate() error {
 
 func (p *Profile) Validate() error {
 	if p.URL == "" {
-		return fmt.Errorf("no URL configured. Run: p202 config set-url <url>")
+		return fmt.Errorf("no URL configured. Run: p1ai config set-url <url>")
 	}
 	if p.APIKey == "" {
-		return fmt.Errorf("no API key configured. Run: p202 config set-key <key>")
+		return fmt.Errorf("no API key configured. Run: p1ai config set-key <key>")
 	}
 	return nil
 }

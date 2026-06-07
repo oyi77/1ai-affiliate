@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"p202/internal/config"
+	"p1ai/internal/config"
 )
 
 const maxResponseSize = 10 << 20 // 10 MB
@@ -117,7 +117,7 @@ func NewURLOnly() (*Client, error) {
 		return nil, err
 	}
 	if profile.URL == "" {
-		return nil, fmt.Errorf("no URL configured. Run: p202 config set-url <url>")
+		return nil, fmt.Errorf("no URL configured. Run: p1ai config set-url <url>")
 	}
 	return newClient(profile.URL, profile.APIKey), nil // API key may be empty for URL-only endpoints.
 }
@@ -183,7 +183,7 @@ func (c *Client) ensureCapabilities() {
 		req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "p202-cli/2.0 (Go)")
+	req.Header.Set("User-Agent", "p1ai-cli/2.0 (Go)")
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -215,7 +215,7 @@ func (c *Client) negotiateVersion() {
 		return
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "p202-cli/2.0 (Go)")
+	req.Header.Set("User-Agent", "p1ai-cli/2.0 (Go)")
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -298,9 +298,9 @@ func (c *Client) do(method, path string, params map[string]string, body interfac
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "p202-cli/2.0 (Go)")
+	req.Header.Set("User-Agent", "p1ai-cli/2.0 (Go)")
 	if idx := strings.LastIndex(c.baseURL, "/api/v"); idx != -1 {
-		req.Header.Set("X-P202-API-Version", c.baseURL[idx+5:])
+		req.Header.Set("X-P1ai-API-Version", c.baseURL[idx+5:])
 	}
 
 	resp, err := c.http.Do(req)

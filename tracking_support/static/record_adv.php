@@ -12,10 +12,10 @@ $trackingRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::tracking($db
 
 $_GET += [
 	'lpip' => '',
-	't202id' => '',
-	't202b' => '',
-	't202kw' => '',
-	't202ref' => '',
+	't1aiid' => '',
+	't1aib' => '',
+	't1aikw' => '',
+	't1airef' => '',
 	'OVKEY' => '',
 	'OVRAW' => '',
 	'target_passthrough' => '',
@@ -62,9 +62,9 @@ $mysql['user_pref_dynamic_bid'] = $db->real_escape_string((string) ($user_row['u
 //now this sets it
 AUTH::set_timezone((string) ($user_row['user_timezone'] ?? 'UTC'));
 
-if ($_GET['t202id']) {
+if ($_GET['t1aiid']) {
 	//grab tracker data if avaliable
-	$mysql['tracker_id_public'] = $db->real_escape_string((string)$_GET['t202id']);
+	$mysql['tracker_id_public'] = $db->real_escape_string((string)$_GET['t1aiid']);
 
 		$tracker_sql2 = "
 		SELECT
@@ -97,10 +97,10 @@ $mysql['user_id'] = $db->real_escape_string((string) ($tracker_row['user_id'] ??
 $mysql['aff_campaign_id'] = $db->real_escape_string((string) ($tracker_row['aff_campaign_id'] ?? '0'));
 $mysql['ppc_account_id'] = $db->real_escape_string((string) ($tracker_row['ppc_account_id'] ?? '0'));
 // set cpc use dynamic variable if set or the default if not
-if (isset($_GET['t202b']) && $mysql['user_pref_dynamic_bid'] == '1') {
-	$_GET['t202b'] = ltrim($_GET['t202b'], '$');
-	if (is_numeric($_GET['t202b'])) {
-		$bid = number_format($_GET['t202b'], 5, '.', '');
+if (isset($_GET['t1aib']) && $mysql['user_pref_dynamic_bid'] == '1') {
+	$_GET['t1aib'] = ltrim($_GET['t1aib'], '$');
+	if (is_numeric($_GET['t1aib'])) {
+		$bid = number_format($_GET['t1aib'], 5, '.', '');
 		$mysql['click_cpc'] = $db->real_escape_string($bid);
 	} else {
 		$mysql['click_cpc'] = $db->real_escape_string((string) ($tracker_row['click_cpc'] ?? '0'));
@@ -126,8 +126,8 @@ switch ($user_row['user_keyword_searched_or_bidded'] ?? '') {
 		#try to get the bidded keyword first
 		if ($_GET['OVKEY']) { //if this is a Y! keyword
 			$keyword = $db->real_escape_string((string)$_GET['OVKEY']);
-		} elseif ($_GET['t202kw']) {
-			$keyword = $db->real_escape_string((string)$_GET['t202kw']);
+		} elseif ($_GET['t1aikw']) {
+			$keyword = $db->real_escape_string((string)$_GET['t1aikw']);
 		} elseif ($_GET['target_passthrough']) { //if this is a mediatraffic! keyword
 			$keyword = $db->real_escape_string((string)$_GET['target_passthrough']);
 		} else { //if this is a zango, or more keyword
@@ -169,16 +169,16 @@ switch ($user_row['user_keyword_searched_or_bidded'] ?? '') {
 		} elseif ($_GET['words']) { //if this is a Rambler, or more keyword
 			$keyword = $db->real_escape_string((string)$_GET['words']);
 		} else {
-			$keyword = $db->real_escape_string((string)$_GET['t202kw']);
+			$keyword = $db->real_escape_string((string)$_GET['t1aikw']);
 		}
 		break;
 }
 
-if (str_starts_with((string) $keyword, 't202var_')) {
-	$t202var = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
+if (str_starts_with((string) $keyword, 't1aivar_')) {
+	$t1aivar = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
 
-	if (isset($_GET[$t202var])) {
-		$keyword = $db->real_escape_string((string) $_GET[$t202var]);
+	if (isset($_GET[$t1aivar])) {
+		$keyword = $db->real_escape_string((string) $_GET[$t1aivar]);
 	}
 }
 
@@ -297,12 +297,12 @@ if ($device_id['type'] == '4') {
 $mysql['click_in'] = 1;
 $mysql['click_out'] = 0;
 
-// if user wants to use t202ref from url variable use that first if it's not set try and get it from the ref url
+// if user wants to use t1airef from url variable use that first if it's not set try and get it from the ref url
 $_referer_site_url = '';
-if (($user_row['user_pref_referer_data'] ?? '') == 't202ref') {
-	if (isset($_GET['t202ref']) && $_GET['t202ref'] != '') { //check for t202ref value
-		$mysql['t202ref'] = $db->real_escape_string((string)$_GET['t202ref']);
-		$_referer_site_url = (string) $_GET['t202ref'];
+if (($user_row['user_pref_referer_data'] ?? '') == 't1airef') {
+	if (isset($_GET['t1airef']) && $_GET['t1airef'] != '') { //check for t1airef value
+		$mysql['t1airef'] = $db->real_escape_string((string)$_GET['t1airef']);
+		$_referer_site_url = (string) $_GET['t1airef'];
 	} else { //if not found revert to what we usually do
 		if (!empty($referer_query['url'])) {
 			$_referer_site_url = (string) $referer_query['url'];
@@ -433,14 +433,14 @@ header('Content-Type: application/javascript; charset=UTF-8');
 ?>
 
 
-function t202initB() {
+function t1aiinitB() {
 
 var subid =<?php echo json_encode((string) $click_id); ?>;
-createCookie('tracking202subid',subid,0);
+createCookie('tracking1aisubid',subid,0);
 
 var pci = <?php echo json_encode((string) $click_id_public); ?>;
-createCookie('tracking202pci',pci,0);
+createCookie('tracking1aipci',pci,0);
 
 }
 
-t202initB();
+t1aiinitB();

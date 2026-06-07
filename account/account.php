@@ -102,7 +102,7 @@ if (!empty($_GET['customers_api_key'])) {
 	}
 }
 
-//if they want to remove their stats202 app key on file, do so
+//if they want to remove their stats1ai app key on file, do so
 if (!empty($_GET['remove_user_statsapp_key'])) {
 	if (!hash_equals((string)($_SESSION['token'] ?? ''), (string)($_REQUEST['token'] ?? ''))) {
 		http_response_code(403);
@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			switch ($_POST['user_referer']) {
 
 				case "browser":
-				case "t202ref":
+				case "t1airef":
 					break;
 				default:
 					$error['user_referer'] = 'You must select your referer preference.';
@@ -296,7 +296,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						$from_type = 'Pickup Searched Keyword';
 					}
 
-					if ($_POST['user_referer'] == 't202ref') {
+					if ($_POST['user_referer'] == 't1airef') {
 						$to_type = 'Pickup Bidded Keyword';
 					} else {
 						$to_type = 'Pickup Searched Keyword';
@@ -307,14 +307,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 				if ($_POST['user_referer'] != $user_row['user_pref_referer_data']) {
 
-					if ($user_row['user_pref_referer_data'] == 't202ref') {
-						$from_type = 'Pickup Referer from t202ref variable';
+					if ($user_row['user_pref_referer_data'] == 't1airef') {
+						$from_type = 'Pickup Referer from t1airef variable';
 					} else {
 						$from_type = 'Pickup Referer from browser';
 					}
 
-					if ($_POST['user_referer'] == 't202ref') {
-						$to_type = 'Pickup Referer from t202ref variable';
+					if ($_POST['user_referer'] == 't1airef') {
+						$to_type = 'Pickup Referer from t1airef variable';
 					} else {
 						$to_type = 'Pickup Referer from browser';
 					}
@@ -748,7 +748,7 @@ $html = array_map('htmlentities', $user_row);
 								<?php if ($html['user_pref_dynamic_bid'] == '1') {
 									echo 'selected=""';
 								} ?>
-								value="1">Pickup Bid dynamically from t202b variable</option>
+								value="1">Pickup Bid dynamically from t1aib variable</option>
 						</select>
 					</div>
 				</div>
@@ -762,10 +762,10 @@ $html = array_map('htmlentities', $user_row);
 								} ?>
 								value="browser">Pickup Referer from browser</option>
 							<option
-								<?php if ($html['user_pref_referer_data'] == 't202ref') {
+								<?php if ($html['user_pref_referer_data'] == 't1airef') {
 									echo 'selected=""';
 								} ?>
-								value="t202ref">Pickup Referer from t202ref variable</option>
+								value="t1airef">Pickup Referer from t1airef variable</option>
 						</select>
 					</div>
 				</div>
@@ -851,7 +851,7 @@ $html = array_map('htmlentities', $user_row);
 			<?php } ?>
 			<div class="form-group">
 				<div class="col-xs-8 col-xs-offset-4">
-					<button class="btn btn-md btn-p202 btn-block" type="submit">Update profile</button>
+					<button class="btn btn-md btn-p1ai btn-block" type="submit">Update profile</button>
 				</div>
 			</div>
 
@@ -915,7 +915,7 @@ $html = array_map('htmlentities', $user_row);
 				</div>
 				<div class="form-group">
 					<div class="col-xs-8 col-xs-offset-4">
-						<button class="btn btn-md btn-p202 btn-block" type="submit">Update account currency</button>
+						<button class="btn btn-md btn-p1ai btn-block" type="submit">Update account currency</button>
 					</div>
 				</div>
 			</form>
@@ -976,7 +976,7 @@ $html = array_map('htmlentities', $user_row);
 		<div class="col-xs-4">
 			<div class="panel panel-default account_left">
 				<div class="panel-body">
-					If you want to use special mods and paid features built into 1ai-Affiliate, sign up <a href="https://my.tracking202.com/api/customers/register">here</a>, fill out yout billing information, receive and insert your API key here.
+					If you want to use special mods and paid features built into 1ai-Affiliate, sign up <a href="https://my.tracking1ai.com/api/customers/register">here</a>, fill out yout billing information, receive and insert your API key here.
 				</div>
 			</div>
 		</div>
@@ -992,7 +992,7 @@ $html = array_map('htmlentities', $user_row);
 				</div>
 				<div class="form-group">
 					<div class="col-xs-8 col-xs-offset-4">
-						<button class="btn btn-md btn-p202 btn-block" type="submit">Update API key</button>
+						<button class="btn btn-md btn-p1ai btn-block" type="submit">Update API key</button>
 					</div>
 				</div>
 			</form>
@@ -1048,7 +1048,7 @@ $html = array_map('htmlentities', $user_row);
 
 			<div class="form-group">
 				<div class="col-xs-8 col-xs-offset-4">
-					<button class="btn btn-md btn-p202 btn-block" type="submit">Change Password</button>
+					<button class="btn btn-md btn-p1ai btn-block" type="submit">Change Password</button>
 				</div>
 			</div>
 		</form>

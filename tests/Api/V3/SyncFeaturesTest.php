@@ -167,7 +167,7 @@ final class SyncFeaturesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->tmpDir = sys_get_temp_dir() . '/p202-sync-test-' . bin2hex(random_bytes(4));
+        $this->tmpDir = sys_get_temp_dir() . '/p1ai-sync-test-' . bin2hex(random_bytes(4));
         mkdir($this->tmpDir, 0700, true);
     }
 

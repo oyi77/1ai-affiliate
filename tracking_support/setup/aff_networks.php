@@ -216,7 +216,7 @@ template_top('Campaign Category Setup');
 						<input type="text" class="form-control" id="aff_network_name" name="aff_network_name" placeholder="Enter category name..." value="<?php echo $html['aff_network_name'] ?? ''; ?>">
 					</div>
 					<div class="setup-form-actions">
-						<button type="submit" class="btn btn-p202" <?php if ($network_editing != true) { echo 'id="addCategory"'; } ?>><?php echo ($network_editing == true) ? 'Save Changes' : 'Add Category'; ?></button>
+						<button type="submit" class="btn btn-p1ai" <?php if ($network_editing != true) { echo 'id="addCategory"'; } ?>><?php echo ($network_editing == true) ? 'Save Changes' : 'Add Category'; ?></button>
 						<?php if ($editing == true) { ?>
 							<a href="<?php echo get_absolute_url(); ?>tracking_support/setup/aff_networks.php" class="btn btn-secondary">Cancel</a>
 						<?php } ?>
@@ -408,19 +408,19 @@ template_top('Campaign Category Setup');
     height: 32px;
 }
 
-.btn-p202 {
+.btn-p1ai {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: #fff;
     border: 1px solid #0056b3;
 }
 
-.btn-p202:hover {
+.btn-p1ai:hover {
     background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
     transform: translateY(-2px);
 }
 
-.btn-p202:active {
+.btn-p1ai:active {
     transform: translateY(0);
     box-shadow: 0 2px 6px rgba(0, 123, 255, 0.2);
 }

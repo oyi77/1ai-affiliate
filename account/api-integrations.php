@@ -442,7 +442,7 @@ template_top('API Integrations');
 																																											} ?>">
 					</div>
 					<div class="col-xs-2" style="padding: 0px;">
-						<button class="btn btn-xs btn-p202 btn-block" type="submit" style="margin-top: 5px;"><?php if (isset($editing_dni_network) && $editing_dni_network) echo 'Edit';
+						<button class="btn btn-xs btn-p1ai btn-block" type="submit" style="margin-top: 5px;"><?php if (isset($editing_dni_network) && $editing_dni_network) echo 'Edit';
 																												else echo 'Add'; ?></button>
 					</div>
 				</form>
@@ -468,7 +468,7 @@ template_top('API Integrations');
 			<div class="col-xs-12">
 				<div class="panel panel-default account_left">
 					<div class="panel-body">
-						If you wish to detect and redirect Fraud in real-time using IPQualityScore, enter your IPQualityScore API Key! <a href='https://202.redirexit.com/tracking_support/redirect/dl.php?t202id=12608&t202kw=' target='_blank' rel='noopener'>Click here for your free api key.</a>
+						If you wish to detect and redirect Fraud in real-time using IPQualityScore, enter your IPQualityScore API Key! <a href='https://202.redirexit.com/tracking_support/redirect/dl.php?t1aiid=12608&t1aikw=' target='_blank' rel='noopener'>Click here for your free api key.</a>
 					</div>
 				</div>
 			</div>
@@ -492,7 +492,7 @@ template_top('API Integrations');
 						</div>
 						<div class="col-xs-6">
 							<br>
-							<button class="btn btn-xs btn-p202 btn-block" type="submit">Update IPQS API Key</button>
+							<button class="btn btn-xs btn-p1ai btn-block" type="submit">Update IPQS API Key</button>
 						</div>
 					</div>
 				</div>
@@ -552,7 +552,7 @@ template_top('API Integrations');
 									<span class="label label-primary">Verified</span>
 								<?php } ?>
 							</span> -
-							<em><?php echo $strProtocol . '' . getTrackingDomain() . get_absolute_url() . 'tracking_support/static/cb202.php'; ?></em>
+							<em><?php echo $strProtocol . '' . getTrackingDomain() . get_absolute_url() . 'tracking_support/static/cb1ai.php'; ?></em>
 						</small>
 
 						<input type="hidden" name="change_cb_key" value="1" />
@@ -570,7 +570,7 @@ template_top('API Integrations');
 						<br />
 						<div class="form-group">
 							<div class="col-xs-12">
-								<button class="btn btn-xs btn-p202 btn-block" type="submit">Update Secret Key</button>
+								<button class="btn btn-xs btn-p1ai btn-block" type="submit">Update Secret Key</button>
 							</div>
 						</div>
 					</div>
@@ -647,7 +647,7 @@ template_top('API Integrations');
 						</div>
 						<div class="col-xs-6">
 							<br>
-							<button class="btn btn-xs btn-p202 btn-block" type="submit">Update JVZoo Secret Key</button>
+							<button class="btn btn-xs btn-p1ai btn-block" type="submit">Update JVZoo Secret Key</button>
 						</div>
 					</div>
 				</div>
@@ -702,7 +702,7 @@ template_top('API Integrations');
 						</div>
 						<div class="col-xs-6">
 							<br>
-							<button class="btn btn-xs btn-p202 btn-block" type="submit">Update Zaxaa API Signature</button>
+							<button class="btn btn-xs btn-p1ai btn-block" type="submit">Update Zaxaa API Signature</button>
 						</div>
 					</div>
 				</div>
@@ -764,7 +764,7 @@ template_top('API Integrations');
 						</div>
 						<div class="col-xs-6">
 							<br>
-							<button class="btn btn-xs btn-p202 btn-block" type="submit">Update Webhook Url</button>
+							<button class="btn btn-xs btn-p1ai btn-block" type="submit">Update Webhook Url</button>
 						</div>
 					</div>
 				</div>

@@ -4,18 +4,18 @@ Use this reference when the Advanced Attribution Engine does not behave as expec
 
 ## 1. Cron & Scheduling Issues
 - **Symptom:** System check warns that the attribution cron has not run in the last 24 hours.
-  - Verify your cron entry (`202-cronjobs/attribution-rebuild.php`) is scheduled hourly.
-  - Run the script manually: `php 202-cronjobs/attribution-rebuild.php --start=$(date -v-1H +%s)` (macOS) or `--start=$(( $(date +%s) - 3600 ))` (Linux).
-  - Confirm `202_cronjob_logs` contains a row with `id = 2` and a recent timestamp.
+  - Verify your cron entry (`1ai-cronjobs/attribution-rebuild.php`) is scheduled hourly.
+  - Run the script manually: `php 1ai-cronjobs/attribution-rebuild.php --start=$(date -v-1H +%s)` (macOS) or `--start=$(( $(date +%s) - 3600 ))` (Linux).
+  - Confirm `1ai_cronjob_logs` contains a row with `id = 2` and a recent timestamp.
 - **Symptom:** Cron output shows database errors.
   - Ensure the CLI user has access to the project path and PHP 8.3+.
-  - Check MySQL credentials in `202-config/connect.php`.
-  - Review `/202-config/cronjob.log` for stack traces.
+  - Check MySQL credentials in `1ai-config/connect.php`.
+  - Review `/1ai-config/cronjob.log` for stack traces.
 
 ## 2. Missing or Incomplete Data
 - **Symptom:** Snapshots table stays empty after cron runs.
-  - Confirm conversions exist in `202_conversion_logs` for the selected time window.
-  - Verify active models (`is_active = 1`) are defined for the owning user (`202_attribution_models`).
+  - Confirm conversions exist in `1ai_conversion_logs` for the selected time window.
+  - Verify active models (`is_active = 1`) are defined for the owning user (`1ai_attribution_models`).
   - Confirm weighting config is valid (see Section 3).
 - **Symptom:** Snapshots stop updating mid-way through a large backfill.
   - Reduce the window (`--start` / `--end`) and run cron multiple times—batching is additive.
@@ -39,7 +39,7 @@ Use this reference when the Advanced Attribution Engine does not behave as expec
 
 ## 5. Audit & Governance
 - **Symptom:** Need to trace who triggered a rebuild.
-  - Check `202_attribution_audit` for `snapshot_rebuild` entries (metadata includes window, totals).
+  - Check `1ai_attribution_audit` for `snapshot_rebuild` entries (metadata includes window, totals).
   - Model CRUD requests log `model_create`, `model_update`, `model_delete` actions with context.
 
 ## 6. Export & Webhook Issues
@@ -48,12 +48,12 @@ Use this reference when the Advanced Attribution Engine does not behave as expec
   - Solution: Use the download link instead of webhooks for large exports, or reduce the date range.
 - **Symptom:** Webhook delivery fails with timeout or connection errors.
   - Verify the webhook URL is accessible from the server.
-  - Check the cron logs (`202-cronjobs/attribution-export.php`) for detailed error messages.
+  - Check the cron logs (`1ai-cronjobs/attribution-export.php`) for detailed error messages.
   - Webhook requests timeout after 15 seconds—ensure the receiving endpoint responds quickly.
 - **Symptom:** Export job stuck in "Processing" status.
-  - Check that `202-cronjobs/attribution-export.php` is running regularly.
+  - Check that `1ai-cronjobs/attribution-export.php` is running regularly.
   - Review cron logs for PHP errors or database connectivity issues.
-  - Verify the `202_attribution_exports` table is not locked or corrupted.
+  - Verify the `1ai_attribution_exports` table is not locked or corrupted.
 
 ## 7. Performance Considerations
 - Limit long backfills to at most 24h windows to keep cron runs under a few minutes.
@@ -61,7 +61,7 @@ Use this reference when the Advanced Attribution Engine does not behave as expec
 - Consider isolating attribution tables into their own database instance for high-volume installs.
 
 ## 8. Support
-- Share `202_attribution_audit` entries and cron logs when escalating to support.
+- Share `1ai_attribution_audit` entries and cron logs when escalating to support.
 - Provide details about model configurations and cron schedules to accelerate triage.
 
 For a full walkthrough, see [14-Advanced Attribution Engine](./14-advanced-attribution-engine.md).

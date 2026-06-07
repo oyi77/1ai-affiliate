@@ -7,7 +7,7 @@ if ( !file_exists(substr(__DIR__, 0,-11) . '/config.php') ) {
 	
         //check to make sure this user has the required PHP version
         if (!php_version_supported()) {
-                _die("1ai-Affiliate requires PHP " . 1ai-affiliate_MIN_PHP_VERSION . " or greater to run.  Your server does not meet the <a href='http://prosper.tracking202.com/apps/about/requirements/'>minimum requirements to run 1ai-Affiliate</a>.  Please either have your hosting provider upgrade to PHP " . 1ai-affiliate_MIN_PHP_VERSION . " or simply sign up with one of our <a href='http://prosper.tracking202.com/apps/hosting/'>recommended hosting providers</a>.");
+                _die("1ai-Affiliate requires PHP " . ONEAI_AFFILIATE_MIN_PHP_VERSION . " or greater to run.  Your server does not meet the <a href='http://prosper.tracking1ai.com/apps/about/requirements/'>minimum requirements to run 1ai-Affiliate</a>.  Please either have your hosting provider upgrade to PHP " . ONEAI_AFFILIATE_MIN_PHP_VERSION . " or simply sign up with one of our <a href='http://prosper.tracking1ai.com/apps/hosting/'>recommended hosting providers</a>.");
         }
 	
 	//require the config.php file

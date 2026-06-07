@@ -11,7 +11,7 @@ Here is the correct code to use for iframing an offer with Tracking202. The 1ai-
 {
 "codes": [
 {
-"code": "<html>\n \t<head>\n \t<title>Title Goes Here</title>\n \t</head>\n \t<body style=\"margin: 0px; padding: 0px;\" scroll=\"no\">\n \t<iframe src=\"http://redirect.tracking202.com/lp/XXXXXX\" style=\"border: 0px; width: 100%; height:100%;\"></iframe>\n \t<script src=\"http://static.tracking202.com/lp/XXXXXX/landing.js\" type=\"text/javascript\"></script>\n \t</body>\n</html>",
+"code": "<html>\n \t<head>\n \t<title>Title Goes Here</title>\n \t</head>\n \t<body style=\"margin: 0px; padding: 0px;\" scroll=\"no\">\n \t<iframe src=\"http://redirect.tracking1ai.com/lp/XXXXXX\" style=\"border: 0px; width: 100%; height:100%;\"></iframe>\n \t<script src=\"http://static.tracking1ai.com/lp/XXXXXX/landing.js\" type=\"text/javascript\"></script>\n \t</body>\n</html>",
 "language": "html"
 }
 ]
@@ -25,7 +25,7 @@ The basic concept is actually quite simple; instead of redirecting to the affili
 {
 "codes": [
 {
-"code": "<?php\n  \n//$tracking202outbound is where the user is suppose to be redirected to\n  if (isset($_COOKIE['tracking202outbound'])) {\n    $tracking202outbound = $_COOKIE['tracking202outbound'];     \n  } else {\n    $tracking202outbound = 'http://redirect.tracking202.com/lp/xxxxx';   \n  }\n  \n?>",
+"code": "<?php\n  \n//$tracking1aioutbound is where the user is suppose to be redirected to\n  if (isset($_COOKIE['tracking1aioutbound'])) {\n    $tracking1aioutbound = $_COOKIE['tracking1aioutbound'];     \n  } else {\n    $tracking1aioutbound = 'http://redirect.tracking1ai.com/lp/xxxxx';   \n  }\n  \n?>",
 "language": "php"
 }
 ]
@@ -36,7 +36,7 @@ The basic concept is actually quite simple; instead of redirecting to the affili
 {
 "codes": [
 {
-"code": "<html>\n <head>\n <title>Title Goes Here</title>\n </head>\n <body style=\"margin: 0px; padding: 0px;\" scroll=\"no\">\n <iframe src=\"<? echo $tracking202outbound; ?>\" \n style=\"border: 0px; width: 100%; height:100%;\"></iframe>\n </body>\n</html>",
+"code": "<html>\n <head>\n <title>Title Goes Here</title>\n </head>\n <body style=\"margin: 0px; padding: 0px;\" scroll=\"no\">\n <iframe src=\"<? echo $tracking1aioutbound; ?>\" \n style=\"border: 0px; width: 100%; height:100%;\"></iframe>\n </body>\n</html>",
 "language": "html"
 }
 ]
@@ -52,7 +52,7 @@ This shows how to dynamically display the keyword the user was searching for on 
 {
 "codes": [
 {
-"code": "<?\n\n//grab t202 keyword\n$keyword = $_GET['t202kw'];\n\n//if a yahoo keyword exists, over-write the t202 keyword\n//for Yahoo OVKEY = the bidded keyword, OVRAW = actual keyword\n//you can change $_GET['OVRAW'] to $_GET['OVKEY'] if you would\n//like to display the bidded keyword, instead of the actual keyword.\nif ($_GET['OVKEY']) { $keyword = $_GET['OVKEY']; }  \n\n//now anywhere we call echo $keyword, it will display the dynamic kw!\n\n//extra goodie, uncomment the line below if you would like to capitalize \n//the first character in each word\n//$keyword = ucwords(strtolower($keyword)); \n\n?>",
+"code": "<?\n\n//grab t1ai keyword\n$keyword = $_GET['t1aikw'];\n\n//if a yahoo keyword exists, over-write the t1ai keyword\n//for Yahoo OVKEY = the bidded keyword, OVRAW = actual keyword\n//you can change $_GET['OVRAW'] to $_GET['OVKEY'] if you would\n//like to display the bidded keyword, instead of the actual keyword.\nif ($_GET['OVKEY']) { $keyword = $_GET['OVKEY']; }  \n\n//now anywhere we call echo $keyword, it will display the dynamic kw!\n\n//extra goodie, uncomment the line below if you would like to capitalize \n//the first character in each word\n//$keyword = ucwords(strtolower($keyword)); \n\n?>",
 "language": "php"
 }
 ]

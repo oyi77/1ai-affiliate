@@ -1,6 +1,6 @@
 # PPC Tokens
 
-Below are links to the top three search engines and the respective tokens they accept. In general, the only one you really require is the keyword token. These are added to your t202kw= from your generated link in step 8. The other tokens, if you choose to use them, must be assigned to other variables. Generally if you have additional tracking you want to do, we recommend c1-c4.
+Below are links to the top three search engines and the respective tokens they accept. In general, the only one you really require is the keyword token. These are added to your t1aikw= from your generated link in step 8. The other tokens, if you choose to use them, must be assigned to other variables. Generally if you have additional tracking you want to do, we recommend c1-c4.
 
 ## Google
 

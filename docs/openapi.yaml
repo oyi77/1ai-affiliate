@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Prosper202 API
+  title: Prosper1ai API
   version: "3.0"
   description: |
-    REST API for the Prosper202 affiliate tracking platform.
+    REST API for the Prosper1ai affiliate tracking platform.
 
     ## Authentication
     All endpoints except `GET /system/health` require a Bearer token:
@@ -32,7 +32,7 @@ info:
     ```
     `field_errors` is only present on validation errors (422).
   contact:
-    name: Prosper202
+    name: Prosper1ai
   license:
     name: Proprietary
 
@@ -108,7 +108,7 @@ paths:
     get:
       tags: [System]
       summary: System version info
-      description: Returns Prosper202, PHP, and MySQL versions. Admin only.
+      description: Returns Prosper1ai, PHP, and MySQL versions. Admin only.
       operationId: systemVersion
       responses:
         "200":
@@ -121,7 +121,7 @@ paths:
                   data:
                     type: object
                     properties:
-                      prosper202_version:
+                      prosper1ai_version:
                         type: string
                       php_version:
                         type: string
@@ -752,7 +752,7 @@ paths:
                         type: integer
                       direct_url:
                         type: string
-                        description: Full tracking URL with t202id parameter
+                        description: Full tracking URL with t1aiid parameter
                       tracking_params:
                         type: string
                         description: Query parameter template

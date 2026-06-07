@@ -3,7 +3,7 @@ package cmd
 import (
 	"sort"
 
-	configpkg "p202/internal/config"
+	configpkg "p1ai/internal/config"
 
 	"github.com/spf13/cobra"
 )

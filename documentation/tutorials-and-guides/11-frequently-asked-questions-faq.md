@@ -54,7 +54,7 @@ Your Tracking202 login is different from your 1ai-Affiliate login. When you inst
 
  ## My keywords are not showing up, what's wrong?
 
-Some traffic sources such as Google and Bing have specific tokens required for keyword tracking to show up. For Google its {keyword} and for Bing its {QueryString}. Other sources may have different requirements. Whatever the requirement is, please check with your traffic source accordingly. Simply add the token to the end of your t202kw= parameter created by your generated tracking link if it hasn't already done so, and it should work. If you've already done this and your keywords are still not showing up, you may need further assistance. Please subscribe to one of our support plan for further help.
+Some traffic sources such as Google and Bing have specific tokens required for keyword tracking to show up. For Google its {keyword} and for Bing its {QueryString}. Other sources may have different requirements. Whatever the requirement is, please check with your traffic source accordingly. Simply add the token to the end of your t1aikw= parameter created by your generated tracking link if it hasn't already done so, and it should work. If you've already done this and your keywords are still not showing up, you may need further assistance. Please subscribe to one of our support plan for further help.
 
  ## My tracking link works but I'm not seeing any conversions
 

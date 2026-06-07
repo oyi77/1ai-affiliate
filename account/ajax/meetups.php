@@ -45,7 +45,7 @@ foreach ($meetups as $meetup) {
     
     if ($counter <= 20) { ?>
         
-        <h4><a href="http://meetup.tracking202.com" target="_blank"></a> <a href='<?php echo htmlentities($link); ?>' target="_blank"><?php echo htmlentities($title); ?></a> - <?php echo htmlentities($formatted_time); ?></h4>
+        <h4><a href="http://meetup.tracking1ai.com" target="_blank"></a> <a href='<?php echo htmlentities($link); ?>' target="_blank"><?php echo htmlentities($title); ?></a> - <?php echo htmlentities($formatted_time); ?></h4>
         <p><?php echo $clean_description; ?></p>
         
     <?php }

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"p202/internal/api"
-	configpkg "p202/internal/config"
+	"p1ai/internal/api"
+	configpkg "p1ai/internal/config"
 
 	"github.com/spf13/cobra"
 )

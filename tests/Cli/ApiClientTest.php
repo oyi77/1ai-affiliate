@@ -100,9 +100,9 @@ class ApiClientTest extends TestCase
         } finally {
             putenv("HOME={$origHome}");
             // Cleanup
-            array_map('unlink', glob($tmpDir . '/.p202/*') ?: []);
-            if (is_dir($tmpDir . '/.p202')) {
-                rmdir($tmpDir . '/.p202');
+            array_map('unlink', glob($tmpDir . '/.p1ai/*') ?: []);
+            if (is_dir($tmpDir . '/.p1ai')) {
+                rmdir($tmpDir . '/.p1ai');
             }
             rmdir($tmpDir);
         }

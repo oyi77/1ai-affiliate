@@ -55,11 +55,11 @@ if (!function_exists('withWritableSession')) {
     }
 }
 
-DEFINE('TRACKING202_RSS_URL', 'http://rss.tracking202.com');
-DEFINE('TRACKING202_ADS_URL', 'https://ads.tracking202.com');
+DEFINE('TRACKING1ai_RSS_URL', 'http://rss.tracking1ai.com');
+DEFINE('TRACKING1ai_ADS_URL', 'https://ads.tracking1ai.com');
 
 // Dashboard API configuration
-DEFINE('DASHBOARD_API_URL', 'https://my.tracking202.com/api/v1');
+DEFINE('DASHBOARD_API_URL', 'https://my.tracking1ai.com/api/v1');
 DEFINE('DASHBOARD_CACHE_TTL', 3600); // 1 hour
 
 //fix for nginx with no server name set
@@ -125,7 +125,7 @@ if (function_exists('mysqli_report')) {
 
 $install_path = substr(ROOT_PATH, strlen((string) $_SERVER['DOCUMENT_ROOT']));
 
-$re = '/\b(api|tracking202|202-\w+).*/';
+$re = '/\b(api|tracking1ai|1ai-\w+).*/';
 $str = (string)($_SERVER['REQUEST_URI'] ?? '');
 preg_match_all($re, $str, $matches, PREG_SET_ORDER, 0);
 
@@ -177,7 +177,7 @@ if (file_exists($autoloadPath)) {
     require_once $autoloadPath;
 }
 include_once(CONFIG_PATH . '/sessions.php');
-include_once(CONFIG_PATH . '/functions-tracking202.php');
+include_once(CONFIG_PATH . '/functions-tracking1ai.php');
 include_once(CONFIG_PATH . '/functions.php');
 // Now that functions.php is included, we can use ipAddress()
 $ip_address = ipAddress($temp_ip_address);
@@ -186,7 +186,7 @@ include_once(CONFIG_PATH . '/template.php');
 include_once(CONFIG_PATH . '/functions-auth.php');
 include_once(CONFIG_PATH . '/class-filterengine.php');
 
-include_once(CONFIG_PATH . '/functions-tracking202api.php');
+include_once(CONFIG_PATH . '/functions-tracking1aiapi.php');
 include_once(CONFIG_PATH . '/l10n.php');
 include_once(CONFIG_PATH . '/formatting.php');
 include_once(CONFIG_PATH . '/Role.class.php');
@@ -291,7 +291,7 @@ try {
 				<li>Are you sure that the database server is running?</li>
 			</ul>
 			</small> 
-			<p><small>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://support.tracking202.com'>1ai-Affiliate Support Center</a>.</small></p>
+			<p><small>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://support.tracking1ai.com'>1ai-Affiliate Support Center</a>.</small></p>
 		");
 }
 
@@ -302,7 +302,7 @@ $skip_upgrade = false;
 $stopSessions = false;
 
 //stop the sessions if this is a redirect or a javascript placement, we were recording sessions on every hit when we don't need it on
-if ($navigation[1] == 'tracking202') {
+if ($navigation[1] == 'tracking1ai') {
     switch ($navigation[2]) {
         case "redirect":
         case "static":
@@ -342,10 +342,10 @@ if (!isset($_SESSION['token'])) {
 $skip_upgrade = false;
 
 //don't run the upgrade, if regular users are being redirected through the self-hosted software
-if (($navigation[1] == 'tracking202') and ($navigation[2] == 'static')) {
+if (($navigation[1] == 'tracking1ai') and ($navigation[2] == 'static')) {
     $skip_upgrade = true;
 }
-if (($navigation[1] == 'tracking202') and ($navigation[2] == 'redirect')) {
+if (($navigation[1] == 'tracking1ai') and ($navigation[2] == 'redirect')) {
     $skip_upgrade = true;
 }
 
@@ -362,11 +362,11 @@ if ($skip_upgrade == false) {
     }
 }
 
-//if safe mode is turned on, and the user is trying to use offers202, stats202 or alerts202, show the error page
+//if safe mode is turned on, and the user is trying to use offers202, stats1ai or alerts202, show the error page
 switch ($navigation[1]) {
     case "offers202":
     case "alerts202":
-    case "stats202":
+    case "stats1ai":
         if (@ini_get('safe_mode')) {
             header('location: ' . get_absolute_url() . 'account/disable-safe-mode.php');
             die();

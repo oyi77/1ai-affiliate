@@ -43,9 +43,9 @@ info_top(); ?>
 		</div>
 
 		<?php if ($html['user_api'] == '') { ?>
-			<a class="btn btn-lg btn-p202 btn-block" href="https://my.tracking202.com/api/customers/login?redirect=get-api">Click Here For Your API Key<span class="fui-check-inverted pull-right"></a>
+			<a class="btn btn-lg btn-p1ai btn-block" href="https://my.tracking1ai.com/api/customers/login?redirect=get-api">Click Here For Your API Key<span class="fui-check-inverted pull-right"></a>
 		<?php } else { ?>
-			<button class="btn btn-lg btn-p202 btn-block" type="submit">Save API Key & Install 1ai-Affiliate ClickServer<span class="fui-check-inverted pull-right"></span></button>
+			<button class="btn btn-lg btn-p1ai btn-block" type="submit">Save API Key & Install 1ai-Affiliate ClickServer<span class="fui-check-inverted pull-right"></span></button>
 		<?php } ?>
 
 	</form>
@@ -66,7 +66,7 @@ info_top(); ?>
 					document.location.href = "install.php"
 				} else {
 					if (confirm('Your Api Key Is Invalid. Would You Like Help Finding Your Key?')) {
-						document.location.href = "https://my.tracking202.com/api/customers/login?redirect=get-api"
+						document.location.href = "https://my.tracking1ai.com/api/customers/login?redirect=get-api"
 					}
 				}
 			});
@@ -83,5 +83,5 @@ if (isset($_SERVER["HTTPS"]) && strtolower((string) $_SERVER["HTTPS"]) == "on") 
 }
 
 ?>
-<img src="https://my.tracking202.com/api/v2/dni/deeplink/cookie/set/<?php echo base64_encode($strProtocol .  $_SERVER['SERVER_NAME'] . get_absolute_url()); ?>">
+<img src="https://my.tracking1ai.com/api/v2/dni/deeplink/cookie/set/<?php echo base64_encode($strProtocol .  $_SERVER['SERVER_NAME'] . get_absolute_url()); ?>">
 <?php info_bottom();

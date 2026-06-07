@@ -407,7 +407,7 @@ template_top('Traffic Sources'); ?>
 						<label class="sr-only" for="ppc_network_name">Traffic source</label>
 						<input type="text" class="form-control input-sm" id="ppc_network_name" name="ppc_network_name" placeholder="Traffic source" value="<?php echo $html['ppc_network_name'] ?? ''; ?>">
 					</div>
-					<button type="submit" class="btn btn-xs btn-p202"><?php if ($network_editing == true) {
+					<button type="submit" class="btn btn-xs btn-p1ai"><?php if ($network_editing == true) {
 																			echo 'Edit';
 																		} else {
 																			echo 'Add';
@@ -502,14 +502,14 @@ template_top('Traffic Sources'); ?>
 							<?php if ($editing == true) { ?>
 								<div class="row" style="margin-top: 10px;">
 									<div class="col-xs-6">
-										<button class="btn btn-sm btn-p202 btn-block" type="submit">Edit</button>
+										<button class="btn btn-sm btn-p1ai btn-block" type="submit">Edit</button>
 									</div>
 									<div class="col-xs-6">
 										<button type="submit" class="btn btn-sm btn-danger btn-block" onclick="window.location='<?php echo get_absolute_url(); ?>tracking_support/setup/ppc_accounts.php'; return false;">Cancel</button>
 									</div>
 								</div>
 							<?php } else { ?>
-								<button class="btn btn-sm btn-p202 btn-block" type="submit">Add</button>
+								<button class="btn btn-sm btn-p1ai btn-block" type="submit">Add</button>
 							<?php } ?>
 						</div>
 					</div>
@@ -612,8 +612,8 @@ template_top('Traffic Sources'); ?>
 					<div class="col-xs-12"></div>
 					<div class="row">
 						<div class="col-xs-4"><small>Name <i class="fa fa-question-circle variables-info-pop" data-content="Variable name in report" data-placement="top" data-toggle="popover" data-container="body"></i></small></div>
-						<div class="col-xs-4"><small>Parameter <i class="fa fa-question-circle variables-info-pop" data-content="Parameter in url. Example: p202.com?parameter=[[placeholder]]" data-placement="top" data-toggle="popover" data-container="body"></i></small></div>
-						<div class="col-xs-4"><small>Placeholder <i class="fa fa-question-circle variables-info-pop" data-content="Placeholder in url. Example: p202.com?parameter=[[placeholder]]" data-placement="top" data-toggle="popover" data-container="body"></i></small></div>
+						<div class="col-xs-4"><small>Parameter <i class="fa fa-question-circle variables-info-pop" data-content="Parameter in url. Example: p1ai.com?parameter=[[placeholder]]" data-placement="top" data-toggle="popover" data-container="body"></i></small></div>
+						<div class="col-xs-4"><small>Placeholder <i class="fa fa-question-circle variables-info-pop" data-content="Placeholder in url. Example: p1ai.com?parameter=[[placeholder]]" data-placement="top" data-toggle="popover" data-container="body"></i></small></div>
 					</div>
 					<div class="row form_seperator" style="margin-bottom: 5px;margin-top: 5px;margin-right: 0px;">
 						<div class="col-xs-12"></div>
@@ -801,14 +801,14 @@ template_top('Traffic Sources'); ?>
 }
 
 .setup-btn-primary,
-.btn-p202 {
+.btn-p1ai {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: #fff;
     border: 1px solid #0056b3;
 }
 
 .setup-btn-primary:hover,
-.btn-p202:hover {
+.btn-p1ai:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }

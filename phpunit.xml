@@ -31,19 +31,19 @@
     <coverage cacheDirectory=".phpunit.cache"
               processUncoveredFiles="true">
         <include>
-            <directory suffix=".php">202-config</directory>
-            <directory suffix=".php">tracking202</directory>
-            <directory suffix=".php">202-interfaces</directory>
+            <directory suffix=".php">1ai-config</directory>
+            <directory suffix=".php">tracking1ai</directory>
+            <directory suffix=".php">1ai-interfaces</directory>
             <directory suffix=".php">api</directory>
         </include>
         <exclude>
             <directory>vendor</directory>
-            <directory>202-config/temp</directory>
-            <directory>202-config/data</directory>
-            <directory>202-config/geo</directory>
-            <file>202-config/install.php</file>
-            <file>202-config/upgrade.php</file>
-            <file>202-config/setup-config.php</file>
+            <directory>1ai-config/temp</directory>
+            <directory>1ai-config/data</directory>
+            <directory>1ai-config/geo</directory>
+            <file>1ai-config/install.php</file>
+            <file>1ai-config/upgrade.php</file>
+            <file>1ai-config/setup-config.php</file>
         </exclude>
     </coverage>
 

@@ -9,14 +9,14 @@ ob_start();
 $urlvarslist = $_GET;
 $rpi = $_GET['rpi'];
 
-if(!isset($_COOKIE['tracking202subid']) || !is_numeric($_COOKIE['tracking202subid']) || !isset($rpi) || !is_numeric($rpi)) { 
+if(!isset($_COOKIE['tracking1aisubid']) || !is_numeric($_COOKIE['tracking1aisubid']) || !isset($rpi) || !is_numeric($rpi)) { 
     die();
 } 
 
 include_once (substr(__DIR__, 0,-21) . '/config/connect2.php');
 include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
 
-$mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking202subid']);
+$mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking1aisubid']);
 $mysql['rpi'] = $db->real_escape_string((string)$_GET['rpi']);
 
 $rotator_sql = "SELECT

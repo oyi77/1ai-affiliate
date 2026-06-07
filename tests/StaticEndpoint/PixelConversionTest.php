@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  *
  * px.php is a procedural script that records conversions via pixel fire.
  * It uses cookies or IP+user-agent lookup to find the originating click,
- * then calls p202ApplyConversionUpdate(). We test the decision logic.
+ * then calls p1aiApplyConversionUpdate(). We test the decision logic.
  */
 final class PixelConversionTest extends TestCase
 {
@@ -19,36 +19,36 @@ final class PixelConversionTest extends TestCase
 
     public function testCookieClickIdUsedWhenPresent(): void
     {
-        $_COOKIE['tracking202subid'] = '54321';
+        $_COOKIE['tracking1aisubid'] = '54321';
 
-        $clickId = $_COOKIE['tracking202subid'] ?? null;
+        $clickId = $_COOKIE['tracking1aisubid'] ?? null;
 
         self::assertSame('54321', $clickId);
     }
 
     public function testMissingCookieFallsToIpLookup(): void
     {
-        unset($_COOKIE['tracking202subid']);
+        unset($_COOKIE['tracking1aisubid']);
 
-        $clickId = $_COOKIE['tracking202subid'] ?? null;
+        $clickId = $_COOKIE['tracking1aisubid'] ?? null;
 
         self::assertNull($clickId, 'Should fall through to IP-based lookup');
     }
 
     public function testEmptyCookieIsFalsy(): void
     {
-        $_COOKIE['tracking202subid'] = '';
+        $_COOKIE['tracking1aisubid'] = '';
 
-        // px.php checks: if ($_COOKIE['tracking202subid'])
-        $cookieValue = $_COOKIE['tracking202subid'];
+        // px.php checks: if ($_COOKIE['tracking1aisubid'])
+        $cookieValue = $_COOKIE['tracking1aisubid'];
         self::assertEmpty($cookieValue, 'Empty cookie should be falsy');
     }
 
     public function testCookieValueZeroIsFalsy(): void
     {
         // A click_id of '0' is not valid and should not be treated as valid
-        $_COOKIE['tracking202subid'] = '0';
-        $cookieValue = $_COOKIE['tracking202subid'];
+        $_COOKIE['tracking1aisubid'] = '0';
+        $cookieValue = $_COOKIE['tracking1aisubid'];
 
         // In PHP, '0' is falsy - px.php's if() check would reject it
         self::assertFalse((bool) $cookieValue);
@@ -96,7 +96,7 @@ final class PixelConversionTest extends TestCase
     {
         $mysql = ['click_id' => ''];
 
-        // px.php: if ($mysql['click_id']) { p202ApplyConversionUpdate(...) }
+        // px.php: if ($mysql['click_id']) { p1aiApplyConversionUpdate(...) }
         $shouldApply = (bool) $mysql['click_id'];
         self::assertFalse($shouldApply, 'Empty click_id should not trigger conversion');
     }

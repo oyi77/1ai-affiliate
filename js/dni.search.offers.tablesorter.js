@@ -48,7 +48,7 @@ $(function() {
               $('table.tablesorter').find('tbody').html(rows);
               $('span#inProgress').hide();
               $('span#inProgressFooter').hide();
-              $('h4.modal-title').html(network+'<span id="inProgress" style="display:none"> Processing... <img src="/202-img/loader-small.gif"></span>');
+              $('h4.modal-title').html(network+'<span id="inProgress" style="display:none"> Processing... <img src="/1ai-img/loader-small.gif"></span>');
               $('table.tablesorter').css('opacity', '1');
               $('[data-toggle="tooltip"]').tooltip();
               return [total];
@@ -79,7 +79,7 @@ $(function() {
 		e.preventDefault();
     var dni = $(this).data('dni-id');
 		$('#dniSearchOffersModal').modal('show');
-		tablesorterPagerOptions.ajaxUrl = '/tracking202/ajax/dni_get_offers.php?all_offers&dni='+dni+'&offset={page}&limit={size}&{sortList:column}&{filterList:filter}';
+		tablesorterPagerOptions.ajaxUrl = '/tracking1ai/ajax/dni_get_offers.php?all_offers&dni='+dni+'&offset={page}&limit={size}&{sortList:column}&{filterList:filter}';
 		var $table1 = $('table.tablesorter').tablesorter(tablesorterOptions).tablesorterPager(tablesorterPagerOptions);
     $table1.delegate('.toggle', 'click', function(e) {
         e.stopImmediatePropagation();
@@ -91,7 +91,7 @@ $(function() {
           child.remove();
         } else {
           loading.show();
-          $.get('/tracking202/ajax/dni_get_offers.php?get_offer&dni='+dni+'&offer_id='+offer_id+'', function(data) {
+          $.get('/tracking1ai/ajax/dni_get_offers.php?get_offer&dni='+dni+'&offer_id='+offer_id+'', function(data) {
             //console.log(data);
             try {
               // If there is error in back-end, do nothing
@@ -112,7 +112,7 @@ $(function() {
         var btn = $(this).button('loading');
         var offer_id = $(this).data('offer-id');
         var type = $(this).data('type');
-        $.get('/tracking202/ajax/dni_get_offers.php?request_offer_access&dni='+dni+'&offer_id='+offer_id+'&type='+type+'', function(data) {
+        $.get('/tracking1ai/ajax/dni_get_offers.php?request_offer_access&dni='+dni+'&offer_id='+offer_id+'&type='+type+'', function(data) {
           //console.log(data);
           try {
               // If there is error in back-end, do nothing
@@ -134,7 +134,7 @@ $(function() {
         var offer_id = btn.data('offer-id');
         btn.button('loading');
         $.ajax({
-            url: '/tracking202/ajax/dni_get_offers.php?submit_offer_questions&dni='+dni+'&offer_id='+offer_id+'',
+            url: '/tracking1ai/ajax/dni_get_offers.php?submit_offer_questions&dni='+dni+'&offer_id='+offer_id+'',
             type: 'POST',
             data: formData
         }).done(function (response, textStatus, jqXHR){
@@ -148,7 +148,7 @@ $(function() {
         e.stopImmediatePropagation();
         var btn = $(this).button('loading');
         var offer_id = $(this).data('offer-id');
-        $.get('/tracking202/ajax/dni_get_offers.php?setup_offer&dni='+dni+'&offer_id='+offer_id, function(data) {
+        $.get('/tracking1ai/ajax/dni_get_offers.php?setup_offer&dni='+dni+'&offer_id='+offer_id, function(data) {
           $('#aff_network_id').val(data['aff_network_id']);
           $('#aff_campaign_name').val(data.name);
           $('#aff_campaign_url').val(data.trk_url);
@@ -161,7 +161,7 @@ $(function() {
 
   $('#dniSearchOffersModal').on('hidden.bs.modal', function (e) {
     $('table.tablesorter').trigger("destroy", [false, false]);
-    $('h4.modal-title').html('<span id="inProgress" style="display:none"> Processing... <img src="/202-img/loader-small.gif"></span>');
+    $('h4.modal-title').html('<span id="inProgress" style="display:none"> Processing... <img src="/1ai-img/loader-small.gif"></span>');
     $('table.tablesorter tbody').html('');
   });
 });

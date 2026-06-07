@@ -73,7 +73,7 @@ test('renders analytics metrics, chart, and anomaly alerts', async ({ page, base
   });
 
   const apiBase = `${origin}/api/v2/attribution`;
-  const scriptUrl = new URL('/202-js/attribution-dashboard.js', origin).toString();
+  const scriptUrl = new URL('/1ai-js/attribution-dashboard.js', origin).toString();
 
   await page.setContent(`
     <!DOCTYPE html>

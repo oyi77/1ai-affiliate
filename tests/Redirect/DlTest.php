@@ -154,8 +154,8 @@ final class DlTest extends TestCase
         // Simulate the core dl.php logic
         try {
             // Check for valid ID
-            $t202id = $_GET['t202id'] ?? '';
-            if (!is_numeric($t202id)) {
+            $t1aiid = $_GET['t1aiid'] ?? '';
+            if (!is_numeric($t1aiid)) {
                 return ['headers' => $this->capturedHeaders, 'output' => '', 'died' => true];
             }
             
@@ -163,9 +163,9 @@ final class DlTest extends TestCase
             if (!$dbWorking) $usedCachedRedirect = true;
             
             if ($usedCachedRedirect && $memcacheWorking) {
-                $getUrl = $this->mockMemcache->get(md5('url_'.$t202id.'hash'));
+                $getUrl = $this->mockMemcache->get(md5('url_'.$t1aiid.'hash'));
                 if ($getUrl) {
-                    $new_url = str_replace("[[subid]]", "p202", $getUrl);
+                    $new_url = str_replace("[[subid]]", "p1ai", $getUrl);
                     
                     // Handle custom variables
                     for ($i = 1; $i <= 4; $i++) {
@@ -174,7 +174,7 @@ final class DlTest extends TestCase
                             $escaped = $db ? $db->real_escape_string((string)$_GET[$custom]) : addslashes((string)$_GET[$custom]);
                             $new_url = str_replace("[[$custom]]", $escaped, $new_url);
                         } else {
-                            $new_url = str_replace("[[$custom]]", "p202$custom", $new_url);
+                            $new_url = str_replace("[[$custom]]", "p1ai$custom", $new_url);
                         }
                     }
                     
@@ -185,7 +185,7 @@ final class DlTest extends TestCase
                             $escaped = $db ? $db->real_escape_string((string)$_GET[$param]) : addslashes((string)$_GET[$param]);
                             $new_url = str_replace("[[$param]]", $escaped, $new_url);
                         } else {
-                            $new_url = str_replace("[[$param]]", "p202$param", $new_url);
+                            $new_url = str_replace("[[$param]]", "p1ai$param", $new_url);
                         }
                     }
                     
@@ -194,7 +194,7 @@ final class DlTest extends TestCase
                         $escaped = $db ? $db->real_escape_string((string)$_GET['gclid']) : addslashes((string)$_GET['gclid']);
                         $new_url = str_replace("[[gclid]]", $escaped, $new_url);
                     } else {
-                        $new_url = str_replace("[[gclid]]", "p202gclid", $new_url);
+                        $new_url = str_replace("[[gclid]]", "p1aigclid", $new_url);
                     }
                     
                     $this->capturedHeaders[] = 'location: '. $new_url;
@@ -208,7 +208,7 @@ final class DlTest extends TestCase
             }
             
             // Database is working, fetch tracker
-            $tracker_sql = "SELECT * FROM trackers WHERE tracker_id_public='" . $db->real_escape_string($t202id) . "'";
+            $tracker_sql = "SELECT * FROM trackers WHERE tracker_id_public='" . $db->real_escape_string($t1aiid) . "'";
             $tracker_result = $db->query($tracker_sql);
             $tracker_row = $tracker_result->fetch_assoc();
             
@@ -234,7 +234,7 @@ final class DlTest extends TestCase
      */
     public function testInvalidIdDies(): void
     {
-        $result = $this->simulateDlLogic(['t202id' => 'abc'], false);
+        $result = $this->simulateDlLogic(['t1aiid' => 'abc'], false);
         $this->assertTrue($result['died']);
         $this->assertEmpty($result['headers']);
         $this->assertSame('', $result['output']);
@@ -261,7 +261,7 @@ final class DlTest extends TestCase
         
         $result = $this->simulateDlLogic(
             [
-                't202id' => '1',
+                't1aiid' => '1',
                 'c1' => 'campaign1',
                 'c2' => 'adgroup2',
                 'c3' => 'keyword3',
@@ -283,7 +283,7 @@ final class DlTest extends TestCase
         $this->assertStringContainsString('c4=creative4', $location);
         $this->assertStringContainsString('utm_source=google', $location);
         $this->assertStringContainsString('gclid=test_gclid_123', $location);
-        $this->assertStringContainsString('subid=p202', $location);
+        $this->assertStringContainsString('subid=p1ai', $location);
     }
 
     /**
@@ -295,15 +295,15 @@ final class DlTest extends TestCase
         $key = md5('url_1hash');
         
         $result = $this->simulateDlLogic(
-            ['t202id' => '1'],
+            ['t1aiid' => '1'],
             false,  // Database not working for cached test
             [$key => $url]
         );
         
         $this->assertTrue($result['died']);
         $location = implode("\n", $result['headers']);
-        $this->assertStringContainsString('c1=p202c1', $location);
-        $this->assertStringContainsString('utm_source=p202utm_source', $location);
+        $this->assertStringContainsString('c1=p1aic1', $location);
+        $this->assertStringContainsString('utm_source=p1aiutm_source', $location);
     }
 
     /**
@@ -311,7 +311,7 @@ final class DlTest extends TestCase
      */
     public function testDatabaseConnectionError(): void
     {
-        $result = $this->simulateDlLogic(['t202id' => '1'], false);
+        $result = $this->simulateDlLogic(['t1aiid' => '1'], false);
         $this->assertTrue($result['died']);
         $this->assertStringContainsString('Error establishing a database connection', $result['output']);
         $this->assertEmpty($result['headers']);
@@ -322,7 +322,7 @@ final class DlTest extends TestCase
      */
     public function testTrackerNotFound(): void
     {
-        $result = $this->simulateDlLogic(['t202id' => '999'], true);
+        $result = $this->simulateDlLogic(['t1aiid' => '999'], true);
         $this->assertTrue($result['died']);
         $this->assertEmpty($result['output']);
         $this->assertEmpty($result['headers']);
@@ -333,7 +333,7 @@ final class DlTest extends TestCase
      */
     public function testValidTrackerRedirect(): void
     {
-        $result = $this->simulateDlLogic(['t202id' => '123'], true);
+        $result = $this->simulateDlLogic(['t1aiid' => '123'], true);
         $this->assertFalse($result['died']);
         $this->assertNotEmpty($result['headers']);
         
@@ -351,7 +351,7 @@ final class DlTest extends TestCase
         
         $result = $this->simulateDlLogic(
             [
-                't202id' => '1',
+                't1aiid' => '1',
                 'c1' => "test'\"<>&"
             ],
             false,  // Database not working for cached test
@@ -364,7 +364,7 @@ final class DlTest extends TestCase
     }
 
     /**
-     * Test numeric t202id edge cases
+     * Test numeric t1aiid edge cases
      */
     public function testNumericEdgeCases(): void
     {
@@ -380,7 +380,7 @@ final class DlTest extends TestCase
         ];
         
         foreach ($testCases as $id => $shouldPass) {
-            $result = $this->simulateDlLogic(['t202id' => $id], false);
+            $result = $this->simulateDlLogic(['t1aiid' => $id], false);
             
             if ($shouldPass) {
                 // Should get to database error since no DB

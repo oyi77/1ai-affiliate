@@ -7,9 +7,9 @@ namespace Tests\StaticEndpoint;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for p202ApplyConversionUpdate() in static-endpoint-helpers.php.
+ * Tests for p1aiApplyConversionUpdate() in static-endpoint-helpers.php.
  *
- * This is the shared conversion function used by px.php and cb202.php.
+ * This is the shared conversion function used by px.php and cb1ai.php.
  * If it breaks, ALL revenue recording silently fails.
  */
 final class ConversionUpdateTest extends TestCase
@@ -56,7 +56,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '25.00');
+        p1aiApplyConversionUpdate($db, '100', '25.00');
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertNotNull($clicksQuery, 'clicks UPDATE must be executed');
@@ -70,7 +70,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '25.00');
+        p1aiApplyConversionUpdate($db, '100', '25.00');
 
         $spyQuery = $this->findQueryContaining($queries, 'clicks_spy');
         self::assertNotNull($spyQuery, 'clicks_spy UPDATE must be executed');
@@ -83,7 +83,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '42', '10.50');
+        p1aiApplyConversionUpdate($db, '42', '10.50');
 
         $clicksQuery = $this->findQueryContaining($queries, 'UPDATE');
         $spyQueries = array_filter($queries, fn($q) => str_contains($q, 'clicks_spy'));
@@ -103,7 +103,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '25.50');
+        p1aiApplyConversionUpdate($db, '100', '25.50');
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("click_cpc='25.50'", $clicksQuery);
@@ -114,7 +114,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '');
+        p1aiApplyConversionUpdate($db, '100', '');
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringNotContainsString('click_cpc', $clicksQuery);
@@ -129,7 +129,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '10.00', true, '50.00');
+        p1aiApplyConversionUpdate($db, '100', '10.00', true, '50.00');
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("click_payout='50.00'", $clicksQuery);
@@ -140,7 +140,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '10.00', false);
+        p1aiApplyConversionUpdate($db, '100', '10.00', false);
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringNotContainsString('click_payout', $clicksQuery);
@@ -151,7 +151,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '10.00', true, '99.99');
+        p1aiApplyConversionUpdate($db, '100', '10.00', true, '99.99');
 
         $clicksQueries = array_filter($queries, fn($q) => str_contains($q, 'clicks') && str_contains($q, 'UPDATE'));
         $spyQueries = array_filter($queries, fn($q) => str_contains($q, 'clicks_spy'));
@@ -171,7 +171,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '10.00', false, '', '55');
+        p1aiApplyConversionUpdate($db, '100', '10.00', false, '', '55');
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("aff_campaign_id='55'", $clicksQuery);
@@ -182,7 +182,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '10.00');
+        p1aiApplyConversionUpdate($db, '100', '10.00');
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringNotContainsString('aff_campaign_id', $clicksQuery);
@@ -195,7 +195,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, "100' OR 1=1; --", '10.00');
+        p1aiApplyConversionUpdate($db, "100' OR 1=1; --", '10.00');
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         // The value should be escaped (addslashes mock)
@@ -207,7 +207,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', "25'; DROP TABLE clicks; --");
+        p1aiApplyConversionUpdate($db, '100', "25'; DROP TABLE clicks; --");
 
         $clicksQuery = $this->findQueryContaining($queries, 'clicks');
         self::assertStringContainsString("25\\';", $clicksQuery);
@@ -216,11 +216,11 @@ final class ConversionUpdateTest extends TestCase
     // --- Failure handling ---
 
     /**
-     * KNOWN RISK: When $db->query() returns false, p202ApplyConversionUpdate
+     * KNOWN RISK: When $db->query() returns false, p1aiApplyConversionUpdate
      * accesses $db->error for error_log(). On PHP 8.4 with a disconnected
      * mysqli, accessing ->error throws a fatal Error ("object is already closed").
      *
-     * This means a DB write failure in p202ApplyConversionUpdate will crash the
+     * This means a DB write failure in p1aiApplyConversionUpdate will crash the
      * entire conversion recording — the spy table update won't be attempted.
      *
      * This test documents the risk. The fix would be to wrap the error_log
@@ -234,7 +234,7 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '100', '10.00');
+        p1aiApplyConversionUpdate($db, '100', '10.00');
 
         // Both queries must be attempted
         $updateQueries = array_values(array_filter(
@@ -251,24 +251,24 @@ final class ConversionUpdateTest extends TestCase
         $queries = [];
         $db = $this->createTrackingDb($queries);
 
-        p202ApplyConversionUpdate($db, '1', '0');
+        p1aiApplyConversionUpdate($db, '1', '0');
 
         $updateQueries = array_filter($queries, fn($q) => str_contains(strtoupper($q), 'UPDATE'));
         self::assertCount(2, $updateQueries, 'Must update both clicks and clicks_spy');
     }
 
-    // --- Helper: p202ResolveAdvertiserId ---
+    // --- Helper: p1aiResolveAdvertiserId ---
 
     public function testResolveAdvertiserIdReturnsNullForZeroCampaign(): void
     {
         $db = new FakeConversionMysqliNoPrepare();
-        self::assertNull(p202ResolveAdvertiserId($db, 0));
+        self::assertNull(p1aiResolveAdvertiserId($db, 0));
     }
 
     public function testResolveAdvertiserIdReturnsNullForNegativeCampaign(): void
     {
         $db = new FakeConversionMysqliNoPrepare();
-        self::assertNull(p202ResolveAdvertiserId($db, -1));
+        self::assertNull(p1aiResolveAdvertiserId($db, -1));
     }
 
     // --- Helpers ---

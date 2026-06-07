@@ -6,8 +6,8 @@ import (
 	"strings"
 	"unicode"
 
-	configpkg "p202/internal/config"
-	"p202/internal/output"
+	configpkg "p1ai/internal/config"
+	"p1ai/internal/output"
 
 	"github.com/spf13/cobra"
 )

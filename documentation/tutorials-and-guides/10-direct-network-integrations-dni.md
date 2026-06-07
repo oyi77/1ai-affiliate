@@ -9,7 +9,7 @@ You can view a demo of DNI below:
 **Video:** [1ai-Affiliate Pro: Direct Network Integration Demo](https://www.youtube.com/watch?v=IETTxHSbUrM&feature=youtu.be)
 
 You can also read our blog post on how to set up DNI if you're interested in promoting offers on Ad Communal and G4Offers. We've included a tutorial video as well as screenshots on our blog post for you to follow along here: 
-**http://prosper.tracking202.com/blog/tutorial-setting-up-dni-in-1ai-affiliate-pro**
+**http://prosper.tracking1ai.com/blog/tutorial-setting-up-dni-in-1ai-affiliate-pro**
 
 ## Other DNI Networks
 

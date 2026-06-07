@@ -3,7 +3,7 @@ $(document).ready(function() {
 	$("#get-logs").click(function() {
 		var element = $("#logs_table");
 		element.css("opacity", "0.5");
-		$.post("/202-account/ajax/conversion_logs.php", $('#logs_from').serialize(true))
+		$.post("/1ai-account/ajax/conversion_logs.php", $('#logs_from').serialize(true))
 		  .done(function(data) {
 		  	element.css("opacity", "1");
 		  	element.html(data);
@@ -28,7 +28,7 @@ $(document).ready(function() {
 	});
 
 	$('#cb_status').click(function(){
-    	$.post("/202-account/api-integrations.php/?cb_status=1", function(data) {
+    	$.post("/1ai-account/api-integrations.php/?cb_status=1", function(data) {
 			$( "#cb_verified" ).hide().html(data).fadeIn("slow");
 		});
 	});
@@ -50,7 +50,7 @@ $(document).ready(function() {
 
 	$('input[name=maxmind-isp]').on("change.radiocheck", function(){
         var checkbox = $(this);
-        $.post("/202-account/administration.php", { maxmind: checkbox.val()})
+        $.post("/1ai-account/administration.php", { maxmind: checkbox.val()})
 		  .done(function(data) {
 		  	if(data){
 		  		$('#on-label').removeClass("checked");
@@ -66,7 +66,7 @@ $(document).ready(function() {
     	var date = (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear();
     	var key = generateApiKey();
 
-    	$.post("/202-account/account.php", { add_rest_api_key: true, rest_api_key: key})
+    	$.post("/1ai-account/account.php", { add_rest_api_key: true, rest_api_key: key})
 		  .done(function(data) {
 		  	$("#no-api-keys").remove();
 		  	$("#rest-api-keys").append('<li id="'+key+'"><span class="infotext">Date created: '+date+'</span> - <code>'+key+'</code> <a id="delete-rest-key" class="close fui-cross"></a></li>');
@@ -77,13 +77,13 @@ $(document).ready(function() {
 
 $(document).on('closed.bs.alert', '#prosper-alerts', function() {
 	var id = $(this).data("alertid");
-    $.post("/202-account/ajax/alert-seen.php", { prosper_alert_id:id })
+    $.post("/1ai-account/ajax/alert-seen.php", { prosper_alert_id:id })
 });
 
 $(document).on('click', '#delete-rest-key', function() {
     var key = $(this).parent().attr("id");
     
-    $.post("/202-account/account.php", { remove_rest_api_key: true, rest_api_key: key})
+    $.post("/1ai-account/account.php", { remove_rest_api_key: true, rest_api_key: key})
 		.done(function(data) {
 			if($('#rest-api-keys li').size() < 2){
 		    	$("#"+key).remove();

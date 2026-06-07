@@ -54,7 +54,7 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
 	$metaKeywords = 'keywords';
 	$extraHeadMarkup = '';
 	$bodyAttributes = [];
-	$defaultBodyStyle = "background-image: url(https://dp5k1x6z3k332.cloudfront.net/p202bg.jpg);\n  -webkit-background-size: cover;\n  -moz-background-size: cover;\n  -o-background-size: cover;\n  background-size: cover;\n  background-repeat: no-repeat;\n  background-position: center;\n  background-attachment: fixed;";
+	$defaultBodyStyle = "background-image: url(https://dp5k1x6z3k332.cloudfront.net/p1aibg.jpg);\n  -webkit-background-size: cover;\n  -moz-background-size: cover;\n  -o-background-size: cover;\n  background-size: cover;\n  background-repeat: no-repeat;\n  background-position: center;\n  background-attachment: fixed;";
 	$bodyStyle = $defaultBodyStyle;
 
 	$options = [];
@@ -181,7 +181,7 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
 		} ?>
 		<?php if (isset($navigation[1])) { switch ($navigation[1]) {
 
-			case "tracking202": ?>
+			case "tracking1ai": ?>
 				<script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
 				<!-- Uncomment to enable Highcharts accessibility (screen readers, keyboard nav) -->
 				<!-- <script type="text/javascript" src="https://code.highcharts.com/modules/accessibility.js"></script> -->
@@ -269,7 +269,7 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
   -webkit-transition: border .25s linear, color .25s linear, background-color .25s linear;
   transition: border .25s linear, color .25s linear, background-color .25s linear;">
 							<!-- this is the oneai_affiliate top-left logo/banner placement -->
-							<iframe class="advertise-top-left" src="<?php echo TRACKING202_ADS_URL; ?>/oneai_affiliate-cs-topleft/?t202aid=<?php echo $_SESSION['user_cirrus_link'] ?? ''; ?>" scrolling="no" frameborder="0"></iframe>
+							<iframe class="advertise-top-left" src="<?php echo TRACKING1ai_ADS_URL; ?>/oneai_affiliate-cs-topleft/?t1aiaid=<?php echo $_SESSION['user_cirrus_link'] ?? ''; ?>" scrolling="no" frameborder="0"></iframe>
 						</div>
 					</div>
 					<div class="col-xs-9">
@@ -278,7 +278,7 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
                                                                 <li <?php if (isset($navigation[1]) && isset($navigation[2]) && ($navigation[1] === 'account') and !$navigation[2]) {
 										echo 'class="active";';
 									} ?>><a href="<?php echo get_absolute_url(); ?>account/" id="HomePage"><span class="fui-home"></span> Home </a></li>
-                                                                <li <?php if (isset($navigation[1]) && $navigation[1] === 'tracking202') {
+                                                                <li <?php if (isset($navigation[1]) && $navigation[1] === 'tracking1ai') {
                                                                                 echo 'class="active";';
                                                                         } ?>><a href="<?php echo get_absolute_url(); ?>tracking_support/" id="ClickServerPage"><span class="fui-heart"></span> 1ai-Affiliate CS </a></li>
                                                                 <?php if (isset($userObj) && $userObj->hasPermission("view_attribution_reports")) { ?>
@@ -334,14 +334,14 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
 				</div>
 				<div id="update_needed"></div>
 
-				<?php if ($navigation[1] == 'tracking202') {
+				<?php if ($navigation[1] == 'tracking1ai') {
 					include_once(substr(__DIR__, 0, -10) . '/tracking_support/_config/top.php');
 				} ?>
 				<div class="main" <?php if ($navigation[2] == 'setup') {
 										echo 'style="border-top-left-radius:0px;"';
 									} ?>>
 
-					<?php if ($navigation[1] == 'tracking202') {
+					<?php if ($navigation[1] == 'tracking1ai') {
 						if (($navigation[2] == 'setup') or ($navigation[2] == 'bots') or ($navigation[2] == 'overview') or ($navigation[2] == 'analyze') or ($navigation[2] == 'update') or ($navigation[2] == 'export')) {
 							include_once(substr(__DIR__, 0, -10) . '/tracking_support/_config/sub-menu.php');
 						}
@@ -363,18 +363,18 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
 						&middot;
 						<a href="../account/help.php">Help</a>
 						&middot;
-						<a href="http://support.tracking202.com" target="_blank">Documentation</a>
+						<a href="http://support.tracking1ai.com" target="_blank">Documentation</a>
 						&middot;
 
 						<?php if (isset($_SESSION['update_needed']) && $_SESSION['update_needed'] == true) { ?>
-							<strong class="bg-danger">Your 1ai-Affiliate ClickServer <?php echo $version; ?> is out of date. <a href="https://my.tracking202.com/api/customers/login" target="_blank">Download New Version</a>.</strong>
+							<strong class="bg-danger">Your 1ai-Affiliate ClickServer <?php echo $version; ?> is out of date. <a href="https://my.tracking1ai.com/api/customers/login" target="_blank">Download New Version</a>.</strong>
 						<?php } else { ?>
 							Your 1ai-Affiliate ClickServer <?php echo $version; ?> is up to date.
 						<?php } ?>
 
 						<br><br>Local time: <?php echo date(DATE_RFC2822); ?>
 
-						<br><br><a rel="license" href="https://my.tracking202.com/license/" target="_blank">Copyright &copy; <?php echo date("Y") ?> Blue Terra LLC. All rights reserved</a>.
+						<br><br><a rel="license" href="https://my.tracking1ai.com/license/" target="_blank">Copyright &copy; <?php echo date("Y") ?> Blue Terra LLC. All rights reserved</a>.
 					</div>
 				</div>
 			</div>
@@ -475,7 +475,7 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
 							<div class="modal-footer">
 								<img style="display:none;left: -25px; top: 12px;" id="perks-loading" src="<?php echo get_absolute_url(); ?>img/loader-small.gif">
 								<a href="#" class="btn btn-link" id="survey-form-skip">Skip</a>
-								<a href="#" class="btn btn-wide btn-p202" id="survey-form-submit">Submit answers</a>
+								<a href="#" class="btn btn-wide btn-p1ai" id="survey-form-submit">Submit answers</a>
 							</div>
 							</form>
 						</div>

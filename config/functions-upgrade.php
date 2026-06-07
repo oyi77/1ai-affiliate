@@ -6,7 +6,7 @@ declare(strict_types=1);
 if (!class_exists('DataEngine')) {
     include_once(__DIR__ . '/class-dataengine.php');
 }
-class 1ai-affiliate
+class OneAIAffiliate
 {
 
     public static function oneai_affiliate_version()
@@ -76,8 +76,8 @@ class UPGRADE
         }
 
         // get the old version using static methods
-        $oneai_affiliate_version = 1ai-affiliate::oneai_affiliate_version();
-        $php_version = 1ai-affiliate::php_version();
+        $oneai_affiliate_version = OneAIAffiliate::oneai_affiliate_version();
+        $php_version = OneAIAffiliate::php_version();
 
         // if the mysql is 1.0.2, upgrade to 1.0.3
         if ($oneai_affiliate_version == '1.0.2') {
@@ -2630,7 +2630,7 @@ class UPGRADE
 
 
             $sql = "INSERT IGNORE INTO `pixel_types` (`pixel_type`) VALUES
-				('Bot202 Facebook Pixel Assistant');";
+				('Bot1ai Facebook Pixel Assistant');";
             $result = _mysqli_query($sql);
 
             $sql = "UPDATE version SET version='1.9.54'";
@@ -3187,7 +3187,7 @@ class UPGRADE
             $oneai_affiliate_version = '1.9.60';
         }
 
-        //This will enable p202 to downgrade to this version if installed over a newer version
+        //This will enable p1ai to downgrade to this version if installed over a newer version
         if ($oneai_affiliate_version > '1.9.60') {
 
             $oneai_affiliate_version = '1.9.60';

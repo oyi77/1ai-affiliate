@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"p202/internal/api"
-	"p202/internal/output"
+	"p1ai/internal/api"
+	"p1ai/internal/output"
 
 	"github.com/spf13/cobra"
 )

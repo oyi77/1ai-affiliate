@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"p202/internal/api"
+	"p1ai/internal/api"
 
 	"github.com/spf13/cobra"
 )

@@ -16,9 +16,9 @@ $mysql['user_id'] = $db->real_escape_string($aff_campaign_row['user_id']);
 
 
 //see if it has the cookie, do whatever we can to grab to grab SOMETHING to tie this lead to
-if ($_COOKIE['tracking202subid']) {  
+if ($_COOKIE['tracking1aisubid']) {  
 
-	$mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking202subid']);
+	$mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking1aisubid']);
 	
 } else  {
 
@@ -50,7 +50,7 @@ if ($mysql['click_id']) {
 
 	$mysql['click_cpa'] = $db->real_escape_string($cpa_row['click_cpa'] ?? '');
 	
-		p202ApplyConversionUpdate(
+		p1aiApplyConversionUpdate(
 			$db,
 			(string) $mysql['click_id'],
 			(string) $mysql['click_cpa']

@@ -110,9 +110,9 @@ require ROOT_PATH . 'vendor/autoload.php';
 
 // Initialize $tid and $db variables to prevent undefined variable errors
 if (!isset($tid)) {
-    // If $t202id is set (from dl.php), use that for $tid
-    if (isset($t202id) && is_numeric($t202id)) {
-        $tid = $t202id;
+    // If $t1aiid is set (from dl.php), use that for $tid
+    if (isset($t1aiid) && is_numeric($t1aiid)) {
+        $tid = $t1aiid;
     } else {
         $tid = 1; // Default to user_id 1 if not set
     }
@@ -134,8 +134,8 @@ if (!isset($db)) {
 if ($memcacheWorking) {
     // Try to determine tracker/user ID from various possible sources
     $tid = '';
-    if (isset($_GET['t202id'])) {
-        $tid = $_GET['t202id'];
+    if (isset($_GET['t1aiid'])) {
+        $tid = $_GET['t1aiid'];
     } elseif (isset($_GET['pci'])) {
         $tid = $_GET['pci'];
     } elseif (isset($_GET['lpip'])) {
@@ -450,8 +450,8 @@ function replaceTrackerPlaceholdersOpt($db, $url, $click_id, $mysql = [])
     //$url = preg_replace('/\[\[subid\]\]/i', $mysql['click_id'], $url);
     $tokens = [
         "subid" => $mysql['click_id'],
-        "t202kw" => $mysql['keyword'],
-        "t202pubid" => $mysql['t202pubid'],
+        "t1aikw" => $mysql['keyword'],
+        "t1aipubid" => $mysql['t1aipubid'],
         "c1" => $mysql['c1'],
         "c2" => $mysql['c2'],
         "c3" => $mysql['c3'],
@@ -494,8 +494,8 @@ function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
         $mysql['click_id'] = $db->real_escape_string((string)$click_id);
         $tokens = @[
             "subid" => $mysql['click_id'],
-            "t202kw" => $mysql['keyword'],
-            "t202pubid" => $mysql['public_pub_id'],
+            "t1aikw" => $mysql['keyword'],
+            "t1aipubid" => $mysql['public_pub_id'],
             "c1" => $mysql['c1'],
             "c2" => $mysql['c2'],
             "c3" => $mysql['c3'],
@@ -580,8 +580,8 @@ function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
 
         // Check if click_row exists before processing
         if ($click_row) {
-            $mysql['t202kw'] = $db->real_escape_string((string)($click_row['keyword'] ?? ''));
-            $mysql['t202pubid'] = $db->real_escape_string((string)($click_row['user_public_publisher_id'] ?? ''));
+            $mysql['t1aikw'] = $db->real_escape_string((string)($click_row['keyword'] ?? ''));
+            $mysql['t1aipubid'] = $db->real_escape_string((string)($click_row['user_public_publisher_id'] ?? ''));
             $mysql['c1'] = $db->real_escape_string((string)($click_row['c1'] ?? ''));
             $mysql['c2'] = $db->real_escape_string((string)($click_row['c2'] ?? ''));
             $mysql['c3'] = $db->real_escape_string((string)($click_row['c3'] ?? ''));
@@ -604,8 +604,8 @@ function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
             $mysql['city'] = $db->real_escape_string((string)($click_row['city_name'] ?? ''));
         } else {
             // Initialize all fields with empty strings if no click data found
-            $mysql['t202kw'] = '';
-            $mysql['t202pubid'] = '';
+            $mysql['t1aikw'] = '';
+            $mysql['t1aipubid'] = '';
             $mysql['c1'] = '';
             $mysql['c2'] = '';
             $mysql['c3'] = '';
@@ -636,7 +636,7 @@ function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
 
         //prepare $mysql to make sure none of the keys are unset
 
-        $_202keys = ['click_id', 't202kw', 't202pubid', 'c1', 'c2', 'c3', 'c4', 'gclid', 'msclkid', 'fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'country', 'country_code', 'region', 'city', 'cpc', 'cpc', 'cpa', 'click_payout', 'referer', 'ppc_account'];
+        $_202keys = ['click_id', 't1aikw', 't1aipubid', 'c1', 'c2', 'c3', 'c4', 'gclid', 'msclkid', 'fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'country', 'country_code', 'region', 'city', 'cpc', 'cpc', 'cpa', 'click_payout', 'referer', 'ppc_account'];
 
         foreach ($_202keys as $key) {
             if (!isset($mysql[$key])) {
@@ -646,8 +646,8 @@ function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
 
         $tokens = [
             "subid" => $mysql['click_id'],
-            "t202kw" => $mysql['t202kw'],
-            "t202pubid" => $mysql['t202pubid'],
+            "t1aikw" => $mysql['t1aikw'],
+            "t1aipubid" => $mysql['t1aipubid'],
             "c1" => $mysql['c1'],
             "c2" => $mysql['c2'],
             "c3" => $mysql['c3'],
@@ -692,11 +692,11 @@ function setClickIdCookie($click_id, $campaign_id = 0)
 
         //legacy cookies
 
-        setcookie('tracking202subid-legacy', (string) $click_id, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
-        setcookie('tracking202subid_a_' . $campaign_id . '-legacy', (string) $click_id, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
+        setcookie('tracking1aisubid-legacy', (string) $click_id, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
+        setcookie('tracking1aisubid_a_' . $campaign_id . '-legacy', (string) $click_id, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
 
-        setcookie('tracking202subid', (string) $click_id,  ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
-        setcookie('tracking202subid_a_' . $campaign_id, (string) $click_id,   ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
+        setcookie('tracking1aisubid', (string) $click_id,  ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
+        setcookie('tracking1aisubid_a_' . $campaign_id, (string) $click_id,   ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
     }
 }
 
@@ -713,9 +713,9 @@ function setClickIdCookieForLp($click_id_public, $lp_public_id)
 
 
         //legacy cookies
-        setcookie('tracking202rlp_' . $lp_public_id . '-legacy', (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
+        setcookie('tracking1airlp_' . $lp_public_id . '-legacy', (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
 
-        setcookie('tracking202rlp_' . $lp_public_id, (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
+        setcookie('tracking1airlp_' . $lp_public_id, (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
     }
 }
 
@@ -1490,7 +1490,7 @@ class INDEXES
                 return $getUtm;
             } else {
 
-                $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 202_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+                $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 1ai_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
                 $utm_result = _mysqli_query($db, $utm_sql);
                 $utm_row = $utm_result->fetch_assoc();
                 if ($utm_row) {
@@ -1501,7 +1501,7 @@ class INDEXES
                     return $utm_id;
                 } else {
 
-                    $utm_sql = "INSERT INTO 202_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+                    $utm_sql = "INSERT INTO 1ai_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
                     $utm_result = _mysqli_query($db, $utm_sql);
                     $utm_id = $db->insert_id;
                     $setID = setCache(md5($mysql['utm_type'] . "_id" . $utm_var . systemHash()), $utm_id, $time);
@@ -1510,7 +1510,7 @@ class INDEXES
             }
         } else {
 
-            $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 202_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+            $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 1ai_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
             $utm_result = _mysqli_query($db, $utm_sql);
             $utm_row = $utm_result->fetch_assoc();
             if ($utm_row) {
@@ -1520,7 +1520,7 @@ class INDEXES
                 return $utm_id;
             } else {
 
-                $utm_sql = "INSERT INTO 202_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+                $utm_sql = "INSERT INTO 1ai_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
                 $utm_result = _mysqli_query($db, $utm_sql);
                 $utm_id = $db->insert_id;
                 return $utm_id;
@@ -2201,8 +2201,8 @@ function replaceTokens($url, $tokens = [], $fillblanks = 0)
         $url = preg_replace('/\[\[c3\]\]/i', (string) $tokens['c3'], (string) $url);
     if (isset($tokens['c4']) || $fillblanks)
         $url = preg_replace('/\[\[c4\]\]/i', (string) $tokens['c4'], (string) $url);
-    if (isset($tokens['t202pubid']) || $fillblanks)
-        $url = preg_replace('/\[\[t202pubid\]\]/i', (string) $tokens['t202pubid'], (string) $url);
+    if (isset($tokens['t1aipubid']) || $fillblanks)
+        $url = preg_replace('/\[\[t1aipubid\]\]/i', (string) $tokens['t1aipubid'], (string) $url);
     if (isset($tokens['gclid']) || $fillblanks)
         $url = preg_replace('/\[\[gclid\]\]/i', (string) $tokens['gclid'], (string) $url);
     if (isset($tokens['msclkid']) || $fillblanks)
@@ -2221,8 +2221,8 @@ function replaceTokens($url, $tokens = [], $fillblanks = 0)
         $url = preg_replace('/\[\[utm_content\]\]/i', (string) $tokens['utm_content'], (string) $url);
     if (isset($tokens['subid']) || $fillblanks)
         $url = preg_replace('/\[\[subid\]\]/i', (string) $tokens['subid'], (string) $url);
-    if (isset($tokens['t202kw']) || $fillblanks)
-        $url = preg_replace('/\[\[t202kw\]\]/i', (string) $tokens['t202kw'], (string) $url);
+    if (isset($tokens['t1aikw']) || $fillblanks)
+        $url = preg_replace('/\[\[t1aikw\]\]/i', (string) $tokens['t1aikw'], (string) $url);
     if (isset($tokens['payout']) || $fillblanks)
         $url = preg_replace('/\[\[payout\]\]/i', (string) $tokens['payout'], (string) $url);
     if (isset($tokens['random']) || $fillblanks)
@@ -2250,7 +2250,7 @@ function replaceTokens($url, $tokens = [], $fillblanks = 0)
     if (isset($tokens['sourceid']) || $fillblanks)
         $url = preg_replace('/\[\[sourceid\]\]/i', (string) $tokens['sourceid'], (string) $url);
     if (isset($tokens['transactionid']) || $fillblanks)
-        $url = preg_replace('/\[\[(transactionid|t202txid)\]\]/i', (string) $tokens['transactionid'], (string) $url);
+        $url = preg_replace('/\[\[(transactionid|t1aitxid)\]\]/i', (string) $tokens['transactionid'], (string) $url);
     return $url;
 }
 
@@ -2409,9 +2409,9 @@ function setPCIdCookie($click_id_public)
         $httponly = FALSE; // JS createCookie() sets this cookie in record_adv.php
 
         //legacy cookies
-        setcookie('tracking202pci-legacy', (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
+        setcookie('tracking1aipci-legacy', (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
 
-        setcookie('tracking202pci', (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
+        setcookie('tracking1aipci', (string) $click_id_public, ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
     }
 }
 
@@ -2427,9 +2427,9 @@ function setOutboundCookie($outbound_site_url)
         $httponly = FALSE; // JS createCookie() sets this cookie in record_simple.php
 
         //legacy cookies
-        setcookie('tracking202outbound-legacy', (string) $outbound_site_url, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
+        setcookie('tracking1aioutbound-legacy', (string) $outbound_site_url, ['expires' => $expire, 'path' => '/', 'domain' => (string) $domain]);
 
-        setcookie('tracking202outbound', (string) $outbound_site_url, ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
+        setcookie('tracking1aioutbound', (string) $outbound_site_url, ['expires' => $expire, 'path' => '/', 'domain' => $domain, 'secure' => $secure, 'httponly' => $httponly, 'samesite' => 'None']);
     }
 }
 
@@ -2442,11 +2442,11 @@ function getPrePopVars($vars)
         'c2',
         'c3',
         'c4',
-        't202kw',
-        't202id',
-        't202b',
-        't202ref',
-        't202pubid',
+        't1aikw',
+        't1aiid',
+        't1aib',
+        't1airef',
+        't1aipubid',
         'acip',
         '202v',
         '202vars',
@@ -2770,7 +2770,7 @@ function getTokens($mysql)
 {
     $tokens = [
         "subid" => $mysql['click_id'],
-        "t202kw" => $mysql['t202kw'],
+        "t1aikw" => $mysql['t1aikw'],
         "c1" => $mysql['c1'],
         "c2" => $mysql['c2'],
         "c3" => $mysql['c3'],
@@ -2902,10 +2902,10 @@ function getTrackerDetail(&$mysql)
     $mysql['user_pref_dynamic_bid'] = $db->real_escape_string($tracker_row['user_pref_dynamic_bid']);
     $mysql['user_pref_referer_data'] = $db->real_escape_string($tracker_row['user_pref_referer_data']);
     // set cpc use dynamic variable if set or the default if not
-    if (isset($_GET['t202b']) && $mysql['user_pref_dynamic_bid'] == '1') {
-        $_GET['t202b'] = ltrim((string) $_GET['t202b'], '$');
-        if (is_numeric($_GET['t202b'])) {
-            $bid = number_format((float) $_GET['t202b'], 5, '.', '');
+    if (isset($_GET['t1aib']) && $mysql['user_pref_dynamic_bid'] == '1') {
+        $_GET['t1aib'] = ltrim((string) $_GET['t1aib'], '$');
+        if (is_numeric($_GET['t1aib'])) {
+            $bid = number_format((float) $_GET['t1aib'], 5, '.', '');
             $mysql['click_cpc'] = $db->real_escape_string($bid);
         } else {
             $mysql['click_cpc'] = $db->real_escape_string($tracker_row['click_cpc']);
@@ -2973,10 +2973,10 @@ function getTrackerDetailPT(&$mysql)
     $mysql['user_pref_dynamic_bid'] = $db->real_escape_string($tracker_row['user_pref_dynamic_bid']);
     $mysql['user_pref_referer_data'] = $db->real_escape_string($tracker_row['user_pref_referer_data']);
     // set cpc use dynamic variable if set or the default if not
-    if (isset($_GET['t202b']) && $mysql['user_pref_dynamic_bid'] == '1') {
-        $_GET['t202b'] = ltrim((string) $_GET['t202b'], '$');
-        if (is_numeric($_GET['t202b'])) {
-            $bid = number_format((float) $_GET['t202b'], 5, '.', '');
+    if (isset($_GET['t1aib']) && $mysql['user_pref_dynamic_bid'] == '1') {
+        $_GET['t1aib'] = ltrim((string) $_GET['t1aib'], '$');
+        if (is_numeric($_GET['t1aib'])) {
+            $bid = number_format((float) $_GET['t1aib'], 5, '.', '');
             $mysql['click_cpc'] = $db->real_escape_string($bid);
         } else {
             $mysql['click_cpc'] = $db->real_escape_string($tracker_row['click_cpc']);
@@ -3104,7 +3104,7 @@ function getGclid($mysql)
     // get click id
     if (isset($mysql['gclid'])) {
 
-        $click_sql = "SELECT google.click_id, click_id_public , click_time, c1,c2,c3,c4, keyword AS t202kw, `utm_campaign`, `utm_source`, `utm_source`, `utm_medium`, `utm_term`, `utm_content` FROM google
+        $click_sql = "SELECT google.click_id, click_id_public , click_time, c1,c2,c3,c4, keyword AS t1aikw, `utm_campaign`, `utm_source`, `utm_source`, `utm_medium`, `utm_term`, `utm_content` FROM google
     LEFT JOIN clicks_advance USING(click_id)
     LEFT JOIN keywords USING(keyword_id)
     LEFT JOIN clicks_tracking USING(click_id)
@@ -3135,7 +3135,7 @@ function getClickData($mysql)
     // get click id
     if (isset($mysql['click_id'])) {
 
-        $click_sql = "SELECT click_id,click_id_public, click_time, c1,c2,c3,c4, keyword AS t202kw,`utm_campaign`, `utm_source`, `utm_source`, `utm_medium`, `utm_term`, `utm_content` FROM clicks
+        $click_sql = "SELECT click_id,click_id_public, click_time, c1,c2,c3,c4, keyword AS t1aikw,`utm_campaign`, `utm_source`, `utm_source`, `utm_medium`, `utm_term`, `utm_content` FROM clicks
 	LEFT JOIN clicks_tracking USING(click_id)
 	LEFT JOIN clicks_record USING(click_id)
     LEFT JOIN clicks_advance USING(click_id)
@@ -3330,104 +3330,104 @@ function processCacheRedirect(): void
     #the mysql server is down, use the cached redirect
     if ($usedCachedRedirect == true) {
 
-        $t202id = $_GET['t202id'];
+        $t1aiid = $_GET['t1aiid'];
 
-        //if a cached key is found for this t202id, redirect to that url
+        //if a cached key is found for this t1aiid, redirect to that url
         if ($memcacheWorking) {
-            $getUrl = getCache(md5('url_' . $t202id . systemHash()));
+            $getUrl = getCache(md5('url_' . $t1aiid . systemHash()));
             if ($getUrl) {
 
-                $new_url = str_replace("[[subid]]", "p202", $getUrl);
+                $new_url = str_replace("[[subid]]", "p1ai", $getUrl);
 
-                // t202pubid string replace for cached redirect
-                if (isset($_GET['t202pubid']) && $_GET['t202pubid'] != '') {
-                    $new_url = str_replace("[[t202pubid]]", $_GET['t202pubid'], $new_url);
+                // t1aipubid string replace for cached redirect
+                if (isset($_GET['t1aipubid']) && $_GET['t1aipubid'] != '') {
+                    $new_url = str_replace("[[t1aipubid]]", $_GET['t1aipubid'], $new_url);
                 } else {
-                    $new_url = str_replace("[[t202pubid]]", "t202pubid", $new_url);
+                    $new_url = str_replace("[[t1aipubid]]", "t1aipubid", $new_url);
                 }
 
                 //c1 string replace for cached redirect
                 if (isset($_GET['c1']) && $_GET['c1'] != '') {
                     $new_url = str_replace("[[c1]]", $_GET['c1'], $new_url);
                 } else {
-                    $new_url = str_replace("[[c1]]", "p202c1", $new_url);
+                    $new_url = str_replace("[[c1]]", "p1aic1", $new_url);
                 }
 
                 //c2 string replace for cached redirect
                 if (isset($_GET['c2']) && $_GET['c2'] != '') {
                     $new_url = str_replace("[[c2]]", $_GET['c2'], $new_url);
                 } else {
-                    $new_url = str_replace("[[c2]]", "p202c2", $new_url);
+                    $new_url = str_replace("[[c2]]", "p1aic2", $new_url);
                 }
 
                 //c3 string replace for cached redirect
                 if (isset($_GET['c3']) && $_GET['c3'] != '') {
                     $new_url = str_replace("[[c3]]", $_GET['c3'], $new_url);
                 } else {
-                    $new_url = str_replace("[[c3]]", "p202c3", $new_url);
+                    $new_url = str_replace("[[c3]]", "p1aic3", $new_url);
                 }
 
                 //c4 string replace for cached redirect
                 if (isset($_GET['c4']) && $_GET['c4'] != '') {
                     $new_url = str_replace("[[c4]]", $_GET['c4'], $new_url);
                 } else {
-                    $new_url = str_replace("[[c4]]", "p202c4", $new_url);
+                    $new_url = str_replace("[[c4]]", "p1aic4", $new_url);
                 }
 
                 //gclid string replace for cached redirect
                 if (isset($_GET['gclid']) && $_GET['gclid'] != '') {
                     $new_url = str_replace("[[gclid]]", $_GET['gclid'], $new_url);
                 } else {
-                    $new_url = str_replace("[[gclid]]", "p202gclid", $new_url);
+                    $new_url = str_replace("[[gclid]]", "p1aigclid", $new_url);
                 }
 
                 //msclkid string replace for cached redirect
                 if (isset($_GET['msclkid']) && $_GET['msclkid'] != '') {
                     $new_url = str_replace("[[msclkid]]", $_GET['msclkid'], $new_url);
                 } else {
-                    $new_url = str_replace("[[msclkid]]", "p202msclkid", $new_url);
+                    $new_url = str_replace("[[msclkid]]", "p1aimsclkid", $new_url);
                 }
 
                 //fbclid string replace for cached redirect
                 if (isset($_GET['fbclid']) && $_GET['fbclid'] != '') {
                     $new_url = str_replace("[[fbclid]]", $_GET['fbclid'], $new_url);
                 } else {
-                    $new_url = str_replace("[[fbclid]]", "p202fbclid", $new_url);
+                    $new_url = str_replace("[[fbclid]]", "p1aifbclid", $new_url);
                 }
 
                 //utm_source string replace for cached redirect
                 if (isset($_GET['utm_source']) && $_GET['utm_source'] != '') {
                     $new_url = str_replace("[[utm_source]]", $_GET['utm_source'], $new_url);
                 } else {
-                    $new_url = str_replace("[[utm_source]]", "p202utm_source", $new_url);
+                    $new_url = str_replace("[[utm_source]]", "p1aiutm_source", $new_url);
                 }
 
                 //utm_medium string replace for cached redirect
                 if (isset($_GET['utm_medium']) && $_GET['utm_medium'] != '') {
                     $new_url = str_replace("[[utm_medium]]", $_GET['utm_medium'], $new_url);
                 } else {
-                    $new_url = str_replace("[[utm_medium]]", "p202utm_medium", $new_url);
+                    $new_url = str_replace("[[utm_medium]]", "p1aiutm_medium", $new_url);
                 }
 
                 //utm_campaign string replace for cached redirect
                 if (isset($_GET['utm_campaign']) && $_GET['utm_campaign'] != '') {
                     $new_url = str_replace("[[utm_campaign]]", $_GET['utm_campaign'], $new_url);
                 } else {
-                    $new_url = str_replace("[[utm_campaign]]", "p202utm_campaign", $new_url);
+                    $new_url = str_replace("[[utm_campaign]]", "p1aiutm_campaign", $new_url);
                 }
 
                 //utm_term string replace for cached redirect
                 if (isset($_GET['utm_term']) && $_GET['utm_term'] != '') {
                     $new_url = str_replace("[[utm_term]]", $_GET['utm_term'], $new_url);
                 } else {
-                    $new_url = str_replace("[[utm_term]]", "p202utm_term", $new_url);
+                    $new_url = str_replace("[[utm_term]]", "p1aiutm_term", $new_url);
                 }
 
                 //utm_content string replace for cached redirect
                 if (isset($_GET['utm_content']) && $_GET['utm_content'] != '') {
                     $new_url = str_replace("[[utm_content]]", $_GET['utm_content'], $new_url);
                 } else {
-                    $new_url = str_replace("[[utm_content]]", "p202utm_content", $new_url);
+                    $new_url = str_replace("[[utm_content]]", "p1aiutm_content", $new_url);
                 }
 
                 //show url or redirect to url
@@ -3590,8 +3590,8 @@ function getKeyword(&$mysql)
             #try to get the bidded keyword first
             if ($_GET['OVKEY']) { //if this is a Y! keyword
                 $keyword = $db->real_escape_string($_GET['OVKEY']);
-            } elseif ($_GET['t202kw']) {
-                $keyword = $db->real_escape_string($_GET['t202kw']);
+            } elseif ($_GET['t1aikw']) {
+                $keyword = $db->real_escape_string($_GET['t1aikw']);
             } elseif ($_GET['target_passthrough']) { //if this is a mediatraffic! keyword
                 $keyword = $db->real_escape_string($_GET['target_passthrough']);
             } else { //if this is a zango, or more keyword
@@ -3633,16 +3633,16 @@ function getKeyword(&$mysql)
             } elseif ($_GET['words']) { //if this is a Rambler, or more keyword
                 $keyword = $db->real_escape_string($_GET['words']);
             } else {
-                $keyword = $db->real_escape_string($_GET['t202kw']);
+                $keyword = $db->real_escape_string($_GET['t1aikw']);
             }
             break;
     }
 
-    if (str_starts_with((string) $keyword, 't202var_')) {
-        $t202var = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
+    if (str_starts_with((string) $keyword, 't1aivar_')) {
+        $t1aivar = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
 
-        if (isset($_GET[$t202var])) {
-            $keyword = $_GET[$t202var];
+        if (isset($_GET[$t1aivar])) {
+            $keyword = $_GET[$t1aivar];
         }
     }
 
@@ -3662,11 +3662,11 @@ function getReferer(&$mysql)
     $referer_query = []; // Initialize $referer_query as an empty array
     @parse_str($referer_url_query, $referer_query);
 
-    // if user wants to use t202ref from url variable use that first if it's not set try and get it from the ref url
-    if ($mysql['user_pref_referer_data'] == 't202ref') {
-        if (isset($_GET['t202ref']) && $_GET['t202ref'] != '') { //check for t202ref value
-            $mysql['t202ref'] = $db->real_escape_string($_GET['t202ref']);
-            $click_referer_site_url_id = INDEXES::get_site_url_id($_GET['t202ref']);
+    // if user wants to use t1airef from url variable use that first if it's not set try and get it from the ref url
+    if ($mysql['user_pref_referer_data'] == 't1airef') {
+        if (isset($_GET['t1airef']) && $_GET['t1airef'] != '') { //check for t1airef value
+            $mysql['t1airef'] = $db->real_escape_string($_GET['t1airef']);
+            $click_referer_site_url_id = INDEXES::get_site_url_id($_GET['t1airef']);
         } else { //if not found revert to what we usually do
             if (isset($referer_query['url'])) {
                 $click_referer_site_url_id = INDEXES::get_site_url_id($referer_query['url']);
@@ -3699,7 +3699,7 @@ function getForeignPayout($currency, $payout_currency, $payout)
     $fields = http_build_query($fields);
 
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/get-foreign-payout');
+    curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/get-foreign-payout');
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);

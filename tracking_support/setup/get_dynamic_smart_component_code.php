@@ -64,7 +64,7 @@ template_top('Get Simple Landing Page Code');  ?>
 
 		    <div class="form-group">
 				<div class="col-xs-11" style="margin-top: 10px;">
-					<input type="button" id="generate-tracking-link-simple" class="btn btn-sm btn-p202 btn-block" value="Get Landing Page Codes">					
+					<input type="button" id="generate-tracking-link-simple" class="btn btn-sm btn-p1ai btn-block" value="Get Landing Page Codes">					
 				</div>
 			</div>
 

@@ -119,7 +119,7 @@ final class MysqlTrackingRepository implements TrackingRepositoryInterface
             throw new RuntimeException('Invalid UTM type: ' . $type);
         }
 
-        $table = '202_' . $type;
+        $table = '1ai_' . $type;
         $idCol = $type . '_id';
 
         return $this->findOrCreateDynamic($table, $idCol, $type, $value);

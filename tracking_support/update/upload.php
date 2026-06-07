@@ -85,7 +85,7 @@ switch ($case) {
 		echo '</div></div>';
 		echo '<div class="row"><div class="col-xs-12">';
 		echo '<div class="col-xs-5 col-xs-offset-7">
-				<button class="btn btn-p202 btn-block" type="submit">Next <span class="fui-arrow-right pull-right"></span></button>
+				<button class="btn btn-p1ai btn-block" type="submit">Next <span class="fui-arrow-right pull-right"></span></button>
 			  </div>';
 		echo '</form>';
 		echo '</div></div>';
@@ -297,7 +297,7 @@ switch ($case) {
 
 					
 			          <div class="col-xs-5">
-						<button class="btn btn-sm btn-p202 btn-block" type="submit">Upload Report</button>
+						<button class="btn btn-sm btn-p1ai btn-block" type="submit">Upload Report</button>
 					</div>
 			          
 				</form>

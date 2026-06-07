@@ -49,7 +49,7 @@ if (function_exists('openssl_decrypt')) {
 
         $mysql['click_cpa'] = $db->real_escape_string($cpa_row['click_cpa']);
                 
-        p202ApplyConversionUpdate(
+        p1aiApplyConversionUpdate(
             $db,
             (string) $mysql['click_id'],
             (string) $mysql['click_cpa'],

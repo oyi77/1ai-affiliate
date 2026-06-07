@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"p202/internal/api"
+	"p1ai/internal/api"
 	"strconv"
 
 	"github.com/spf13/cobra"

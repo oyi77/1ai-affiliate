@@ -38,7 +38,7 @@ $allowedOrigin = defined('API_CORS_ORIGIN') ? API_CORS_ORIGIN : '';
 if ($allowedOrigin !== '') {
     header('Access-Control-Allow-Origin: ' . $allowedOrigin);
     header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Authorization, Content-Type, X-P202-API-Version, Idempotency-Key, If-Match');
+    header('Access-Control-Allow-Headers: Authorization, Content-Type, X-P1ai-API-Version, Idempotency-Key, If-Match');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -80,7 +80,7 @@ if (in_array($method, ['POST', 'PUT', 'PATCH'])) {
     }
 }
 
-$requestedVersion = strtolower(trim((string)($headers['X-P202-API-Version'] ?? $headers['x-p202-api-version'] ?? '')));
+$requestedVersion = strtolower(trim((string)($headers['X-P1ai-API-Version'] ?? $headers['x-p1ai-api-version'] ?? '')));
 if ($requestedVersion !== '' && !in_array($requestedVersion, ['v3', '3'], true)) {
     Bootstrap::errorResponse(
         'Unsupported API version',
@@ -90,7 +90,7 @@ if ($requestedVersion !== '' && !in_array($requestedVersion, ['v3', '3'], true))
     exit;
 }
 RequestContext::setResolvedApiVersion('v3');
-header('X-P202-API-Version-Resolved: v3');
+header('X-P1ai-API-Version-Resolved: v3');
 
 $adoptionPct = (int)(getenv('P1AI_CAPABILITY_ADOPTION_PCT') ?: 0);
 $deprecationThresholdPct = (int)(getenv('P1AI_DEPRECATION_THRESHOLD_PCT') ?: 95);
@@ -98,7 +98,7 @@ if ($adoptionPct >= $deprecationThresholdPct && shouldEmitDeprecationNotice($pat
     $sunset = (string)(getenv('P1AI_DEPRECATION_SUNSET') ?: gmdate('D, d M Y H:i:s \\G\\M\\T', strtotime('+180 days')));
     header('Deprecation: true');
     header('Sunset: ' . $sunset);
-    header('Warning: 299 - "Legacy unversioned API requests are deprecated; use X-P202-API-Version: v3."');
+    header('Warning: 299 - "Legacy unversioned API requests are deprecated; use X-P1ai-API-Version: v3."');
 }
 
 // ─── Route definitions ───────────────────────────────────────────────

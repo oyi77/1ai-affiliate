@@ -1,6 +1,6 @@
 # Step 3 - Campaigns
 
-This is one of the steps most users often struggle with, **please pay attention and read carefully**. If you still require assistance after following the steps below, please feel free to sign up and subscribe to one of our **[support plans](http://join.tracking202.com)** for further assistance.
+This is one of the steps most users often struggle with, **please pay attention and read carefully**. If you still require assistance after following the steps below, please feel free to sign up and subscribe to one of our **[support plans](http://join.tracking1ai.com)** for further assistance.
  
 Here we will cover two methods of completing this step. You can choose from Direct Network Integration method if you're on one of our DNI partner networks or the manual setup method. You can choose which method you prefer below:
 

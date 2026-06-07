@@ -2,5 +2,5 @@ Options +FollowSymLinks
 
 RewriteEngine on 
 
-RewriteRule .* /202-404.php [L]
+RewriteRule .* /1ai-404.php [L]
 

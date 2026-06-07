@@ -51,10 +51,10 @@ final class MiscTables
             self::exportTextads(),
             // DNI tables
             self::dniNetworks(),
-            // Bot202 Facebook Pixel tables
-            self::bot202FacebookPixelAssistant(),
-            self::bot202FacebookPixelContentType(),
-            self::bot202FacebookPixelClickEvents(),
+            // Bot1ai Facebook Pixel tables
+            self::bot1aiFacebookPixelAssistant(),
+            self::bot1aiFacebookPixelContentType(),
+            self::bot1aiFacebookPixelClickEvents(),
         ];
     }
 
@@ -531,11 +531,11 @@ final class MiscTables
         );
     }
 
-    public static function bot202FacebookPixelAssistant(): SchemaDefinition
+    public static function bot1aiFacebookPixelAssistant(): SchemaDefinition
     {
         return SchemaBuilder::fromRawSql(
-            TableRegistry::BOT202_FACEBOOK_PIXEL_ASSISTANT,
-            "CREATE TABLE IF NOT EXISTS `" . TableRegistry::BOT202_FACEBOOK_PIXEL_ASSISTANT . "` (
+            TableRegistry::BOT1ai_FACEBOOK_PIXEL_ASSISTANT,
+            "CREATE TABLE IF NOT EXISTS `" . TableRegistry::BOT1ai_FACEBOOK_PIXEL_ASSISTANT . "` (
                 `bfbpa_id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
                 `landing_page_id` mediumint(8) unsigned NOT NULL,
                 `bfbpa_status` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -549,11 +549,11 @@ final class MiscTables
         );
     }
 
-    public static function bot202FacebookPixelContentType(): SchemaDefinition
+    public static function bot1aiFacebookPixelContentType(): SchemaDefinition
     {
         return SchemaBuilder::fromRawSql(
-            TableRegistry::BOT202_FACEBOOK_PIXEL_CONTENT_TYPE,
-            "CREATE TABLE IF NOT EXISTS `" . TableRegistry::BOT202_FACEBOOK_PIXEL_CONTENT_TYPE . "` (
+            TableRegistry::BOT1ai_FACEBOOK_PIXEL_CONTENT_TYPE,
+            "CREATE TABLE IF NOT EXISTS `" . TableRegistry::BOT1ai_FACEBOOK_PIXEL_CONTENT_TYPE . "` (
                 `content_type_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `content_type` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL,
                 `content_type_description` varchar(100) COLLATE utf8mb4_bin DEFAULT NULL,
@@ -563,11 +563,11 @@ final class MiscTables
         );
     }
 
-    public static function bot202FacebookPixelClickEvents(): SchemaDefinition
+    public static function bot1aiFacebookPixelClickEvents(): SchemaDefinition
     {
         return SchemaBuilder::fromRawSql(
-            TableRegistry::BOT202_FACEBOOK_PIXEL_CLICK_EVENTS,
-            "CREATE TABLE IF NOT EXISTS `" . TableRegistry::BOT202_FACEBOOK_PIXEL_CLICK_EVENTS . "` (
+            TableRegistry::BOT1ai_FACEBOOK_PIXEL_CLICK_EVENTS,
+            "CREATE TABLE IF NOT EXISTS `" . TableRegistry::BOT1ai_FACEBOOK_PIXEL_CLICK_EVENTS . "` (
                 `event_type_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `event_type` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL,
                 `event_type_description` varchar(100) COLLATE utf8mb4_bin DEFAULT NULL,

@@ -105,42 +105,42 @@ class DlComprehensiveTest extends TestCase
     }
     
     /**
-     * Test that non-numeric t202id parameter causes script to die
+     * Test that non-numeric t1aiid parameter causes script to die
      */
     public function testNonNumericT202idDies(): void
     {
-        $_GET['t202id'] = 'abc123';
+        $_GET['t1aiid'] = 'abc123';
         
         ob_start();
         $died = false;
         
         // Simulate the check
-        $t202id = $_GET['t202id'] ?? '';
-        if (!is_numeric($t202id)) {
+        $t1aiid = $_GET['t1aiid'] ?? '';
+        if (!is_numeric($t1aiid)) {
             $died = true;
         }
         
         ob_end_clean();
         
-        $this->assertTrue($died, 'Script should die with non-numeric t202id');
+        $this->assertTrue($died, 'Script should die with non-numeric t1aiid');
     }
     
     /**
-     * Test that missing t202id parameter causes script to die
+     * Test that missing t1aiid parameter causes script to die
      */
     public function testMissingT202idDies(): void
     {
-        unset($_GET['t202id']);
+        unset($_GET['t1aiid']);
         
         $died = false;
         
         // Simulate the check
-        $t202id = $_GET['t202id'] ?? '';
-        if (!is_numeric($t202id)) {
+        $t1aiid = $_GET['t1aiid'] ?? '';
+        if (!is_numeric($t1aiid)) {
             $died = true;
         }
         
-        $this->assertTrue($died, 'Script should die with missing t202id');
+        $this->assertTrue($died, 'Script should die with missing t1aiid');
     }
     
     /**
@@ -148,11 +148,11 @@ class DlComprehensiveTest extends TestCase
      */
     public function testCachedRedirectWithAllParameters(): void
     {
-        $t202id = '123';
+        $t1aiid = '123';
         $url = 'https://example.com/offer?subid=[[subid]]&c1=[[c1]]&c2=[[c2]]&c3=[[c3]]&c4=[[c4]]&gclid=[[gclid]]';
         
         $_GET = [
-            't202id' => $t202id,
+            't1aiid' => $t1aiid,
             'c1' => 'campaign1',
             'c2' => 'adgroup2',
             'c3' => 'keyword3',
@@ -162,14 +162,14 @@ class DlComprehensiveTest extends TestCase
         
         // Test URL replacement
         $new_url = $url;
-        $new_url = str_replace("[[subid]]", "p202", $new_url);
+        $new_url = str_replace("[[subid]]", "p1ai", $new_url);
         $new_url = str_replace("[[c1]]", $this->mockDb->real_escape_string((string)$_GET['c1']), $new_url);
         $new_url = str_replace("[[c2]]", $this->mockDb->real_escape_string((string)$_GET['c2']), $new_url);
         $new_url = str_replace("[[c3]]", $this->mockDb->real_escape_string((string)$_GET['c3']), $new_url);
         $new_url = str_replace("[[c4]]", $this->mockDb->real_escape_string((string)$_GET['c4']), $new_url);
         $new_url = str_replace("[[gclid]]", $this->mockDb->real_escape_string((string)$_GET['gclid']), $new_url);
         
-        $expected = 'https://example.com/offer?subid=p202&c1=campaign1&c2=adgroup2&c3=keyword3&c4=creative4&gclid=test_gclid_123';
+        $expected = 'https://example.com/offer?subid=p1ai&c1=campaign1&c2=adgroup2&c3=keyword3&c4=creative4&gclid=test_gclid_123';
         $this->assertEquals($expected, $new_url);
     }
     
@@ -179,7 +179,7 @@ class DlComprehensiveTest extends TestCase
     public function testUtmParameterHandling(): void
     {
         $_GET = [
-            't202id' => '123',
+            't1aiid' => '123',
             'utm_source' => 'google',
             'utm_medium' => 'cpc',
             'utm_campaign' => 'summer_sale',
@@ -213,11 +213,11 @@ class DlComprehensiveTest extends TestCase
         }
         $this->assertEquals('yahoo keyword', $keyword);
         
-        // Test t202kw
+        // Test t1aikw
         unset($_GET['OVKEY']);
-        $_GET['t202kw'] = 'prosper keyword';
-        if (isset($_GET['t202kw']) && $_GET['t202kw']) {
-            $keyword = $this->mockDb->real_escape_string((string)$_GET['t202kw']);
+        $_GET['t1aikw'] = 'prosper keyword';
+        if (isset($_GET['t1aikw']) && $_GET['t1aikw']) {
+            $keyword = $this->mockDb->real_escape_string((string)$_GET['t1aikw']);
         }
         $this->assertEquals('prosper keyword', $keyword);
     }
@@ -330,12 +330,12 @@ class DlComprehensiveTest extends TestCase
     public function testDynamicBidHandling(): void
     {
         $tracker_row = ['user_pref_dynamic_bid' => '1', 'click_cpc' => '0.50'];
-        $_GET['t202b'] = '$1.25';
+        $_GET['t1aib'] = '$1.25';
         
-        if (isset($_GET['t202b']) && $tracker_row['user_pref_dynamic_bid'] == '1') {
-            $_GET['t202b'] = ltrim($_GET['t202b'], '$');
-            if (is_numeric($_GET['t202b'])) {
-                $bid = number_format((float)$_GET['t202b'], 5, '.', '');
+        if (isset($_GET['t1aib']) && $tracker_row['user_pref_dynamic_bid'] == '1') {
+            $_GET['t1aib'] = ltrim($_GET['t1aib'], '$');
+            if (is_numeric($_GET['t1aib'])) {
+                $bid = number_format((float)$_GET['t1aib'], 5, '.', '');
                 $mysql['click_cpc'] = $this->mockDb->real_escape_string((string)$bid);
                 $this->assertEquals('1.25000', $mysql['click_cpc']);
             }
@@ -439,7 +439,7 @@ class DlComprehensiveTest extends TestCase
     {
         $tokens = [
             'subid' => '12345',
-            't202kw' => 'test keyword',
+            't1aikw' => 'test keyword',
             'c1' => 'campaign1',
             'c2' => 'adgroup2',
             'c3' => 'keyword3',
@@ -449,7 +449,7 @@ class DlComprehensiveTest extends TestCase
             'utm_medium' => 'cpc'
         ];
         
-        $url = 'https://example.com/?subid=[[subid]]&kw=[[t202kw]]&c1=[[c1]]';
+        $url = 'https://example.com/?subid=[[subid]]&kw=[[t1aikw]]&c1=[[c1]]';
         
         foreach ($tokens as $key => $value) {
             $url = str_replace('[[' . $key . ']]', $value, $url);

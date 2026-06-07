@@ -175,12 +175,12 @@ small, .small {
 	border-color: #267da8;
 }
 
-.btn-p202 {
+.btn-p1ai {
   color: #ffffff;
   background-color: #1d950c;
 }
 
-.btn-p202:hover, .btn-p202.hover, .btn-p202:focus{
+.btn-p1ai:hover, .btn-p1ai.hover, .btn-p1ai:focus{
   background-color: #2CAA1A;
 }
 
@@ -284,30 +284,30 @@ small, .small {
   margin-top: 10px;
 }
 
-#tracking202_tweets{
+#tracking1ai_tweets{
   font-size: 14px;
 }
 
-#tracking202_tweets span{
+#tracking1ai_tweets span{
   margin-right: 5px;
   font-size: 12px;
 }
 
-#tracking202_posts{
+#tracking1ai_posts{
   font-size: 14px;
 }
 
-#tracking202_posts i{
+#tracking1ai_posts i{
   margin-right: 5px;
   font-size: 12px;
 }
 
 
-#tracking202_sponsors a{
+#tracking1ai_sponsors a{
   font-size: 14px;
 }
 
-#tracking202_sponsors span{
+#tracking1ai_sponsors span{
   font-size: 12px;
 }
 

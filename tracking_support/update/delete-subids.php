@@ -115,7 +115,7 @@ template_top('Delete Subids'); ?>
 				<label for="subids">Subids</label>
 				<textarea rows="5" name="subids" id="subids" placeholder="Add your subids..." class="form-control"><?php echo htmlspecialchars($_POST['subids'] ?? '', ENT_QUOTES); ?></textarea>
 			</div>
-			<button class="btn btn-sm btn-p202 btn-block" type="submit">Update Subids</button>
+			<button class="btn btn-sm btn-p1ai btn-block" type="submit">Update Subids</button>
 		</form>
 	</div>
 </div>
