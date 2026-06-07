@@ -123,6 +123,46 @@ Apply these migrations in order:
 
 The dedup migration removes existing duplicate `(offer_id, click_id)` rows while keeping the most recent before adding the unique key.
 
+### Postback Queue State Machine Deployment Guidance
+
+After deployment, the postback queue follows a strict state machine with three terminal and retry states:
+
+**Queue Row States:**
+
+- `queued`: Initial state when conversion is received. Processor selects and processes immediately.
+- `retry`: Row is retryable and was moved here by exponential backoff logic after a failure. Processor continues retrying until `postback_retries` limit is exhausted.
+- `failed` (terminal): Row exhausted all retries or encountered a non-recoverable error (e.g., offer disabled). Processor WILL NOT reprocess this row.
+
+**Data Migration for Existing Rows:**
+
+If you have legacy `failed` rows that should be retryable (e.g., due to temporary network issues), manually transition them:
+
+```sql
+-- Convert specific failed queue rows to retry state (example for a date range).
+-- Review affected rows first; only convert rows that represent transient failures.
+UPDATE 1ai_postback_queue
+SET status = 'retry', scheduled_at = NOW()
+WHERE status = 'failed'
+  AND scheduled_at IS NOT NULL
+  AND scheduled_at <= NOW();
+```
+
+Verify before applying to production. Terminal `failed` rows created more than 7 days ago are intentionally not transitioned to preserve audit trail.
+
+**Queue Processor Selection Logic:**
+
+The queue processor filters intentionally:
+
+```sql
+SELECT pql.id, pql.postback_log_id
+FROM 1ai_postback_queue pql
+WHERE pql.status IN ('queued', 'retry')
+  AND (pql.scheduled_at <= NOW() OR scheduled_at IS NULL)
+LIMIT 10;
+```
+
+Rows with `status = 'failed'` are excluded and will never be reprocessed unless manually transitioned to `retry`.
+
 ## Verification commands
 
 ```bash

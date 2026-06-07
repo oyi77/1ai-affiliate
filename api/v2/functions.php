@@ -189,7 +189,7 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 									 LEFT OUTER JOIN landing_pages AS 2lp ON (2lp.landing_page_id = 2c.landing_page_id)";
 				} else {
 					//If any other report type
-				   		$report_sql .= " LEFT OUTER JOIN 1ai_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
+				   		$report_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 				}
 
 				//If any of C1-C4 variables are set
@@ -243,7 +243,7 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 							LEFT OUTER JOIN site_urls AS 2su ON (2cs.click_referer_site_url_id=2su.site_url_id)
 							LEFT OUTER JOIN site_domains AS 2l ON (2l.site_domain_id = 2su.site_domain_id)";
 					   } else {
-					   		$report_sql .= " LEFT OUTER JOIN 1ai_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
+					   		$report_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 					   }
 
 					   //If any of C1-C4 variables are set
