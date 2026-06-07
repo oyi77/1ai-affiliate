@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 if (!defined('ROOT_PATH')) {
-    define('ROOT_PATH', substr(__DIR__, 0, -10));
+    define('ROOT_PATH', dirname(__DIR__));
 }
 include_once (ROOT_PATH . '/interfaces/FraudDetectionInterface.php');
 
