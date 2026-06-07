@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	configpkg "p202/internal/config"
-	"p202/internal/output"
+	configpkg "p1ai/internal/config"
+	"p1ai/internal/output"
 
 	"github.com/spf13/cobra"
 )
@@ -82,7 +82,7 @@ var configRemoveProfileCmd = &cobra.Command{
 			return fmt.Errorf("profile %q not found. available profiles: %s", name, strings.Join(cfg.ProfileNames(), ", "))
 		}
 		if strings.TrimSpace(cfg.ActiveProfile) == name {
-			return fmt.Errorf("cannot remove active profile %q; run `p202 config use <name>` first", name)
+			return fmt.Errorf("cannot remove active profile %q; run `p1ai config use <name>` first", name)
 		}
 
 		force, _ := cmd.Flags().GetBool("force")

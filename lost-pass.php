@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 					<input type="text" class="form-control first" name="user_name" placeholder="Username">
 					<input type="text" class="form-control last" name="user_email" placeholder="Email">
 					<p></p>
-					<button class="btn btn-lg btn-p202 btn-block" type="submit">Get New Password <span class="fui-arrow-right pull-right"></span></button>
+					<button class="btn btn-lg btn-p1ai btn-block" type="submit">Get New Password <span class="fui-arrow-right pull-right"></span></button>
 				</div>
 			</form>
 		</div>

@@ -1593,7 +1593,7 @@ function autocomplete_names(selector, type){
 	var elt = $('#' + selector);
 
 	var tags = new Bloodhound({
-	  remote: 'http://my.tracking202.com/api/v2/'+ type +'/%QUERY',
+	  remote: 'http://my.tracking1ai.com/api/v2/'+ type +'/%QUERY',
 	  datumTokenizer: function(d) { 
 	      return Bloodhound.tokenizers.whitespace(d.val); 
 	  },

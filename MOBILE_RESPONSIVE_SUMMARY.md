@@ -1,25 +1,25 @@
 # Attribution Models Page - Mobile Responsiveness Improvements
 
 ## Overview
-Made comprehensive mobile responsive improvements to the Attribution Models page (`http://localhost:8000/tracking202/setup/attribution_models.php`) to ensure optimal user experience across all devices.
+Made comprehensive mobile responsive improvements to the Attribution Models page (`http://localhost:8000/tracking1ai/setup/attribution_models.php`) to ensure optimal user experience across all devices.
 
 ## Changes Made
 
 ### 1. Global Template Improvements
-**File: `202-config/template.php`**
+**File: `1ai-config/template.php`**
 - Added proper viewport meta tag: `<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">`
 - Reordered meta tags for better mobile optimization
 - Moved charset declaration to top for faster rendering
 
 ### 2. Container Width Fix
-**File: `202-css/custom.css`**
+**File: `1ai-css/custom.css`**
 - **CRITICAL FIX**: Replaced fixed 1450px container width with responsive design
 - Added responsive breakpoints for different screen sizes
 - Maintained wide layout only on very large screens (1600px+)
 - Added proper padding adjustments for mobile devices
 
 ### 3. Navigation Improvements
-**File: `tracking202/setup/_config/setup_nav.php`**
+**File: `tracking1ai/setup/_config/setup_nav.php`**
 - Made setup navigation fully responsive
 - Added flexbox layout for mobile devices
 - Implemented stacked layout on small screens
@@ -27,7 +27,7 @@ Made comprehensive mobile responsive improvements to the Attribution Models page
 - Improved touch targets and accessibility
 
 ### 4. Attribution Models Page Enhancements
-**File: `tracking202/setup/templates/attribution_models.php`**
+**File: `tracking1ai/setup/templates/attribution_models.php`**
 
 #### Form Improvements:
 - Increased touch target sizes (44px minimum height)
@@ -113,9 +113,9 @@ Made comprehensive mobile responsive improvements to the Attribution Models page
 6. **Performance**: Optimized for mobile network conditions
 
 ## Files Modified
-1. `/202-config/template.php` - Added viewport meta tag
-2. `/202-css/custom.css` - Fixed container width and added navbar responsiveness
-3. `/tracking202/setup/_config/setup_nav.php` - Made navigation responsive
-4. `/tracking202/setup/templates/attribution_models.php` - Comprehensive mobile improvements
+1. `/1ai-config/template.php` - Added viewport meta tag
+2. `/1ai-css/custom.css` - Fixed container width and added navbar responsiveness
+3. `/tracking1ai/setup/_config/setup_nav.php` - Made navigation responsive
+4. `/tracking1ai/setup/templates/attribution_models.php` - Comprehensive mobile improvements
 
 The Attribution Models page is now fully mobile responsive and provides an excellent user experience across all device types and screen sizes.

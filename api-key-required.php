@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(__DIR__ . '/config/connect.php');
-include_once(__DIR__ . '/config/functions-tracking202.php');
+include_once(__DIR__ . '/config/functions-tracking1ai.php');
 
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
 	$strProtocol = 'https://';
@@ -69,7 +69,7 @@ info_top(); ?>
 		  <strong>Success!</strong> Your API key has been validated and saved to the database.
 		</div>
 		<br>
-		<a href="/login.php" class="btn btn-lg btn-p202 btn-block">Proceed to Login</a>
+		<a href="/login.php" class="btn btn-lg btn-p1ai btn-block">Proceed to Login</a>
 		<br>
 		<small class="text-muted">Note: If you're redirected back here, use the bypass link on the warning message.</small>
 	  <?php else: ?>
@@ -95,19 +95,19 @@ info_top(); ?>
 			  <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Enter your API key here" required>
 			</div>
 		  </div>
-		  <button class="btn btn-lg btn-p202 btn-block" type="submit">Save API Key</button>
+		  <button class="btn btn-lg btn-p1ai btn-block" type="submit">Save API Key</button>
 		</form>
 		
 		<hr style="margin: 20px 0;">
 		<center><small>Don't have an API key yet?</small></center>
-		<a class='btn btn-lg btn-default btn-block' href='https://my.tracking202.com/api/customers/login?redirect=get-api' target="_blank">Get Your API Key</a>
+		<a class='btn btn-lg btn-default btn-block' href='https://my.tracking1ai.com/api/customers/login?redirect=get-api' target="_blank">Get Your API Key</a>
 	  <?php endif; ?>
 	  
 	  <br><br>
 <?php 
 			
 echo "
-       <img src='https://my.tracking202.com/api/v2/dni/deeplink/cookie/set/".base64_encode($strProtocol .  $_SERVER['SERVER_NAME'] . get_absolute_url())."'>	
+       <img src='https://my.tracking1ai.com/api/v2/dni/deeplink/cookie/set/".base64_encode($strProtocol .  $_SERVER['SERVER_NAME'] . get_absolute_url())."'>	
        ";?>
        
     </div>

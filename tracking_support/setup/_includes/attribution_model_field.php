@@ -18,7 +18,7 @@ if (isset($html['attribution_model_id']) && $html['attribution_model_id'] !== ''
 // Initialize attribution service
 try {
     // Include required attribution classes
-    // Path: _includes -> setup -> tracking202 -> root (3 levels up)
+    // Path: _includes -> setup -> tracking1ai -> root (3 levels up)
     require_once dirname(__DIR__, 3) . '/config/Attribution/ModelType.php';
     require_once dirname(__DIR__, 3) . '/config/Attribution/ModelDefinition.php';
     require_once dirname(__DIR__, 3) . '/config/Attribution/Repository/ModelRepositoryInterface.php';

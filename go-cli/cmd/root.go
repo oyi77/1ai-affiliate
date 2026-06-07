@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"p202/internal/api"
-	configpkg "p202/internal/config"
+	"p1ai/internal/api"
+	configpkg "p1ai/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -17,9 +17,9 @@ var profileName string
 var groupName string
 
 var rootCmd = &cobra.Command{
-	Use:           "p202",
-	Short:         "Prosper202 CLI",
-	Long: "p202 is a command-line tool for managing a Prosper202 tracking instance.\n" +
+	Use:           "p1ai",
+	Short:         "Prosper1ai CLI",
+	Long: "p1ai is a command-line tool for managing a Prosper1ai tracking instance.\n" +
 		"Designed for both human operators and AI agents.",  // alias list appended dynamically in Execute()
 	SilenceErrors: true,
 	SilenceUsage:  true,
@@ -46,7 +46,7 @@ func buildAliasHelp() string {
 }
 
 func Execute() {
-	rootCmd.Long = "p202 is a command-line tool for managing a Prosper202 tracking instance.\n" +
+	rootCmd.Long = "p1ai is a command-line tool for managing a Prosper1ai tracking instance.\n" +
 		"Designed for both human operators and AI agents." + buildAliasHelp()
 	if err := rootCmd.Execute(); err != nil {
 		if category := api.ErrorCategory(err); category != "" {

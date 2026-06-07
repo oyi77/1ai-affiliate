@@ -1,5 +1,5 @@
 // Package metrics provides lightweight structured telemetry for CLI operations.
-// Events are emitted as single-line JSON to stderr when P202_METRICS=1.
+// Events are emitted as single-line JSON to stderr when P1ai_METRICS=1.
 // This is designed for log aggregation in CI/CD and automation contexts.
 package metrics
 
@@ -14,7 +14,7 @@ import (
 var enabled bool
 
 func init() {
-	raw := strings.TrimSpace(strings.ToLower(os.Getenv("P202_METRICS")))
+	raw := strings.TrimSpace(strings.ToLower(os.Getenv("P1ai_METRICS")))
 	enabled = raw == "1" || raw == "true" || raw == "on"
 }
 
@@ -36,7 +36,7 @@ type Event struct {
 }
 
 // Emit writes a metrics event to stderr as JSON.
-// No-op if P202_METRICS is not enabled.
+// No-op if P1ai_METRICS is not enabled.
 func Emit(e Event) {
 	if !enabled {
 		return

@@ -1,23 +1,23 @@
-# Prosper202 CLI (`p202`)
+# Prosper1ai CLI (`p1ai`)
 
-A command-line tool for managing a Prosper202 tracking instance. Distributed as a single static binary with zero dependencies.
+A command-line tool for managing a Prosper1ai tracking instance. Distributed as a single static binary with zero dependencies.
 
 ## Installation
 
 ### Download a prebuilt binary
 
-Download the appropriate archive for your platform from the releases page. Each archive contains a single `p202` binary (or `p202.exe` on Windows). Extract it and place it in your `PATH`.
+Download the appropriate archive for your platform from the releases page. Each archive contains a single `p1ai` binary (or `p1ai.exe` on Windows). Extract it and place it in your `PATH`.
 
 | Platform         | Archive directory  | Binary      |
 |------------------|--------------------|-------------|
-| Linux (x86_64)   | `linux-amd64/`     | `p202`      |
-| Linux (ARM64)    | `linux-arm64/`     | `p202`      |
-| macOS (Intel)    | `darwin-amd64/`    | `p202`      |
-| macOS (Apple Si) | `darwin-arm64/`    | `p202`      |
-| Windows (x86_64) | `windows-amd64/`   | `p202.exe`  |
-| Windows (ARM64)  | `windows-arm64/`   | `p202.exe`  |
+| Linux (x86_64)   | `linux-amd64/`     | `p1ai`      |
+| Linux (ARM64)    | `linux-arm64/`     | `p1ai`      |
+| macOS (Intel)    | `darwin-amd64/`    | `p1ai`      |
+| macOS (Apple Si) | `darwin-arm64/`    | `p1ai`      |
+| Windows (x86_64) | `windows-amd64/`   | `p1ai.exe`  |
+| Windows (ARM64)  | `windows-arm64/`   | `p1ai.exe`  |
 
-The binary is always named `p202` on every platform.
+The binary is always named `p1ai` on every platform.
 
 ### Build from source
 
@@ -33,18 +33,18 @@ make install        # Install to $GOPATH/bin
 ## Quick start
 
 ```bash
-# 1. Point the CLI at your Prosper202 instance
-p202 config set-url https://your-prosper202.example.com
+# 1. Point the CLI at your Prosper1ai instance
+p1ai config set-url https://your-Prosper1ai.example.com
 
 # 2. Set your API key
-p202 config set-key YOUR_API_KEY
+p1ai config set-key YOUR_API_KEY
 
 # 3. Verify the connection
-p202 config test
+p1ai config test
 
 # 4. Start using it
-p202 campaign list
-p202 report summary --period today
+p1ai campaign list
+p1ai report summary --period today
 ```
 
 ## Global flags
@@ -60,14 +60,14 @@ p202 report summary --period today
 
 ## Configuration
 
-The CLI stores its configuration in `~/.p202/config.json` with `0600` permissions.
+The CLI stores its configuration in `~/.p1ai/config.json` with `0600` permissions.
 
 ```json
 {
   "active_profile": "default",
   "profiles": {
     "default": {
-      "url": "https://your-prosper202.example.com",
+      "url": "https://your-Prosper1ai.example.com",
       "api_key": "your_api_key_here",
       "defaults": {
         "report.period": "last30"
@@ -78,43 +78,43 @@ The CLI stores its configuration in `~/.p202/config.json` with `0600` permission
 }
 ```
 
-On Windows, this path is typically `%USERPROFILE%\\.p202\\config.json` (that is, the current user's home directory under `.p202`).
+On Windows, this path is typically `%USERPROFILE%\\.p1ai\\config.json` (that is, the current user's home directory under `.p1ai`).
 
 Legacy single-profile files (`url`, `api_key`) are auto-migrated in memory to `profiles.default` and written back in profile format on the next config write.
 
-### `p202 config set-url <url>`
+### `p1ai config set-url <url>`
 
-Set the Prosper202 instance URL. Trailing slashes are stripped automatically.
+Set the Prosper1ai instance URL. Trailing slashes are stripped automatically.
 
-### `p202 config set-key <api-key>`
+### `p1ai config set-key <api-key>`
 
 Set the API key used for authentication.
 
-### `p202 config show`
+### `p1ai config show`
 
 Display the current configuration. The API key is masked in output (first 4 + last 4 characters shown).
 
 ```
-$ p202 config show
-Config file  ~/.p202/config.json
+$ p1ai config show
+Config file  ~/.p1ai/config.json
 URL          https://prosper.example.com
 API Key      abc1...xyz9
 ```
 
-### `p202 config test`
+### `p1ai config test`
 
 Test the connection by calling the system health endpoint.
 
 ### Multi-profile config commands
 
 ```bash
-p202 config add-profile prod --url https://prod.example.com --key PROD_KEY
-p202 config add-profile staging --url https://staging.example.com --key STAGING_KEY
-p202 config list-profiles
-p202 config use prod
-p202 --profile staging config show
-p202 config rename-profile staging stage
-p202 config remove-profile stage --force
+p1ai config add-profile prod --url https://prod.example.com --key PROD_KEY
+p1ai config add-profile staging --url https://staging.example.com --key STAGING_KEY
+p1ai config list-profiles
+p1ai config use prod
+p1ai --profile staging config show
+p1ai config rename-profile staging stage
+p1ai config remove-profile stage --force
 ```
 
 | Command | Description |
@@ -134,10 +134,10 @@ p202 config remove-profile stage --force
 Set reusable defaults for high-frequency flags:
 
 ```bash
-p202 config set-default report.period last30
-p202 config get-default report.period
-p202 config get-default
-p202 config unset-default report.period
+p1ai config set-default report.period last30
+p1ai config get-default report.period
+p1ai config get-default
+p1ai config unset-default report.period
 ```
 
 Supported default keys include:
@@ -150,7 +150,7 @@ Supported default keys include:
 
 Optional environment flags for staged rollout:
 - `CLI_ENABLE_RESOLVE_NAMES=0|1` controls `--resolve-names` list behavior.
-- `CLI_ENABLE_ANALYTICS_SHORTHAND=0|1` controls `p202 analytics`.
+- `CLI_ENABLE_ANALYTICS_SHORTHAND=0|1` controls `p1ai analytics`.
 
 If unset, both features are enabled by default.
 
@@ -160,21 +160,21 @@ Seven resource types share identical CRUD commands:
 
 | Resource       | Command          |
 |----------------|------------------|
-| Campaigns      | `p202 campaign`  |
-| Affiliate networks | `p202 aff-network` |
-| PPC networks   | `p202 ppc-network` |
-| PPC accounts   | `p202 ppc-account` |
-| Trackers       | `p202 tracker`   |
-| Landing pages  | `p202 landing-page` |
-| Text ads       | `p202 text-ad`   |
+| Campaigns      | `p1ai campaign`  |
+| Affiliate networks | `p1ai aff-network` |
+| PPC networks   | `p1ai ppc-network` |
+| PPC accounts   | `p1ai ppc-account` |
+| Trackers       | `p1ai tracker`   |
+| Landing pages  | `p1ai landing-page` |
+| Text ads       | `p1ai text-ad`   |
 
 ### List resources
 
 ```bash
-p202 campaign list
-p202 campaign list --limit 10 --offset 20
-p202 campaign list --page 3
-p202 campaign list --aff_network_id 5
+p1ai campaign list
+p1ai campaign list --limit 10 --offset 20
+p1ai campaign list --page 3
+p1ai campaign list --aff_network_id 5
 ```
 
 | Flag | Description |
@@ -195,13 +195,13 @@ Legacy raw filter syntax (`--filter[aff_network_id]`) is still accepted where pr
 ### Get a resource
 
 ```bash
-p202 campaign get 42
+p1ai campaign get 42
 ```
 
 ### Create a resource
 
 ```bash
-p202 campaign create \
+p1ai campaign create \
   --aff_campaign_name "Q1 Offer" \
   --aff_campaign_url "https://example.com/offer"
 ```
@@ -211,7 +211,7 @@ Required and optional fields vary by resource type. The CLI validates required f
 ### Update a resource
 
 ```bash
-p202 campaign update 42 --aff_campaign_name "Q1 Offer (Updated)"
+p1ai campaign update 42 --aff_campaign_name "Q1 Offer (Updated)"
 ```
 
 At least one field flag must be provided.
@@ -219,9 +219,9 @@ At least one field flag must be provided.
 ### Delete a resource
 
 ```bash
-p202 campaign delete 42                    # Prompts for confirmation
-p202 campaign delete 42 --force            # Skips confirmation
-p202 campaign delete --ids 42,43,44 --force # Bulk delete
+p1ai campaign delete 42                    # Prompts for confirmation
+p1ai campaign delete 42 --force            # Skips confirmation
+p1ai campaign delete --ids 42,43,44 --force # Bulk delete
 ```
 
 | Flag          | Description              |
@@ -233,7 +233,7 @@ Bulk delete (`--ids`) processes each ID individually and reports a summary. If a
 
 ## Resource field reference
 
-### Campaign (`p202 campaign`)
+### Campaign (`p1ai campaign`)
 
 | Flag | Required | Description |
 |------|----------|-------------|
@@ -256,11 +256,11 @@ Bulk delete (`--ids`) processes each ID individually and reports a summary. If a
 Campaign utility subcommand:
 
 ```bash
-p202 campaign clone 42
-p202 campaign clone 42 --name "Q1 Offer (Copy)"
+p1ai campaign clone 42
+p1ai campaign clone 42 --name "Q1 Offer (Copy)"
 ```
 
-### Affiliate network (`p202 aff-network`)
+### Affiliate network (`p1ai aff-network`)
 
 | Flag | Required | Description |
 |------|----------|-------------|
@@ -269,13 +269,13 @@ p202 campaign clone 42 --name "Q1 Offer (Copy)"
 | `--aff_network_postback_url` | No | Postback URL |
 | `--aff_network_postback_append` | No | Postback append string |
 
-### PPC network (`p202 ppc-network`)
+### PPC network (`p1ai ppc-network`)
 
 | Flag                 | Required | Description  |
 |----------------------|----------|--------------|
 | `--ppc_network_name` | Yes      | Network name |
 
-### PPC account (`p202 ppc-account`)
+### PPC account (`p1ai ppc-account`)
 
 | Flag | Required | Description |
 |------|----------|-------------|
@@ -283,7 +283,7 @@ p202 campaign clone 42 --name "Q1 Offer (Copy)"
 | `--ppc_network_id` | Yes | PPC network ID |
 | `--ppc_account_default` | No | Set as default account (0/1) |
 
-### Tracker (`p202 tracker`)
+### Tracker (`p1ai tracker`)
 
 | Flag | Required | Description |
 |------|----------|-------------|
@@ -299,17 +299,17 @@ p202 campaign clone 42 --name "Q1 Offer (Copy)"
 Tracker utility subcommands:
 
 ```bash
-p202 tracker get-url 56
-p202 tracker create-with-url --aff_campaign_id 42
-p202 tracker bulk-urls --aff_campaign_id 42 --concurrency 5
-p202 tracker list --all --resolve-names
+p1ai tracker get-url 56
+p1ai tracker create-with-url --aff_campaign_id 42
+p1ai tracker bulk-urls --aff_campaign_id 42 --concurrency 5
+p1ai tracker list --all --resolve-names
 ```
 
 `tracker list` supports:
 - `--all` fetches all pages.
 - `--resolve-names` adds resolved FK labels (for example `campaign_name`) while preserving original ID fields.
 
-### Landing page (`p202 landing-page`)
+### Landing page (`p1ai landing-page`)
 
 | Flag | Required | Description |
 |------|----------|-------------|
@@ -319,7 +319,7 @@ p202 tracker list --all --resolve-names
 | `--leave_behind_page_url` | No | Leave-behind page URL |
 | `--landing_page_type` | No | Landing page type |
 
-### Text ad (`p202 text-ad`)
+### Text ad (`p1ai text-ad`)
 
 | Flag | Required | Description |
 |------|----------|-------------|
@@ -338,10 +338,10 @@ Clicks are read-only.
 ### List clicks
 
 ```bash
-p202 click list
-p202 click list --limit 100 --time_from 1700000000 --time_to 1700100000
-p202 click list --aff_campaign_id 5 --click_lead 1
-p202 click list --all
+p1ai click list
+p1ai click list --limit 100 --time_from 1700000000 --time_to 1700100000
+p1ai click list --aff_campaign_id 5 --click_lead 1
+p1ai click list --all
 ```
 
 | Flag                | Default | Description                          |
@@ -361,7 +361,7 @@ p202 click list --all
 ### Get a click
 
 ```bash
-p202 click get 12345
+p1ai click get 12345
 ```
 
 ## Conversions
@@ -369,9 +369,9 @@ p202 click get 12345
 ### List conversions
 
 ```bash
-p202 conversion list
-p202 conversion list --campaign_id 3 --time_from 1700000000
-p202 conversion list --all
+p1ai conversion list
+p1ai conversion list --campaign_id 3 --time_from 1700000000
+p1ai conversion list --all
 ```
 
 | Flag            | Default | Description            |
@@ -386,14 +386,14 @@ p202 conversion list --all
 ### Get a conversion
 
 ```bash
-p202 conversion get 789
+p1ai conversion get 789
 ```
 
 ### Create a conversion
 
 ```bash
-p202 conversion create --click_id 12345
-p202 conversion create --click_id 12345 --payout 4.50 --transaction_id "TXN-001"
+p1ai conversion create --click_id 12345
+p1ai conversion create --click_id 12345 --payout 4.50 --transaction_id "TXN-001"
 ```
 
 | Flag               | Required | Description              |
@@ -414,9 +414,9 @@ The CLI accepts the following legacy flags for backward compatibility:
 ### Delete a conversion
 
 ```bash
-p202 conversion delete 789
-p202 conversion delete 789 --force
-p202 conversion delete --ids 789,790,791 --force
+p1ai conversion delete 789
+p1ai conversion delete 789 --force
+p1ai conversion delete --ids 789,790,791 --force
 ```
 
 `--ids` performs bulk delete in one CLI command and returns non-zero when any ID fails.
@@ -444,11 +444,11 @@ All report commands share common time and entity filters.
 Dashboard summary is a shortcut to `reports/summary`.
 
 ```bash
-p202 dashboard
-p202 dashboard --period last7 --aff_campaign_id 42
-p202 dashboard --all-profiles
-p202 dashboard --profiles prod,staging
-p202 dashboard --group env:prod
+p1ai dashboard
+p1ai dashboard --period last7 --aff_campaign_id 42
+p1ai dashboard --all-profiles
+p1ai dashboard --profiles prod,staging
+p1ai dashboard --group env:prod
 ```
 
 If `--period` is omitted, dashboard defaults to `today`.
@@ -458,11 +458,11 @@ If `--period` is omitted, dashboard defaults to `today`.
 Aggregate totals for the selected time period and filters.
 
 ```bash
-p202 report summary --period today
-p202 report summary --time_from 1700000000 --time_to 1700100000
-p202 report summary --all-profiles --period today
-p202 report summary --profiles prod,staging --period today
-p202 report summary --group env:prod --period today
+p1ai report summary --period today
+p1ai report summary --time_from 1700000000 --time_to 1700100000
+p1ai report summary --all-profiles --period today
+p1ai report summary --profiles prod,staging --period today
+p1ai report summary --group env:prod --period today
 ```
 
 Summary/dashboard multi-profile selectors:
@@ -480,8 +480,8 @@ Multi-profile output includes per-profile rows, aggregated totals, and an `error
 Performance broken down by a dimension.
 
 ```bash
-p202 report breakdown --breakdown campaign --period last7
-p202 report breakdown --breakdown country --sort total_net --sort_dir ASC --limit 10
+p1ai report breakdown --breakdown campaign --period last7
+p1ai report breakdown --breakdown country --sort total_net --sort_dir ASC --limit 10
 ```
 
 | Flag               | Default       | Description                |
@@ -499,8 +499,8 @@ p202 report breakdown --breakdown country --sort total_net --sort_dir ASC --limi
 ### Analytics shorthand
 
 ```bash
-p202 analytics --group-by country --period last30 --sort conversions
-p202 analytics --group-by campaign --days 14 --sort roi --limit 10
+p1ai analytics --group-by country --period last30 --sort conversions
+p1ai analytics --group-by campaign --days 14 --sort roi --limit 10
 ```
 
 `analytics` wraps `report breakdown` with friendly aliases:
@@ -513,8 +513,8 @@ p202 analytics --group-by campaign --days 14 --sort roi --limit 10
 Performance data over time intervals.
 
 ```bash
-p202 report timeseries --period last30 --interval day
-p202 report timeseries --interval hour --time_from 1700000000
+p1ai report timeseries --period last30 --interval day
+p1ai report timeseries --interval hour --time_from 1700000000
 ```
 
 | Flag            | Default | Description                   |
@@ -528,8 +528,8 @@ Invalid `--interval` values now return a validation error from the API (`422`) i
 Performance aggregated by hour-of-day (`0`-`23`) across the selected date range.
 
 ```bash
-p202 report daypart --period last30
-p202 report daypart --sort roi --sort_dir DESC --country_id 223
+p1ai report daypart --period last30
+p1ai report daypart --sort roi --sort_dir DESC --country_id 223
 ```
 
 | Flag            | Default      | Description |
@@ -542,8 +542,8 @@ p202 report daypart --sort roi --sort_dir DESC --country_id 223
 Performance aggregated by day-of-week (`0` = Monday ... `6` = Sunday) across the selected date range.
 
 ```bash
-p202 report weekpart --period last30
-p202 report weekpart --sort roi --sort_dir DESC --country_id 223
+p1ai report weekpart --period last30
+p1ai report weekpart --sort roi --sort_dir DESC --country_id 223
 ```
 
 | Flag            | Default      | Description |
@@ -556,13 +556,13 @@ p202 report weekpart --sort roi --sort_dir DESC --country_id 223
 ### List/get/create/update/delete rotators
 
 ```bash
-p202 rotator list
-p202 rotator list --all
-p202 rotator get 5
-p202 rotator create --name "Geo Split"
-p202 rotator update 5 --name "Geo Split v2" --default_url "https://fallback.example.com"
-p202 rotator delete 5
-p202 rotator delete --ids 5,6 --force
+p1ai rotator list
+p1ai rotator list --all
+p1ai rotator get 5
+p1ai rotator create --name "Geo Split"
+p1ai rotator update 5 --name "Geo Split v2" --default_url "https://fallback.example.com"
+p1ai rotator delete 5
+p1ai rotator delete --ids 5,6 --force
 ```
 
 | Flag                 | Required (create) | Description             |
@@ -575,7 +575,7 @@ p202 rotator delete --ids 5,6 --force
 ### Create a rule
 
 ```bash
-p202 rotator rule-create 5 \
+p1ai rotator rule-create 5 \
   --rule_name "US Traffic" \
   --criteria_json '[{"type":"country","statement":"is","value":"US"}]' \
   --redirects_json '[{"redirect_url":"https://us.example.com","weight":"100","name":"US Offer"}]'
@@ -593,17 +593,17 @@ Both JSON fields are validated before sending.
 ### Delete a rule
 
 ```bash
-p202 rotator rule-delete 5 12        # rotator_id rule_id
-p202 rotator rule-delete 5 12 --force
-p202 rotator rule-delete 5 --ids 12,13 --force
+p1ai rotator rule-delete 5 12        # rotator_id rule_id
+p1ai rotator rule-delete 5 12 --force
+p1ai rotator rule-delete 5 --ids 12,13 --force
 ```
 
 ### Update a rule
 
 ```bash
-p202 rotator rule-update 5 12 --rule_name "US Traffic v2"
-p202 rotator rule-update 5 12 --status 0
-p202 rotator rule-update 5 12 \
+p1ai rotator rule-update 5 12 --rule_name "US Traffic v2"
+p1ai rotator rule-update 5 12 --status 0
+p1ai rotator rule-update 5 12 \
   --criteria_json '[{"type":"country","statement":"is","value":"US"}]' \
   --redirects_json '[{"redirect_campaign":"4","weight":"100","name":"US Offer"}]'
 ```
@@ -621,15 +621,15 @@ p202 rotator rule-update 5 12 \
 ### Models
 
 ```bash
-p202 attribution model list
-p202 attribution model list --type time_decay
-p202 attribution model get 3
-p202 attribution model create \
+p1ai attribution model list
+p1ai attribution model list --type time_decay
+p1ai attribution model get 3
+p1ai attribution model create \
   --model_name "30-Day Decay" \
   --model_type time_decay \
   --weighting_config '{"half_life_days": 7}'
-p202 attribution model update 3 --is_default 1
-p202 attribution model delete 3
+p1ai attribution model update 3 --is_default 1
+p1ai attribution model delete 3
 ```
 
 | Flag                | Required (create) | Description                     |
@@ -643,8 +643,8 @@ p202 attribution model delete 3
 ### Snapshots
 
 ```bash
-p202 attribution snapshot list 3
-p202 attribution snapshot list 3 --scope_type campaign --limit 500
+p1ai attribution snapshot list 3
+p1ai attribution snapshot list 3 --scope_type campaign --limit 500
 ```
 
 | Flag            | Default | Description                       |
@@ -656,8 +656,8 @@ p202 attribution snapshot list 3 --scope_type campaign --limit 500
 ### Exports
 
 ```bash
-p202 attribution export list 3
-p202 attribution export schedule 3 \
+p1ai attribution export list 3
+p1ai attribution export schedule 3 \
   --scope_type campaign \
   --format json \
   --webhook_url "https://hooks.example.com/receive"
@@ -677,11 +677,11 @@ p202 attribution export schedule 3 \
 ### List and manage users
 
 ```bash
-p202 user list
-p202 user get 1
-p202 user create --user_name admin2 --user_email admin2@example.com
-p202 user update 1 --user_fname "Jane" --user_lname "Doe"
-p202 user delete 2
+p1ai user list
+p1ai user get 1
+p1ai user create --user_name admin2 --user_email admin2@example.com
+p1ai user update 1 --user_fname "Jane" --user_lname "Doe"
+p1ai user delete 2
 ```
 
 When creating or updating a user, if `--user_pass` is omitted, the CLI prompts for the password securely (input is hidden).
@@ -699,19 +699,19 @@ When creating or updating a user, if `--user_pass` is omitted, the CLI prompts f
 ### Roles
 
 ```bash
-p202 user role list                    # List all available roles
-p202 user role assign 2 --role_id 1   # Assign role to user
-p202 user role remove 2 3             # Remove role 3 from user 2
+p1ai user role list                    # List all available roles
+p1ai user role assign 2 --role_id 1   # Assign role to user
+p1ai user role remove 2 3             # Remove role 3 from user 2
 ```
 
 ### API keys
 
 ```bash
-p202 user apikey list 1               # List keys for user 1
-p202 user apikey create 1             # Generate new key (shown once)
-p202 user apikey delete 1 <key>       # Delete a specific key
-p202 user apikey rotate 1 <old-key> --force
-p202 user apikey rotate 1 <old-key> --keep-old --update-config
+p1ai user apikey list 1               # List keys for user 1
+p1ai user apikey create 1             # Generate new key (shown once)
+p1ai user apikey delete 1 <key>       # Delete a specific key
+p1ai user apikey rotate 1 <old-key> --force
+p1ai user apikey rotate 1 <old-key> --keep-old --update-config
 ```
 
 The full API key is displayed only once at creation time. Store it securely.
@@ -721,8 +721,8 @@ The full API key is displayed only once at creation time. Store it securely.
 ### Preferences
 
 ```bash
-p202 user prefs get 1
-p202 user prefs update 1 \
+p1ai user prefs get 1
+p1ai user prefs update 1 \
   --user_tracking_domain "trk.example.com" \
   --user_account_currency "USD"
 ```
@@ -738,11 +738,11 @@ p202 user prefs update 1 \
 ## Export and import
 
 ```bash
-p202 export campaigns --output /tmp/campaigns.json
-p202 export all --output /tmp/full-export.json
+p1ai export campaigns --output /tmp/campaigns.json
+p1ai export all --output /tmp/full-export.json
 
-p202 import campaigns /tmp/campaigns.json --dry-run
-p202 import campaigns /tmp/campaigns.json --skip-errors
+p1ai import campaigns /tmp/campaigns.json --dry-run
+p1ai import campaigns /tmp/campaigns.json --skip-errors
 ```
 
 `export` supports: `campaigns`, `aff-networks`, `ppc-networks`, `ppc-accounts`, `rotators`, `trackers`, `landing-pages`, `text-ads`, `all`.
@@ -754,8 +754,8 @@ p202 import campaigns /tmp/campaigns.json --skip-errors
 ### Diff
 
 ```bash
-p202 diff campaigns --from prod --to staging --json
-p202 diff all --from prod --to staging --json
+p1ai diff campaigns --from prod --to staging --json
+p1ai diff all --from prod --to staging --json
 ```
 
 `diff` reports per-entity `only_in_source`, `only_in_target`, `changed`, and `identical_count`.
@@ -764,14 +764,14 @@ When server capabilities expose `sync_plan`, the CLI uses `POST /api/v3/sync/pla
 ### Sync and re-sync
 
 ```bash
-p202 sync all --from prod --to staging --dry-run --json
-p202 sync campaigns --from prod --to staging --json
-p202 sync campaigns --from prod --to staging --force-update --json
+p1ai sync all --from prod --to staging --dry-run --json
+p1ai sync campaigns --from prod --to staging --json
+p1ai sync campaigns --from prod --to staging --force-update --json
 
-p202 sync status --from prod --to staging --json
-p202 sync history --from prod --to staging --json
-p202 re-sync --from prod --to staging --json
-p202 re-sync --from prod --to staging --force-update --json
+p1ai sync status --from prod --to staging --json
+p1ai sync history --from prod --to staging --json
+p1ai re-sync --from prod --to staging --json
+p1ai re-sync --from prod --to staging --force-update --json
 ```
 
 | Flag | Description |
@@ -780,9 +780,9 @@ p202 re-sync --from prod --to staging --force-update --json
 | `--skip-errors` | Continue on record-level errors |
 | `--force-update` | Update mismatched target records instead of skipping |
 
-Sync state is stored in `~/.p202/sync/<source>-<target>.json`.
+Sync state is stored in `~/.p1ai/sync/<source>-<target>.json`.
 When server capabilities expose `async_jobs`, the CLI routes sync execution through server endpoints (`/sync/jobs`, `/sync/re-sync`, `/sync/status`, `/sync/history`) and falls back to local client-side sync when unavailable.
-Server-side jobs are queue-driven; run the worker endpoint or cron worker (`202-cronjobs/sync-worker.php`) in environments where asynchronous processing is enabled.
+Server-side jobs are queue-driven; run the worker endpoint or cron worker (`1ai-cronjobs/sync-worker.php`) in environments where asynchronous processing is enabled.
 Server-side rotator rule re-sync after updates can be controlled with the server environment variable `SYNC_ROTATOR_RULE_RESYNC_ENABLED=0|1` (enabled by default).
 
 ### Server-side sync capabilities not yet exposed in CLI
@@ -802,11 +802,11 @@ The backend also provides endpoints for direct job management (`/sync/jobs/{id}`
 ### Exec across profiles
 
 ```bash
-p202 exec --all-profiles -- campaign list --limit 5
-p202 exec --profiles prod,staging -- report summary --period today
-p202 exec --group env:prod -- dashboard --period last7
-p202 exec --profiles prod,staging --concurrency 2 -- campaign list --limit 5
-p202 --json exec --profiles prod,staging -- campaign list
+p1ai exec --all-profiles -- campaign list --limit 5
+p1ai exec --profiles prod,staging -- report summary --period today
+p1ai exec --group env:prod -- dashboard --period last7
+p1ai exec --profiles prod,staging --concurrency 2 -- campaign list --limit 5
+p1ai --json exec --profiles prod,staging -- campaign list
 ```
 
 `exec` table mode prints `=== profile ===` sections. JSON mode returns per-profile exit codes/output. The command exits non-zero if any profile run fails.
@@ -815,18 +815,18 @@ Use `--concurrency <n>` to limit parallel profile executions (default: `5`, mini
 ## System
 
 ```bash
-p202 system health       # Health check (unauthenticated)
-p202 system version      # Prosper202 + PHP + MySQL versions
-p202 system db-stats     # Database table sizes
-p202 system cron         # Cron job status
-p202 system errors       # Recent system errors
-p202 system errors --limit 5
-p202 system dataengine   # Data engine job status
+p1ai system health       # Health check (unauthenticated)
+p1ai system version      # Prosper1ai + PHP + MySQL versions
+p1ai system db-stats     # Database table sizes
+p1ai system cron         # Cron job status
+p1ai system errors       # Recent system errors
+p1ai system errors --limit 5
+p1ai system dataengine   # Data engine job status
 ```
 
 | Command              | Auth required |
 |----------------------|---------------|
-| `p202 system health` | No            |
+| `p1ai system health` | No            |
 | All others           | Admin         |
 
 ## Output modes
@@ -836,7 +836,7 @@ p202 system dataengine   # Data engine job status
 Human-readable tables. Lists show column headers with rows; single objects show key-value pairs.
 
 ```
-$ p202 campaign list --limit 3
+$ p1ai campaign list --limit 3
 aff_campaign_id  aff_campaign_name  aff_campaign_url
 1                Q1 Offer           https://example.com/q1
 2                Summer Sale        https://example.com/summer
@@ -850,8 +850,8 @@ Pagination metadata is displayed below the table when present.
 Raw API response, pretty-printed with 2-space indentation. Suitable for piping into `jq` or other tools.
 
 ```bash
-p202 campaign list --json | jq '.data[].aff_campaign_name'
-p202 report summary --period today --json > report.json
+p1ai campaign list --json | jq '.data[].aff_campaign_name'
+p1ai report summary --period today --json > report.json
 ```
 
 ### CSV mode (`--csv`)
@@ -859,8 +859,8 @@ p202 report summary --period today --json > report.json
 CSV output is available for list/object responses:
 
 ```bash
-p202 campaign list --csv
-p202 report daypart --period last30 --csv
+p1ai campaign list --csv
+p1ai report daypart --period last30 --csv
 ```
 
 ## Exit codes
@@ -878,7 +878,7 @@ Error messages are printed to stderr in the format `Error [category]: message` w
 
 ## Telemetry
 
-Set `P202_METRICS=1` to enable structured JSON telemetry on stderr. Each operation emits a single-line JSON event:
+Set `P1ai_METRICS=1` to enable structured JSON telemetry on stderr. Each operation emits a single-line JSON event:
 
 ```
 [metrics] {"op":"diff","entity":"rotators","duration_ms":1234,"success":true,"fields":{"ts":"2026-02-16T12:00:00Z"}}

@@ -17,8 +17,8 @@ import (
 	"sync"
 	"testing"
 
-	configpkg "p202/internal/config"
-	"p202/internal/syncstate"
+	configpkg "p1ai/internal/config"
+	"p1ai/internal/syncstate"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -35,11 +35,11 @@ func setTestHome(t *testing.T, dir string) {
 	}
 }
 
-// writeTestConfig creates a p202 config file under dir/.p202/config.json
+// writeTestConfig creates a p1ai config file under dir/.p1ai/config.json
 // pointing at the given URL and API key.
 func writeTestConfig(t *testing.T, dir, url, apiKey string) {
 	t.Helper()
-	configDir := filepath.Join(dir, ".p202")
+	configDir := filepath.Join(dir, ".p1ai")
 	if err := os.MkdirAll(configDir, 0700); err != nil {
 		t.Fatalf("creating config dir: %v", err)
 	}
@@ -51,7 +51,7 @@ func writeTestConfig(t *testing.T, dir, url, apiKey string) {
 
 func writeTestConfigWithDefaults(t *testing.T, dir, url, apiKey string, defaults map[string]string) {
 	t.Helper()
-	configDir := filepath.Join(dir, ".p202")
+	configDir := filepath.Join(dir, ".p1ai")
 	if err := os.MkdirAll(configDir, 0700); err != nil {
 		t.Fatalf("creating config dir: %v", err)
 	}
@@ -71,7 +71,7 @@ func writeTestConfigWithDefaults(t *testing.T, dir, url, apiKey string, defaults
 
 func writeTestConfigWithProfiles(t *testing.T, dir string, active string, profiles map[string]map[string]interface{}) {
 	t.Helper()
-	configDir := filepath.Join(dir, ".p202")
+	configDir := filepath.Join(dir, ".p1ai")
 	if err := os.MkdirAll(configDir, 0700); err != nil {
 		t.Fatalf("creating config dir: %v", err)
 	}
@@ -379,7 +379,7 @@ func readSavedConfigURLAndKey(t *testing.T, dir string) (string, string) {
 
 func readSavedConfigRaw(t *testing.T, dir string) map[string]interface{} {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join(dir, ".p202", "config.json"))
+	data, err := os.ReadFile(filepath.Join(dir, ".p1ai", "config.json"))
 	if err != nil {
 		t.Fatalf("reading config: %v", err)
 	}
@@ -2302,7 +2302,7 @@ func TestTrackerGetURL(t *testing.T) {
 		gotPath = r.URL.Path
 		gotMethod = r.Method
 		w.WriteHeader(200)
-		w.Write([]byte(`{"data":{"tracker_id":56,"direct_url":"https://trk.example.com/tracking202/redirect/go.php?t202id=123"}}`))
+		w.Write([]byte(`{"data":{"tracker_id":56,"direct_url":"https://trk.example.com/tracking1ai/redirect/go.php?t1aiid=123"}}`))
 	}))
 	defer srv.Close()
 

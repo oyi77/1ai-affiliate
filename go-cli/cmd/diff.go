@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"p202/internal/api"
-	configpkg "p202/internal/config"
-	"p202/internal/metrics"
+	"p1ai/internal/api"
+	configpkg "p1ai/internal/config"
+	"p1ai/internal/metrics"
 
 	"github.com/spf13/cobra"
 )

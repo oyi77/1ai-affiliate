@@ -210,8 +210,8 @@ func TestRequestHeaders(t *testing.T) {
 		if got := r.Header.Get("Accept"); got != "application/json" {
 			t.Errorf("Accept = %q, want application/json", got)
 		}
-		if got := r.Header.Get("User-Agent"); got != "p202-cli/2.0 (Go)" {
-			t.Errorf("User-Agent = %q, want p202-cli/2.0 (Go)", got)
+		if got := r.Header.Get("User-Agent"); got != "p1ai-cli/2.0 (Go)" {
+			t.Errorf("User-Agent = %q, want p1ai-cli/2.0 (Go)", got)
 		}
 		if got := r.Header.Get("Content-Type"); got != "application/json" {
 			t.Errorf("Content-Type = %q, want application/json", got)

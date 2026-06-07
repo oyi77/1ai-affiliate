@@ -91,7 +91,7 @@ switch ($step) {
 				<br></br>
 				In all likelihood, these items were supplied to you by your ISP. If you do not have this information, then you will need to contact them before you can continue.
 				<br></br>
-				If you&#8217;re all ready, <a href="setup-config.php?step=1" class="btn btn-xs btn-p202">let&#8217;s go!</a></p>
+				If you&#8217;re all ready, <a href="setup-config.php?step=1" class="btn btn-xs btn-p1ai">let&#8217;s go!</a></p>
 		</div>
 	<?php
 
@@ -170,12 +170,12 @@ switch ($step) {
 				<div class="form-group">
 					<label for="prefix" class="col-xs-4 control-label" style="text-align:left"><strong>Table Prefix:</strong></label>
 					<div class="col-xs-8" style="margin-top: 5px;">
-						<input type="text" class="form-control input-sm" id="prefix" name="prefix" value="202_" readonly="true">
+						<input type="text" class="form-control input-sm" id="prefix" name="prefix" value="1ai_" readonly="true">
 						<span class="help-block" style="font-size: 10px;">The table prefix that will be used, this can not be changed.</span>
 					</div>
 				</div>
 
-				<button class="btn btn-sm btn-p202 btn-block" type="submit">Save database credentials<span class="fui-check-inverted pull-right"></span></button>
+				<button class="btn btn-sm btn-p1ai btn-block" type="submit">Save database credentials<span class="fui-check-inverted pull-right"></span></button>
 			</form>
 		</div>
 <?php
@@ -222,8 +222,8 @@ switch ($step) {
 				<li>Are you sure that the database server is running?</li>
 			</ul>
 			</small> 
-			<p><small>If you're unsure what these terms mean you should probably contact your host. If you still need help, please visit the <a href='http://support.tracking202.com/how-to-set-up-and-use-oneai_affiliate-pro/installing-oneai_affiliate?utm_source=db-install-error'>1ai-Affiliate Support Site</a>.</small> </p>
-			<p><a href='setup-config.php?step=1' class='btn btn-sm btn-p202 btn-block'>Go back and enter your database credentials again!</a></p>
+			<p><small>If you're unsure what these terms mean you should probably contact your host. If you still need help, please visit the <a href='http://support.tracking1ai.com/how-to-set-up-and-use-oneai_affiliate-pro/installing-oneai_affiliate?utm_source=db-install-error'>1ai-Affiliate Support Site</a>.</small> </p>
+			<p><a href='setup-config.php?step=1' class='btn btn-sm btn-p1ai btn-block'>Go back and enter your database credentials again!</a></p>
 		");
 		}
 		//regex to find values in the config file
@@ -246,5 +246,5 @@ switch ($step) {
 		fclose($handle);
 		chmod(substr(__DIR__, 0, -10) . '/config.php', 0666);
 
-			_die("<p>All right sparky! You've made it through this part of the installation. 1ai-Affiliate can now communicate with your database. If you are ready, go ahead and <a class='btn btn-xs btn-p202' href=\"install.php\">run the install!</a></p>");
+			_die("<p>All right sparky! You've made it through this part of the installation. 1ai-Affiliate can now communicate with your database. If you are ready, go ahead and <a class='btn btn-xs btn-p1ai' href=\"install.php\">run the install!</a></p>");
 	}

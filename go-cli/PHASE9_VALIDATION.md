@@ -5,7 +5,7 @@ Scope: final validation for the Go CLI gap-closure plan.
 
 ## Gate Checks
 
-- `cd go-cli && go build -o /tmp/claude/p202 .` passed
+- `cd go-cli && go build -o /tmp/claude/p1ai .` passed
 - `cd go-cli && go test ./...` passed
 - `cd go-cli && go vet ./...` passed
 

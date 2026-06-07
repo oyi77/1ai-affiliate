@@ -2,7 +2,7 @@
 
 In addition to our setup tutorials, we have a number of video tutorials available. 
 
-You can find these video tutorials on our YouTube channel here: **https://www.youtube.com/user/t202nana/videos**
+You can find these video tutorials on our YouTube channel here: **https://www.youtube.com/user/t1ainana/videos**
 
 Below are some of the included videos we think you'll find useful:
 

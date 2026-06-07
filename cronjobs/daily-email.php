@@ -120,7 +120,7 @@ try {
 	}
 
 	if (count($data['campaigns']) > 0) {
-		$curl = curl_init('https://my.tracking202.com/api/v2/send-daily-email');
+		$curl = curl_init('https://my.tracking1ai.com/api/v2/send-daily-email');
 		curl_setopt($curl, CURLOPT_HEADER, false);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-type: application/json"]);

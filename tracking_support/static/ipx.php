@@ -9,10 +9,10 @@ header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
 
 include_once(substr(__DIR__, 0,-19) . '/config/connect2.php'); 
 
-$t202id = $_GET['t202id'] ?? '';
-if (!is_numeric($t202id)) die();
+$t1aiid = $_GET['t1aiid'] ?? '';
+if (!is_numeric($t1aiid)) die();
 
-$mysql['tracker_id_public'] = $db->real_escape_string($t202id);
+$mysql['tracker_id_public'] = $db->real_escape_string($t1aiid);
 $time = time();
 $tracker_sql = "SELECT aff_campaign_id,
 					   text_ad_id,

@@ -772,7 +772,7 @@ class INDEXES
             if ($getUtm) {
                 return $getUtm;
             } else {
-                $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 202_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+                $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 1ai_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
                 $utm_result = _mysqli_query($utm_sql);
                 $utm_row = $utm_result->fetch_assoc();
                 if ($utm_row) {
@@ -780,7 +780,7 @@ class INDEXES
                     $setID = setCache(md5($mysql['utm_type'] . "_id" . $utm_var . systemHash()), $utm_id, $time);
                     return $utm_id;
                 } else {
-                    $utm_sql = "INSERT INTO 202_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+                    $utm_sql = "INSERT INTO 1ai_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
                     $utm_result = _mysqli_query($utm_sql);
                     $utm_id = $db->insert_id;
                     $setID = setCache(md5($mysql['utm_type'] . "_id" . $utm_var . systemHash()), $utm_id, $time);
@@ -788,13 +788,13 @@ class INDEXES
                 }
             }
         } else {
-            $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 202_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+            $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 1ai_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
             $utm_result = _mysqli_query($utm_sql);
             $utm_row = $utm_result->fetch_assoc();
             if ($utm_row) {
                 return $utm_row[$mysql['utm_type'] . "_id"];
             } else {
-                $utm_sql = "INSERT INTO 202_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
+                $utm_sql = "INSERT INTO 1ai_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
                 $utm_result = _mysqli_query($utm_sql);
                 return $db->insert_id;
             }

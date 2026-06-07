@@ -39,7 +39,7 @@ $latest_version = $version;
 $download_link = '';
 $download_link_is_valid = false;
 
-$rss_xml = getUrl('https://my.tracking202.com/clickserver/currentversion/paid/', 'GET', 10);
+$rss_xml = getUrl('https://my.tracking1ai.com/clickserver/currentversion/paid/', 'GET', 10);
 if ($rss_xml === '') {
 	$rss_xml = null;
 }
@@ -58,7 +58,7 @@ if ($rss_xml !== null) {
 				is_array($parsed_download_link)
 				&& isset($parsed_download_link['scheme'], $parsed_download_link['host'])
 				&& strtolower($parsed_download_link['scheme']) === 'https'
-				&& strtolower($parsed_download_link['host']) === 'my.tracking202.com';
+				&& strtolower($parsed_download_link['host']) === 'my.tracking1ai.com';
 			if (version_compare($version, $latest_version) < 0) {
 				$update_needed = true;
 			}
@@ -219,7 +219,7 @@ if ($update_needed == true) {
 	<div class="main col-xs-7 install">
 		<center><img src="<?php echo get_absolute_url(); ?>img/oneai_affiliate.png"></center>
 		<h6>1-Click 1ai-Affiliate Upgrade</h6>
-		<small>A new 1ai-Affiliate version is available. You can auto upgrade your installation or do it manually, by downloading the latest version at <a href="https://my.tracking202.com/clickserver/download/latest/paid" target="_blank">1ai-Affiliate.com</a>. Version details are below.</small>
+		<small>A new 1ai-Affiliate version is available. You can auto upgrade your installation or do it manually, by downloading the latest version at <a href="https://my.tracking1ai.com/clickserver/download/latest/paid" target="_blank">1ai-Affiliate.com</a>. Version details are below.</small>
 		<br><br />
 		<div class="row" style="margin-bottom: 10px;">
 			<div class="col-xs-3"><span class="label label-default">Current version:</span></div>
@@ -298,7 +298,7 @@ if ($update_needed == true) {
 					</div>
 					<br></br>
 				<?php } ?>
-				<button class="btn btn-lg btn-p202 btn-block" type="submit">Upgrade 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
+				<button class="btn btn-lg btn-p1ai btn-block" type="submit">Upgrade 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
 			</form>
 			<br>
 			<span class="infotext"><i>We highly recommended you make a backup of your database, before upgrading.<br>

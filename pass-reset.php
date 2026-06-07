@@ -109,7 +109,7 @@ if (!empty($error['user_pass_key'])) {
 				<input type="password" class="form-control middle" name="user_pass" placeholder="New Password">
 				<input type="password" class="form-control last" name="verify_user_pass" placeholder="Verify Password">
 				<p></p>
-				<button class="btn btn-lg btn-p202 btn-block" type="submit">Reset Password <span class="fui-arrow-right pull-right"></span></button>
+				<button class="btn btn-lg btn-p1ai btn-block" type="submit">Reset Password <span class="fui-arrow-right pull-right"></span></button>
 			</div>
 		</form>
 	</div>

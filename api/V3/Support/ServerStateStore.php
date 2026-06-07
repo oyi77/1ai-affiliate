@@ -562,7 +562,7 @@ class ServerStateStore
             return trim($env);
         }
 
-        return rtrim((string)sys_get_temp_dir(), '/') . '/p202-api-v3-state';
+        return rtrim((string)sys_get_temp_dir(), '/') . '/p1ai-api-v3-state';
     }
 
     private function idempotencyPath(string $scope): string

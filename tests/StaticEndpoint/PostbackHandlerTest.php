@@ -7,9 +7,9 @@ namespace Tests\StaticEndpoint;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for the encrypted postback handler (cb202.php) logic.
+ * Tests for the encrypted postback handler (cb1ai.php) logic.
  *
- * cb202.php is a procedural script that handles server-to-server postbacks
+ * cb1ai.php is a procedural script that handles server-to-server postbacks
  * from affiliate networks. Since it cannot be included directly (it calls
  * die/exit and uses global state), we test the logical components:
  *
@@ -44,7 +44,7 @@ final class PostbackHandlerTest extends TestCase
             'iv' => base64_encode($iv),
         ];
 
-        // Decrypt (what cb202.php does)
+        // Decrypt (what cb1ai.php does)
         $decrypted = trim(
             openssl_decrypt(
                 base64_decode((string) $message->notification),
@@ -125,7 +125,7 @@ final class PostbackHandlerTest extends TestCase
             'totalAccountAmount' => '10.00',
         ];
 
-        // cb202.php accesses [0] directly — this would produce a notice/warning
+        // cb1ai.php accesses [0] directly — this would produce a notice/warning
         self::assertEmpty($order['trackingCodes']);
         self::assertFalse(isset($order['trackingCodes'][0]));
     }
@@ -148,7 +148,7 @@ final class PostbackHandlerTest extends TestCase
             'totalAccountAmount' => 'not-a-number',
         ];
 
-        // cb202 passes this to real_escape_string → p202ApplyConversionUpdate
+        // cb1ai passes this to real_escape_string → p1aiApplyConversionUpdate
         // which puts it in SQL. The DB should reject it, but the code doesn't validate.
         self::assertSame('not-a-number', $order['totalAccountAmount']);
         self::assertFalse(is_numeric($order['totalAccountAmount']));
@@ -175,7 +175,7 @@ final class PostbackHandlerTest extends TestCase
         $order = json_decode($badJson, true);
 
         self::assertNull($order, 'Malformed JSON should decode to null');
-        // cb202.php then does $order['transactionType'] on null → crash
+        // cb1ai.php then does $order['transactionType'] on null → crash
     }
 
     public function testNullDecryptedPayloadCausesJsonDecodeFailure(): void

@@ -39,11 +39,11 @@ if (array_key_exists('subid', $_GET) && is_numeric($_GET['subid'])) {
 } else { // no subid found get from cookie or fingerprint
        
     // see if it has the cookie in the campaign id, then the general match, then do whatever we can to grab SOMETHING to tie this lead to
-    if (isset($_COOKIE['tracking202subid_a_' . $mysql['cid']]) && $_COOKIE['tracking202subid_a_' . $mysql['cid']] && $mysql['cid'] != '0') {
-        $mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking202subid_a_' . $mysql['cid']]);
+    if (isset($_COOKIE['tracking1aisubid_a_' . $mysql['cid']]) && $_COOKIE['tracking1aisubid_a_' . $mysql['cid']] && $mysql['cid'] != '0') {
+        $mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking1aisubid_a_' . $mysql['cid']]);
     } else
-        if (isset($_COOKIE['tracking202subid']) && $_COOKIE['tracking202subid']) {
-            $mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking202subid']);
+        if (isset($_COOKIE['tracking1aisubid']) && $_COOKIE['tracking1aisubid']) {
+            $mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking1aisubid']);
         } else {
             // ok grab the last click from this ip_id
             $mysql['ip_address'] = $db->real_escape_string($_SERVER['REMOTE_ADDR']);
@@ -82,7 +82,7 @@ if (is_numeric($mysql['click_id'])) {
 
                 $mysql['campaign_id'] = $db->real_escape_string((string) ($cpa_row['aff_campaign_id'] ?? ''));
                 $mysql['click_user_id'] = $db->real_escape_string((string) ($cpa_row['user_id'] ?? ''));
-                $advertiserId = p202ResolveAdvertiserId($db, (int) $mysql['campaign_id']);
+                $advertiserId = p1aiResolveAdvertiserId($db, (int) $mysql['campaign_id']);
                 $mysql['click_time'] = $db->real_escape_string((string) ($cpa_row['click_time'] ?? '0'));
 
 		$conv_time = time();
@@ -100,7 +100,7 @@ if (is_numeric($mysql['click_id'])) {
 				$mysql['use_pixel_payout'] = 1;
 				$mysql['click_payout'] = $db->real_escape_string((string)$_GET['amount']);
 			}
-			p202ApplyConversionUpdate(
+			p1aiApplyConversionUpdate(
 				$db,
 				(string) $mysql['click_id'],
 				(string) $mysql['click_cpa'],

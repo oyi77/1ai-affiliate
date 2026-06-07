@@ -1,6 +1,6 @@
 package cmd
 
-import "p202/internal/output"
+import "p1ai/internal/output"
 
 func render(data []byte) {
 	if csvOutput {

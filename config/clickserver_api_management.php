@@ -34,7 +34,7 @@ function clickserver_api_domain_act_deact($key, $csid, $method){
 	// Will return the response, if false it print the response
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	// Set the url
-	curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/'.$method.'/?apiKey='.rawurlencode($key).'&clickserverId='.rawurlencode($csid));
+	curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/'.$method.'/?apiKey='.rawurlencode($key).'&clickserverId='.rawurlencode($csid));
 	// Execute
 	$result=curl_exec($ch);
 
@@ -61,7 +61,7 @@ function clickserver_api_domain_list($key){
 	// Will return the response, if false it print the response
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	// Set the url
-	curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/list/?apiKey='.$key);
+	curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/list/?apiKey='.$key);
 	// Execute
 	$result=curl_exec($ch);
 
@@ -78,7 +78,7 @@ function clickserver_api_license($key){
 	// Will return the response, if false it print the response
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	// Set the url
-	curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v1/license/?apiKey='.$key);
+	curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v1/license/?apiKey='.$key);
 	// Execute
 	$result=curl_exec($ch);
 

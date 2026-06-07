@@ -70,7 +70,7 @@ if (!empty($version_error)) {
 		<br></br>
 		<?php
 
-		$partners = json_decode((string) getData('https://my.tracking202.com/api/v2/hostings'), true);
+		$partners = json_decode((string) getData('https://my.tracking1ai.com/api/v2/hostings'), true);
 
 		foreach ($partners as $partner) { ?>
 			<div class="media">
@@ -235,10 +235,10 @@ if (!empty($version_error)) {
 
 	if (version_compare(OneAIAffiliate::oneai_affiliate_version(), $version) > 0) {
 		$task_202 = "Downgrade";
-		$task_202_2 = "Downgrading";
+		$task_1ai_2 = "Downgrading";
 	} else {
 		$task_202 = "Upgrade";
-		$task_202_2 = "Upgrading";
+		$task_1ai_2 = "Upgrading";
 	}
 
 	?>
@@ -247,7 +247,7 @@ if (!empty($version_error)) {
 		<?php if ($error == true) { ?>
 
 			<h2 style="color: #900;">An error occured</h2>
-			<span style="color: #900;">An unexpected error occured while you were trying to <?php echo strtolower($task_202); ?>, please try again or if you keep encountering problems review our <a href="http://support.tracking202.com">support docs</a>.</span>
+			<span style="color: #900;">An unexpected error occured while you were trying to <?php echo strtolower($task_202); ?>, please try again or if you keep encountering problems review our <a href="http://support.tracking1ai.com">support docs</a>.</span>
 			<br /><br />
 
 		<?php } else if ($success == true) {
@@ -260,7 +260,7 @@ if (!empty($version_error)) {
 		<?php } else { ?>
 
 			<h6><?php echo $task_202; ?> to 1ai-Affiliate <?php echo $version; ?></h6>
-			<small>You are <?php echo strtolower($task_202_2); ?> from version <span class="label label-primary"><?php echo OneAIAffiliate::oneai_affiliate_version(); ?></span> to <span class="label label-primary"><?php echo $version; ?></span>. To continue with the <?php echo strtolower($task_202); ?> press the button below to begin the process. This could take a while depending on the last time you updated your software.</small>
+			<small>You are <?php echo strtolower($task_1ai_2); ?> from version <span class="label label-primary"><?php echo OneAIAffiliate::oneai_affiliate_version(); ?></span> to <span class="label label-primary"><?php echo $version; ?></span>. To continue with the <?php echo strtolower($task_202); ?> press the button below to begin the process. This could take a while depending on the last time you updated your software.</small>
 			<div class="row">
 				<div class="col-xs-12">
 					<br />
@@ -327,7 +327,7 @@ if (!empty($version_error)) {
 					<br></br>
 				<?php } ?>
 
-				<button class="btn btn-lg btn-p202 btn-block" id="upgrade-submit" type="submit"><?php echo $task_202; ?> 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
+				<button class="btn btn-lg btn-p1ai btn-block" id="upgrade-submit" type="submit"><?php echo $task_202; ?> 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
 			</form>
 	</div>
 

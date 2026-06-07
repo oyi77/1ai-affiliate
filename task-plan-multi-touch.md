@@ -10,7 +10,7 @@
 ## Remaining Work
 
 ### 1. Persist full touch journeys for each conversion
-- [x] Expand MySQL schema to capture ordered touch sequences (e.g., append journey JSON column or normalize via `202_clicks_advance` mapping).
+- [x] Expand MySQL schema to capture ordered touch sequences (e.g., append journey JSON column or normalize via `1ai_clicks_advance` mapping).
 - [x] Update ETL/cronjobs that populate conversion tables to insert all qualifying touches for a user.
 - [x] Backfill existing conversions with historical touch journeys using migration script.
 

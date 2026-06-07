@@ -36,7 +36,7 @@ Since 2007, 1ai-Affiliate has helped marketers take control of their tracking wi
 ### Quick Install
 
 ```bash
-git clone https://github.com/tracking202/1ai-affiliate.git
+git clone https://github.com/tracking1ai/1ai-affiliate.git
 cd 1ai-affiliate
 ./install.sh
 ```
@@ -49,7 +49,7 @@ The install script will:
 ### Docker
 
 ```bash
-git clone https://github.com/tracking202/1ai-affiliate.git
+git clone https://github.com/tracking1ai/1ai-affiliate.git
 cd 1ai-affiliate
 docker compose up -d
 ```
@@ -63,15 +63,15 @@ Dependencies are automatically installed on container startup.
 
 1. Clone and install dependencies:
    ```bash
-   git clone https://github.com/tracking202/1ai-affiliate.git
+   git clone https://github.com/tracking1ai/1ai-affiliate.git
    cd 1ai-affiliate
    composer install --no-dev
    ```
 
 2. Configure the application:
    ```bash
-   cp 202-config-sample.php 202-config.php
-   # Edit 202-config.php with your database credentials
+   cp 1ai-config-sample.php 1ai-config.php
+   # Edit 1ai-config.php with your database credentials
    ```
 
 3. Configure nginx to point to the project root. Example site configuration:
@@ -123,19 +123,19 @@ curl -H "Authorization: Bearer <api-key>" https://your-server/api/v3/campaigns
 
 ## CLI Tools
 
-### PHP CLI (`bin/p202`)
+### PHP CLI (`bin/p1ai`)
 
 Symfony Console CLI for managing remote 1ai-Affiliate installations.
 
 ```bash
 # Configure
-bin/p202 config:set-url https://your-server
-bin/p202 config:set-key <api-key>
+bin/p1ai config:set-url https://your-server
+bin/p1ai config:set-key <api-key>
 
 # Use
-bin/p202 campaign:list
-bin/p202 tracker:get 42
-bin/p202 rotator:create --name "My Rotator"
+bin/p1ai campaign:list
+bin/p1ai tracker:get 42
+bin/p1ai rotator:create --name "My Rotator"
 ```
 
 ### Go CLI (`go-cli/`)
@@ -146,10 +146,10 @@ Cross-platform Go CLI with `--json` output for scripting and agent consumption.
 cd go-cli
 make build
 
-./p202 config set-url https://your-server
-./p202 config set-key <api-key>
-./p202 campaign list --json
-./p202 sync all
+./p1ai config set-url https://your-server
+./p1ai config set-key <api-key>
+./p1ai campaign list --json
+./p1ai sync all
 ```
 
 ## Development Setup
@@ -176,20 +176,20 @@ cd go-cli && make test
 
 ## Configuration
 
-- **Main config**: `202-config.php` (created from `202-config-sample.php`)
+- **Main config**: `1ai-config.php` (created from `1ai-config-sample.php`)
 - **Database**: MySQL/MariaDB with optional read replica support
 - **Caching**: Memcached integration available
 
 ## Directory Structure
 
-- `202-config/` - Core configuration, database classes, utilities
-- `202-account/` - User management and administration
+- `1ai-config/` - Core configuration, database classes, utilities
+- `1ai-account/` - User management and administration
 - `api/` - REST API (v1, v2, and v3)
 - `cli/` - PHP CLI commands and client
 - `go-cli/` - Go CLI client
-- `bin/` - Entry scripts (`p202`)
-- `tracking202/` - Main tracking application (redirects, setup, reporting)
-- `202-cronjobs/` - Background job processing
+- `bin/` - Entry scripts (`p1ai`)
+- `tracking1ai/` - Main tracking application (redirects, setup, reporting)
+- `1ai-cronjobs/` - Background job processing
 - `build/` - Docker and build configuration
 - `tests/` - PHPUnit test suite
 

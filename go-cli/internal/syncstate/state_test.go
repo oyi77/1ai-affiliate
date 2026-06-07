@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	syncdata "p202/internal/sync"
+	syncdata "p1ai/internal/sync"
 )
 
 // setTestHome overrides HOME (or USERPROFILE on Windows) so Dir()/ManifestPath()
@@ -211,7 +211,7 @@ func TestLoadManifestFillsNilFields(t *testing.T) {
 	tmp := t.TempDir()
 	setTestHome(t, tmp)
 
-	syncDir := filepath.Join(tmp, ".p202", "sync")
+	syncDir := filepath.Join(tmp, ".p1ai", "sync")
 	if err := os.MkdirAll(syncDir, 0700); err != nil {
 		t.Fatal(err)
 	}
@@ -239,7 +239,7 @@ func TestLoadManifestFillsEmptySourceTarget(t *testing.T) {
 	tmp := t.TempDir()
 	setTestHome(t, tmp)
 
-	syncDir := filepath.Join(tmp, ".p202", "sync")
+	syncDir := filepath.Join(tmp, ".p1ai", "sync")
 	if err := os.MkdirAll(syncDir, 0700); err != nil {
 		t.Fatal(err)
 	}
@@ -376,13 +376,13 @@ func TestManifestPathAndLockPath(t *testing.T) {
 	setTestHome(t, tmp)
 
 	mp := ManifestPath("alpha", "beta")
-	expected := filepath.Join(tmp, ".p202", "sync", "alpha-beta.json")
+	expected := filepath.Join(tmp, ".p1ai", "sync", "alpha-beta.json")
 	if mp != expected {
 		t.Fatalf("ManifestPath() = %q, want %q", mp, expected)
 	}
 
 	lp := LockPath("alpha", "beta")
-	expectedLock := filepath.Join(tmp, ".p202", "sync", "alpha-beta.lock")
+	expectedLock := filepath.Join(tmp, ".p1ai", "sync", "alpha-beta.lock")
 	if lp != expectedLock {
 		t.Fatalf("LockPath() = %q, want %q", lp, expectedLock)
 	}
@@ -393,7 +393,7 @@ func TestDirUsesConfigDir(t *testing.T) {
 	setTestHome(t, tmp)
 
 	d := Dir()
-	expected := filepath.Join(tmp, ".p202", "sync")
+	expected := filepath.Join(tmp, ".p1ai", "sync")
 	if d != expected {
 		t.Fatalf("Dir() = %q, want %q", d, expected)
 	}

@@ -18,9 +18,9 @@
 
 **Where Tinybird could help (hybrid, if needed later):**
 
-The `202_dataengine` table is already a denormalized analytics materialization. If reporting performance becomes a bottleneck at scale, streaming click events to Tinybird and moving `ReportsController` queries there (~5-10 files) would be viable. But this is premature until MySQL aggregation actually hurts.
+The `1ai_dataengine` table is already a denormalized analytics materialization. If reporting performance becomes a bottleneck at scale, streaming click events to Tinybird and moving `ReportsController` queries there (~5-10 files) would be viable. But this is premature until MySQL aggregation actually hurts.
 
-**Better first steps for scale:** Add time-range partitioning to `202_dataengine` (infrastructure already exists via `PartitionInstaller`), or optimize indexes.
+**Better first steps for scale:** Add time-range partitioning to `1ai_dataengine` (infrastructure already exists via `PartitionInstaller`), or optimize indexes.
 
 ---
 

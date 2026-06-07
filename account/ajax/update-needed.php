@@ -24,7 +24,7 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 						<p>Resolve this issue to use 1-Click auto upgrade function!</p>
 					</small>
 					<small>or</small>
-					<a style="margin-left:5px" href="https://my.tracking202.com/" class="btn btn-xs btn-warning">Download Manual Upgrade Files</a>
+					<a style="margin-left:5px" href="https://my.tracking1ai.com/" class="btn btn-xs btn-warning">Download Manual Upgrade Files</a>
 					<small><a href="javascript:$('#changelogs').modal('show')" id="see_changelogs" style="color:#428bca; font-weight:normal">See what's new</a></small>
 				</div>
 			</div>
@@ -45,7 +45,7 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 				<div class="panel-body">
 					<a style="margin-left:10px; margin-right:5px;" href="<?php echo get_absolute_url(); ?>account/auto-upgrade-premium.php" class="btn btn-xs btn-success">1-Click Upgrade</a>
 					<small>or</small>
-					<a style="margin-left:5px" href="https://my.tracking202.com/" class="btn btn-xs btn-warning">Download Manual Upgrade Files</a>
+					<a style="margin-left:5px" href="https://my.tracking1ai.com/" class="btn btn-xs btn-warning">Download Manual Upgrade Files</a>
 					<small><a href="javascript:$('#changelogs').modal('show')" id="see_changelogs" style="color:#428bca; font-weight:normal">See what's new</a></small>
 				</div>
 			</div>
@@ -124,7 +124,7 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 						<small>
 							<ul>
 								<li>
-									<p>1#: Sign up at 1ai-Affiliate Customer Dashboard and fill out your billing information!</br><a href="<?php echo $_SESSION['premium_pdetails']['register-link']; ?>" target="_blank" class="btn btn-xs btn-p202"><?php echo $_SESSION['premium_pdetails']['register-button-text']; ?></a></p>
+									<p>1#: Sign up at 1ai-Affiliate Customer Dashboard and fill out your billing information!</br><a href="<?php echo $_SESSION['premium_pdetails']['register-link']; ?>" target="_blank" class="btn btn-xs btn-p1ai"><?php echo $_SESSION['premium_pdetails']['register-button-text']; ?></a></p>
 								</li>
 								<li>
 									<p>2#: Submit your P202 Customer API key!</br>
@@ -134,7 +134,7 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 											<label class="sr-only" for="api_key">API Key</label>
 											<input type="text" class="form-control input-sm" id="api_key" name="api_key" placeholder="API Key" style="height: 26px; width: 220px;">
 										</div>
-										<button type="submit" class="btn btn-p202 btn-xs" id="submitApiKey" data-loading-text="Validating...">Submit API key</button>
+										<button type="submit" class="btn btn-p1ai btn-xs" id="submitApiKey" data-loading-text="Validating...">Submit API key</button>
 									</form>
 									</p>
 								</li>

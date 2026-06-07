@@ -2630,7 +2630,7 @@ class UPGRADE
 
 
             $sql = "INSERT IGNORE INTO `pixel_types` (`pixel_type`) VALUES
-				('Bot202 Facebook Pixel Assistant');";
+				('Bot1ai Facebook Pixel Assistant');";
             $result = _mysqli_query($sql);
 
             $sql = "UPDATE version SET version='1.9.54'";
@@ -3187,7 +3187,7 @@ class UPGRADE
             $oneai_affiliate_version = '1.9.60';
         }
 
-        //This will enable p202 to downgrade to this version if installed over a newer version
+        //This will enable p1ai to downgrade to this version if installed over a newer version
         if ($oneai_affiliate_version > '1.9.60') {
 
             $oneai_affiliate_version = '1.9.60';

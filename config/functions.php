@@ -161,7 +161,7 @@ function upgrade_needed(): bool
 
 function info_top(): void
 {
-	$wp202 = getWallpaper();
+	$wp1ai = getWallpaper();
 ?>
 
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -222,8 +222,8 @@ function info_top(): void
 	</head>
 
 	<body>
-		<a href="<?php echo $wp202['wallpaperUrl']; ?>" target="_blank"
-			style="background-image: url(<?php echo $wp202['wallpaperImg']; ?>); -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; background-repeat: no-repeat; background-position: center; background-attachment: fixed; position: absolute; display: block; z-index: -1; height: 100%; width: 100%"></a>
+		<a href="<?php echo $wp1ai['wallpaperUrl']; ?>" target="_blank"
+			style="background-image: url(<?php echo $wp1ai['wallpaperImg']; ?>); -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; background-repeat: no-repeat; background-position: center; background-attachment: fixed; position: absolute; display: block; z-index: -1; height: 100%; width: 100%"></a>
 
 		<div class="container">
 		<?php }
@@ -334,7 +334,7 @@ function info_top(): void
 		global $version;
 		$log = ''; // Initialize log variable to store update errors
 
-		$rssData = getData('https://my.tracking202.com/api/v2/premium-p202/version');
+		$rssData = getData('https://my.tracking1ai.com/api/v2/premium-p1ai/version');
 		$rss = null;
 		if ($rssData !== false && !empty($rssData)) {
 			$rss = json_decode((string) $rssData);
@@ -380,7 +380,7 @@ function info_top(): void
 						if (
 							!is_array($parsedLink)
 							|| ($parsedLink['scheme'] ?? '') !== 'https'
-							|| ($parsedLink['host'] ?? '') !== 'my.tracking202.com'
+							|| ($parsedLink['host'] ?? '') !== 'my.tracking1ai.com'
 						) {
 							$log .= 'Auto update rejected due to untrusted update source. ';
 							$_SESSION['upgrade_error_log'] = $log;
@@ -521,7 +521,7 @@ function info_top(): void
 	function check_premium_update()
 	{
 		global $version;
-		$json = @getData('https://my.tracking202.com/api/v2/premium-p202/version', 5, 3);
+		$json = @getData('https://my.tracking1ai.com/api/v2/premium-p1ai/version', 5, 3);
 		$array = json_decode((string) $json, true);
 		if (!is_array($array) || !isset($array['version'])) {
 			return 0;
@@ -650,7 +650,7 @@ function info_top(): void
 	function getAdsFromS3($user, $key)
 	{
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/premium-p202/get-ads/' . $user . '/' . $key);
+		curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/premium-p1ai/get-ads/' . $user . '/' . $key);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$results = curl_exec($ch);
 		curl_close($ch);
@@ -667,7 +667,7 @@ function info_top(): void
 		$fields = http_build_query($fields);
 
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/v2/premium-p202/delete-ad/' . $user . '/' . $key);
+		curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/v2/premium-p1ai/delete-ad/' . $user . '/' . $key);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_POST, true);
@@ -689,26 +689,26 @@ function info_top(): void
 		print('<br/><strong><small>Dynamic Content Segments</strong></small><br/>
 		   <span class="infotext">Dynamic Content Segments can dynamically display the following information on your landing pages:
 		   <ul style="font-size: 12px;">
-		   	<li>Visitor\'s Country - <strong>t202Country</strong></li>
-			<li>Visitor\'s Country Code - <strong>t202CountryCode</strong></li>
-			<li>Visitor\'s Region/State - <strong>t202Region</strong></li>
-			<li>Visitor\'s City - <strong>t202City</strong></li>
-			<li>Visitor\'s Postal/Zip Code - <strong>t202Postal</strong></li>
-			<li>Visitor\'s Browser - <strong>t202Browser</strong></li>
-			<li>Visitor\'s Operating System - <strong>t202OS</strong></li>
-			<li>Visitor\'s Device Type - <strong>t202Device</strong></li>
-			<li>Visitor\'s ISP - <strong>t202ISP</strong></li>
-	        <li>Visitor\'s IP Address - <strong>t202IP</strong></li>
-			<li>Value passed in t202kw - <strong>t202kw</strong></li>
-			<li>Value passed in C1-C4 - <strong>t202c1, t202c2, t202c3, t202c4</strong></li>
-			<li>Value passed in utm_source - <strong>t202utm_source</strong></li>
-			<li>Value passed in utm_medium - <strong>t202utm_medium</strong></li>
-			<li>Value passed in utm_term - <strong>t202utm_term</strong></li>
-			<li>Value passed in utm_content - <strong>t202utm_content</strong></li>
-			<li>Value passed in utm_campaign - <strong>t202utm_campaign</strong></li>
+		   	<li>Visitor\'s Country - <strong>t1aiCountry</strong></li>
+			<li>Visitor\'s Country Code - <strong>t1aiCountryCode</strong></li>
+			<li>Visitor\'s Region/State - <strong>t1aiRegion</strong></li>
+			<li>Visitor\'s City - <strong>t1aiCity</strong></li>
+			<li>Visitor\'s Postal/Zip Code - <strong>t1aiPostal</strong></li>
+			<li>Visitor\'s Browser - <strong>t1aiBrowser</strong></li>
+			<li>Visitor\'s Operating System - <strong>t1aiOS</strong></li>
+			<li>Visitor\'s Device Type - <strong>t1aiDevice</strong></li>
+			<li>Visitor\'s ISP - <strong>t1aiISP</strong></li>
+	        <li>Visitor\'s IP Address - <strong>t1aiIP</strong></li>
+			<li>Value passed in t1aikw - <strong>t1aikw</strong></li>
+			<li>Value passed in C1-C4 - <strong>t1aic1, t1aic2, t1aic3, t1aic4</strong></li>
+			<li>Value passed in utm_source - <strong>t1aiutm_source</strong></li>
+			<li>Value passed in utm_medium - <strong>t1aiutm_medium</strong></li>
+			<li>Value passed in utm_term - <strong>t1aiutm_term</strong></li>
+			<li>Value passed in utm_content - <strong>t1aiutm_content</strong></li>
+			<li>Value passed in utm_campaign - <strong>t1aiutm_campaign</strong></li>
 		   </ul>
 		   So how easy is it to display the visitor\'s country on your landing page? Here\'s the html for it:<br/>
-		   <code>Welcome I see you are reading this from &lt;span name=&quot;t202Country&quot; t202Default=&apos;Your Country&apos;&gt;Your Country&lt;/span&gt;</code></span>');
+		   <code>Welcome I see you are reading this from &lt;span name=&quot;t1aiCountry&quot; t1aiDefault=&apos;Your Country&apos;&gt;Your Country&lt;/span&gt;</code></span>');
 	}
 
 	function getWallpaper($key = '')
@@ -720,7 +720,7 @@ function info_top(): void
 		$fields = http_build_query($fields);
 
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, 'https://my.tracking202.com/api/ads/wallpapers/extern');
+		curl_setopt($ch, CURLOPT_URL, 'https://my.tracking1ai.com/api/ads/wallpapers/extern');
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_POST, true);
@@ -731,8 +731,8 @@ function info_top(): void
 
 		if (strlen($result) > 2000 || !$result) {
 			$result = [
-				'wallpaperImg' => 'https://tracking202-static.s3.amazonaws.com/wallpaper202.jpg',
-				'wallpaperUrl' => 'https://prosper.tracking202.com/apps/?utm_source=p202profb'
+				'wallpaperImg' => 'https://tracking1ai-static.s3.amazonaws.com/wallpaper202.jpg',
+				'wallpaperUrl' => 'https://prosper.tracking1ai.com/apps/?utm_source=p1aiprofb'
 			];
 			return $result;
 		}

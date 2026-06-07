@@ -22,4 +22,4 @@ Ask your affiliate manager. Unfortunately there are tons of affiliate networks a
 
 ## What If I Am Still Stuck
 
-You can subscribe to one of our paid support plans and we'll be glad to help. You can view our support plans here: [https://my.tracking202.com](https://my.tracking202.com)
+You can subscribe to one of our paid support plans and we'll be glad to help. You can view our support plans here: [https://my.tracking1ai.com](https://my.tracking1ai.com)

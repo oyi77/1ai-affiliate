@@ -28,8 +28,8 @@ if (!defined('MYSQL_DATABASE')) {
 if (!defined('ONEAI_AFFILIATE_VERSION')) {
     define('ONEAI_AFFILIATE_VERSION', '0.0.0');
 }
-if (!defined('TRACKING202_ADS_URL')) {
-    define('TRACKING202_ADS_URL', '');
+if (!defined('TRACKING1ai_ADS_URL')) {
+    define('TRACKING1ai_ADS_URL', '');
 }
 if (!defined('ABSPATH')) {
     define('ABSPATH', '');

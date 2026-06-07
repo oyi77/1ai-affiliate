@@ -210,7 +210,7 @@ final class SystemControllerBehaviorTest extends TestCase
 
     public function testMetricsIncludesAlertsAndTracing(): void
     {
-        $stateDir = sys_get_temp_dir() . '/p202-system-metrics-' . bin2hex(random_bytes(4));
+        $stateDir = sys_get_temp_dir() . '/p1ai-system-metrics-' . bin2hex(random_bytes(4));
         mkdir($stateDir, 0700, true);
         putenv('P1AI_SERVER_STATE_DIR=' . $stateDir);
         putenv('P1AI_ALERT_FAILURE_SPIKE=1');
@@ -582,7 +582,7 @@ final class ControllerTest extends TestCase
 
     public function testBulkUpsertReplaysOnlyForMatchingRequestPayload(): void
     {
-        $stateDir = sys_get_temp_dir() . '/p202-bulk-upsert-state-' . bin2hex(random_bytes(4));
+        $stateDir = sys_get_temp_dir() . '/p1ai-bulk-upsert-state-' . bin2hex(random_bytes(4));
         mkdir($stateDir, 0700, true);
         putenv('P1AI_SERVER_STATE_DIR=' . $stateDir);
 

@@ -1,10 +1,10 @@
 -- 1ai-Affiliate test bootstrap
--- Creates minimum upstream tracking202 tables + our renamed tables
+-- Creates minimum upstream tracking1ai tables + our renamed tables
 
-USE prosper202_test;
+USE prosper1ai_test;
 
--- ===== UPSTREAM (tracking202) — minimal for tests =====
-CREATE TABLE IF NOT EXISTS `202_users` (
+-- ===== UPSTREAM (tracking1ai) — minimal for tests =====
+CREATE TABLE IF NOT EXISTS `1ai_users` (
   `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_name` VARCHAR(100) NOT NULL,
   `user_email` VARCHAR(150) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `202_users` (
   KEY `idx_api_key` (`user_api_key`)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `202_aff_campaigns` (
+CREATE TABLE IF NOT EXISTS `1ai_aff_campaigns` (
   `aff_campaign_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `aff_campaign_name` VARCHAR(200) NOT NULL,
   `aff_campaign_payout` DECIMAL(10,2) DEFAULT 0,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `202_aff_campaigns` (
   PRIMARY KEY (`aff_campaign_id`)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `202_clicks` (
+CREATE TABLE IF NOT EXISTS `1ai_clicks` (
   `click_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `click_time` INT UNSIGNED NOT NULL,
   `aff_campaign_id` INT UNSIGNED NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `202_clicks` (
   KEY `idx_time` (`click_time`)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `202_conversion_logs` (
+CREATE TABLE IF NOT EXISTS `1ai_conversion_logs` (
   `conversion_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `aff_campaign_id` INT UNSIGNED NOT NULL,
   `click_id` BIGINT UNSIGNED DEFAULT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `202_conversion_logs` (
   KEY `idx_campaign` (`aff_campaign_id`)
 ) ENGINE=InnoDB;
 
--- ===== NEW (renamed from 202_*) =====
+-- ===== NEW (renamed from 1ai_*) =====
 CREATE TABLE IF NOT EXISTS `affiliates` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS `payout_items` (
 
 -- ===== SEED TEST DATA =====
 -- Admin user (bcrypt hash of "admin123" generated separately)
-INSERT INTO `202_users` (user_id, user_name, user_email, user_password, user_role, user_api_key, user_date_added)
+INSERT INTO `1ai_users` (user_id, user_name, user_email, user_password, user_role, user_api_key, user_date_added)
 VALUES
   (1, 'admin', 'admin@1ai.io', '$2b$10$placeholder', 'admin', 'test-api-key-admin-1234', UNIX_TIMESTAMP()),
   (2, 'alice', 'alice@1ai.io', '$2b$10$placeholder', 'affiliate', NULL, UNIX_TIMESTAMP()),
@@ -181,14 +181,14 @@ VALUES
   (2, 3, 'BOB0001', 'starter', UNIX_TIMESTAMP())
 ON DUPLICATE KEY UPDATE id=id;
 
-INSERT INTO `202_aff_campaigns` (aff_campaign_id, aff_campaign_name, aff_campaign_payout, aff_campaign_payout_type, aff_campaign_status)
+INSERT INTO `1ai_aff_campaigns` (aff_campaign_id, aff_campaign_name, aff_campaign_payout, aff_campaign_payout_type, aff_campaign_status)
 VALUES
   (1, 'Shopee-Indonesia-CPA', 25000.00, 'CPA', 'active'),
   (2, 'TikTok-Affiliate-Pro', 50000.00, 'CPA', 'active')
 ON DUPLICATE KEY UPDATE aff_campaign_id=aff_campaign_id;
 
 -- Recent clicks for stats
-INSERT INTO `202_clicks` (click_time, aff_campaign_id, click_payout) VALUES
+INSERT INTO `1ai_clicks` (click_time, aff_campaign_id, click_payout) VALUES
   (UNIX_TIMESTAMP(NOW()), 1, 25000),
   (UNIX_TIMESTAMP(NOW()) - 3600, 1, 25000),
   (UNIX_TIMESTAMP(NOW()) - 86400 - 3600, 1, 25000),  -- yesterday

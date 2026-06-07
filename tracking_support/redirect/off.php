@@ -15,16 +15,16 @@ $acip = $_GET['acip'];
 $pci = '';
 if (isset($_GET['pci']))
     $pci = $_GET['pci'];
-elseif (isset($_COOKIE['tracking202pci']))
-    $pci = $_COOKIE['tracking202pci'];
+elseif (isset($_COOKIE['tracking1aipci']))
+    $pci = $_COOKIE['tracking1aipci'];
 
 if (! is_numeric($acip))
     die();
 include_once (substr(__DIR__, 0,-21) . '/config/connect2.php');
 include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
 
-if(isset($_COOKIE['tracking202subid'])) { //if there's a cookie use it
-    $click_id = $_COOKIE['tracking202subid'];
+if(isset($_COOKIE['tracking1aisubid'])) { //if there's a cookie use it
+    $click_id = $_COOKIE['tracking1aisubid'];
 }
 
 else { //if not find the list clicks id of the ip within a 30 day range
@@ -66,34 +66,34 @@ if ($usedCachedRedirect == true) {
         $getUrl = $memcache->get(md5('ac_' . $acip . systemHash()));
         if ($getUrl) {
             
-            $new_url = str_replace("[[subid]]", "p202", $getUrl);
+            $new_url = str_replace("[[subid]]", "p1ai", $getUrl);
             
             // c1 sring replace for cached redirect
             if (isset($_GET['c1']) && $_GET['c1'] != '') {
                 $new_url = str_replace("[[c1]]", $_GET['c1'], $new_url);
             } else {
-                $new_url = str_replace("[[c1]]", "p202c1", $new_url);
+                $new_url = str_replace("[[c1]]", "p1aic1", $new_url);
             }
             
             // c2 sring replace for cached redirect
             if (isset($_GET['c2']) && $_GET['c2'] != '') {
                 $new_url = str_replace("[[c2]]", $_GET['c2'], $new_url);
             } else {
-                $new_url = str_replace("[[c2]]", "p202c2", $new_url);
+                $new_url = str_replace("[[c2]]", "p1aic2", $new_url);
             }
             
             // c3 sring replace for cached redirect
             if (isset($_GET['c3']) && $_GET['c3'] != '') {
                 $new_url = str_replace("[[c3]]", $_GET['c3'], $new_url);
             } else {
-                $new_url = str_replace("[[c3]]", "p202c3", $new_url);
+                $new_url = str_replace("[[c3]]", "p1aic3", $new_url);
             }
             
             // c4 sring replace for cached redirect
             if (isset($_GET['c4']) && $_GET['c4'] != '') {
                 $new_url = str_replace("[[c4]]", $_GET['c4'], $new_url);
             } else {
-                $new_url = str_replace("[[c4]]", "p202c4", $new_url);
+                $new_url = str_replace("[[c4]]", "p1aic4", $new_url);
             }
             
             $urlvars = getPrePopVars($urlvarslist);
@@ -230,7 +230,7 @@ $info_row = memcache_mysql_fetch_assoc($db, $info_sql);
 // cache the url for later use if db is down
 if ($memcacheWorking) {
     
-    $url = $tracker_row['aff_campaign_url'] . "&subid=p202";
+    $url = $tracker_row['aff_campaign_url'] . "&subid=p1ai";
     $tid = $acip;
     
     $getKey = $memcache->get(md5('ac_' . $tid . systemHash()));
@@ -315,7 +315,7 @@ $click_result = $db->query($update_sql) or record_mysql_error($db);
 
 // alright now the updates,
 // WE WANT TO DELAY THESES UPDATES, in a MYSQL DATBASES? Or else the UPDATES lag the server, the UPDATES have to wait until it locks to update the server
-// so what happens is if there not delayed, if someone is pulling MASSIVE queries on the t202 website, it'll wait till they load before our update runs,
+// so what happens is if there not delayed, if someone is pulling MASSIVE queries on the t1ai website, it'll wait till they load before our update runs,
 // and that means if this update wasn't delayed it'd wait untill their queries were done on the site before moving forward. Massive slowness, so we update delays theses in cronjobs a at a lter time.
 
 // ADD TO CLICK SUMMARY TABLE?

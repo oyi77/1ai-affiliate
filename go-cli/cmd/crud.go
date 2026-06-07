@@ -8,9 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"p202/internal/api"
-	"p202/internal/metrics"
-	"p202/internal/output"
+	"p1ai/internal/api"
+	"p1ai/internal/metrics"
+	"p1ai/internal/output"
 
 	"github.com/spf13/cobra"
 )

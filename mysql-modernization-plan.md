@@ -121,10 +121,10 @@ The Attribution module established: interface → MySQL implementation → null 
 
 | File | Purpose | Queries/request | Transactions |
 |---|---|---|---|
-| `tracking202/redirect/dl.php` | Click redirect | 13 queries | 0 |
-| `tracking202/static/record_simple.php` | Pixel click recording | 18 queries | 0 |
-| `tracking202/static/record_adv.php` | Advanced click recording | ~22 queries | 0 |
-| `tracking202/redirect/pci.php` | Postback conversion | ~8 queries | 0 |
+| `tracking1ai/redirect/dl.php` | Click redirect | 13 queries | 0 |
+| `tracking1ai/static/record_simple.php` | Pixel click recording | 18 queries | 0 |
+| `tracking1ai/static/record_adv.php` | Advanced click recording | ~22 queries | 0 |
+| `tracking1ai/redirect/pci.php` | Postback conversion | ~8 queries | 0 |
 
 ### 3.4 — Error handling on the hot path
 
@@ -135,7 +135,7 @@ $result = @$db->query($sql);  // @ suppresses warnings
 return $result;                // false on failure, no exception, no logging
 ```
 
-`record_mysql_error()` in `functions-tracking202.php`:
+`record_mysql_error()` in `functions-tracking1ai.php`:
 ```php
 $clean['mysql_error_text'] = mysqli_error($db);
 // ... logs to error file, then:
@@ -266,8 +266,8 @@ During migration, both patterns will exist:
 **Scope:**
 | Action | Files |
 |---|---|
-| Create `202-config/Database/Connection.php` | NEW |
-| Create `202-config/Database/ConnectionFactory.php` | NEW |
+| Create `1ai-config/Database/Connection.php` | NEW |
+| Create `1ai-config/Database/ConnectionFactory.php` | NEW |
 | Retrofit `MysqlTouchpointRepository` | MODIFY (remove private prepare/bind, inject Connection) |
 | Retrofit `MysqlSnapshotRepository` | MODIFY |
 | Retrofit `MysqlModelRepository` | MODIFY |
@@ -563,7 +563,7 @@ For the hot path rewrite, contract tests are necessary but insufficient. We need
 | Click recording latency (p50, p95, p99) | Application timing or web server access log | Measure current | p99 > 2x baseline |
 | Click recording error rate | `record_mysql_error()` call count → after: exception count | Measure current | Any increase |
 | Memcache hit rate for lookup tables | Memcache stats | Measure current | Hit rate drops >5% |
-| Orphaned click data (rows in `202_clicks` with no matching `202_clicks_advance`) | SQL audit query | Measure current | Any new orphans after Phase 2 |
+| Orphaned click data (rows in `1ai_clicks` with no matching `1ai_clicks_advance`) | SQL audit query | Measure current | Any new orphans after Phase 2 |
 | DB query count per click recording request | Count in `Connection::execute()` | 18 (record_simple) | Increase >10% |
 | `real_escape_string` call sites remaining | `grep -c` in CI | 1,368 (baseline) | Must decrease monotonically |
 | Test count and coverage | PHPUnit | Measure current | Must increase monotonically |
@@ -627,11 +627,11 @@ Before Phase 2 (transaction introduction) ships:
 ### New files
 
 ```
-202-config/Database/
+1ai-config/Database/
   Connection.php                         Phase 0
   ConnectionFactory.php                  Phase 0
 
-202-config/Repository/
+1ai-config/Repository/
   LocationRepositoryInterface.php        Phase 1
   DeviceRepositoryInterface.php          Phase 1
   TrackingRepositoryInterface.php        Phase 1
@@ -649,7 +649,7 @@ Before Phase 2 (transaction introduction) ships:
   NullUserRepository.php                 Phase 3
   NullRotatorRepository.php              Phase 3
 
-202-config/Repository/Mysql/
+1ai-config/Repository/Mysql/
   MysqlLocationRepository.php            Phase 1
   MysqlDeviceRepository.php              Phase 1
   MysqlTrackingRepository.php            Phase 1
@@ -660,12 +660,12 @@ Before Phase 2 (transaction introduction) ships:
   MysqlReportRepository.php              Phase 4
   MysqlDataEngineRepository.php          Phase 4
 
-202-config/Repository/Cached/
+1ai-config/Repository/Cached/
   CachedLocationRepository.php           Phase 1
   CachedDeviceRepository.php             Phase 1
   CachedTrackingRepository.php           Phase 1
 
-202-config/Domain/
+1ai-config/Domain/
   ClickRecord.php                        Phase 2
 
 tests/Repository/
@@ -687,18 +687,18 @@ tests/Database/
 ### Modified files
 
 ```
-202-config/Attribution/Repository/Mysql/MysqlTouchpointRepository.php    Phase 0
-202-config/Attribution/Repository/Mysql/MysqlSnapshotRepository.php      Phase 0
-202-config/Attribution/Repository/Mysql/MysqlModelRepository.php         Phase 0
-202-config/Attribution/Repository/Mysql/MysqlConversionRepository.php    Phase 0
-202-config/Attribution/Repository/Mysql/MysqlSettingRepository.php       Phase 0
-202-config/Attribution/Repository/Mysql/MysqlAuditRepository.php         Phase 0
-202-config/Attribution/Repository/Mysql/MysqlExportJobRepository.php     Phase 0
-202-config/Attribution/Repository/Mysql/ConversionJourneyRepository.php  Phase 0
-202-config/Attribution/AttributionServiceFactory.php                     Phase 0
-tracking202/static/record_simple.php                                     Phase 1+2+6
-tracking202/static/record_adv.php                                        Phase 1+2+6
-tracking202/redirect/dl.php                                              Phase 1+3+6
+1ai-config/Attribution/Repository/Mysql/MysqlTouchpointRepository.php    Phase 0
+1ai-config/Attribution/Repository/Mysql/MysqlSnapshotRepository.php      Phase 0
+1ai-config/Attribution/Repository/Mysql/MysqlModelRepository.php         Phase 0
+1ai-config/Attribution/Repository/Mysql/MysqlConversionRepository.php    Phase 0
+1ai-config/Attribution/Repository/Mysql/MysqlSettingRepository.php       Phase 0
+1ai-config/Attribution/Repository/Mysql/MysqlAuditRepository.php         Phase 0
+1ai-config/Attribution/Repository/Mysql/MysqlExportJobRepository.php     Phase 0
+1ai-config/Attribution/Repository/Mysql/ConversionJourneyRepository.php  Phase 0
+1ai-config/Attribution/AttributionServiceFactory.php                     Phase 0
+tracking1ai/static/record_simple.php                                     Phase 1+2+6
+tracking1ai/static/record_adv.php                                        Phase 1+2+6
+tracking1ai/redirect/dl.php                                              Phase 1+3+6
 api/V3/Controllers/RotatorsController.php                                Phase 3
 api/V3/Controllers/UsersController.php                                   Phase 3
 api/V3/Controllers/ReportsController.php                                 Phase 4
@@ -707,7 +707,7 @@ api/V3/Controllers/ReportsController.php                                 Phase 4
 ### Deleted files
 
 ```
-202-config/class-indexes.php                    Phase 7 (after all callers migrated)
+1ai-config/class-indexes.php                    Phase 7 (after all callers migrated)
 ```
 
 ---

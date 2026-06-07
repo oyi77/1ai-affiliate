@@ -34,9 +34,9 @@ if (is_installed() == true) {
 	
 	$html['mysqlversion'] = htmlentities((string) $mysqlversion, ENT_QUOTES, 'UTF-8');
 
-         if (!php_version_supported()) {
-                 $version_error['phpversion'] = '1ai-Affiliate requires PHP ' . ONEAI_AFFILIATE_MIN_PHP_VERSION . ', or newer.';
-         }
+        if (!php_version_supported()) {
+                $version_error['phpversion'] = '1ai-Affiliate requires PHP ' . ONEAI_AFFILIATE_MIN_PHP_VERSION . ', or newer.';
+        }
 
 
 	if (!function_exists('curl_version')) { 
@@ -66,7 +66,7 @@ info_top(); ?>
 	<br></br>
 	<h6>For Best Performance - Host With The 1ai-Affiliate Official Hosting Partners:</h6>
 	<?php 
-		$partners_data = getData('https://my.tracking202.com/api/v2/hostings');
+		$partners_data = getData('https://my.tracking1ai.com/api/v2/hostings');
 		$partners = [];
 		
 		if ($partners_data) {
@@ -79,7 +79,7 @@ info_top(); ?>
 				[
 					'title' => 'Visit Official Hosting Partners',
 					'description' => 'Get recommended hosting for 1ai-Affiliate',
-					'url' => 'https://my.tracking202.com/hosting',
+					'url' => 'https://my.tracking1ai.com/hosting',
 					'thumb' => 'img/oneai_affiliate.png'
 				]
 			];
@@ -168,13 +168,13 @@ info_top(); ?>
 	?>
 	
 	<?php } else { ?>
-	<a href="<?php echo get_absolute_url();?>config/get_apikey.php" class="btn btn-lg btn-block btn-p202" target="_blank" id="lb_install_btn">Install 1ai-Affiliate ClickServer Now <span class="glyphicon glyphicon-chevron-right"></span></a>
+	<a href="<?php echo get_absolute_url();?>config/get_apikey.php" class="btn btn-lg btn-block btn-p1ai" target="_blank" id="lb_install_btn">Install 1ai-Affiliate ClickServer Now <span class="glyphicon glyphicon-chevron-right"></span></a>
 	<?php } ?>	
 
 	</div>
 	<script type="text/javascript">
 <!--
-var lb_url = "https://202.redirexit.com/tracking_support/redirect/dl.php?t202id=72774&t202kw=req-screen-lb";
+var lb_url = "https://202.redirexit.com/tracking_support/redirect/dl.php?t1aiid=72774&t1aikw=req-screen-lb";
 function leavebehind202() {
 	this.target="_blank";
     setTimeout('window.location.href =lb_url', 200);

@@ -281,7 +281,7 @@ template_top('1ai-Affiliate ClickServer App Store');  ?>
 </div>
 
 <?php
-$feedUrl = 'https://my.tracking202.com/feed/resources/';
+$feedUrl = 'https://my.tracking1ai.com/feed/resources/';
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

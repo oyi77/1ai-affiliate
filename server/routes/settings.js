@@ -3,7 +3,7 @@ const router = express.Router();
 const { authenticate } = require('../middleware/auth');
 const {
   getProfile, updateProfile, generateApiKey, removeApiKey,
-  getIntegrations, updateIntegration,
+  getIntegrations, updateIntegration, getPostback, updatePostback,
 } = require('../controllers/settingsController');
 
 router.use(authenticate);

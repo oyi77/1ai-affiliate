@@ -47,7 +47,7 @@ template_top('Clear Subids');  ?>
 
 		    <div class="form-group">
 				<div class="col-xs-10" style="margin-top: 10px;">
-					<input type="button" id="clear-subids" class="btn btn-sm btn-p202 btn-block" value="Clear Subids">					
+					<input type="button" id="clear-subids" class="btn btn-sm btn-p1ai btn-block" value="Clear Subids">					
 				</div>
 			</div>
 

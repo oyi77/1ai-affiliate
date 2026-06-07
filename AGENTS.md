@@ -5,12 +5,12 @@ One-stop platform for CPA tracking, affiliate marketing, content distribution, a
 ## Architecture
 
 ```
-1ai-affiliate/                    # PHP 8.3+ CPA tracking (Prosper202-based)
+1ai-affiliate/                    # PHP 8.3+ CPA tracking (Prosper1ai-based)
 ├── api/V3/                       # REST API — affiliates, commissions, offers
-├── 202-config/Affiliate/         # Affiliate profiles + auth
-├── 202-config/Margin/            # Payout calculator + commission handler
-├── 202-config/Offer/             # Offer management + access control
-├── 202-config/Commission/        # Ledger + payout batch system
+├── 1ai-config/Affiliate/         # Affiliate profiles + auth
+├── 1ai-config/Margin/            # Payout calculator + commission handler
+├── 1ai-config/Offer/             # Offer management + access control
+├── 1ai-config/Commission/        # Ledger + payout batch system
 ├── scripts/                      # DB migrations (4 SQL files)
 │
 ├── pipeline/                     # TikTok → Shopee → FB/IG (Python)
@@ -23,7 +23,7 @@ One-stop platform for CPA tracking, affiliate marketing, content distribution, a
 │   ├── routes/                    # /api/auth, /api/admin, /api/payment, /api/content
 │   ├── controllers/               # auth + admin + payment (Tripay) + content (6 Gemini tools)
 │   ├── services/gemini.js         # Gemini SDK wrapper + circuit breaker
-│   ├── db/mysql.js                # Pool to prosper202 (shared with PHP)
+│   ├── db/mysql.js                # Pool to Prosper1ai (shared with PHP)
 │   └── public/
 │       ├── admin/index.html       # Dashboard-first SPA — Tailwind CDN, dark, mobile-first
 │       ├── client/index.html
@@ -127,7 +127,7 @@ Exposed via MCP hub: `content_banner`, `content_carousel`, `content_caption`, `c
 
 ```bash
 # Core tracking platform
-composer install && cp 202-config-sample.php 202-config.php
+composer install && cp 1ai-config-sample.php 1ai-config.php
 php scripts/run_migrations.php
 
 # Pipeline
@@ -147,6 +147,6 @@ php8.4 vendor/bin/phpunit --no-configuration tests/
 ```
 
 ## Related
-- Upstream: tracking202/prosper202
+- Upstream: tracking1ai/Prosper1ai
 - 1ai-ads: ~/projects/1ai-ads
 - 1ai-social: ~/projects/1ai-social

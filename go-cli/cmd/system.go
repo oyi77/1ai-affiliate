@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"p202/internal/api"
+	"p1ai/internal/api"
 
 	"github.com/spf13/cobra"
 )
@@ -30,7 +30,7 @@ var systemHealthCmd = &cobra.Command{
 
 var systemVersionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Show Prosper202 and system version info",
+	Short: "Show Prosper1ai and system version info",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := api.NewFromConfig()
 		if err != nil {

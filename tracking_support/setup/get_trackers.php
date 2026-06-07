@@ -264,25 +264,25 @@ template_top('Get Trackers');  ?>
 			</div>
 
 			<div class="form-group" style="margin-bottom: 0px;">
-				<label class="col-xs-4 control-label" for="t202kw" style="text-align: left;">Keyword Token:</label>
+				<label class="col-xs-4 control-label" for="t1aikw" style="text-align: left;">Keyword Token:</label>
 				<div class="col-xs-6" style="margin-top: 10px;">
-					<input class="form-control input-sm" type="text" name="t202kw" id="t202kw" />
+					<input class="form-control input-sm" type="text" name="t1aikw" id="t1aikw" />
 					<span class="help-block" style="font-size: 10px;"><strong>Optional:</strong> If your traffic source supports a keyword token, add it here.</span>
 				</div>
 			</div>
 
 			<div class="form-group" style="margin-bottom: 0px;">
-				<label class="col-xs-4 control-label" for="t202b" style="text-align: left;">Dynamic CPC Token:</label>
+				<label class="col-xs-4 control-label" for="t1aib" style="text-align: left;">Dynamic CPC Token:</label>
 				<div class="col-xs-6" style="margin-top: 10px;">
-					<input class="form-control input-sm" type="text" name="t202b" id="t202b" />
+					<input class="form-control input-sm" type="text" name="t1aib" id="t1aib" />
 					<span class="help-block" style="font-size: 10px;"><strong>Optional:</strong> If your traffic source supports a bid token, add it here for exact cost tracking.</span>
 				</div>
 			</div>
 
 			<div class="form-group" style="margin-bottom: 0px;">
-				<label class="col-xs-4 control-label" for="t202ref" style="text-align: left;">Custom Referer Token:</label>
+				<label class="col-xs-4 control-label" for="t1airef" style="text-align: left;">Custom Referer Token:</label>
 				<div class="col-xs-6" style="margin-top: 10px;">
-					<input class="form-control input-sm" type="text" name="t202ref" id="t202ref" />
+					<input class="form-control input-sm" type="text" name="t1airef" id="t1airef" />
 					<span class="help-block" style="font-size: 10px;"><strong>Optional:</strong> This is used for cases where the real referer info is not useful, however the traffic source provide a token that can be used as a better referer value.</span>
 				</div>
 			</div>
@@ -318,7 +318,7 @@ template_top('Get Trackers');  ?>
 
 			<div class="form-group">
 				<div class="col-xs-10" style="margin-top: 10px;">
-					<input type="button" id="get-links" class="btn btn-sm btn-p202 btn-block" value="<?php if ($showEdit) echo "Edit Tracking Link";
+					<input type="button" id="get-links" class="btn btn-sm btn-p1ai btn-block" value="<?php if ($showEdit) echo "Edit Tracking Link";
 																										else echo "Generate Tracking Link"; ?>">
 				</div>
 			</div>
@@ -375,11 +375,11 @@ template_top('Get Trackers');  ?>
 								if (!empty($parsed_url['query'])) {
 									$destination_url .= $parsed_url['query'] . '&';;
 								}
-								$destination_url .= 't202id=' . $tracker_row['tracker_id_public'];
+								$destination_url .= 't1aiid=' . $tracker_row['tracker_id_public'];
 								if (!empty($parsed_url['fragment'])) {
 									$destination_url .= '#' . $parsed_url['fragment'];
 								}
-								$destination_url .= 't202kw=';
+								$destination_url .= 't1aikw=';
 
 								$display_name = $tracker_row['landing_page_nickname'];
 							} else if ($tracker_row['rotator_id']) {
@@ -394,9 +394,9 @@ template_top('Get Trackers');  ?>
 								<?php if ($tracker_row['landing_page_id'] != 0) { ?>
 									<a href="<?php echo htmlspecialchars((string) $destination_url, ENT_QUOTES, 'UTF-8'); ?>" class="list-action" title="Open tracking link">link</a>
 								<?php } else if ($tracker_row['rotator_id']) { ?>
-									<a href="http://<?php echo getTrackingDomain() . get_absolute_url(); ?>tracking_support/redirect/rtr.php?t202id=<?php echo htmlspecialchars((string) $tracker_row['tracker_id_public'], ENT_QUOTES, 'UTF-8'); ?>&t202kw=<?php echo htmlspecialchars((string) $vars_query, ENT_QUOTES, 'UTF-8'); ?>" class="list-action" title="Open tracking link">link</a>
+									<a href="http://<?php echo getTrackingDomain() . get_absolute_url(); ?>tracking_support/redirect/rtr.php?t1aiid=<?php echo htmlspecialchars((string) $tracker_row['tracker_id_public'], ENT_QUOTES, 'UTF-8'); ?>&t1aikw=<?php echo htmlspecialchars((string) $vars_query, ENT_QUOTES, 'UTF-8'); ?>" class="list-action" title="Open tracking link">link</a>
 								<?php } else { ?>
-									<a href="http://<?php echo getTrackingDomain() . get_absolute_url(); ?>tracking_support/redirect/dl.php?t202id=<?php echo htmlspecialchars((string) $tracker_row['tracker_id_public'], ENT_QUOTES, 'UTF-8'); ?>&t202kw=<?php echo htmlspecialchars((string) $vars_query, ENT_QUOTES, 'UTF-8'); ?>" class="list-action" title="Open tracking link">link</a>
+									<a href="http://<?php echo getTrackingDomain() . get_absolute_url(); ?>tracking_support/redirect/dl.php?t1aiid=<?php echo htmlspecialchars((string) $tracker_row['tracker_id_public'], ENT_QUOTES, 'UTF-8'); ?>&t1aikw=<?php echo htmlspecialchars((string) $vars_query, ENT_QUOTES, 'UTF-8'); ?>" class="list-action" title="Open tracking link">link</a>
 								<?php } ?>
 								<a href="<?php echo get_absolute_url(); ?>tracking_support/setup/get_trackers.php?edit_tracker_id=<?php echo $tracker_row['tracker_id_public']; ?>" class="list-action" title="Edit this tracker"><i class="fa fa-pencil-square-o"></i> edit</a>
 								<?php if ($userObj->hasPermission("remove_tracker")) { ?>

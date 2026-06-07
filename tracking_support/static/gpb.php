@@ -8,7 +8,7 @@ include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
 include_once(substr(__DIR__, 0,-19) . '/config/class-dataengine-slim.php');
 include_once(substr(__DIR__, 0,-19) . '/config/static-endpoint-helpers.php');
 // getUrl() for server-side postback pixels (not pulled in by connect2.php)
-include_once(substr(__DIR__, 0,-19) . '/config/functions-tracking202api.php');
+include_once(substr(__DIR__, 0,-19) . '/config/functions-tracking1aiapi.php');
 
 $settingsService = AttributionServiceFactory::createSettingsService();
 
@@ -24,7 +24,7 @@ if(array_key_exists('subid',$_GET) && is_numeric($_GET['subid'])) {
 } elseif(array_key_exists('sid',$_GET) && is_numeric($_GET['sid'])) {
 	$mysql['click_id']= $db->real_escape_string((string)$_GET['sid']);
 } else {
-	p202RespondJsonError(404, 'SubID not found');
+	p1aiRespondJsonError(404, 'SubID not found');
 }
 
 if (!$mysql['click_id']) {
@@ -57,7 +57,7 @@ if (!$mysql['click_id']) {
 }
 
 if(!$mysql['click_id']){
-    p202RespondJsonError(404, 'SubID not found');
+    p1aiRespondJsonError(404, 'SubID not found');
 }
 
 
@@ -110,7 +110,7 @@ LIMIT 1";
 
 $cvar_sql_result = $db->query($cvar_sql);
 $cvar_sql_row = $cvar_sql_result->fetch_assoc();
-$mysql['t202kw'] = $db->real_escape_string($cvar_sql_row['keyword']);
+$mysql['t1aikw'] = $db->real_escape_string($cvar_sql_row['keyword']);
 $mysql['c1'] = $db->real_escape_string($cvar_sql_row['c1']);
 $mysql['c2'] = $db->real_escape_string($cvar_sql_row['c2']);
 $mysql['c3'] = $db->real_escape_string($cvar_sql_row['c3']);
@@ -138,7 +138,7 @@ if (array_key_exists('amount', $_GET) && is_numeric($_GET['amount'])) {
 
 $tokens = [
     "subid" => $mysql['click_id'],
-    "t202kw" => $mysql['t202kw'],
+    "t1aikw" => $mysql['t1aikw'],
 	"c1" => $mysql['c1'],
 	"c2" => $mysql['c2'],
 	"c3" => $mysql['c3'],
@@ -248,7 +248,7 @@ if (is_numeric($mysql['click_id'])) {
 				$mysql['use_pixel_payout'] = 1;
 				$mysql['click_payout'] = $db->real_escape_string((string)$_GET['amount']);
 			}
-		p202ApplyConversionUpdate(
+		p1aiApplyConversionUpdate(
 			$db,
 			(string) $mysql['click_id'],
 			(string) $mysql['click_cpa'],
@@ -269,7 +269,7 @@ if (is_numeric($mysql['click_id'])) {
 					user_agent = '".$mysql['user_agent']."'";
         $db->query($log_sql);
         $conversionId = (int) $db->insert_id;
-	        $advertiserId = p202ResolveAdvertiserId($db, (int) $mysql['campaign_id']);
+	        $advertiserId = p1aiResolveAdvertiserId($db, (int) $mysql['campaign_id']);
 
         if ($conversionId > 0) {
                 $scope = [

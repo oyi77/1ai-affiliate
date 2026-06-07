@@ -4,15 +4,15 @@
 declare(strict_types=1);
 
 /**
- * p202 - Prosper202 CLI Client
+ * p1ai - Prosper1ai CLI Client
  *
- * A local CLI tool for managing a remote Prosper202 installation.
+ * A local CLI tool for managing a remote Prosper1ai installation.
  * Designed for both human operators and AI agents.
  *
  * Quick start:
- *   p202 config:set-url https://your-prosper202.com
- *   p202 config:set-key your-api-key-here
- *   p202 campaign:list
+ *   p1ai config:set-url https://your-Prosper1ai.com
+ *   p1ai config:set-key your-api-key-here
+ *   p1ai campaign:list
  *
  * All commands support --json for machine-readable output.
  */

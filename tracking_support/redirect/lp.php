@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 $vars=$_GET;
-#only allow numeric t202ids
+#only allow numeric t1aiids
 $lpip = $_GET['lpip']; 
 if (!is_numeric($lpip)) die();
 
@@ -22,34 +22,34 @@ if ($usedCachedRedirect==true) {
 			$getUrl = $memcache->get(md5('lp_'.$lpip.systemHash()));
 			if ($getUrl) {
 
-				$new_url = str_replace("[[subid]]", "p202", $getUrl);
+				$new_url = str_replace("[[subid]]", "p1ai", $getUrl);
 
 				//c1 sring replace for cached redirect
 				if(isset($_GET['c1']) && $_GET['c1'] != ''){
 					$new_url = str_replace("[[c1]]", $_GET['c1'], $new_url);
 				}	else {
-					$new_url = str_replace("[[c1]]", "p202c1", $new_url);
+					$new_url = str_replace("[[c1]]", "p1aic1", $new_url);
 				}
 
 				//c2 sring replace for cached redirect
 				if(isset($_GET['c2']) && $_GET['c2'] != ''){
 					$new_url = str_replace("[[c2]]", $_GET['c2'], $new_url);
 				}	else {
-					$new_url = str_replace("[[c2]]", "p202c2", $new_url);
+					$new_url = str_replace("[[c2]]", "p1aic2", $new_url);
 				}
 				
 				//c3 sring replace for cached redirect
 				if(isset($_GET['c3']) && $_GET['c3'] != ''){
 					$new_url = str_replace("[[c3]]", $_GET['c3'], $new_url);
 				}	else {
-					$new_url = str_replace("[[c3]]", "p202c3", $new_url);
+					$new_url = str_replace("[[c3]]", "p1aic3", $new_url);
 				}
 
 				//c4 sring replace for cached redirect
 				if(isset($_GET['c4']) && $_GET['c4'] != ''){
 					$new_url = str_replace("[[c4]]", $_GET['c4'], $new_url);
 				}	else {
-					$new_url = str_replace("[[c4]]", "p202c4", $new_url);
+					$new_url = str_replace("[[c4]]", "p1aic4", $new_url);
 				}
 				
 				if (isset ( $urlvars ) && $urlvars != '') {
@@ -99,7 +99,7 @@ if (!$tracker_row) { die(); }
 
 if ($memcacheWorking) {  
 
-	$url = $tracker_row['aff_campaign_url']."&subid=p202";
+	$url = $tracker_row['aff_campaign_url']."&subid=p1ai";
 	$tid = $lpip;
 
 	$getKey = $memcache->get(md5('lp_'.$tid.systemHash()));
@@ -112,9 +112,9 @@ if ($memcacheWorking) {
 $landing_page_site_url_address_parsed = parse_url((string) $_SERVER['HTTP_REFERER']);  
 parse_str($landing_page_site_url_address_parsed['query'], $_GET);       
 
-if ($_GET['t202id']) { 
+if ($_GET['t1aiid']) { 
 	//grab tracker data if avaliable
-	$mysql['tracker_id_public'] = $db->real_escape_string((string)$_GET['t202id']);
+	$mysql['tracker_id_public'] = $db->real_escape_string((string)$_GET['t1aiid']);
 
 	$tracker_sql2 = "SELECT  text_ad_id,
 							ppc_account_id,
@@ -144,7 +144,7 @@ $mysql['text_ad_id'] = $db->real_escape_string((string) $tracker_row['text_ad_id
 
 //now gather variables for the clicks record db
 //click_id is needed to build click_id_public below, so resolve it first
-$click_id = $_COOKIE['tracking202subid_a_'.$tracker_row['aff_campaign_id']] ?? '';
+$click_id = $_COOKIE['tracking1aisubid_a_'.$tracker_row['aff_campaign_id']] ?? '';
 //lets determine if cloaking is on
 $cloaking_on = false;
 if (($tracker_row['click_cloaking'] == 1) or //if tracker has overrided cloaking on

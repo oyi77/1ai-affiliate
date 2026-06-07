@@ -16,6 +16,7 @@ $migrations = [
     '003_offers.sql',
     '004_commission_ledger.sql',
     '005_payment_table.sql',
+    '006_schema_alignment.sql',
 ];
 
 foreach ($migrations as $file) {

@@ -12,7 +12,7 @@ $strProtocol = 'https';
 $strProtocol = 'http';
 }
 
-// Process geo/UA data once (previously duplicated in both _.t202Data and t202Data)
+// Process geo/UA data once (previously duplicated in both _.t1aiData and t1aiData)
 $data = getGeoData($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'));
 if($data['country']==='Unknown country')
     $data['country']='';
@@ -37,46 +37,46 @@ else
     $data['isp']=$IspData;
 
 // Build the geo data object safely using json_encode to prevent XSS
-$t202ServerData = [
-    't202Country' => $data['country'],
-    't202CountryCode' => $data['country_code'],
-    't202Region' => $data['region'],
-    't202City' => $data['city'],
-    't202Postal' => $data['postal_code'],
-    't202Browser' => $result->ua->family,
-    't202OS' => $result->os->family,
-    't202Device' => $result->device->family,
-    't202ISP' => $data['isp'],
+$t1aiServerData = [
+    't1aiCountry' => $data['country'],
+    't1aiCountryCode' => $data['country_code'],
+    't1aiRegion' => $data['region'],
+    't1aiCity' => $data['city'],
+    't1aiPostal' => $data['postal_code'],
+    't1aiBrowser' => $result->ua->family,
+    't1aiOS' => $result->os->family,
+    't1aiDevice' => $result->device->family,
+    't1aiISP' => $data['isp'],
 ];
 
-// Mapping of URL parameter names to their t202DataObj keys for client-side values.
-// Server-side keys (geo/UA) are already in $t202ServerData above.
-$t202ClientParamMap = [
-    't202kw' => 't202kw',
-    'c1' => 't202c1',
-    'c2' => 't202c2',
-    'c3' => 't202c3',
-    'c4' => 't202c4',
-    'utm_source' => 't202utm_source',
-    'utm_medium' => 't202utm_medium',
-    'utm_term' => 't202utm_term',
-    'utm_content' => 't202utm_content',
-    'utm_campaign' => 't202utm_campaign',
+// Mapping of URL parameter names to their t1aiDataObj keys for client-side values.
+// Server-side keys (geo/UA) are already in $t1aiServerData above.
+$t1aiClientParamMap = [
+    't1aikw' => 't1aikw',
+    'c1' => 't1aic1',
+    'c2' => 't1aic2',
+    'c3' => 't1aic3',
+    'c4' => 't1aic4',
+    'utm_source' => 't1aiutm_source',
+    'utm_medium' => 't1aiutm_medium',
+    'utm_term' => 't1aiutm_term',
+    'utm_content' => 't1aiutm_content',
+    'utm_campaign' => 't1aiutm_campaign',
 ];
 
 // Resolve custom variables server-side to eliminate an extra HTTP round-trip.
-// Try t202id first; fall back to lpip → tracker lookup for pages without t202id.
-$t202CustomVars = [];
-$t202id = $_GET['t202id'] ?? '';
+// Try t1aiid first; fall back to lpip → tracker lookup for pages without t1aiid.
+$t1aiCustomVars = [];
+$t1aiid = $_GET['t1aiid'] ?? '';
 $lpip = $_GET['lpip'] ?? '';
 $cv_sql = '';
-if ($t202id !== '') {
-    $mysql_t202id = $db->real_escape_string((string)$t202id);
+if ($t1aiid !== '') {
+    $mysql_t1aiid = $db->real_escape_string((string)$t1aiid);
     $cv_sql = "SELECT 2cv.parameters
         FROM trackers
         LEFT JOIN ppc_accounts USING (ppc_account_id)
         LEFT JOIN (SELECT ppc_network_id, GROUP_CONCAT(parameter) AS parameters FROM ppc_network_variables GROUP BY ppc_network_id) AS 2cv USING (ppc_network_id)
-        WHERE tracker_id_public = '".$mysql_t202id."'";
+        WHERE tracker_id_public = '".$mysql_t1aiid."'";
 } elseif ($lpip !== '') {
     $mysql_lpip = $db->real_escape_string((string)$lpip);
     $cv_sql = "SELECT 2cv.parameters
@@ -92,7 +92,7 @@ if ($cv_sql !== '') {
     if ($cv_result && $cv_result->num_rows > 0) {
         $cv_row = $cv_result->fetch_assoc();
         if (!empty($cv_row['parameters'])) {
-            $t202CustomVars = explode(',', $cv_row['parameters']);
+            $t1aiCustomVars = explode(',', $cv_row['parameters']);
         }
     }
 }
@@ -104,12 +104,12 @@ $lpip_js = json_encode((string) ($_GET['lpip'] ?? ''));
 (function() {
 var _params = new URLSearchParams(window.location.search);
 
-function t202GetVar(name) {
+function t1aiGetVar(name) {
 	var values = _params.getAll(name);
 	return values.join(', ');
 }
 
-function t202Enc(e) {
+function t1aiEnc(e) {
 	return encodeURIComponent(e);
 }
 
@@ -140,69 +140,69 @@ function eraseCookie(name) {
 
 // Expose cookie/param functions globally for record_simple.php, record_adv.php,
 // and outbound JS redirect snippets that depend on them
-window.t202GetVar = t202GetVar;
-window.t202Enc = t202Enc;
+window.t1aiGetVar = t1aiGetVar;
+window.t1aiEnc = t1aiEnc;
 window.createCookie = createCookie;
 window.readCookie = readCookie;
 window.eraseCookie = eraseCookie;
 
 // Read URL params once — shared between tracking init and dynamic content
-var t202kw = readCookie('t202forcedkw') || t202GetVar('t202kw');
-var c1 = t202GetVar('c1');
-var c2 = t202GetVar('c2');
-var c3 = t202GetVar('c3');
-var c4 = t202GetVar('c4');
-var utm_source = t202GetVar('utm_source');
-var utm_medium = t202GetVar('utm_medium');
-var utm_term = t202GetVar('utm_term');
-var utm_content = t202GetVar('utm_content');
-var utm_campaign = t202GetVar('utm_campaign');
+var t1aikw = readCookie('t1aiforcedkw') || t1aiGetVar('t1aikw');
+var c1 = t1aiGetVar('c1');
+var c2 = t1aiGetVar('c2');
+var c3 = t1aiGetVar('c3');
+var c4 = t1aiGetVar('c4');
+var utm_source = t1aiGetVar('utm_source');
+var utm_medium = t1aiGetVar('utm_medium');
+var utm_term = t1aiGetVar('utm_term');
+var utm_content = t1aiGetVar('utm_content');
+var utm_campaign = t1aiGetVar('utm_campaign');
 
 // --- Tracking beacon ---
 (function() {
 	var lpip = <?php echo $lpip_js; ?>;
-	var t202id = t202GetVar('t202id');
-	var t202ref = t202GetVar('t202ref');
-	var t202b = t202GetVar('t202b');
+	var t1aiid = t1aiGetVar('t1aiid');
+	var t1airef = t1aiGetVar('t1airef');
+	var t1aib = t1aiGetVar('t1aib');
 	var referer = document.referrer;
 	var resolution = screen.width + 'x' + screen.height;
 	var language = (navigator.language || '').substring(0, 2);
 
 	// Custom variables resolved server-side — no extra HTTP request needed
-	var customVarNames = <?php echo json_encode($t202CustomVars); ?>;
+	var customVarNames = <?php echo json_encode($t1aiCustomVars); ?>;
 	var customVarValues = [];
 	for (var i = 0; i < customVarNames.length; i++) {
-		customVarValues.push(t202GetVar(customVarNames[i]));
+		customVarValues.push(t1aiGetVar(customVarNames[i]));
 	}
 
 	// Build tracking URL using array join (faster than 20+ string concatenations)
 	var parts = [
-		"<?php echo $baseUrl; ?>tracking_support/static/record.php?lpip=" + t202Enc(lpip),
-		"t202id=" + t202Enc(t202id),
-		"t202kw=" + t202Enc(t202kw),
-		"t202ref=" + t202Enc(t202ref),
-		"OVRAW=" + t202Enc(t202GetVar('OVRAW')),
-		"OVKEY=" + t202Enc(t202GetVar('OVKEY')),
-		"OVMTC=" + t202Enc(t202GetVar('OVMTC')),
-		"c1=" + t202Enc(c1),
-		"c2=" + t202Enc(c2),
-		"c3=" + t202Enc(c3),
-		"c4=" + t202Enc(c4),
-		"t202b=" + t202Enc(t202b),
-		"gclid=" + t202Enc(t202GetVar('gclid')),
-		"target_passthrough=" + t202Enc(t202GetVar('target_passthrough')),
-		"keyword=" + t202Enc(t202GetVar('keyword')),
-		"utm_source=" + t202Enc(utm_source),
-		"utm_medium=" + t202Enc(utm_medium),
-		"utm_term=" + t202Enc(utm_term),
-		"utm_content=" + t202Enc(utm_content),
-		"utm_campaign=" + t202Enc(utm_campaign),
-		"referer=" + t202Enc(referer),
-		"resolution=" + t202Enc(resolution),
-		"language=" + t202Enc(language)
+		"<?php echo $baseUrl; ?>tracking_support/static/record.php?lpip=" + t1aiEnc(lpip),
+		"t1aiid=" + t1aiEnc(t1aiid),
+		"t1aikw=" + t1aiEnc(t1aikw),
+		"t1airef=" + t1aiEnc(t1airef),
+		"OVRAW=" + t1aiEnc(t1aiGetVar('OVRAW')),
+		"OVKEY=" + t1aiEnc(t1aiGetVar('OVKEY')),
+		"OVMTC=" + t1aiEnc(t1aiGetVar('OVMTC')),
+		"c1=" + t1aiEnc(c1),
+		"c2=" + t1aiEnc(c2),
+		"c3=" + t1aiEnc(c3),
+		"c4=" + t1aiEnc(c4),
+		"t1aib=" + t1aiEnc(t1aib),
+		"gclid=" + t1aiEnc(t1aiGetVar('gclid')),
+		"target_passthrough=" + t1aiEnc(t1aiGetVar('target_passthrough')),
+		"keyword=" + t1aiEnc(t1aiGetVar('keyword')),
+		"utm_source=" + t1aiEnc(utm_source),
+		"utm_medium=" + t1aiEnc(utm_medium),
+		"utm_term=" + t1aiEnc(utm_term),
+		"utm_content=" + t1aiEnc(utm_content),
+		"utm_campaign=" + t1aiEnc(utm_campaign),
+		"referer=" + t1aiEnc(referer),
+		"resolution=" + t1aiEnc(resolution),
+		"language=" + t1aiEnc(language)
 	];
 	for (var i = 0; i < customVarNames.length; i++) {
-		parts.push(customVarNames[i] + "=" + t202Enc(customVarValues[i]));
+		parts.push(customVarNames[i] + "=" + t1aiEnc(customVarValues[i]));
 	}
 
 	// Inject record.php as script — its response calls createCookie() to set tracking cookies
@@ -219,23 +219,23 @@ var utm_campaign = t202GetVar('utm_campaign');
 // --- Dynamic content replacement ---
 (function() {
 	// Build data object: server-side geo/UA + client-side URL params (read once above)
-	var t202DataObj = <?php echo json_encode($t202ServerData, JSON_UNESCAPED_UNICODE); ?>;
-	var clientParamMap = <?php echo json_encode($t202ClientParamMap); ?>;
-	var clientValues = {t202kw: t202kw, c1: c1, c2: c2, c3: c3, c4: c4, utm_source: utm_source, utm_medium: utm_medium, utm_term: utm_term, utm_content: utm_content, utm_campaign: utm_campaign};
+	var t1aiDataObj = <?php echo json_encode($t1aiServerData, JSON_UNESCAPED_UNICODE); ?>;
+	var clientParamMap = <?php echo json_encode($t1aiClientParamMap); ?>;
+	var clientValues = {t1aikw: t1aikw, c1: c1, c2: c2, c3: c3, c4: c4, utm_source: utm_source, utm_medium: utm_medium, utm_term: utm_term, utm_content: utm_content, utm_campaign: utm_campaign};
 	for (var urlParam in clientParamMap) {
 		if (clientParamMap.hasOwnProperty(urlParam)) {
-			t202DataObj[clientParamMap[urlParam]] = clientValues[urlParam];
+			t1aiDataObj[clientParamMap[urlParam]] = clientValues[urlParam];
 		}
 	}
 
 	// Single DOM query instead of 19 separate getElementsByName calls
-	var selector = Object.keys(t202DataObj).map(function(k) { return '[name="' + k + '"]'; }).join(',');
+	var selector = Object.keys(t1aiDataObj).map(function(k) { return '[name="' + k + '"]'; }).join(',');
 	var matchedElements = document.querySelectorAll(selector);
 	for (var i = 0; i < matchedElements.length; i++) {
 		var el = matchedElements[i];
 		var name = el.getAttribute('name');
-		var val = t202DataObj[name];
-		el.textContent = (val !== undefined && val !== null && val !== '') ? val : (el.getAttribute('t202Default') || '');
+		var val = t1aiDataObj[name];
+		el.textContent = (val !== undefined && val !== null && val !== '') ? val : (el.getAttribute('t1aiDefault') || '');
 	}
 })();
 

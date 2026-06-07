@@ -406,7 +406,7 @@ function CronJobLastExecution($datetime, $full = false)
 			</div>
 			<div class="form-group">
 				<div class="col-sm-6 col-sm-offset-6">
-					<button class="btn btn-xs btn-p202 btn-block" type="submit">Delete
+					<button class="btn btn-xs btn-p1ai btn-block" type="submit">Delete
 						data</button>
 				</div>
 			</div>
@@ -441,7 +441,7 @@ function CronJobLastExecution($datetime, $full = false)
 			</div>
 			<div class="form-group">
 				<div class="col-sm-6 col-sm-offset-6">
-					<button class="btn btn-xs btn-p202 btn-block" type="submit">Auto Optimize Database</button>
+					<button class="btn btn-xs btn-p1ai btn-block" type="submit">Auto Optimize Database</button>
 				</div>
 			</div>
 		</form>

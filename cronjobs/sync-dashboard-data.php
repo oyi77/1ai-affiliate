@@ -2,7 +2,7 @@
 /**
  * Dashboard Data Sync Cron Job
  * 
- * Synchronizes dashboard content from my.tracking202.com API
+ * Synchronizes dashboard content from my.tracking1ai.com API
  * and caches it locally for fast page loads.
  * 
  * Run this via cron every 15-30 minutes.

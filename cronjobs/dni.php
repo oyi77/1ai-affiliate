@@ -29,7 +29,7 @@ try {
 					]
 				];
 
-				$curl = curl_init('https://my.tracking202.com/api/v2/dni/iron/offers/cache/all');
+				$curl = curl_init('https://my.tracking1ai.com/api/v2/dni/iron/offers/cache/all');
 				curl_setopt($curl, CURLOPT_HEADER, false);
 				curl_setopt($curl, CURLOPT_RETURNTRANSFER, false);
 				curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-type: application/json"]);

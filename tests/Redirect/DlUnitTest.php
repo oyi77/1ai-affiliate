@@ -68,7 +68,7 @@ class DlUnitTest extends TestCase
      */
     public function testReplaceTrackerPlaceholders(): void
     {
-        $url = 'https://example.com/track?subid=[[subid]]&kw=[[t202kw]]&c1=[[c1]]';
+        $url = 'https://example.com/track?subid=[[subid]]&kw=[[t1aikw]]&c1=[[c1]]';
         $click_id = 12345;
         $mysql = [
             'keyword' => 'test keyword',
@@ -78,7 +78,7 @@ class DlUnitTest extends TestCase
         // Simulate token replacement
         $tokens = [
             'subid' => $click_id,
-            't202kw' => $mysql['keyword'] ?? '',
+            't1aikw' => $mysql['keyword'] ?? '',
             'c1' => $mysql['c1'] ?? ''
         ];
         

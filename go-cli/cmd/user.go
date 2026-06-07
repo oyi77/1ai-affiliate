@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"p202/internal/api"
-	configpkg "p202/internal/config"
-	"p202/internal/output"
+	"p1ai/internal/api"
+	configpkg "p1ai/internal/config"
+	"p1ai/internal/output"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
@@ -502,7 +502,7 @@ func init() {
 	userAPIKeyDeleteCmd.Flags().BoolP("force", "f", false, "Skip confirmation prompt")
 	userAPIKeyRotateCmd.Flags().Bool("keep-old", false, "Do not delete the old API key")
 	userAPIKeyRotateCmd.Flags().BoolP("force", "f", false, "Skip confirmation prompt when deleting old key")
-	userAPIKeyRotateCmd.Flags().Bool("update-config", false, "Update local ~/.p202/config.json with the new API key")
+	userAPIKeyRotateCmd.Flags().Bool("update-config", false, "Update local ~/.p1ai/config.json with the new API key")
 	userAPIKeyRotateCmd.Flags().Bool("force-config-update", false, "Update local config even if current key does not match old key")
 
 	// Preferences flags

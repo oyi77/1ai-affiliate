@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	configpkg "p202/internal/config"
-	syncdata "p202/internal/sync"
+	configpkg "p1ai/internal/config"
+	syncdata "p1ai/internal/sync"
 )
 
 type MappingEntry struct {

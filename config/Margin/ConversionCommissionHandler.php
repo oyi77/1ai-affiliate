@@ -9,7 +9,7 @@ use OneAIAffiliate\Database\Connection;
 
 /**
  * Hooks into the conversion postback pipeline to allocate affiliate earnings.
- * Called from static/pb.php after p202ApplyConversionUpdate.
+ * Called from static/pb.php after p1aiApplyConversionUpdate.
  */
 final class ConversionCommissionHandler
 {

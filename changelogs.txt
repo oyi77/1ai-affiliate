@@ -38,7 +38,7 @@ Version 1.9.25
 -- New: Allow users on servers with no partition support to still install 1ai-Affiliate Pro
 -- New: Ability to run reports on traffic that come from no ppc networks (For example organic traffic)
 -- New: Added info on how to use Dynamic Content Segments on landing pages
--- New: Ability to specify which url variable to use as the t202kw value
+-- New: Ability to specify which url variable to use as the t1aikw value
 -- New: Quickly type and filter any of the data in 1ai-Affiliate drop downs
 -- New: Optimize tables  with partitions for new installs of 1ai-Affiliate Pro
 -- New: Optimized code fo C1-C4 custom variables
@@ -52,7 +52,7 @@ Version 1.9.24
 -- New: Added filter options for sidebar lists (campaigns, networks, etc)
 -- New: Support For Dynamic Cost for Redirector
 -- New: Support For Dynamic Cost for Simple/Advanced Landing pages
--- New: Easy token entry for t202kw (dynamic keyword), t202ref (Dynamic referer) and t202b (Dynamic Cost)
+-- New: Easy token entry for t1aikw (dynamic keyword), t1airef (Dynamic referer) and t1aib (Dynamic Cost)
 -- Fixed: Filter by landing page on group overview
 -- Fixed: Charting Display Bug
 -- Fixed: Bot Detection bug
@@ -71,7 +71,7 @@ Version 1.9.23
 
 Version 1.9.22
 -- New: Separate tables on Account Overview for Campaigns and Landing pages
--- New: Support for dynamic bid amount via t202b= variable
+-- New: Support for dynamic bid amount via t1aib= variable
 -- New: Progress bar for DNI integrations so you see how much time is left for caching offers 
 -- Fixed: Filtering and results count on visitor tab works better
 -- Fixed: Users on strict mode for mysql had errors with setup and using the software
@@ -177,11 +177,11 @@ Version 1.9.10
 -- New: Improved DataEngine imports for upgrades
 -- New: Applebot detection
 -- New: VIP Perks survey shows only new questions
--- New: On new installs, 202_site_urls table is more efficient
+-- New: On new installs, 1ai_site_urls table is more efficient
 -- Fixed: Missing header added to auto upgrade file
 -- Fixed: Display long keywords better in visitor and spy view 
 -- Fixed: Mobile site shows correct data
--- Fixed: Simple landing pages pickup t202kw as the keyword
+-- Fixed: Simple landing pages pickup t1aikw as the keyword
 -- Fixed: Deleted clicks get deleted from DataEngine as well
 -- Fixed: Custom variables get picked up on the landing page
 -- Fixed: Custom variables get added when generating links for landing pages
@@ -222,7 +222,7 @@ Version 1.9.6
 -- Fixed: utm_source was being assigned to the keyword 
 
 Version 1.9.5
--- New: Full user role implementation. with restrictions on what can be done in your p202
+-- New: Full user role implementation. with restrictions on what can be done in your p1ai
 -- New: You can clone an existing landing page
 -- New: Ability to dynamically displays ISP, Device, Postal code on landing page
 -- New: Ability to to set cloaking option. You can either blank the referrer or show you 1ai-Affiliate Pro domain only
@@ -298,7 +298,7 @@ Version 1.9.0
 --New: Tokens for utm variables.
 --New: Support for google gclid and utm variables.
 --New: 1ai-Affiliate App Store.
---New: Ability to set your own referer via t202ref=.
+--New: Ability to set your own referer via t1airef=.
 --Improved: C1-4 variables can now store up to 350 characters.
 --Improved: Better more accurate firing of conversion pixels.
 --Improved: Ability to pass in subid for image and iframe pixels.

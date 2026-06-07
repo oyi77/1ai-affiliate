@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-$dbname = 'prospertest';
-$dbuser = 'affiliate';
-$dbpass = 'testpass';
+$dbname = 'prosper202_test';
+$dbuser = 'root';
+$dbpass = '';
 $dbhost = 'localhost';
 $dbhostro = 'localhost';
 $mchost = 'localhost';

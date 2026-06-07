@@ -13,7 +13,7 @@ template_top();  ?>
 			<?php if (isset($_SESSION['user_pref_ad_settings']) && $_SESSION['user_pref_ad_settings'] != 'hide_all') { ?>
 				<div class="col-xs-12">
 					<h6 class="h6-home">Special Offers <span class="glyphicon glyphicon-tags home-icons"></span></h6>
-					<iframe class="advertise" src="<?php echo TRACKING202_ADS_URL; ?>/oneai_affiliate-home/?t202aid=<?php echo $_SESSION['user_cirrus_link']; ?>" scrolling="no" frameborder="0"></iframe>
+					<iframe class="advertise" src="<?php echo TRACKING1ai_ADS_URL; ?>/oneai_affiliate-home/?t1aiaid=<?php echo $_SESSION['user_cirrus_link']; ?>" scrolling="no" frameborder="0"></iframe>
 
 				</div>
 			<?php } ?>
@@ -71,37 +71,37 @@ template_top();  ?>
 
 				<div class="row">
 					<div class="col-xs-2">
-						<a href="http://blog.tracking202.com/" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/news.svg" style="width: 48px;"></a>
+						<a href="http://blog.tracking1ai.com/" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/news.svg" style="width: 48px;"></a>
 					</div>
 					<div class="col-xs-10">
-						<a href="http://blog.tracking202.com/" target="_blank">Blog</a> - <a href="https://twitter.tracking202.com/" target="_blank">Twitter</a> - <a href="http://newsletter.tracking202.com" target="_blank">Newsletter</a><br /><span>Connect with us to get the latest updates.</span>
+						<a href="http://blog.tracking1ai.com/" target="_blank">Blog</a> - <a href="https://twitter.tracking1ai.com/" target="_blank">Twitter</a> - <a href="http://newsletter.tracking1ai.com" target="_blank">Newsletter</a><br /><span>Connect with us to get the latest updates.</span>
 					</div>
 				</div>
 
 				<div class="row app-row">
 					<div class="col-xs-2">
-						<a href="http://support.tracking202.com/" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/support.svg"></a>
+						<a href="http://support.tracking1ai.com/" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/support.svg"></a>
 					</div>
 					<div class="col-xs-10">
-						<a href="http://support.tracking202.com/" target="_blank">Community Support</a><br /><span>Talk with other users, and get help.</span>
+						<a href="http://support.tracking1ai.com/" target="_blank">Community Support</a><br /><span>Talk with other users, and get help.</span>
 					</div>
 				</div>
 
 				<div class="row app-row">
 					<div class="col-xs-2">
-						<a href="http://developers.tracking202.com" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/settings.svg"></a>
+						<a href="http://developers.tracking1ai.com" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/settings.svg"></a>
 					</div>
 					<div class="col-xs-10">
-						<a href="http://developers.tracking202.com" target="_blank">Developers</a><br /><span>Do cool things with the Tracking202 APIs.</span>
+						<a href="http://developers.tracking1ai.com" target="_blank">Developers</a><br /><span>Do cool things with the Tracking202 APIs.</span>
 					</div>
 				</div>
 
 				<div class="row app-row">
 					<div class="col-xs-2">
-						<a href="http://meetup.tracking202.com" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/shirt.svg"></a>
+						<a href="http://meetup.tracking1ai.com" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/shirt.svg"></a>
 					</div>
 					<div class="col-xs-10">
-						<a href="http://meetup.tracking202.com" target="_blank">Meetup202</a><br /><span>Marketing Meetup Groups around the World.</span>
+						<a href="http://meetup.tracking1ai.com" target="_blank">Meetup1ai</a><br /><span>Marketing Meetup Groups around the World.</span>
 					</div>
 				</div>
 
@@ -116,6 +116,6 @@ template_top();  ?>
 		</div>
 	</div>
 </div>
-<img src="https://my.tracking202.com/api/v2/dni/deeplink/cookie/set/<?php echo base64_encode($strProtocol . getTrackingDomain() . get_absolute_url()); ?>">
+<img src="https://my.tracking1ai.com/api/v2/dni/deeplink/cookie/set/<?php echo base64_encode($strProtocol . getTrackingDomain() . get_absolute_url()); ?>">
 
 <?php template_bottom(); ?>

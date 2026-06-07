@@ -119,13 +119,13 @@ class ConfigTest extends TestCase
     public function testConfigPathReturnsExpectedPath(): void
     {
         $config = new Config();
-        $expected = $this->tmpDir . '/.p202/config.json';
+        $expected = $this->tmpDir . '/.p1ai/config.json';
         $this->assertSame($expected, $config->configPath());
     }
 
     public function testLoadingNonexistentConfigFileDoesNotCrash(): void
     {
-        // HOME points to tmpDir which has no .p202 dir yet
+        // HOME points to tmpDir which has no .p1ai dir yet
         $config = new Config();
         $this->assertSame([], $config->all());
         // Should be fully functional despite no file on disk
@@ -139,8 +139,8 @@ class ConfigTest extends TestCase
         $config->set('url', 'https://tracker.example.com');
         $config->save();
 
-        $this->assertDirectoryExists($this->tmpDir . '/.p202');
-        $this->assertFileExists($this->tmpDir . '/.p202/config.json');
+        $this->assertDirectoryExists($this->tmpDir . '/.p1ai');
+        $this->assertFileExists($this->tmpDir . '/.p1ai/config.json');
     }
 
     public function testSavedConfigFileContainsValidJson(): void
@@ -150,7 +150,7 @@ class ConfigTest extends TestCase
         $config->set('api_key', 'key123');
         $config->save();
 
-        $contents = file_get_contents($this->tmpDir . '/.p202/config.json');
+        $contents = file_get_contents($this->tmpDir . '/.p1ai/config.json');
         $decoded = json_decode($contents, true);
         $this->assertIsArray($decoded);
         $this->assertSame('https://tracker.example.com', $decoded['url']);

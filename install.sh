@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# Prosper202 ClickServer - Zero-Friction Installation Script
+# Prosper1ai ClickServer - Zero-Friction Installation Script
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 # Usage: ./install.sh [options]
@@ -81,7 +81,7 @@ IN_DOCKER=false
 
 # Database configuration
 DB_HOST="localhost"
-DB_NAME="prosper202"
+DB_NAME="Prosper1ai"
 DB_USER="root"
 DB_PASS=""
 DB_HOST_RO=""
@@ -429,7 +429,7 @@ detect_mysql() {
 }
 
 check_directory_permissions() {
-    local dirs_to_check=("202-config" "tracking202" ".")
+    local dirs_to_check=("1ai-config" "tracking1ai" ".")
     local issues=()
 
     for dir in "${dirs_to_check[@]}"; do
@@ -774,12 +774,12 @@ try {
 }
 
 create_config_file() {
-    local config_file="$SCRIPT_DIR/202-config.php"
-    local sample_file="$SCRIPT_DIR/202-config-sample.php"
+    local config_file="$SCRIPT_DIR/1ai-config.php"
+    local sample_file="$SCRIPT_DIR/1ai-config-sample.php"
     local db_host_ro_value=""
 
     if [ ! -f "$sample_file" ]; then
-        print_error "Sample config file not found: 202-config-sample.php"
+        print_error "Sample config file not found: 1ai-config-sample.php"
         return 1
     fi
 
@@ -832,7 +832,7 @@ create_config_file() {
     sed_in_place "s|$dbhostro_pattern|$dbhostro_replacement|" "$config_file"
     sed_in_place "s|$mchost_pattern|$mchost_replacement|" "$config_file"
 
-    print_success "Config file created: 202-config.php"
+    print_success "Config file created: 1ai-config.php"
     return 0
 }
 
@@ -968,7 +968,7 @@ start_docker_containers() {
 
     # Set Docker-specific database config
     DB_HOST="db"
-    DB_NAME="prosper202"
+    DB_NAME="Prosper1ai"
     DB_USER="root"
     DB_PASS="root_password"
     DB_HOST_RO="db"
@@ -1021,7 +1021,7 @@ parse_arguments() {
 
 show_help() {
     echo ""
-    echo "Prosper202 ClickServer Installer"
+    echo "Prosper1ai ClickServer Installer"
     echo ""
     echo "Usage: ./install.sh [options]"
     echo ""
@@ -1147,11 +1147,11 @@ run_preflight_checks() {
 
     # Step 5: Directory Structure
     STEP_COUNT=5
-    if [ -f "$SCRIPT_DIR/202-config-sample.php" ] && [ -d "$SCRIPT_DIR/tracking202" ]; then
+    if [ -f "$SCRIPT_DIR/1ai-config-sample.php" ] && [ -d "$SCRIPT_DIR/tracking1ai" ]; then
         print_step "Directory Structure" "ok" "Valid"
     else
         print_step "Directory Structure" "fail" "Invalid"
-        print_error "Not a valid Prosper202 installation directory"
+        print_error "Not a valid Prosper1ai installation directory"
         return 1
     fi
 
@@ -1206,11 +1206,11 @@ show_summary() {
         lines+=("  2. Open the application in your browser")
         lines+=("     Complete the setup wizard to create your admin account")
         lines+=("")
-        if [ -f "$SCRIPT_DIR/202-config.php" ]; then
-            lines+=("  ${CHECK} Config file: 202-config.php")
+        if [ -f "$SCRIPT_DIR/1ai-config.php" ]; then
+            lines+=("  ${CHECK} Config file: 1ai-config.php")
         fi
         lines+=("")
-        lines+=("Documentation: ${CYAN}https://github.com/tracking202/prosper202/blob/master/documentation/README.md${RESET}")
+        lines+=("Documentation: ${CYAN}https://github.com/tracking1ai/Prosper1ai/blob/master/documentation/README.md${RESET}")
     fi
 
     # Show any warnings
@@ -1316,8 +1316,8 @@ main() {
         print_header "Configuration"
 
         # Check if config already exists
-        if [ -f "$SCRIPT_DIR/202-config.php" ]; then
-            print_info "Config file already exists: 202-config.php"
+        if [ -f "$SCRIPT_DIR/1ai-config.php" ]; then
+            print_info "Config file already exists: 1ai-config.php"
             if [ "$INTERACTIVE" = true ]; then
                 if confirm "Overwrite existing config?" "n"; then
                     configure_database_interactive
@@ -1349,7 +1349,7 @@ main() {
         fi
     else
         # CI mode - just create config with defaults
-        if [ ! -f "$SCRIPT_DIR/202-config.php" ]; then
+        if [ ! -f "$SCRIPT_DIR/1ai-config.php" ]; then
             create_config_file
         fi
     fi

@@ -30,11 +30,11 @@ if (array_key_exists('subid', $_GET) && is_numeric($_GET['subid'])) {
 } else { // no subid found get from cookie or fingerprint
        
     // see if it has the cookie in the campaign id, then the general match, then do whatever we can to grab SOMETHING to tie this lead to
-    if (isset($_COOKIE['tracking202subid_a_' . $mysql['cid']]) && is_numeric($_COOKIE['tracking202subid_a_' . $mysql['cid']]) && $mysql['cid'] != '0') {
-        $mysql['click_id'] = $db->real_escape_string((string) $_COOKIE['tracking202subid_a_' . $mysql['cid']]);
+    if (isset($_COOKIE['tracking1aisubid_a_' . $mysql['cid']]) && is_numeric($_COOKIE['tracking1aisubid_a_' . $mysql['cid']]) && $mysql['cid'] != '0') {
+        $mysql['click_id'] = $db->real_escape_string((string) $_COOKIE['tracking1aisubid_a_' . $mysql['cid']]);
     } else
-        if (isset($_COOKIE['tracking202subid']) && is_numeric($_COOKIE['tracking202subid'])) {
-            $mysql['click_id'] = $db->real_escape_string((string) $_COOKIE['tracking202subid']);
+        if (isset($_COOKIE['tracking1aisubid']) && is_numeric($_COOKIE['tracking1aisubid'])) {
+            $mysql['click_id'] = $db->real_escape_string((string) $_COOKIE['tracking1aisubid']);
         } else {
             // ok grab the last click from this ip_id
             $mysql['ip_address'] = $db->real_escape_string($_SERVER['REMOTE_ADDR']);
@@ -60,7 +60,7 @@ if (array_key_exists('subid', $_GET) && is_numeric($_GET['subid'])) {
 }
 
 if(!$mysql['click_id']){
-    p202RespondJsonError(404, 'SubID not found');
+    p1aiRespondJsonError(404, 'SubID not found');
 }
 
 // integer click_id for safe SQL interpolation
@@ -114,9 +114,9 @@ LIMIT 1";
 $cvar_sql_result = $db->query($cvar_sql);
 $cvar_sql_row = $cvar_sql_result ? $cvar_sql_result->fetch_assoc() : null;
 if (!$cvar_sql_row) {
-    p202RespondJsonError(404, 'Click data not found');
+    p1aiRespondJsonError(404, 'Click data not found');
 }
-$mysql['t202kw'] = $db->real_escape_string((string) ($cvar_sql_row['keyword'] ?? ''));
+$mysql['t1aikw'] = $db->real_escape_string((string) ($cvar_sql_row['keyword'] ?? ''));
 $mysql['c1'] = $db->real_escape_string((string) ($cvar_sql_row['c1'] ?? ''));
 $mysql['c2'] = $db->real_escape_string((string) ($cvar_sql_row['c2'] ?? ''));
 $mysql['c3'] = $db->real_escape_string((string) ($cvar_sql_row['c3'] ?? ''));
@@ -129,7 +129,7 @@ $mysql['utm_term'] = $db->real_escape_string((string) ($cvar_sql_row['utm_term']
 $mysql['utm_content'] = $db->real_escape_string((string) ($cvar_sql_row['utm_content'] ?? ''));
 $mysql['click_user_id'] = $db->real_escape_string((string) ($cvar_sql_row['user_id'] ?? ''));
 $mysql['campaign_id'] = $db->real_escape_string((string) ($cvar_sql_row['aff_campaign_id'] ?? ''));
-$advertiserId = p202ResolveAdvertiserId($db, (int) $mysql['campaign_id']);
+$advertiserId = p1aiResolveAdvertiserId($db, (int) $mysql['campaign_id']);
 $mysql['payout'] = $db->real_escape_string((string) ($cvar_sql_row['click_payout'] ?? '0'));
 $mysql['cpc'] = $db->real_escape_string((string) ($cvar_sql_row['click_cpc'] ?? '0'));
 $mysql['click_cpa'] = $db->real_escape_string((string) ($cvar_sql_row['click_cpa'] ?? ''));
@@ -145,7 +145,7 @@ if (array_key_exists('amount', $_GET) && is_numeric($_GET['amount'])) {
 
 $tokens = [
     "subid" => $mysql['click_id'],
-    "t202kw" => $mysql['t202kw'],
+    "t1aikw" => $mysql['t1aikw'],
 	"c1" => $mysql['c1'],
 	"c2" => $mysql['c2'],
 	"c3" => $mysql['c3'],
@@ -252,7 +252,7 @@ if (is_numeric($mysql['click_id'])) {
 			$mysql['use_pixel_payout'] = 1;
 			$mysql['click_payout'] = $db->real_escape_string((string)$_GET['amount']);
 		}
-		p202ApplyConversionUpdate(
+		p1aiApplyConversionUpdate(
 			$db,
 			(string) $mysql['click_id'],
 			(string) $mysql['click_cpa'],

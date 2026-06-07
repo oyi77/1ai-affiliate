@@ -79,7 +79,7 @@ $survey_data = getSurveyData($user_data['install_hash']);
     		<div class="col-xs-12" style="margin-top:15px;">
                 <div class="row">
                     <img class="loading" style="left: -25px; top: 12px; display:none" id="perks-loading" src="<?php echo get_absolute_url();?>img/loader-small.gif">
-        			<button class="btn btn-md btn-p202 btn-block" id="survey-form-submit">Submit answers</button>
+        			<button class="btn btn-md btn-p1ai btn-block" id="survey-form-submit">Submit answers</button>
                 </div>					
     		</div>
         </form>

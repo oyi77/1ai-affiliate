@@ -429,14 +429,14 @@ template_top('Text Ads Setup');  ?>
 				    <?php if ($editing == true) { ?>
 					    <div class="row">
 					    	<div class="col-xs-6">
-					    		<button class="btn btn-sm btn-p202 btn-block" type="submit">Edit</button>					
+					    		<button class="btn btn-sm btn-p1ai btn-block" type="submit">Edit</button>					
 					    	</div>
 					    	<div class="col-xs-6">
 								<input type="hidden" name="pixel_id" value="<?php echo $selected['pixel_id'] ?? '';?>">
 								<button type="submit" class="btn btn-sm btn-danger btn-block" onclick="window.location='<?php echo get_absolute_url();?>tracking_support/setup/text_ads.php'; return false;">Cancel</button>					    		</div>
 					    	</div>
 				    <?php } else { ?>
-				    		<button class="btn btn-sm btn-p202 btn-block" type="submit" id="addedTextAd">Add</button>					
+				    		<button class="btn btn-sm btn-p1ai btn-block" type="submit" id="addedTextAd">Add</button>					
 					<?php } ?>
 				</div>
 			</div>
@@ -760,19 +760,19 @@ $(document).ready(function() {
     font-size: 13px;
 }
 
-.btn-p202 {
+.btn-p1ai {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: #fff;
     border: 1px solid transparent;
 }
 
-.btn-p202:hover {
+.btn-p1ai:hover {
     background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
     color: #fff;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-.btn-p202:disabled {
+.btn-p1ai:disabled {
     background: #cbd5e1;
     color: #64748b;
     cursor: not-allowed;

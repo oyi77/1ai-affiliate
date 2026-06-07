@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"p202/internal/api"
-	"p202/internal/metrics"
-	syncdata "p202/internal/sync"
-	"p202/internal/syncstate"
+	"p1ai/internal/api"
+	"p1ai/internal/metrics"
+	syncdata "p1ai/internal/sync"
+	"p1ai/internal/syncstate"
 
 	"github.com/spf13/cobra"
 )

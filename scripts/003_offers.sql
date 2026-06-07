@@ -30,12 +30,12 @@ COMMENT='Upstream offers from CPA networks';
 CREATE TABLE IF NOT EXISTS `offer_campaigns` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `offer_id` INT UNSIGNED NOT NULL,
-    `campaign_id` INT UNSIGNED NOT NULL COMMENT '202_aff_campaigns.aff_campaign_id',
+    `campaign_id` INT UNSIGNED NOT NULL COMMENT '1ai_aff_campaigns.aff_campaign_id',
     `created_at` INT UNSIGNED NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_offer_campaign` (`offer_id`, `campaign_id`),
     CONSTRAINT `fk_oc_offer` FOREIGN KEY (`offer_id`) REFERENCES `offers`(`id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_oc_campaign` FOREIGN KEY (`campaign_id`) REFERENCES `202_aff_campaigns`(`aff_campaign_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_oc_campaign` FOREIGN KEY (`campaign_id`) REFERENCES `1ai_aff_campaigns`(`aff_campaign_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Links offers to tracking campaigns';
 

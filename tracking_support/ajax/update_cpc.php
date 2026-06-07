@@ -205,7 +205,7 @@ if (!empty($error)) {
 <div class="error text-center"><span class="fui-alert"></span>BE VERY SURE YOU WANT TO DO THIS!</div>
 
 <div class="col-xs-12 text-center" style="margin-top: 10px;">
-	<input onclick="update_cpc2();" type="button" id="update-cpc-confirm" class="btn btn-sm btn-p202 btn-block" value="Update My CPC">
+	<input onclick="update_cpc2();" type="button" id="update-cpc-confirm" class="btn btn-sm btn-p1ai btn-block" value="Update My CPC">
 </div>
 
 <div id="update_cpc2" class="col-xs-12 text-center" style="margin-top: 25px; display:none;">

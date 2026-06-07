@@ -191,7 +191,7 @@ $html = [];
 	}
 
 	//setup array of all internally recognized url variables
-	$t202variables = [
+	$t1aivariables = [
 	    "c1",
 	    "c2",
 	    "c3",
@@ -201,9 +201,9 @@ $html = [];
 	    "utm_campaign",
 	    "utm_term",
 	    "utm_content",
-	    "t202ref",
-	    "t202b",
-	    "t202kw"
+	    "t1airef",
+	    "t1aib",
+	    "t1aikw"
 	];
 	
 	$tracking_variable_string = '&';
@@ -218,13 +218,13 @@ $html = [];
 	if ($get_variables_result->num_rows > 0) {
 	    while ($get_variables_row = $get_variables_result->fetch_assoc()) {
 
-	        $key=array_search($get_variables_row['parameter'], $t202variables); // look for the current paramaeter in the list of internal url variables
+	        $key=array_search($get_variables_row['parameter'], $t1aivariables); // look for the current paramaeter in the list of internal url variables
 
 	        if($key===FALSE){ //if not found the output 
 	             $tracking_variable_string .= $get_variables_row['parameter'].'=' . $get_variables_row['placeholder'] . '&';
 	        }
 	        else{ //if found save into our html array for later
-	            $html[$t202variables[$key]]=$get_variables_row['placeholder'];
+	            $html[$t1aivariables[$key]]=$get_variables_row['placeholder'];
 	        }
 	       unset($key); //unset just in case old values get stuck
 	        
@@ -232,13 +232,13 @@ $html = [];
 	}
 
 	//loop over all our internal variables again
-    foreach ($t202variables as $key) {
+    foreach ($t1aivariables as $key) {
 
         if (isset($_POST[$key]) && trim((string) $_POST[$key]) != '') { //if there is a non empty value posted, then overwrite current value in html array with it 
             $html[$key] = $db->real_escape_string(trim((string) $_POST[$key]));
         }
-        if (isset($html[$key]) || $key=='t202kw')
-            $tracking_variable_string .= $key . '=' . ($html[$key] ?? '') . '&'; //now write out the values/ but only if they are not empty with the exception of t202kw with we will write out no matter what
+        if (isset($html[$key]) || $key=='t1aikw')
+            $tracking_variable_string .= $key . '=' . ($html[$key] ?? '') . '&'; //now write out the values/ but only if they are not empty with the exception of t1aikw with we will write out no matter what
     }
     
     //remove & from end of the variable
@@ -407,7 +407,7 @@ $html = [];
 	
 	if (($_POST['method_of_promotion'] ?? '') == 'directlink') {
 
-		$destination_url = 'http://' . getTrackingDomain() . get_absolute_url().'tracking_support/redirect/dl.php?t202id=' . $tracker_id_public . $tracking_variable_string;
+		$destination_url = 'http://' . getTrackingDomain() . get_absolute_url().'tracking_support/redirect/dl.php?t1aiid=' . $tracker_id_public . $tracking_variable_string;
 		$html['destination_url'] = htmlentities($destination_url, ENT_QUOTES, 'UTF-8');
 		printf('<br></br><small><strong>Destination URL:</strong></small><br/>
             <span class="infotext">This is the destination URL you should use in your PPC campaigns. 
@@ -415,17 +415,17 @@ $html = [];
             so when someone goes through this destination URL we know the CPC, the PPC account, 
 			the Ad Copy and everything else you have set above to this unique tracking destination URL.<br/>
 			If you modify your PPC campaign from the above settings, 
-			always make sure to update it with a new tracking202 destination.
-            You should have a unique tracking202 destination URL for each different above configuration you use.<br/>
-            In order to track keywords, make sure immediately following &t202kw= you insert your dynamic keyword.
-            For example: &t202kw={keyword}</span><br></br>
+			always make sure to update it with a new tracking1ai destination.
+            You should have a unique tracking1ai destination URL for each different above configuration you use.<br/>
+            In order to track keywords, make sure immediately following &t1aikw= you insert your dynamic keyword.
+            For example: &t1aikw={keyword}</span><br></br>
             <textarea class="form-control" rows="2" style="background-color: #f5f5f5; font-size: 12px;">%s</textarea>',$html['destination_url']); 
 
 	} 
 
 	if (($_POST['tracker_type'] ?? '') == 2) {
 
-		$destination_url = 'http://' . getTrackingDomain() . get_absolute_url().'tracking_support/redirect/rtr.php?t202id=' . $tracker_id_public . $tracking_variable_string;
+		$destination_url = 'http://' . getTrackingDomain() . get_absolute_url().'tracking_support/redirect/rtr.php?t1aiid=' . $tracker_id_public . $tracking_variable_string;
 		$html['destination_url'] = htmlentities($destination_url, ENT_QUOTES, 'UTF-8');
 		printf('<br></br><small><strong>Destination URL:</strong></small><br/>
             <span class="infotext">This is the destination URL you should use in your PPC campaigns. 
@@ -433,10 +433,10 @@ $html = [];
             so when someone goes through this destination URL we know the CPC, the PPC account, 
 			the Ad Copy and everything else you have set above to this unique tracking destination URL.<br/>
 			If you modify your PPC campaign from the above settings, 
-			always make sure to update it with a new tracking202 destination.
-            You should have a unique tracking202 destination URL for each different above configuration you use.<br/>
-            In order to track keywords, make sure immediately following &t202kw= you insert your dynamic keyword.
-            For example: &t202kw={keyword}</span><br></br>
+			always make sure to update it with a new tracking1ai destination.
+            You should have a unique tracking1ai destination URL for each different above configuration you use.<br/>
+            In order to track keywords, make sure immediately following &t1aikw= you insert your dynamic keyword.
+            For example: &t1aikw={keyword}</span><br></br>
             <textarea class="form-control" rows="2" style="background-color: #f5f5f5; font-size: 12px;">%s</textarea>',$html['destination_url']); 
 
 	} 
@@ -449,7 +449,7 @@ $html = [];
 		if (!empty($parsed_url['query'])) {
 			$destination_url .= $parsed_url['query'] . '&';  ;
 		}
-		$destination_url .= 't202id=' . $tracker_id_public;
+		$destination_url .= 't1aiid=' . $tracker_id_public;
 		if (!empty($parsed_url['fragment'])) {
 			$destination_url .= '#' . $parsed_url['fragment'];
 		}
@@ -463,16 +463,16 @@ $html = [];
 	            so when someone goes through this destination URL we know the CPC, the PPC account, 
 	            the Ad Copy and everything else you have set above to this unique tracking destination URL.<br/>
 				If you modify your PPC campaign from the above settings, 
-				always make sure to update it with a new tracking202 destination.
-				You should have a unique tracking202 destination URL for each different above configuration you use.<br/>
-				In order to track keywords, make sure immediately following &t202kw= you insert your dynamic keyword.
-	            For example: &t202kw={keyword}</span><br></br>
+				always make sure to update it with a new tracking1ai destination.
+				You should have a unique tracking1ai destination URL for each different above configuration you use.<br/>
+				In order to track keywords, make sure immediately following &t1aikw= you insert your dynamic keyword.
+	            For example: &t1aikw={keyword}</span><br></br>
 	            <textarea class="form-control" rows="2" style="background-color: #f5f5f5; font-size: 12px;">%s</textarea>', $html['destination_url']);
 	}   
 
 	/*
 	if ($_POST['tracker_type'] != 2) {
-		$destination_url = 'http://' . getTrackingDomain() . get_absolute_url().'tracking_support/static/ipx.php?t202id=' . $tracker_id_public;
+		$destination_url = 'http://' . getTrackingDomain() . get_absolute_url().'tracking_support/static/ipx.php?t1aiid=' . $tracker_id_public;
 		$html['destination_url'] = htmlentities($destination_url, ENT_QUOTES, 'UTF-8');
 		printf('<br/><small><strong>Impression URL:</strong></small><br></br>
 	            <textarea class="form-control" rows="2" style="background-color: #f5f5f5; font-size: 12px;">%s</textarea>', $html['destination_url']);
@@ -492,14 +492,14 @@ $html = [];
 <span class="infotext">If you are confused about how to dynamically
 	insert keywords into your url, here are some examples below:<br /> <br />
 <ul>
-		<li><strong>Bing Ads Example:</strong> &t202kw={QueryString}</li>
-		<li><strong>Google Adwords Example:</strong> &t202kw={keyword} - <a
+		<li><strong>Bing Ads Example:</strong> &t1aikw={QueryString}</li>
+		<li><strong>Google Adwords Example:</strong> &t1aikw={keyword} - <a
 			href="https://adwords.google.com/support/bin/answer.py?answer=74996&hl=en_US"
 			target="_new">More Info</a></li>
 	</ul> It is extremely important whenever you modify your PPC campaign,
 	if you are to change your CPC on your bids for instance, you must
-	update it with a new unique tracking202 destination URL. If you change
-	your CPC and use a old destination URL, tracking202 will think the CPC
+	update it with a new unique tracking1ai destination URL. If you change
+	your CPC and use a old destination URL, tracking1ai will think the CPC
 	is set to whatever, your last unique destination URL had its CPC set
 	to. In most cases, for every text ad you use, you should have a unique
 	tracking destination for that specific text ad.

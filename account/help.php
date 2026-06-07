@@ -16,13 +16,13 @@ template_top('Help Resources');  ?>
 
 				<p><small>Here are some places you can find help regarding Tracking202 & 1ai-Affiliate</small></p>
 				
-				<p><small><em>Tracking202 Tutorials:</em> <a href="http://support.tracking202.com/" target="_blank">http://support.tracking202.com/</a></small></p>
+				<p><small><em>Tracking202 Tutorials:</em> <a href="http://support.tracking1ai.com/" target="_blank">http://support.tracking1ai.com/</a></small></p>
 				
-				<p><small><em>202 Youtube</em> <a href="https://youtube.com/t202nana" target="_blank">https://youtube.com/t202nana</a></small></p>
+				<p><small><em>202 Youtube</em> <a href="https://youtube.com/t1ainana" target="_blank">https://youtube.com/t1ainana</a></small></p>
 				
-				<p><small><em>Tracking202 Videos:</em> <a href="http://tracking202.com/videos/" target="_blank">http://tracking202.com/videos/</a></small></p>
+				<p><small><em>Tracking202 Videos:</em> <a href="http://tracking1ai.com/videos/" target="_blank">http://tracking1ai.com/videos/</a></small></p>
 
-				<p><small><em>1ai-Affiliate Blog:</em> <a href="http://prosper.tracking202.com/blog/" target="_blank">http://prosper.tracking202.com/blog/</a></small></p>
+				<p><small><em>1ai-Affiliate Blog:</em> <a href="http://prosper.tracking1ai.com/blog/" target="_blank">http://prosper.tracking1ai.com/blog/</a></small></p>
 
 				<h6 class="mt-30">Advanced Attribution</h6>
 				<p><small><em>Setup Guide:</em> <a href="docs.php?doc=attribution-engine" target="_blank">Advanced Attribution Engine</a></small></p>

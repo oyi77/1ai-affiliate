@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Dashboard API Client
- * Handles communication with my.tracking202.com API endpoints
+ * Handles communication with my.tracking1ai.com API endpoints
  */
 class DashboardAPI
 {

@@ -167,7 +167,7 @@ template_top('Smart Redirector'); ?>
 				<label class="sr-only" for="rotator_name">Smart Redirector</label>
 				<input type="text" class="form-control input-sm" id="rotator_name" name="rotator_name" placeholder="Redirector name">
 			</div>
-			<button type="submit" class="btn btn-xs btn-p202" id="addRotator">Add</button>
+			<button type="submit" class="btn btn-xs btn-p1ai" id="addRotator">Add</button>
 		</form>
 	</div>
 
@@ -393,7 +393,7 @@ template_top('Smart Redirector'); ?>
 		<div class="col-xs-5 text-right" style="margin-top:15px;">
 			<img id="addmore_loading" class="loading" src="<?php echo get_absolute_url(); ?>img/loader-small.gif" style="display: none; position: static;">
 			<button id="add_more_rules" class="btn btn-xs btn-default" disabled><span class="fui-plus"></span> Add more rules</button>
-			<button class="btn btn-xs btn-p202" id="post_rules" disabled>Save rules</button>
+			<button class="btn btn-xs btn-p1ai" id="post_rules" disabled>Save rules</button>
 		</div>
 	</div>
 </form>
@@ -540,13 +540,13 @@ template_top('Smart Redirector'); ?>
     font-size: 14px;
 }
 
-.btn-p202 {
+.btn-p1ai {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: #fff;
     box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
-.btn-p202:hover {
+.btn-p1ai:hover {
     background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
     color: #fff;

@@ -1,4 +1,4 @@
-BINARY := p202
+BINARY := p1ai
 VERSION := 2.0.0
 BUILD_DIR := dist
 

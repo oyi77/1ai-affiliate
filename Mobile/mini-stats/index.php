@@ -3,7 +3,7 @@ declare(strict_types=1);
 include_once(substr(__DIR__, 0,-22) . '/config/connect.php');
 AUTH::require_user('toolbar');
 AUTH::set_timezone($_SESSION['user_timezone']);
-include_once(__DIR__ . '/202-ministats.php');
+include_once(__DIR__ . '/1ai-ministats.php');
 ?>
 
 

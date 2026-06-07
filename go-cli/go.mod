@@ -1,4 +1,4 @@
-module p202
+module p1ai
 
 go 1.22
 

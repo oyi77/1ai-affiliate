@@ -3,7 +3,7 @@ declare(strict_types=1);
 use UAParser\Parser;
 
 #only allow numeric id, reject 0 as invalid
-$tracker_id = $_GET['t202id'] ?? '';
+$tracker_id = $_GET['t1aiid'] ?? '';
 if (!is_numeric($tracker_id) || (int)$tracker_id <= 0) die();
 
 # check to see if mysql connection works, if not fail over to cached stored redirect urls
@@ -117,10 +117,10 @@ if( !$detect->isMobile() && !$detect->isTablet() ){
 }
 
 // set cpc use dynamic variable if set or the default if not
-if (isset ( $_GET ['t202b'] ) && $rotator_row['user_pref_dynamic_bid'] == '1') {
-    $_GET ['t202b']=ltrim((string) $_GET ['t202b'],'$');
-    if(is_numeric ( $_GET ['t202b'] )){
-        $bid = number_format ( $_GET ['t202b'], 5, '.', '' );
+if (isset ( $_GET ['t1aib'] ) && $rotator_row['user_pref_dynamic_bid'] == '1') {
+    $_GET ['t1aib']=ltrim((string) $_GET ['t1aib'],'$');
+    if(is_numeric ( $_GET ['t1aib'] )){
+        $bid = number_format ( $_GET ['t1aib'], 5, '.', '' );
         $rotator_row ['click_cpc'] = $db->real_escape_string ( $bid );
     }
 } 
@@ -407,7 +407,7 @@ if ($referer_url_query !== '') {
     @parse_str($referer_url_query, $referer_query);
 }
 
-$keyword = $db->real_escape_string((string)($_GET['t202kw'] ?? ''));
+$keyword = $db->real_escape_string((string)($_GET['t1aikw'] ?? ''));
 
 switch ($keyword_type) {
 
@@ -415,8 +415,8 @@ switch ($keyword_type) {
 	      #try to get the bidded keyword first
 		if (isset($_GET['OVKEY']) && $_GET['OVKEY'] != '') { //if this is a Y! keyword
 			$keyword = $db->real_escape_string((string)$_GET['OVKEY']);   
-		}  elseif (isset($_GET['t202kw']) && $_GET['t202kw'] != '') { 
-			$keyword = $db->real_escape_string((string)$_GET['t202kw']);  
+		}  elseif (isset($_GET['t1aikw']) && $_GET['t1aikw'] != '') { 
+			$keyword = $db->real_escape_string((string)$_GET['t1aikw']);  
 		} elseif (isset($_GET['target_passthrough']) && $_GET['target_passthrough'] != '') { //if this is a mediatraffic! keyword
 			$keyword = $db->real_escape_string((string)$_GET['target_passthrough']);   
 		} else { //if this is a zango, or more keyword
@@ -458,16 +458,16 @@ switch ($keyword_type) {
 		} elseif (isset($_GET['words']) && $_GET['words'] != '') { //if this is a Rambler, or more keyword
 			$keyword = $db->real_escape_string((string)$_GET['words']);   
 		} else { 
-			$keyword = $db->real_escape_string((string)($_GET['t202kw'] ?? ''));
+			$keyword = $db->real_escape_string((string)($_GET['t1aikw'] ?? ''));
 		}
 		break;
 }
 
-if (str_starts_with((string) $keyword, 't202var_')) {
-	$t202var = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
+if (str_starts_with((string) $keyword, 't1aivar_')) {
+	$t1aivar = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
 
-	if (isset($_GET[$t202var])) {
-		$keyword = $_GET[$t202var];
+	if (isset($_GET[$t1aivar])) {
+		$keyword = $_GET[$t1aivar];
 	}
 }
 

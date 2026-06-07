@@ -93,13 +93,13 @@ $error = [];
   //
   // -------------------------------------------------------------------
 	
-  if (isset($_COOKIE[\'tracking202outbound\'])) {
-	$tracking202outbound = $_COOKIE[\'tracking202outbound\'];
+  if (isset($_COOKIE[\'tracking1aioutbound\'])) {
+	$tracking1aioutbound = $_COOKIE[\'tracking1aioutbound\'];
   } else {
-	$tracking202outbound = \''.$html['affiliate_link'].'&pci=\'.$_COOKIE[\'tracking202pci\'];
+	$tracking1aioutbound = \''.$html['affiliate_link'].'&pci=\'.$_COOKIE[\'tracking1aipci\'];
   }
 	
-  header(\'location: \'.$tracking202outbound);
+  header(\'location: \'.$tracking1aioutbound);
 	
 ?>';
 	$html['outbound_php'] = htmlentities($outbound_php);
@@ -128,8 +128,8 @@ $error = [];
 	
 <!-- NOW THE TRACKING202 REDIRECTS OUT -->
 <script type="text/javascript">
-if (readCookie(\'tracking202outbound\') != \'\') {
-	window.location=readCookie(\'tracking202outbound\');
+if (readCookie(\'tracking1aioutbound\') != \'\') {
+	window.location=readCookie(\'tracking1aioutbound\');
 } else {
 	window.location=\'//'. getTrackingDomain() . get_absolute_url().'tracking_support/redirect/lp.php?lpip=' . $landing_page_row['landing_page_id_public'] .'\';
 }

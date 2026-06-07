@@ -4,13 +4,13 @@ This note summarises infrastructure and operational guidance for high-volume 1ai
 
 ## Database Tuning
 - **Indexes:**
-  - `202_attribution_snapshots` – ensure composite index on (`model_id`, `date_hour`, `scope_type`, `scope_id`) is present (installed by default). Add `created_at` index if snapshot purges lag.
-  - `202_attribution_touchpoints` – verify indexes on `snapshot_id` and `click_id` to speed lookup/deletion.
+  - `1ai_attribution_snapshots` – ensure composite index on (`model_id`, `date_hour`, `scope_type`, `scope_id`) is present (installed by default). Add `created_at` index if snapshot purges lag.
+  - `1ai_attribution_touchpoints` – verify indexes on `snapshot_id` and `click_id` to speed lookup/deletion.
 - **Buffer pool:** Size InnoDB buffer pool to fully cache snapshot/touchpoint working sets during cron runs.
-- **Partitioning:** For very high volumes, consider partitioning `202_attribution_snapshots` and `202_attribution_touchpoints` by `date_hour` or `model_id`.
+- **Partitioning:** For very high volumes, consider partitioning `1ai_attribution_snapshots` and `1ai_attribution_touchpoints` by `date_hour` or `model_id`.
 
 ## Cron Scheduling
-- Run `202-cronjobs/attribution-rebuild.php` hourly. Stagger across environments to avoid overlapping with DataEngine heavy jobs.
+- Run `1ai-cronjobs/attribution-rebuild.php` hourly. Stagger across environments to avoid overlapping with DataEngine heavy jobs.
 - For multi-day backfills, run multiple invocations with explicit `--start/--end` windows (≤ 24h each) to keep runtime manageable.
 
 ## Batching & Memory
@@ -22,7 +22,7 @@ This note summarises infrastructure and operational guidance for high-volume 1ai
 
 ## Monitoring & Logs
 - Each rebuild logs a `prosper_log('attribution_job', ...)` entry containing conversions processed, revenue, cost, and window.
-- Audit entries in `202_attribution_audit` provide a durable history of rebuilds and model changes for compliance.
+- Audit entries in `1ai_attribution_audit` provide a durable history of rebuilds and model changes for compliance.
 - Add MySQL slow query logging around cron windows to catch regressions.
 
 ## Resource Sizing
@@ -30,7 +30,7 @@ This note summarises infrastructure and operational guidance for high-volume 1ai
 - **Database:** anticipate additional write load—snapshots and touchpoints roughly mirror conversion volume. Ensure enough IOPS if using cloud databases.
 
 ## High-Availability Considerations
-- Take regular backups of all `202_attribution_*` tables.
+- Take regular backups of all `1ai_attribution_*` tables.
 - If running multi-node web tier, ensure cron executes on a single leader node to avoid overlap.
 
 Refer back to the [Advanced Attribution Engine Setup](./14-advanced-attribution-engine.md) for installation steps and the troubleshooting guide for operational support.

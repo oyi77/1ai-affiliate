@@ -19,9 +19,9 @@ include_once(__DIR__ . '/functions-upgrade.php');
 // Autoload the new Database classes
 // Note: These are also available via Composer autoload if vendor/autoload.php is loaded
 spl_autoload_register(function (string $class): void {
-    // Handle 1ai-Affiliate\Database namespace
-    if (str_starts_with($class, '1ai-Affiliate\\Database\\')) {
-        $relativePath = str_replace('1ai-Affiliate\\Database\\', '', $class);
+    // Handle OneAIAffiliate\Database namespace
+    if (str_starts_with($class, 'OneAIAffiliate\\Database\\')) {
+        $relativePath = str_replace('OneAIAffiliate\\Database\\', '', $class);
         $relativePath = str_replace('\\', DIRECTORY_SEPARATOR, $relativePath);
         $filePath = __DIR__ . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . $relativePath . '.php';
 
@@ -62,8 +62,8 @@ class INSTALL
             throw new RuntimeException('Database connection failed');
         }
 
-         // Get PHP version for version table
-         $php_version = OneAIAffiliate::php_version_static();
+        // Get PHP version for version table
+        $php_version = OneAIAffiliate::php_version_static();
 
         // Install all schema tables using the new modular installer
         $installer = new SchemaInstaller($db);
@@ -107,3 +107,4 @@ class INSTALL
         $partitioner->install();
     }
 }
+

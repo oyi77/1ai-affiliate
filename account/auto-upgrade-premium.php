@@ -20,7 +20,7 @@ if (!empty($user_row['pcustomer_api_key'])) {
 	$missing_api_key = true;
 }
 
-$json = @getData('https://my.tracking202.com/api/v2/premium-p202/version');
+$json = @getData('https://my.tracking1ai.com/api/v2/premium-p1ai/version');
 $array = json_decode((string) $json, true);
 $latest_version = $array['version'];
 if (version_compare($version, $latest_version) == '-1') {
@@ -31,7 +31,7 @@ if (version_compare($version, $latest_version) == '-1') {
 
 if (($_POST['start_upgrade'] ?? '') === '1') {
 
-	$GetUpdate = @getData('https://my.tracking202.com/api/v2/premium-p202/download/' . $user_row['install_hash'] . '/' . $user_row['pcustomer_api_key']);
+	$GetUpdate = @getData('https://my.tracking1ai.com/api/v2/premium-p1ai/download/' . $user_row['install_hash'] . '/' . $user_row['pcustomer_api_key']);
 	$installlog = "Downloading new update...\n";
 	$checkError = json_decode((string) $GetUpdate, true);
 	if (json_last_error() == JSON_ERROR_NONE) {
@@ -167,7 +167,7 @@ if ($missing_api_key == true) {
 		<small>
 			<p>Save P202 Customer API key at Personal Settings!</p>
 		</small>
-		<a style="margin-right:5px;" href="<?php echo $_SESSION['premium_pdetails']['register-link']; ?>" target="_blank" class="btn btn-sm btn-p202"><?php echo $_SESSION['premium_pdetails']['register-button-text']; ?></a>
+		<a style="margin-right:5px;" href="<?php echo $_SESSION['premium_pdetails']['register-link']; ?>" target="_blank" class="btn btn-sm btn-p1ai"><?php echo $_SESSION['premium_pdetails']['register-button-text']; ?></a>
 		<br><br />
 		<div class="row" style="margin-bottom: 10px;">
 			<div class="col-xs-3"><span class="label label-default">Current version:</span></div>
@@ -275,7 +275,7 @@ if ($missing_api_key == true) {
 			<br>
 			<form method="post" action="" class="form-inline">
 				<input type="hidden" name="start_upgrade" value="1" />
-				<button class="btn btn-lg btn-p202 btn-block" type="submit"><?php echo $_SESSION['premium_pdetails']['order-button-text']; ?></span></button>
+				<button class="btn btn-lg btn-p1ai btn-block" type="submit"><?php echo $_SESSION['premium_pdetails']['order-button-text']; ?></span></button>
 			</form>
 			<br>
 			<span class="infotext"><i>We highly recommended you make a backup of your database, before upgrading.<br>
@@ -289,7 +289,7 @@ if ($FilesUpdated == true) {
 		} else {
 		?>
 			<h6>Upgrade Failed!</h6>
-			<small>1ai-Affiliate was unable to upgrade. Please make sure PHP hase the correct permissions to modifiy files. For help <a href="http://support.tracking202.com">check our support site</a>. You can continue using <a href="<?php echo get_absolute_url(); ?>account/signout.php">your old version</a>.</small>
+			<small>1ai-Affiliate was unable to upgrade. Please make sure PHP hase the correct permissions to modifiy files. For help <a href="http://support.tracking1ai.com">check our support site</a>. You can continue using <a href="<?php echo get_absolute_url(); ?>account/signout.php">your old version</a>.</small>
 		<?php
 
 		}

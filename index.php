@@ -5,9 +5,9 @@ if ( !file_exists( __DIR__ . '/config.php') ) {
 	
 	require_once(__DIR__ . '/config/functions.php');
         //check to make sure this user has the required PHP version
-         if (!php_version_supported()) {
-                 _die("<center><small>1ai-Affiliate requires PHP " . ONEAI_AFFILIATE_MIN_PHP_VERSION . " or greater to run. Your server does not meet the <a href='http://prosper.tracking202.com/apps/about/requirements/'>minimum requirements to run 1ai-Affiliate</a>. Please upgrade PHP or sign up with one of our <a href='http://prosper.tracking202.com/apps/hosting/'>recommended hosting providers</a>.</small></center>");
-         }
+        if (!php_version_supported()) {
+                _die("<center><small>1ai-Affiliate requires PHP " . ONEAI_AFFILIATE_MIN_PHP_VERSION . " or greater to run. Your server does not meet the <a href='http://prosper.tracking1ai.com/apps/about/requirements/'>minimum requirements to run 1ai-Affiliate</a>. Please upgrade PHP or sign up with one of our <a href='http://prosper.tracking1ai.com/apps/hosting/'>recommended hosting providers</a>.</small></center>");
+        }
 	
 	//require the config.php file
 	_die("<center><small>There doesn't seem to be a <code>config.php</code> file. I need this before we can get started. <br/>Need more help? <a href=\"http://oneai_affiliate.com/apps/about/contact/\">Contact Us</a>. You can <a href='".get_absolute_url()."config/setup-config.php'>create a <code>config.php</code> file through a web interface</a>, but this doesn't work for all server setups. The safest way is to manually create the file.</small></center>");

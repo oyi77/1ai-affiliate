@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"strings"
 
-	"p202/internal/api"
-	"p202/internal/config"
-	"p202/internal/output"
+	"p1ai/internal/api"
+	"p1ai/internal/config"
+	"p1ai/internal/output"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +20,7 @@ var configCmd = &cobra.Command{
 
 var configSetURLCmd = &cobra.Command{
 	Use:   "set-url <url>",
-	Short: "Set the Prosper202 instance URL",
+	Short: "Set the Prosper1ai instance URL",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := config.Load()
@@ -114,7 +114,7 @@ var configShowCmd = &cobra.Command{
 
 var configTestCmd = &cobra.Command{
 	Use:   "test",
-	Short: "Test connection to the Prosper202 instance",
+	Short: "Test connection to the Prosper1ai instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := api.NewFromConfig()
 		if err != nil {

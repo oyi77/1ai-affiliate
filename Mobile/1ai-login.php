@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		<table cellspacing="0" cellpadding="5">
 			<tr>
-				<td colspan="2" style="text-align: center;"><a href="https://my.tracking202.com" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/oneai_affiliate.png" /></a><br /></td>
+				<td colspan="2" style="text-align: center;"><a href="https://my.tracking1ai.com" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/oneai_affiliate.png" /></a><br /></td>
 			</tr>
 			<tr>
 				<td>

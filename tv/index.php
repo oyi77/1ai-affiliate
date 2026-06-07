@@ -13,7 +13,7 @@ template_top('1ai-Affiliate ClickServer TV202');
     //Initiate curl
     $user_hash = $_SESSION['user_hash'] ?? '';
     $user_cirrus_link = $_SESSION['user_cirrus_link'] ?? '';
-    $result = getData('https://my.tracking202.com/api/feeds/tv202?us=' . $user_hash . '?t202aid=' . $user_cirrus_link);
+    $result = getData('https://my.tracking1ai.com/api/feeds/tv202?us=' . $user_hash . '?t1aiaid=' . $user_cirrus_link);
 
     if ($result) {
 

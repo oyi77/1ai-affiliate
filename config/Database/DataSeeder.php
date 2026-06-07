@@ -40,7 +40,7 @@ final readonly class DataSeeder
             ('Javascript'),
             ('Postback'),
             ('Raw'),
-            ('Bot202 Facebook Pixel Assistant')";
+            ('Bot1ai Facebook Pixel Assistant')";
         _mysqli_query($sql);
     }
 
