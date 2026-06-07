@@ -833,7 +833,7 @@ describe('PostbackQueue operations', () => {
       call[0].includes('UPDATE 1ai_postback_queue SET status = ?, scheduled_at = ?')
     );
     expect(retryUpdate).toBeDefined();
-    expect(retryUpdate[1][0]).toBe('failed');
+    expect(retryUpdate[1][0]).toBe('retry');
     expect(retryUpdate[1][2]).toBe(42);
   });
 });

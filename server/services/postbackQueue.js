@@ -26,7 +26,7 @@ class PostbackQueue {
       const [queue] = await pool.query(
         `SELECT pql.id, pql.postback_log_id 
          FROM 1ai_postback_queue pql
-         WHERE pql.status IN ('queued', 'failed')
+         WHERE pql.status IN ('queued', 'retry')
          AND (pql.scheduled_at <= NOW() OR scheduled_at IS NULL)
          LIMIT 10`,
         []
@@ -83,12 +83,14 @@ class PostbackQueue {
         const nextRetry = new Date(Date.now() + Math.pow(2, logs[0].retry_count) * 60000);
         await pool.query(
           'UPDATE 1ai_postback_queue SET status = ?, scheduled_at = ? WHERE postback_log_id = ?',
-          ['failed', nextRetry, postbackLogId]
+          ['retry', nextRetry, postbackLogId]
         );
         console.log(`[PostbackQueue] Postback ${postbackLogId} scheduled for retry at ${nextRetry}`);
       } else {
-        // Max retries exceeded
-        await pool.query('UPDATE 1ai_postback_queue SET status = ? WHERE postback_log_id = ?', ['failed', postbackLogId]);
+        await pool.query(
+          'UPDATE 1ai_postback_queue SET status = ?, scheduled_at = ? WHERE postback_log_id = ?',
+          ['failed', null, postbackLogId]
+        );
         console.error(`[PostbackQueue] Postback ${postbackLogId} failed after retries:`, err.message);
       }
     }

@@ -190,12 +190,13 @@ async function firePostback(postbackLogId) {
     const [logs] = await pool.query('SELECT retry_count FROM 1ai_postback_logs WHERE id = ?', [postbackLogId]);
     if (logs.length) {
       const newRetryCount = (logs[0].retry_count || 0) + 1;
-      const nextRetryAt = new Date(Date.now() + Math.pow(2, newRetryCount) * 60000); // Exponential backoff
+      const shouldRetry = newRetryCount < maxRetries;
+      const nextRetryAt = shouldRetry ? new Date(Date.now() + Math.pow(2, newRetryCount) * 60000) : null;
       
       await pool.query(
         `UPDATE 1ai_postback_logs SET status = ?, retry_count = ?, next_retry_at = ?, error_message = ? 
          WHERE id = ?`,
-        [newRetryCount < maxRetries ? 'retry' : 'failed', newRetryCount, nextRetryAt, err.message, postbackLogId]
+        [shouldRetry ? 'retry' : 'failed', newRetryCount, nextRetryAt, err.message, postbackLogId]
       );
     }
 
