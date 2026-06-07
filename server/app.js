@@ -29,9 +29,14 @@ app.use('/api/geo', require('./routes/geoip'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
+app.use('/api', require('./routes/postback'));
 
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
+
+// Start postback queue processor
+const postbackQueue = require('./services/postbackQueue');
+postbackQueue.start();
 
 // Health check
 app.get('/health', (req, res) => {

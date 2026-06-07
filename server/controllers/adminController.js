@@ -712,6 +712,69 @@ async function saveVipProfile(req, res) {
   }
 }
 
+async function setOfferPostback(req, res) {
+  const { offerId } = req.params;
+  const { postback_url, postback_enabled, postback_auth_type, postback_auth_value } = req.body;
+
+  try {
+    await pool.query(
+      `UPDATE 1ai_offers SET postback_url = ?, postback_enabled = ?, postback_auth_type = ?, postback_auth_value = ? WHERE id = ?`,
+      [postback_url || null, postback_enabled !== false, postback_auth_type || null, postback_auth_value || null, offerId]
+    );
+
+    res.json({ success: true, offer_id: offerId });
+  } catch (err) {
+    console.error('setOfferPostback error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getOfferPostback(req, res) {
+  const { offerId } = req.params;
+
+  try {
+    const [offers] = await pool.query(
+      'SELECT postback_url, postback_enabled, postback_auth_type FROM 1ai_offers WHERE id = ?',
+      [offerId]
+    );
+
+    if (!offers.length) {
+      return res.status(404).json({ error: 'Offer not found' });
+    }
+
+    res.json(offers[0]);
+  } catch (err) {
+    console.error('getOfferPostback error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getPostbackLogs(req, res) {
+  try {
+    const { offer_id, status, limit = 50, offset = 0 } = req.query;
+    let query = 'SELECT * FROM 1ai_postback_logs WHERE 1=1';
+    const params = [];
+
+    if (offer_id) {
+      query += ' AND offer_id = ?';
+      params.push(offer_id);
+    }
+    if (status) {
+      query += ' AND status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
+
+    const [logs] = await pool.query(query, params);
+    res.json(logs);
+  } catch (err) {
+    console.error('getPostbackLogs error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
 module.exports = {
   getUsers,
   createUser,
@@ -736,4 +799,7 @@ module.exports = {
   setMargin,
   getNetworks,
   createNetwork,
+  setOfferPostback,
+  getOfferPostback,
+  getPostbackLogs,
 };

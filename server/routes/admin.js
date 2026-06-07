@@ -26,6 +26,9 @@ const {
   setMargin,
   getNetworks,
   createNetwork,
+  setOfferPostback,
+  getOfferPostback,
+  getPostbackLogs,
 } = require('../controllers/adminController');
 
 router.use(authenticate);
@@ -57,5 +60,8 @@ router.get('/networks', requireAdmin, getNetworks);
 router.post('/networks', requireAdmin, createNetwork);
 router.get('/vip', getVipProfile);
 router.put('/vip', saveVipProfile);
+router.post('/offers/:offerId/postback', requireAdmin, setOfferPostback);
+router.get('/offers/:offerId/postback', requireAdmin, getOfferPostback);
+router.get('/postback-logs', requireAdmin, getPostbackLogs);
 
 module.exports = router;

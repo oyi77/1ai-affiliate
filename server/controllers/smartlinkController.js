@@ -2,7 +2,7 @@ const pool = require('../db/mysql');
 const crypto = require('crypto');
 
 async function routeTrafficByHash(req, res) {
-  const slug = req.params.slug;
+  const slug = req.params.hash;
   const subid = req.query.subid || '';
   if (!slug) return res.status(400).send('Invalid link');
 
@@ -127,6 +127,19 @@ async function recordConversion(req, res) {
       'UPDATE 1ai_affiliate_links SET conversions = conversions + 1 WHERE id = ?',
       [link.id]
     );
+
+    // Enqueue postback to advertiser if configured
+    const postbackQueue = require('../services/postbackQueue');
+    const [offers] = await pool.query('SELECT postback_enabled FROM 1ai_offers WHERE id = ?', [link.offer_id]);
+    if (offers.length && offers[0].postback_enabled) {
+      // Create postback log and enqueue
+      const [pbResult] = await pool.query(
+        `INSERT INTO 1ai_postback_logs (offer_id, affiliate_id, click_id, payout, conversion_event, status)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [link.offer_id, link.affiliate_id, slug, affiliatePayout, 'conversion', 'pending']
+      );
+      await postbackQueue.enqueue(pbResult.insertId);
+    }
 
     res.json({ success: true, payout: affiliatePayout, margin: marginAmount });
   } catch (err) {
