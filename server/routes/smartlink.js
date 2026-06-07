@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { routeTraffic, generateSmartlink, listSmartlinks } = require('../controllers/smartlinkController');
+const { routeTrafficByHash, generateSmartlink, listSmartlinks, recordConversion, getSmartlinkStats } = require('../controllers/smartlinkController');
 const { authenticate } = require('../middleware/auth');
 
-// Public tracking link
-router.get('/route', routeTraffic);
-
-// Authenticated endpoints
 router.post('/generate', authenticate, generateSmartlink);
 router.get('/list', authenticate, listSmartlinks);
+router.post('/convert', authenticate, recordConversion);
+router.get('/stats', authenticate, getSmartlinkStats);
+router.get('/:slug', routeTrafficByHash);
 
 module.exports = router;

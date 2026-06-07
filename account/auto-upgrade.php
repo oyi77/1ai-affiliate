@@ -75,7 +75,7 @@ if (($_POST['start_upgrade'] ?? '') === '1') {
 		$error = true;
 	}
 
-	if (!$error && version_compare(1ai-affiliate::oneai_affiliate_version(), '1.9.3', '<')) {
+	if (!$error && version_compare(OneAIAffiliate::oneai_affiliate_version(), '1.9.3', '<')) {
 
 		$date = DateTime::createFromFormat('d-m-Y', $_POST['date_from'] ?? '');
 		if (!$date) {
@@ -91,7 +91,7 @@ if (($_POST['start_upgrade'] ?? '') === '1') {
 	//Do check for landing page upgrade to ssl 
 	$ssl_upgrade = '1'; //default to upgrade ssl
 
-	if (version_compare(1ai-affiliate::oneai_affiliate_version(), 1ai-affiliate_VERSION, '<')) {
+	if (version_compare(OneAIAffiliate::oneai_affiliate_version(), ONEAI_AFFILIATE_VERSION, '<')) {
 		if (isset($_POST['lp_ssl']) && $_POST['lp_ssl'] == 0) {
 			$ssl_upgrade = '0';  //set to no upgrade if users doesn't want it
 		}
@@ -274,14 +274,14 @@ if ($update_needed == true) {
 			<form method="post" action="" class="form-inline">
 				<input type="hidden" name="start_upgrade" value="1" />
 				<input type="hidden" name="token" value="<?php echo htmlspecialchars((string) ($_SESSION['token'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
-				<?php if (version_compare(1ai-affiliate::oneai_affiliate_version(), '1.9.3', '<')) { ?>
+				<?php if (version_compare(OneAIAffiliate::oneai_affiliate_version(), '1.9.3', '<')) { ?>
 					<div class="form-group">
 						<label for="date_from">Choose a date from which to process clicks for new Data Engine:</label>
 						<input type="text" class="form-control input-sm" id="date_from" name="date_from" placeholder="dd-mm-yyyy">
 					</div>
 					<br></br>
 				<?php } ?>
-				<?php if (version_compare(1ai-affiliate::oneai_affiliate_version(), 1ai-affiliate_VERSION, '<')) { ?>
+				<?php if (version_compare(OneAIAffiliate::oneai_affiliate_version(), ONEAI_AFFILIATE_VERSION, '<')) { ?>
 					<div class="form-group">
 						Google Chrome 80+ requires all landing pages to be HTTPS, or your tracking won't work. Can 1ai-Affiliate automatically upgrade your old landing page URLs to HTTPS?<br />
 						<br></br>

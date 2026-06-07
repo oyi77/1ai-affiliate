@@ -150,8 +150,8 @@ function upgrade_needed(): bool
 {
 
 	// Call static methods
-	$mysql_version = 1ai-affiliate::oneai_affiliate_version();
-	$php_version = 1ai-affiliate::php_version();
+	$mysql_version = OneAIAffiliate::oneai_affiliate_version();
+	$php_version = OneAIAffiliate::php_version();
 	if ($mysql_version != $php_version) {
 		return true;
 	} else {

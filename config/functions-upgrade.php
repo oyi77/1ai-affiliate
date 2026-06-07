@@ -6,7 +6,7 @@ declare(strict_types=1);
 if (!class_exists('DataEngine')) {
     include_once(__DIR__ . '/class-dataengine.php');
 }
-class 1ai-affiliate
+class OneAIAffiliate
 {
 
     public static function oneai_affiliate_version()
@@ -76,8 +76,8 @@ class UPGRADE
         }
 
         // get the old version using static methods
-        $oneai_affiliate_version = 1ai-affiliate::oneai_affiliate_version();
-        $php_version = 1ai-affiliate::php_version();
+        $oneai_affiliate_version = OneAIAffiliate::oneai_affiliate_version();
+        $php_version = OneAIAffiliate::php_version();
 
         // if the mysql is 1.0.2, upgrade to 1.0.3
         if ($oneai_affiliate_version == '1.0.2') {

@@ -4,6 +4,7 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 const { requireRole, requireAffiliate, requireAdvertiser } = require('../middleware/roleMiddleware');
 const {
   getUsers,
+  createUser,
   getAffiliates,
   getEarnings,
   approveEarning,
@@ -20,8 +21,14 @@ const {
   saveVipProfile,
   getOffers,
   createOffer,
+  linkOfferToCampaign,
+  getMargin,
+  setMargin,
   getNetworks,
   createNetwork,
+  setOfferPostback,
+  getOfferPostback,
+  getPostbackLogs,
 } = require('../controllers/adminController');
 
 router.use(authenticate);
@@ -30,6 +37,7 @@ router.use(authenticate);
 
 
 router.get('/users', requireAdmin, getUsers);
+router.post('/users', requireAdmin, createUser);
 router.get('/affiliates', requireAdmin, getAffiliates);
 router.get('/earnings', requireRole('admin', 'affiliate', 'advertiser'), getEarnings); // Role-filtered inside controller
 router.post('/earnings/:id/approve', requireAdmin, approveEarning);
@@ -44,9 +52,16 @@ router.get('/clickservers', requireAdmin, getClickServers);
 router.post('/clickservers', requireAdmin, addClickServer);
 router.get('/offers', requireRole('admin', 'affiliate', 'advertiser'), getOffers); // Role-filtered inside controller
 router.post('/offers', createOffer); // Open to all, but requires admin/advertiser logic inside
+router.post('/offer-campaign', requireAdmin, linkOfferToCampaign); // Link offer to campaign
+router.get('/margin/:userId', requireAdmin, getMargin); // Get margin for a user
+router.get('/margin', getMargin); // Get own margin (any role)
+router.post('/margin', requireAdmin, setMargin); // Set margin for a user
 router.get('/networks', requireAdmin, getNetworks);
 router.post('/networks', requireAdmin, createNetwork);
 router.get('/vip', getVipProfile);
 router.put('/vip', saveVipProfile);
+router.post('/offers/:offerId/postback', requireAdmin, setOfferPostback);
+router.get('/offers/:offerId/postback', requireAdmin, getOfferPostback);
+router.get('/postback-logs', requireAdmin, getPostbackLogs);
 
 module.exports = router;

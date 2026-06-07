@@ -62,8 +62,8 @@ class INSTALL
             throw new RuntimeException('Database connection failed');
         }
 
-        // Get PHP version for version table
-        $php_version = 1ai-affiliate::php_version_static();
+         // Get PHP version for version table
+         $php_version = OneAIAffiliate::php_version_static();
 
         // Install all schema tables using the new modular installer
         $installer = new SchemaInstaller($db);

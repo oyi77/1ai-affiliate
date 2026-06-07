@@ -34,9 +34,9 @@ if (is_installed() == true) {
 	
 	$html['mysqlversion'] = htmlentities((string) $mysqlversion, ENT_QUOTES, 'UTF-8');
 
-        if (!php_version_supported()) {
-                $version_error['phpversion'] = '1ai-Affiliate requires PHP ' . 1ai-affiliate_MIN_PHP_VERSION . ', or newer.';
-        }
+         if (!php_version_supported()) {
+                 $version_error['phpversion'] = '1ai-Affiliate requires PHP ' . ONEAI_AFFILIATE_MIN_PHP_VERSION . ', or newer.';
+         }
 
 
 	if (!function_exists('curl_version')) { 

@@ -8,7 +8,7 @@ include_once(__DIR__ . '/connect.php');
 include_once(__DIR__ . '/class-dataengine.php');
 include_once(__DIR__ . '/functions-upgrade.php');
 
-$version = defined('1ai-affiliate_VERSION') ? 1ai-affiliate_VERSION : 1ai-affiliate::oneai_affiliate_version();
+$version = defined('ONEAI_AFFILIATE_VERSION') ? ONEAI_AFFILIATE_VERSION : OneAIAffiliate::oneai_affiliate_version();
 if (!isset($db) || !($db instanceof mysqli)) {
 	_die('Database connection unavailable.');
 }
@@ -31,7 +31,7 @@ if (upgrade_needed() == false) {
 $version_error = [];
 
 if (!php_version_supported()) {
-	$version_error['phpversion'] = '1ai-Affiliate requires PHP ' . 1ai-affiliate_MIN_PHP_VERSION . ', or newer.';
+	$version_error['phpversion'] = '1ai-Affiliate requires PHP ' . ONEAI_AFFILIATE_MIN_PHP_VERSION . ', or newer.';
 }
 
 // Get Database version
@@ -203,7 +203,7 @@ if (!empty($version_error)) {
 		$error = false;
 		$success = false;
 
-		if (version_compare(1ai-affiliate::oneai_affiliate_version(), '1.9.3', '<')) {
+		if (version_compare(OneAIAffiliate::oneai_affiliate_version(), '1.9.3', '<')) {
 
 			$date = DateTime::createFromFormat('d-m-Y', $_POST['date_from']);
 			if (!$date) {
@@ -233,7 +233,7 @@ if (!empty($version_error)) {
 	if (!isset($error)) $error = false;
 	if (!isset($success)) $success = false;
 
-	if (version_compare(1ai-affiliate::oneai_affiliate_version(), $version) > 0) {
+	if (version_compare(OneAIAffiliate::oneai_affiliate_version(), $version) > 0) {
 		$task_202 = "Downgrade";
 		$task_202_2 = "Downgrading";
 	} else {
@@ -260,7 +260,7 @@ if (!empty($version_error)) {
 		<?php } else { ?>
 
 			<h6><?php echo $task_202; ?> to 1ai-Affiliate <?php echo $version; ?></h6>
-			<small>You are <?php echo strtolower($task_202_2); ?> from version <span class="label label-primary"><?php echo 1ai-affiliate::oneai_affiliate_version(); ?></span> to <span class="label label-primary"><?php echo $version; ?></span>. To continue with the <?php echo strtolower($task_202); ?> press the button below to begin the process. This could take a while depending on the last time you updated your software.</small>
+			<small>You are <?php echo strtolower($task_202_2); ?> from version <span class="label label-primary"><?php echo OneAIAffiliate::oneai_affiliate_version(); ?></span> to <span class="label label-primary"><?php echo $version; ?></span>. To continue with the <?php echo strtolower($task_202); ?> press the button below to begin the process. This could take a while depending on the last time you updated your software.</small>
 			<div class="row">
 				<div class="col-xs-12">
 					<br />
@@ -269,7 +269,7 @@ if (!empty($version_error)) {
 						<?php $change_logs = changelog();
 						if (!empty($change_logs)) {
 							foreach ($change_logs as $logs) {
-								if (version_compare(1ai-affiliate::oneai_affiliate_version(), $logs['version'], '<')) { ?>
+								if (version_compare(OneAIAffiliate::oneai_affiliate_version(), $logs['version'], '<')) { ?>
 									<div class="panel panel-default">
 										<div class="panel-heading">
 											<a data-toggle="collapse" data-parent="#changelog_accordion" href="#release_<?php echo str_replace('.', '', $logs['version']); ?>">
@@ -298,7 +298,7 @@ if (!empty($version_error)) {
 			</div>
 			<br></br>
 			<form method="post" id="upgrade-form" action="">
-				<?php if (version_compare(1ai-affiliate::oneai_affiliate_version(), '1.9.3', '<')) {
+				<?php if (version_compare(OneAIAffiliate::oneai_affiliate_version(), '1.9.3', '<')) {
 					$first_click_sql = "select DATE_FORMAT(FROM_UNIXTIME(min(click_time)),'%d-%m-%Y') as first_click_time from clicks";
 					$first_click_row = memcache_mysql_fetch_assoc($first_click_sql);
 
@@ -309,7 +309,7 @@ if (!empty($version_error)) {
 					</div>
 					<br></br>
 				<?php } ?>
-				<?php if (version_compare(1ai-affiliate::oneai_affiliate_version(), 1ai-affiliate_VERSION, '<')) { ?>
+				<?php if (version_compare(OneAIAffiliate::oneai_affiliate_version(), ONEAI_AFFILIATE_VERSION, '<')) { ?>
 					<div class="form-group">
 						Google Chrome 80+ requires all landing pages to be HTTPS, or your tracking won't work. Can 1ai-Affiliate automatically upgrade your old landing page URLs to HTTPS?<br />
 						<br></br>

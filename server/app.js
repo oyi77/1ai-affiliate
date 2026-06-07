@@ -29,9 +29,12 @@ app.use('/api/geo', require('./routes/geoip'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
+app.use('/api', require('./routes/postback'));
 
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
+
+const postbackQueue = require('./services/postbackQueue');
 
 // Health check
 app.get('/health', (req, res) => {
@@ -57,9 +60,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`1AI Affiliate Tracker server on port ${PORT}`);
-  console.log(`Shared MySQL: ${process.env.DB_NAME || 'Prosper1ai'}`);
-});
+if (require.main === module) {
+  postbackQueue.start();
+  app.listen(PORT, () => {
+    console.log(`1AI Affiliate Tracker server on port ${PORT}`);
+    console.log(`Shared MySQL: ${process.env.DB_NAME || 'Prosper1ai'}`);
+  });
+}
 
 module.exports = app;
