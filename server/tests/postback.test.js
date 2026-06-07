@@ -1116,3 +1116,70 @@ describe('firePostback with POST method and custom headers', () => {
     expect(res.json).toHaveBeenCalledWith({ error: 'postback_method must be GET or POST' });
   });
 });
+
+// ============================================================
+// BLOCK 7: Postback Queue State Machine — Terminal vs Retry (3 tests)
+// ============================================================
+describe('PostbackQueue processBatch - Terminal Failed vs Retry Rows', () => {
+  test('7A: should select only queued and retry rows, excluding terminal failed', async () => {
+    const queuedAndRetryRows = [
+      { id: 1, postback_log_id: 10, status: 'queued' },
+      { id: 2, postback_log_id: 20, status: 'retry' },
+    ];
+
+    mockPool.query
+      .mockResolvedValueOnce([queuedAndRetryRows])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+
+    const PostbackQueue = require('../services/postbackQueue');
+    await PostbackQueue.process();
+
+    const selectCall = mockPool.query.mock.calls[0];
+    expect(selectCall[0]).toContain("WHERE pql.status IN ('queued', 'retry')");
+    expect(selectCall[0]).not.toContain("'failed'");
+  });
+
+  test('7B: should not reprocess terminal failed rows', async () => {
+    mockPool.query
+      .mockResolvedValueOnce([[]])
+      .mockResolvedValueOnce([]);
+
+    const PostbackQueue = require('../services/postbackQueue');
+    await PostbackQueue.process();
+
+    const selectCall = mockPool.query.mock.calls[0];
+    expect(selectCall[0]).toContain("('queued', 'retry')");
+
+    const processUpdates = mockPool.query.mock.calls.filter(call =>
+      call[0].includes('UPDATE 1ai_postback_queue SET status = ?')
+    );
+    expect(processUpdates.length).toBe(0);
+  });
+
+  test('7C: should continue processing retry rows after initial failure', async () => {
+    const retryRow = [
+      { id: 5, postback_log_id: 50, status: 'retry' },
+    ];
+
+    mockPool.query
+      .mockResolvedValueOnce([retryRow])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([[{
+        id: 50,
+        offer_id: 3,
+        postback_enabled: 1,
+      }]])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+
+    const PostbackQueue = require('../services/postbackQueue');
+    await PostbackQueue.process();
+
+    expect(mockPool.query.mock.calls.length).toBeGreaterThan(0);
+
+    const selectCall = mockPool.query.mock.calls[0];
+    expect(selectCall[0]).toContain("('queued', 'retry')");
+  });
+});
