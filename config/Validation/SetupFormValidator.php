@@ -263,6 +263,36 @@ class SetupFormValidator
     }
     
     /**
+     * Validate IP address (supports IPv4 and IPv6)
+     */
+    public function validateIp(string $ip, string $fieldName = 'IP'): ValidationResult
+    {
+        $trimmed = trim($ip);
+        if ($trimmed === '') {
+            return ValidationResult::failure("$fieldName is required");
+        }
+        if (filter_var($trimmed, FILTER_VALIDATE_IP) === false) {
+            return ValidationResult::failure("$fieldName is not a valid IP address");
+        }
+        return ValidationResult::success($trimmed);
+    }
+
+    /**
+     * Validate slug (alphanumeric, hyphens, and underscores)
+     */
+    public function validateSlug(string $slug, string $fieldName = 'slug'): ValidationResult
+    {
+        $trimmed = trim($slug);
+        if ($trimmed === '') {
+            return ValidationResult::failure("$fieldName is required");
+        }
+        if (preg_match('/^[a-zA-Z0-9\-_]+$/', $trimmed) !== 1) {
+            return ValidationResult::failure("$fieldName must contain only alphanumeric characters, hyphens, and underscores");
+        }
+        return ValidationResult::success($trimmed);
+    }
+
+    /**
      * Sanitize a value for database insertion
      */
     public function sanitizeForDatabase(mixed $value): string
@@ -311,6 +341,8 @@ class SetupFormValidator
             'numeric' => $this->validateNumeric($value, $fieldName, $rule['min'] ?? null, $rule['max'] ?? null),
             'url' => $this->validateUrl((string)$value, $fieldName),
             'email' => $this->validateEmail((string)$value, $fieldName),
+            'ip' => $this->validateIp((string)$value, $fieldName),
+            'slug' => $this->validateSlug((string)$value, $fieldName),
             default => ValidationResult::failure("Unknown validation type: $type")
         };
     }

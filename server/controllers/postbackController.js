@@ -133,16 +133,16 @@ async function firePostback(postbackLogId) {
     maxRetries = normalizeInteger(offer.postback_retries, 3, 0, 10);
     const method = (offer.postback_method || 'GET').toUpperCase();
 
-    // Substitute macro tokens in postback URL
+    // Substitute macro tokens in postback URL (sanitized with URL encoding)
     let postbackUrl = offer.postback_url
-      .replace(/{click_id}/g, log.click_id)
-      .replace(/{cid}/g, log.click_id)
-      .replace(/{tid}/g, log.click_id)
-      .replace(/{aff_click_id}/g, log.click_id)
-      .replace(/{payout}/g, log.payout)
-      .replace(/{transaction_id}/g, log.transaction_id || '')
-      .replace(/{txid}/g, log.transaction_id || '')
-      .replace(/{event}/g, log.conversion_event || 'conversion')
+      .replace(/{click_id}/g, encodeURIComponent(log.click_id || ''))
+      .replace(/{cid}/g, encodeURIComponent(log.click_id || ''))
+      .replace(/{tid}/g, encodeURIComponent(log.click_id || ''))
+      .replace(/{aff_click_id}/g, encodeURIComponent(log.click_id || ''))
+      .replace(/{payout}/g, encodeURIComponent(String(log.payout || '0')))
+      .replace(/{transaction_id}/g, encodeURIComponent(log.transaction_id || ''))
+      .replace(/{txid}/g, encodeURIComponent(log.transaction_id || ''))
+      .replace(/{event}/g, encodeURIComponent(log.conversion_event || 'conversion'))
       .replace(/{status}/g, 'approved');
 
     // Build headers: defaults + auth + custom

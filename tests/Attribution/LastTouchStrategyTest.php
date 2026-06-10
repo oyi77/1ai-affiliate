@@ -98,4 +98,67 @@ final class LastTouchStrategyTest extends TestCase
         self::assertCount(1, $result->touchpointsByHour[$secondBucket]);
         self::assertSame(1.0, $result->touchpointsByHour[$firstBucket][0]->credit);
     }
+    public function testAppliesAttributionToLastTouchpointOfJourney(): void
+    {
+        $timestamp = strtotime('2024-01-01 12:15:00');
+        $model = new ModelDefinition(
+            modelId: 10,
+            userId: 1,
+            name: 'Last Touch',
+            slug: 'last-touch',
+            type: ModelType::LAST_TOUCH,
+            weightingConfig: [],
+            isActive: true,
+            isDefault: true,
+            createdAt: $timestamp,
+            updatedAt: $timestamp
+        );
+
+        $journey = [
+            new \OneAIAffiliate\Attribution\Calculation\ConversionTouchpoint(clickId: 2001, clickTime: $timestamp - 300),
+            new \OneAIAffiliate\Attribution\Calculation\ConversionTouchpoint(clickId: 2002, clickTime: $timestamp - 200),
+            new \OneAIAffiliate\Attribution\Calculation\ConversionTouchpoint(clickId: 2003, clickTime: $timestamp - 100), // last touch
+        ];
+
+        $conversions = [
+            new ConversionRecord(
+                conversionId: 105,
+                clickId: 2001, // primary click
+                userId: 1,
+                campaignId: 33,
+                ppcAccountId: 20,
+                convTime: $timestamp,
+                clickTime: $timestamp - 300,
+                clickPayout: 10.00,
+                clickCost: 2.00,
+                journey: $journey
+            ),
+        ];
+
+        $batch = new ConversionBatch(
+            userId: 1,
+            startTime: $timestamp - 1000,
+            endTime: $timestamp + 1000,
+            conversions: $conversions
+        );
+
+        $strategy = new LastTouchStrategy();
+        $result = $strategy->calculate($model, $batch);
+
+        $bucket = (int) ($timestamp - ($timestamp % 3600));
+        self::assertCount(1, $result->snapshotsByHour);
+        $snapshot = $result->snapshotsByHour[$bucket];
+
+        // Should attribute 1 conversion and 1 click
+        self::assertSame(1, $snapshot->attributedConversions);
+        self::assertSame(1, $snapshot->attributedClicks);
+        self::assertEquals(10.00, $snapshot->attributedRevenue);
+        self::assertEquals(2.00, $snapshot->attributedCost);
+
+        // The touchpoints should only have the last touchpoint of the journey (clickId 2003)
+        $touchpoints = $result->touchpointsByHour[$bucket];
+        self::assertCount(1, $touchpoints);
+        self::assertSame(2003, $touchpoints[0]->clickId);
+        self::assertSame(1.0, $touchpoints[0]->credit);
+    }
 }

@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { login, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey } = require('../controllers/authController');
 const { authenticate } = require('../middleware/auth');
+const { rateLimitAuth } = require('../middleware/rateLimit');
 
-router.post('/login', login);
+router.post('/login', rateLimitAuth, login);
 router.get('/me', authenticate, getMe);
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+router.post('/forgot-password', rateLimitAuth, forgotPassword);
+router.post('/reset-password', rateLimitAuth, resetPassword);
 router.put('/password', authenticate, changePassword);
 router.get('/api-key', authenticate, getApiKey);
 router.post('/api-key/regenerate', authenticate, regenerateApiKey);

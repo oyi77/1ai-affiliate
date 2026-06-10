@@ -649,6 +649,52 @@ describe('Rate Limiting', () => {
     expect(next).toHaveBeenCalledTimes(11);
     expect(res.status).not.toHaveBeenCalledWith(429);
   });
+
+  test('5C: should return 429 after 5 requests from same IP in one minute for auth', async () => {
+    const { rateLimitAuth, resetAuthRateLimit } = require('../middleware/rateLimit');
+    resetAuthRateLimit();
+    jest.spyOn(Date, 'now').mockReturnValue(100000);
+
+    const req = { ip: '203.0.113.12', connection: {} };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    const next = jest.fn();
+
+    for (let i = 0; i < 5; i += 1) {
+      rateLimitAuth(req, res, next);
+    }
+    rateLimitAuth(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(5);
+    expect(res.status).toHaveBeenCalledWith(429);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: expect.stringContaining('Too many attempts') }));
+  });
+
+  test('5D: should reset auth rate limit after window expires', async () => {
+    const { rateLimitAuth, resetAuthRateLimit } = require('../middleware/rateLimit');
+    resetAuthRateLimit();
+    const nowSpy = jest.spyOn(Date, 'now');
+
+    const req = { ip: '203.0.113.13', connection: {} };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    const next = jest.fn();
+
+    nowSpy.mockReturnValue(200000);
+    for (let i = 0; i < 5; i += 1) {
+      rateLimitAuth(req, res, next);
+    }
+
+    nowSpy.mockReturnValue(260001);
+    rateLimitAuth(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(6);
+    expect(res.status).not.toHaveBeenCalledWith(429);
+  });
 });
 
 // ============================================================

@@ -47,8 +47,49 @@ final class LastTouchStrategy implements AttributionStrategyInterface
                 $touchpointsByHour[$bucket] = [];
             }
 
+            $journey = $conversion->getJourney();
+            $touchCount = count($journey);
+            if ($touchCount === 0) {
+                $attributedClicks = 1;
+                $attributedRevenue = $conversion->clickPayout;
+                $attributedCost = $conversion->clickCost;
+                $touchpointsByHour[$bucket][] = new Touchpoint(
+                    touchpointId: null,
+                    snapshotId: null,
+                    conversionId: $conversion->conversionId,
+                    clickId: $conversion->clickId,
+                    position: 0,
+                    credit: 1.0,
+                    weight: 1.0,
+                    createdAt: $createdAt
+                );
+            } else {
+                $attributedClicks = 0;
+                $attributedRevenue = 0.0;
+                $attributedCost = 0.0;
+                // Clicks in journey are sorted chronologically by default
+                foreach ($journey as $position => $touch) {
+                    $credit = ($position === $touchCount - 1) ? 1.0 : 0.0;
+                    if ($credit <= 0.0) {
+                        continue;
+                    }
+                    $attributedClicks++;
+                    $attributedRevenue += $conversion->clickPayout * $credit;
+                    $attributedCost += $conversion->clickCost * $credit;
+                    $touchpointsByHour[$bucket][] = new Touchpoint(
+                        touchpointId: null,
+                        snapshotId: null,
+                        conversionId: $conversion->conversionId,
+                        clickId: $touch->clickId,
+                        position: $position,
+                        credit: $credit,
+                        weight: $credit,
+                        createdAt: $createdAt
+                    );
+                }
+            }
             $snapshot = $snapshotsByHour[$bucket];
-            $snapshot = new Snapshot(
+            $snapshotsByHour[$bucket] = new Snapshot(
                 snapshotId: null,
                 modelId: $snapshot->modelId,
                 userId: $snapshot->userId,
@@ -57,27 +98,13 @@ final class LastTouchStrategy implements AttributionStrategyInterface
                 dateHour: $snapshot->dateHour,
                 lookbackStart: $snapshot->lookbackStart,
                 lookbackEnd: $snapshot->lookbackEnd,
-                attributedClicks: $snapshot->attributedClicks + 1,
+                attributedClicks: $snapshot->attributedClicks + $attributedClicks,
                 attributedConversions: $snapshot->attributedConversions + 1,
-                attributedRevenue: $snapshot->attributedRevenue + $conversion->clickPayout,
-                attributedCost: $snapshot->attributedCost + $conversion->clickCost,
+                attributedRevenue: $snapshot->attributedRevenue + $attributedRevenue,
+                attributedCost: $snapshot->attributedCost + $attributedCost,
                 createdAt: $snapshot->createdAt
             );
-
-            $snapshotsByHour[$bucket] = $snapshot;
-
-            $touchpointsByHour[$bucket][] = new Touchpoint(
-                touchpointId: null,
-                snapshotId: null,
-                conversionId: $conversion->conversionId,
-                clickId: $conversion->clickId,
-                position: 0,
-                credit: 1.0,
-                weight: 1.0,
-                createdAt: $createdAt
-            );
         }
-
         return new CalculationResult($snapshotsByHour, $touchpointsByHour);
     }
 }
