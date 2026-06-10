@@ -22,6 +22,12 @@ function start() {
       console.log(`[PosterWorker] Posted product #${row.id}: ${row.product_name}`);
     } catch (err) {
       console.error('[PosterWorker] Error:', err.message);
+      // Find the pending row that caused the failure (it's no longer locked)
+      const failedRow = await posterService.fetchNextPending();
+      if (failedRow) {
+        await posterService.markFailed(failedRow.id, err.message);
+        console.log(`[PosterWorker] Marked #${failedRow.id} as failed`);
+      }
     }
   });
 }

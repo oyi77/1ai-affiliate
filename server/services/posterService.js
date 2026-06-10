@@ -24,9 +24,9 @@ const posterService = {
    */
   formatCaption(row) {
     const { id, product_name, normal_price, promo_price, product_url, image_url, affiliate_link } = row;
-    const normal = parseInt(normal_price);
-    const promo = parseInt(promo_price);
-    const discount = Math.round((1 - promo / normal) * 100);
+    const normal = parseInt(normal_price) || 0;
+    const promo = parseInt(promo_price) || 0;
+    const discount = normal > 0 ? Math.round((1 - promo / normal) * 100) : 0;
     const tag = product_name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 15);
 
     return (
@@ -121,6 +121,19 @@ const posterService = {
     if (!product_url || !product_name || !normal_price || !promo_price) {
       throw new Error('product_url, product_name, normal_price, and promo_price are required');
     }
+
+    const nPrice = parseInt(normal_price);
+    const pPrice = parseInt(promo_price);
+    if (isNaN(nPrice) || nPrice <= 0) throw new Error('normal_price must be a positive integer');
+    if (isNaN(pPrice) || pPrice <= 0) throw new Error('promo_price must be a positive integer');
+    if (pPrice >= nPrice) throw new Error('promo_price must be less than normal_price');
+
+    // Check for duplicate product_url
+    const [existing] = await pool.query(
+      'SELECT id FROM 1ai_promo_queue WHERE product_url = ? AND status = "pending" LIMIT 1',
+      [product_url]
+    );
+    if (existing.length) throw new Error('Product with this URL already exists in the queue');
 
     const [result] = await pool.query(
       `INSERT INTO 1ai_promo_queue (product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche)
