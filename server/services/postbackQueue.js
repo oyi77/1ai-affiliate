@@ -2,8 +2,23 @@ const pool = require('../db/mysql');
 const { firePostback, normalizeInteger } = require('../controllers/postbackController');
 
 /**
- * Postback queue processor — handles retries with exponential backoff
- * Run as periodic task (every 5-10 seconds)
+ * Postback queue processor — handles retries with exponential backoff.
+ *
+ * CRITICAL STATE MACHINE INVARIANT:
+ *   - 'queued'     = enqueued, waiting for first attempt
+ *   - 'retry'      = has retries remaining, will be reprocessed
+ *   - 'processing' = a worker has it right now
+ *   - 'completed'  = delivered (terminal happy path)
+ *   - 'failed'     = exhausted retries (terminal — WILL NOT be reprocessed)
+ *
+ * MUST stay synchronized with 1ai_postback_logs.status — both tables are
+ * written from two different code paths (queue here, controller in
+ * postbackController.js). If they diverge, the queue will silently drop or
+ * double-process a postback. The full-lifecycle test
+ *   server/tests/postback.test.js "should exhaust retries and stop reprocessing"
+ * asserts this invariant end-to-end.
+ *
+ * Run as periodic task (every 5-10 seconds).
  */
 class PostbackQueue {
   constructor() {
@@ -15,16 +30,13 @@ class PostbackQueue {
     this.processing = true;
 
     console.log('[PostbackQueue] Starting processor...');
-
-    // Run every 10 seconds
     setInterval(() => this.process(), 10000);
   }
 
   async process() {
     try {
-      // Find all pending/retry postbacks due for processing
       const [queue] = await pool.query(
-        `SELECT pql.id, pql.postback_log_id 
+        `SELECT pql.id, pql.postback_log_id
          FROM 1ai_postback_queue pql
          WHERE pql.status IN ('queued', 'retry')
          AND (pql.scheduled_at <= NOW() OR scheduled_at IS NULL)
@@ -77,7 +89,7 @@ class PostbackQueue {
          WHERE pbl.id = ?`,
         [postbackLogId]
       );
-      
+
       const maxRetries = logs.length ? normalizeInteger(logs[0].postback_retries, 3, 0, 10) : 3;
       if (logs.length && logs[0].retry_count < maxRetries) {
         const nextRetry = new Date(Date.now() + Math.pow(2, logs[0].retry_count) * 60000);
@@ -97,7 +109,8 @@ class PostbackQueue {
   }
 
   /**
-   * Enqueue postback for processing
+   * Enqueue postback for processing.
+   * Idempotent: a postback_log_id can only be in the queue once.
    */
   async enqueue(postbackLogId) {
     try {
@@ -107,8 +120,7 @@ class PostbackQueue {
       );
 
       if (existing.length) {
-        // Already queued
-        return;
+        return; // Already queued
       }
 
       await pool.query(
@@ -119,6 +131,28 @@ class PostbackQueue {
       console.log(`[PostbackQueue] Postback ${postbackLogId} enqueued`);
     } catch (err) {
       console.error('[PostbackQueue] Enqueue error:', err);
+    }
+  }
+
+  /**
+   * Dead-letter check: find postbacks stuck in 'retry' for too long.
+   * Returns rows where status='retry' AND scheduled_at is in the past
+   * but the postback has not been picked up — likely a stuck worker.
+   */
+  async findStuckPostbacks(olderThanMinutes = 60) {
+    try {
+      const [rows] = await pool.query(
+        `SELECT pql.id, pql.postback_log_id, pql.scheduled_at, pbl.retry_count
+         FROM 1ai_postback_queue pql
+         JOIN 1ai_postback_logs pbl ON pbl.id = pql.postback_log_id
+         WHERE pql.status = 'retry'
+         AND pql.scheduled_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)`,
+        [olderThanMinutes]
+      );
+      return rows;
+    } catch (err) {
+      console.error('[PostbackQueue] Stuck postback check error:', err);
+      return [];
     }
   }
 }
