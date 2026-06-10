@@ -15,7 +15,8 @@ const Router = (function() {
     'ai-banner': 'AI Banner Generator', 'ai-carousel': 'AI IG Carousel Generator',
     'ai-caption': 'AI Social Captions', 'ai-brand-kit': 'AI Brand Kit Generator',
     'ai-ab-test': 'AI A/B Test Ideas', 'ai-bg-remove': 'AI BG Removal Prompt',
-    smartlink: 'Smartlink Generator', 'adv-integrations': 'Advertiser APIs'
+    smartlink: 'Smartlink Generator', 'adv-integrations': 'Advertiser APIs',
+    pipeline: 'TikTok Pipeline', poster: 'Telegram Poster'
   };
 
   function showLogin() {

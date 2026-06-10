@@ -32,10 +32,14 @@ app.use('/api/smartlink', require('./routes/smartlink'));
 app.use('/api', require('./routes/postback'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/admin/stats', require('./routes/statsSSE'));
+app.use('/api/poster', require('./routes/poster'));
+app.use('/api/pipeline', require('./routes/pipeline'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 
 const postbackQueue = require('./services/postbackQueue');
+const posterWorker = require('./services/posterWorker');
+const pipelineWorker = require('./services/pipelineWorker');
 
 // Health check — deep probe: checks DB connectivity + queue status
 app.get('/health', async (req, res) => {
@@ -80,6 +84,8 @@ app.use((err, req, res, next) => {
 
 if (require.main === module) {
   postbackQueue.start();
+  posterWorker.start();
+  pipelineWorker.start();
   app.listen(PORT, () => {
     console.log(`1AI Affiliate Tracker server on port ${PORT}`);
     console.log(`Shared MySQL: ${process.env.DB_NAME || 'Prosper1ai'}`);

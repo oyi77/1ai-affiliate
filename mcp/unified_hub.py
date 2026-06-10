@@ -535,6 +535,44 @@ async def unified_content_funnel(product: str, audience: str, platform: str = "i
 
 
 # ---------------------------------------------------------------------------
+# Pipeline & Poster — TikTok→Meta distribution + Telegram Shopee poster
+# ---------------------------------------------------------------------------
+@mcp.tool()
+async def pipeline_run(url: str, niche: str = None) -> str:
+    """Trigger TikTok→Meta content distribution pipeline. Downloads TikTok video, mutates for Meta anti-spam, detects niche, posts to Facebook Pages and Instagram accounts via Graph API.
+
+    Returns job ID you can check with pipeline_status."""
+    try:
+        client = get_affiliate()
+        payload = {"url": url}
+        if niche:
+            payload["niche"] = niche
+        result = await client.post("/api/pipeline/run", payload)
+        return json.dumps(result, indent=2)
+    except Exception as e:
+        return f"pipeline_run failed: {e}"
+
+@mcp.tool()
+async def pipeline_status(job_id: str) -> str:
+    """Check status of a pipeline job. Returns status, steps, results, and errors."""
+    try:
+        client = get_affiliate()
+        result = await client.get(f"/api/pipeline/jobs/{job_id}")
+        return json.dumps(result, indent=2)
+    except Exception as e:
+        return f"pipeline_status failed: {e}"
+
+@mcp.tool()
+async def poster_trigger() -> str:
+    """Manually trigger the Telegram Shopee poster — posts the next pending product from the queue to the configured Telegram channel."""
+    try:
+        client = get_affiliate()
+        result = await client.post("/api/poster/trigger")
+        return json.dumps(result, indent=2)
+    except Exception as e:
+        return f"poster_trigger failed: {e}"
+
+# ---------------------------------------------------------------------------
 # Entry
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
