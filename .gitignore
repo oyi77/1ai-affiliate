@@ -5,6 +5,12 @@
 1ai-config copy.php
 phpstan.neon
 
+# PSR-4 autoload compatibility symlinks (created by install.sh / test.sh).
+# These map legacy names to current directories so stale vendor/ works.
+/1ai-config
+/1ai-interfaces
+/tracking1ai
+
 # Environment / secrets
 .env
 .env.*

@@ -17,6 +17,9 @@ $migrations = [
     '004_commission_ledger.sql',
     '005_payment_table.sql',
     '006_schema_alignment.sql',
+    '008_postback_system.sql',
+    // '007_dev_seed.sql' is intentionally NOT included — it's dev-only test data.
+    // Run it manually with: mysql -u root -p prosper1ai_test < scripts/007_dev_seed.sql
 ];
 
 foreach ($migrations as $file) {

@@ -429,7 +429,7 @@ detect_mysql() {
 }
 
 check_directory_permissions() {
-    local dirs_to_check=("1ai-config" "tracking1ai" ".")
+    local dirs_to_check=("config" "tracking_support" ".")
     local issues=()
 
     for dir in "${dirs_to_check[@]}"; do
@@ -686,7 +686,31 @@ install_dependencies() {
     local package_count=$(grep -c '"name"' "$SCRIPT_DIR/vendor/composer/installed.json" 2>/dev/null || echo "0")
     print_success "Dependencies installed (${package_count} packages)"
 
+    # PSR-4 autoload compatibility:
+    # The codebase uses the new directory layout (config/, tracking_support/, interfaces/)
+    # but a stale vendor/ may still expect the old names (1ai-config/, tracking1ai/).
+    # Create compatibility symlinks so phpunit/phpstan work out-of-the-box.
+    ensure_autoload_symlinks
+
     return 0
+}
+
+
+ensure_autoload_symlinks() {
+    local pair
+    declare -A symlinks=(
+        ["1ai-config"]="config"
+        ["1ai-interfaces"]="interfaces"
+        ["tracking1ai"]="tracking_support"
+    )
+
+    for src in "${!symlinks[@]}"; do
+        local dst="${symlinks[$src]}"
+        if [ -d "$SCRIPT_DIR/$dst" ] && [ ! -e "$SCRIPT_DIR/$src" ]; then
+            ln -s "$dst" "$SCRIPT_DIR/$src" 2>/dev/null && \
+                print_info "compat symlink: $src -> $dst"
+        fi
+    done
 }
 
 test_db_connection() {
@@ -774,12 +798,12 @@ try {
 }
 
 create_config_file() {
-    local config_file="$SCRIPT_DIR/1ai-config.php"
-    local sample_file="$SCRIPT_DIR/1ai-config-sample.php"
+    local config_file="$SCRIPT_DIR/config.php"
+    local sample_file="$SCRIPT_DIR/config-sample.php"
     local db_host_ro_value=""
 
     if [ ! -f "$sample_file" ]; then
-        print_error "Sample config file not found: 1ai-config-sample.php"
+        print_error "Sample config file not found: config-sample.php"
         return 1
     fi
 
@@ -832,7 +856,7 @@ create_config_file() {
     sed_in_place "s|$dbhostro_pattern|$dbhostro_replacement|" "$config_file"
     sed_in_place "s|$mchost_pattern|$mchost_replacement|" "$config_file"
 
-    print_success "Config file created: 1ai-config.php"
+    print_success "Config file created: config.php"
     return 0
 }
 
@@ -1147,7 +1171,7 @@ run_preflight_checks() {
 
     # Step 5: Directory Structure
     STEP_COUNT=5
-    if [ -f "$SCRIPT_DIR/1ai-config-sample.php" ] && [ -d "$SCRIPT_DIR/tracking1ai" ]; then
+    if [ -f "$SCRIPT_DIR/config-sample.php" ] && [ -d "$SCRIPT_DIR/tracking_support" ]; then
         print_step "Directory Structure" "ok" "Valid"
     else
         print_step "Directory Structure" "fail" "Invalid"
@@ -1206,8 +1230,8 @@ show_summary() {
         lines+=("  2. Open the application in your browser")
         lines+=("     Complete the setup wizard to create your admin account")
         lines+=("")
-        if [ -f "$SCRIPT_DIR/1ai-config.php" ]; then
-            lines+=("  ${CHECK} Config file: 1ai-config.php")
+        if [ -f "$SCRIPT_DIR/config.php" ]; then
+            lines+=("  ${CHECK} Config file: config.php")
         fi
         lines+=("")
         lines+=("Documentation: ${CYAN}https://github.com/tracking1ai/Prosper1ai/blob/master/documentation/README.md${RESET}")
@@ -1316,8 +1340,8 @@ main() {
         print_header "Configuration"
 
         # Check if config already exists
-        if [ -f "$SCRIPT_DIR/1ai-config.php" ]; then
-            print_info "Config file already exists: 1ai-config.php"
+        if [ -f "$SCRIPT_DIR/config.php" ]; then
+            print_info "Config file already exists: config.php"
             if [ "$INTERACTIVE" = true ]; then
                 if confirm "Overwrite existing config?" "n"; then
                     configure_database_interactive
@@ -1349,7 +1373,7 @@ main() {
         fi
     else
         # CI mode - just create config with defaults
-        if [ ! -f "$SCRIPT_DIR/1ai-config.php" ]; then
+        if [ ! -f "$SCRIPT_DIR/config.php" ]; then
             create_config_file
         fi
     fi
