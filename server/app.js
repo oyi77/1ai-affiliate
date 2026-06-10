@@ -37,9 +37,26 @@ app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficBy
 
 const postbackQueue = require('./services/postbackQueue');
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: '1ai-affiliate-tracker', port: PORT });
+// Health check — deep probe: checks DB connectivity + queue status
+app.get('/health', async (req, res) => {
+  const checks = { status: 'ok', service: '1ai-affiliate-tracker', port: String(PORT), timestamp: new Date().toISOString(), uptime: Math.floor(process.uptime()), components: {} };
+  // DB check
+  try {
+    const [rows] = await pool.query('SELECT 1 AS ok');
+    checks.components.database = { status: 'ok', latency_ms: 0 };
+  } catch (err) {
+    checks.components.database = { status: 'degraded', error: err.message };
+    checks.status = 'degraded';
+  }
+  // Queue check
+  try {
+    const [queueRows] = await pool.query("SELECT COUNT(*) AS pending FROM 1ai_postback_queue WHERE status IN ('queued', 'retry')");
+    checks.components.queue = { status: 'ok', pending: queueRows[0]?.pending ?? 0 };
+  } catch (err) {
+    checks.components.queue = { status: 'not_configured' };
+  }
+  const httpStatus = checks.status === 'ok' ? 200 : 503;
+  res.status(httpStatus).json(checks);
 });
 
 // SPA fallback — / serves admin SPA, /admin and /client alias
