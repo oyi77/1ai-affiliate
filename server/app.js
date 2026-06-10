@@ -31,7 +31,7 @@ app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
 app.use('/api', require('./routes/postback'));
 app.use('/api/ai', require('./routes/ai'));
-
+app.use('/api/admin/stats', require('./routes/statsSSE'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 
