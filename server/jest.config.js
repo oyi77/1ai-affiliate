@@ -10,6 +10,7 @@ module.exports = {
     'controllers/postbackController.js',
     'services/postbackQueue.js',
     'middleware/rateLimit.js',
+    'agents/**/*.js',
   ],
   coveragePathIgnorePatterns: [
     'node_modules',

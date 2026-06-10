@@ -10,7 +10,12 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.82",
+    "@ai-sdk/google": "^3.0.80",
     "@google/generative-ai": "^0.24.1",
+    "@voltagent/core": "^2.7.7",
+    "@voltagent/google-ai": "^0.4.1",
+    "ai": "^6.0.199",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8",
@@ -19,10 +24,12 @@
     "jsonwebtoken": "^9.0",
     "maxmind": "^5.0.6",
     "morgan": "^1.10",
-    "mysql2": "^3.11"
+    "mysql2": "^3.11",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "jest": "^30.4.2"
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2"
   }
 }
