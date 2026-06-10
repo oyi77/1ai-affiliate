@@ -58,9 +58,12 @@ CLAUDE.md
 .ax-session/
 1ai-cronjobs/cron.lock
 
-# Absorbed sub-modules
+# Absorbed sub-modules (formerly gitlinks to archived repos)
 /pipeline/.git
 /poster/.git
+
+# Test coverage
+/server/coverage/
 
 # Large files (tracked via Git LFS)
 # Geo data files are in LFS, not ignored
