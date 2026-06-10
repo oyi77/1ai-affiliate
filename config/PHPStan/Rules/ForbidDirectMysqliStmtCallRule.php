@@ -62,7 +62,7 @@ final class ForbidDirectMysqliStmtCallRule implements Rule
 
         return [
             RuleErrorBuilder::message(self::FORBIDDEN_METHODS[$methodName])
-                ->identifier('oneai_affiliate.directStmtCall')
+                ->identifier('oneaiaffiliate.directStmtCall')
                 ->build(),
         ];
     }

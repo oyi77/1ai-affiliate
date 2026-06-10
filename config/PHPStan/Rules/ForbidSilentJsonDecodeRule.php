@@ -56,7 +56,7 @@ final class ForbidSilentJsonDecodeRule implements Rule
                 'json_decode(...) ?? [] silently discards malformed JSON. '
                 . 'Validate JSON and throw on parse errors instead. (CLAUDE.md #4)'
             )
-                ->identifier('oneai_affiliate.silentJsonDecode')
+                ->identifier('oneaiaffiliate.silentJsonDecode')
                 ->build(),
         ];
     }

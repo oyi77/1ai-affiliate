@@ -44,7 +44,7 @@ final class ForbidDirectPasswordHashRule implements Rule
                     'Direct password_hash() bypasses hash_user_pass(). '
                     . 'Use hash_user_pass() from functions-auth.php for consistent hashing. (CLAUDE.md #5)'
                 )
-                    ->identifier('oneai_affiliate.directPasswordHash')
+                    ->identifier('oneaiaffiliate.directPasswordHash')
                     ->build(),
             ];
         }
