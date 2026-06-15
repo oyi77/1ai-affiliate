@@ -16,12 +16,10 @@ Since 2007, 1ai-Affiliate has helped marketers take control of their tracking wi
 - **Fraud Prevention** — Sentinel Traffic Quality Enforcer (T.Q.E.) redirects potentially fraudulent traffic away from your landing pages.
 - **Landing Page Personalization** — Dynamically display ISP, device, postal code, geo location, keyword, UTM variables, browser, OS, and more on your landing pages.
 - **Device Detection** — Automatically detect device types and models for full insights into mobile-targeted campaigns.
-- **Multi-Currency & Timezone** — Automatically convert payouts into your local currency and display reports in your local timezone.
-- **Google Ads Integration** — Offline conversion tracking with one-click CSV export. UTM parameters and GCLID values are automatically captured.
-- **WordPress Integration** — Two-way communication between WordPress and 1ai-Affiliate, instantly setting up posts and pages as landing pages.
 - **Deep Linking** — Boost conversion rates by deep linking directly into apps, reducing friction for users.
+- **Custom Domains for Smartlinks** — Configure custom domains (e.g., go.yourdomain.com, r.yourdomain.com) for branded smartlink redirects. Set default domains, manage SSL, and route traffic through cf-router for high-throughput deployments.
+- **URL Shortener Integration** — Connect Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, or custom API endpoints to automatically shorten smartlinks. Configure API keys, rate limits, and branded short domains.
 - **Team Access** — Full role-based authentication with no limit on users and no per-seat costs.
-- **API & CLI Tools** — Full REST API and CLI tools designed for both human developers and AI agents. Automate campaign management, pull reports, and integrate with your existing tools. CLI-first design works seamlessly with AI coding agents like Claude Code, Codex, and OpenClaw.
 
 ## Requirements
 
@@ -180,19 +178,71 @@ cd go-cli && make test
 - **Database**: MySQL/MariaDB with optional read replica support
 - **Caching**: Memcached integration available
 
+## Custom Domains & URL Shorteners
+
+### Smartlink Custom Domains
+
+Configure custom domains for branded smartlink redirects:
+
+1. **Add Domain** — Via admin panel (`/admin/index.html#domains`) or API:
+   ```bash
+   curl -X POST https://your-server/api/admin/domains \
+     -H "Authorization: Bearer <api-key>" \
+     -H "Content-Type: application/json" \
+     -d '{"domain":"go.yourdomain.com","is_active":true,"ssl_enabled":true}'
+   ```
+
+2. **Set Default** — Mark one domain as default for new smartlinks
+
+3. **DNS Configuration** — Point your domain to the cf-router server:
+   ```
+   go.yourdomain.com → CNAME → cf-router.example.com
+   ```
+
+4. **Generate Smartlink** — Specify domain when creating:
+   ```bash
+   curl -X POST https://your-server/api/smartlink/generate \
+     -H "Authorization: Bearer <api-key>" \
+     -H "Content-Type: application/json" \
+     -d '{"offer_id":1,"domain_id":1}'
+   ```
+
+### URL Shortener Integration
+
+Configure URL shorteners (Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, or custom):
+
+1. **Configure Service** — Via admin panel (`/admin/index.html#shorteners`) or API:
+   ```bash
+   curl -X POST https://your-server/api/admin/shorteners \
+     -H "Authorization: Bearer <api-key>" \
+     -H "Content-Type: application/json" \
+     -d '{"name":"My Bitly","service_type":"bitly","api_key":"YOUR_API_KEY","is_active":true}'
+   ```
+
+2. **Generate Shortened Smartlink**:
+   ```bash
+   curl -X POST https://your-server/api/smartlink/generate \
+     -H "Authorization: Bearer <api-key>" \
+     -H "Content-Type: application/json" \
+     -d '{"offer_id":1,"shortener_service_id":1}'
+   ```
+
+3. **Test Shortener**:
+   ```bash
+   curl -X POST https://your-server/api/admin/shorteners/1/test \
+     -H "Authorization: Bearer <api-key>" \
+     -H "Content-Type: application/json" \
+     -d '{"url":"https://example.com"}'
+   ```
+
+### Database Tables
+
+- `1ai_smartlink_domains` — Custom domains for smartlinks
+- `1ai_url_shortener_services` — URL shortener configurations
+- `1ai_short_url_logs` — Analytics for shortened URLs
+- `1ai_affiliate_links` — Extended with `domain_id`, `short_url`, `shortener_service_id`
+
 ## Directory Structure
-
-- `1ai-config/` - Core configuration, database classes, utilities
-- `1ai-account/` - User management and administration
-- `api/` - REST API (v1, v2, and v3)
-- `cli/` - PHP CLI commands and client
-- `go-cli/` - Go CLI client
-- `bin/` - Entry scripts (`p1ai`)
-- `tracking1ai/` - Main tracking application (redirects, setup, reporting)
-- `1ai-cronjobs/` - Background job processing
-- `build/` - Docker and build configuration
-- `tests/` - PHPUnit test suite
-
 ## License
 
 Business Source License 1.1 (BUSL-1.1) — see [LICENSE](LICENSE) for the full text.

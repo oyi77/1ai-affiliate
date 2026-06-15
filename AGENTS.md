@@ -1,127 +1,211 @@
-# 1ai-Affiliate — Unified Marketing, Sales & Affiliate Hub
+# 1ai-Affiliate — High-Throughput Tracking Engine
 
 One-stop platform for CPA tracking, affiliate marketing, content distribution, and sales automation.
+Architected for massive event ingestion with sub-millisecond redirect latency and zero data loss.
 
-## Architecture
+## Architecture: Hot/Cold Path Split
 
 ```
-1ai-affiliate/                    # PHP 8.3+ CPA tracking (Prosper1ai-based)
-├── api/V3/                       # REST API — affiliates, commissions, offers
-├── 1ai-config/Affiliate/         # Affiliate profiles + auth
-├── 1ai-config/Margin/            # Payout calculator + commission handler
-├── 1ai-config/Offer/             # Offer management + access control
-├── 1ai-config/Commission/        # Ledger + payout batch system
-├── scripts/                      # DB migrations (4 SQL files)
+┌─────────────────────────────────────────────────────────────────────┐
+│                        EDGE LAYER (Go)                              │
+│              cmd/edgeredirect — sub-ms redirect                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  Inbound Request → GeoIP → Fraud Detection → Route → Redirect      │
+│                          ↓                                          │
+│                    Kafka (1ai-clicks)                               │
+│                    ┌──────┴──────┐                                  │
+│                    ↓              ↓                                  │
+│              Redis Cache    ClickHouse (analytics)                  │
+│              (ephemeral      (time-series reporting)                │
+│               click state)                                           │
+│                    ↓                                                 │
+│              Cold Path Consumer (cmd/clickconsumer)                 │
+│              → Batch flush to ClickHouse                            │
+│              → Session-based attribution                            │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## Directory Structure
+
+```
+1ai-affiliate/
+├── edge/                          # Go edge layer (NEW)
+│   ├── cmd/
+│   │   ├── edgeredirect/main.go   # Edge redirect server (hot path)
+│   │   ├── clickconsumer/main.go  # Cold path consumer worker
+│   │   └── cli/main.go            # CLI tooling
+│   ├── internal/
+│   │   ├── config/                # Env-based configuration
+│   │   ├── model/                  # Domain models (ClickEvent, ConversionEvent, etc.)
+│   │   ├── redis/                 # Redis client (campaign state, click records)
+│   │   ├── kafka/                 # Kafka producer + consumer group
+│   │   ├── router/                # In-memory traffic routing engine
+│   │   ├── detect/                # Fraud detection pipeline
+│   │   ├── clickhouse/            # ClickHouse analytics client
+│   │   ├── graphql/               # GraphQL schema
+│   │   └── webhook/               # Outbound webhook dispatch
+│   ├── deploy/k8s.yaml            # Kubernetes manifests + HPA
+│   ├── Dockerfile                 # Multi-stage build
+│   └── go.mod
 │
-├── pipeline/                     # TikTok → Shopee → FB/IG (Python)
-│   └── 21 Meta accounts, 27 affiliate links, 5 niches
+├── api/                           # PHP REST API
+│   ├── V3/                        # REST API — affiliates, commissions, offers
+│   ├── v2/                        # Attribution API (Slim framework)
+│   └── v1/                        # Legacy reporting API
 │
-├── poster/                       # Hourly Shopee poster → Telegram (Python)
+├── config/                        # PHP 8.3+ tracking platform
+│   ├── Affiliate/                 # Affiliate profiles + auth
+│   ├── Margin/                    # Payout calculator + commission handler
+│   ├── Offer/                     # Offer management + access control
+│   ├── Commission/                # Ledger + payout batch system
+│   ├── Attribution/               # Multi-touch attribution engine
+│   ├── Click/                     # Click processing
+│   ├── Tracking/                  # Campaign tracking
+│   └── Validation/               # Input validation
 │
-├── server/                       # Node.js Express (port 3001)
+├── server/                        # Node.js Express (port 3001)
 │   ├── app.js                     # Entry — CORS, JWT, static SPA
 │   ├── routes/                    # /api/auth, /api/admin, /api/payment, /api/content
 │   ├── controllers/               # auth + admin + payment (Tripay) + content (6 Gemini tools)
 │   ├── services/gemini.js         # Gemini SDK wrapper + circuit breaker
-│   ├── db/mysql.js                # Pool to Prosper1ai (shared with PHP)
+│   ├── agents/                    # AI agent framework (VoltAgent)
+│   ├── db/mysql.js                # Pool to MySQL (shared with PHP)
 │   └── public/
-│       ├── admin/index.html       # Dashboard-first SPA — Tailwind CDN, dark, mobile-first
+│       ├── admin/index.html       # Dashboard-first SPA
 │       ├── client/index.html
-│       └── assets/app.js          # Vanilla JS, fetch(), JWT in localStorage
+│       └── assets/app.js
 │
-├── mcp/                            # Unified MCP gateway
-    ├── unified_hub.py              # FastMCP server — all services via HTTP proxy
-    ├── requirements.txt            # mcp + httpx
-    └── mcp.json                    # Claude Desktop / Code config
+├── mcp/                           # Unified MCP gateway
+│   ├── unified_hub.py             # FastMCP server — all services via HTTP proxy
+│   └── mcp.json                   # Claude Desktop / Code config
+│
+├── cli/                           # PHP CLI tooling (OneAIAffiliateCli)
+├── tracking_support/              # PHP redirect engine (OneAIAffiliate namespace)
+├── scripts/                       # DB migrations
+├── pipeline/                      # TikTok → Shopee → FB/IG (Python)
+└── poster/                        # Hourly Shopee poster → Telegram (Python)
 ```
 
-## Architecture: API/MCP Integration (NOT symlinks)
+## Hot Path (Edge Resolution)
 
-```
-┌─────────────────────────────────────────────────────────┐
-│              1ai-affiliate Unified MCP Hub              │
-│         mcp/unified_hub.py (FastMCP + httpx)            │
-├─────────────────────────────────────────────────────────┤
-│  Tool                          │  Target Service        │
-│  ads_generate()                │  1ai-ads :5000         │
-│  ads_generate_landing()        │  1ai-ads :5000         │
-│  social_blast()                │  1ai-social :8200      │
-│  social_analytics()            │  1ai-social :8200      │
-│  social_shopee_sync()          │  1ai-social :8200      │
-│  social_shopee_commission()    │  1ai-social :8200      │
-│  content_status()              │  1ai-content :3000     │
-│  content_banner()              │  1ai-affiliate :3001   │
-│  content_carousel()            │  1ai-affiliate :3001   │
-│  content_caption()             │  1ai-affiliate :3001   │
-│  content_brand_kit()           │  1ai-affiliate :3001   │
-│  content_ab_test()             │  1ai-affiliate :3001   │
-│  content_bg_remove()           │  1ai-affiliate :3001   │
-│  ebook_generate()              │  1ai-ebook :8100       │
-│  ebook_status()                │  1ai-ebook :8100       │
-│  ebook_market_research()       │  1ai-ebook :8100       │
-│  tracking_affiliates()         │  PHP V3 API (localhost)│
-│  tracking_commissions()        │  PHP V3 API (localhost)│
-│  tracking_offers()             │  PHP V3 API (localhost)│
-│  unified_campaign()            │  CROSS-SERVICE 🔥      │
-│  unified_affiliate_onboarding()│  CROSS-SERVICE 🔥      │
-│  unified_content_funnel()      │  CROSS-SERVICE 🔥      │
-└─────────────────────────────────────────────────────────┘
-```
+The Go edge server (`cmd/edgeredirect`) handles all inbound tracking requests:
 
-Each MCP tool = HTTP REST proxy to native API with circuit breaker.
-Cross-service tools chain multiple services (e.g., generate ad → create tracking link → blast social).
+1. **Campaign lookup** — Redis (in-memory, sub-ms)
+2. **GeoIP resolution** — Local MMDB file, no external calls
+3. **Fraud detection** — In-memory rules engine (bot UA, proxy IPs, missing referer)
+4. **Traffic routing** — Rule-based (geo, device, carrier, connection type, time window)
+5. **Daily cap check** — Redis atomic increment
+6. **Click event** → Kafka (async, non-blocking)
+7. **Ephemeral state** → Redis (for attribution)
+8. **Redirect** → HTTP 302 to target URL
 
-## Modules
+**Latency target**: < 1ms per request (no database calls in hot path)
 
-### Content Generation: 6 Gemini Tools (Node, port 3001)
-- `POST /api/content/banner` — banner concepts (headline/subtext/palette/layout/CTA/font mood)
-- `POST /api/content/carousel` — Instagram carousel (hook→value→CTA, configurable slide count)
-- `POST /api/content/caption` — social caption + 3 alt hooks + hashtags
-- `POST /api/content/brand-kit` — palette (5 hex), fonts, voice, logo concept, taglines
-- `POST /api/content/ab-test` — 3 landing-page variants with predicted CTR + reasoning
-- `POST /api/content/bg-remove` — optimized prompt for AI bg-removal
-- `GET  /api/content/status` — public: checks `GEMINI_API_KEY` configured
-- Circuit breaker: 5 failures → 30s open. Auth: JWT Bearer (admin/affiliate)
+## Cold Path (Ingestion & Attribution)
 
-### Core: CPA Tracking (PHP 8.3+)
-- Campaign tracking with click/pixel/postback
-- Sub-affiliate network with commission engine
-- Offer management with affiliate access control
-- Commission ledger with payout batch processing
-- V3 REST API (router/controller pattern, `Connection` DI)
+The consumer worker (`cmd/clickconsumer`) processes the Kafka event stream:
 
-### MCP Gateway (Python)
-- 17 tools covering 5 services
-- Circuit breaker per service (5 failures → 30s open)
-- Cross-service workflows: `unified_campaign`, `unified_affiliate_onboarding`
-- Config via env vars: `ADS_URL`, `SOCIAL_URL`, `CONTENT_URL`, `EBOOK_URL`, `TRACKING_URL`
+1. **Consume** click events from Kafka
+2. **Batch** to ClickHouse (every 5s or 1000 events)
+3. **Attribution** — Session-based conversion matching
+4. **Analytics** — Time-series OLAP queries via ClickHouse
 
-### Pipeline: Content Distribution (Python)
-- TikTok download (no watermark) → FFmpeg hash mod (Meta-safe)
-- AI niche detection (Omniroute + keyword fallback)
-- 27 Shopee affiliate links, 5 niches, 21 Meta accounts
-- Anti-spam: 45-120min delay, 4 posts/acct/day
+## Tech Stack
 
-### Poster: Telegram Affiliate (Python)
-- Hourly Shopee product posting to Telegram
-- PostgreSQL-backed product queue, dual-mode (photo+text)
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Edge | Go 1.22 | Sub-ms redirect, concurrent request handling |
+| Event Stream | Apache Kafka / Redpanda | Immutable click/conversion log |
+| Fast State | Redis Cluster | Campaign rules, token whitelists, ephemeral clicks |
+| Analytics | ClickHouse | Time-series OLAP, sub-second aggregations |
+| Persistent State | MySQL 8.0+ | Relational metadata, users, billing, config |
+| API | GraphQL + REST | Headless API for all UI components |
+| Orchestration | Kubernetes + HPA | Auto-scaling based on CPU + Kafka lag |
 
-### Connected Services (via MCP/API)
-- **1ai-ads** (port 5000): AdForge — generate ads, landing pages, campaigns
-- **1ai-social** (port 8200): SMMA — 27 routers, blast/reach/outreach/Shopee
-- **1ai-content** (port 3000): AI Video Marketing — Telegram bot
-- **1ai-ebook** (port 8100): AI ebook pipeline — multi-language, novel, comics
+## Core Feature Set
 
-### 6 Gemini Content Tools (1ai-affiliate server :3001)
-6 affiliate-marketing content endpoints, all wired through `services/gemini.js` (circuit breaker):
-- `POST /api/content/banner` — banner concepts (headline/palette/layout/CTA)
-- `POST /api/content/carousel` — Instagram carousel slides
-- `POST /api/content/caption` — caption + alt versions + hashtags
-- `POST /api/content/brand-kit` — palette/fonts/voice/logo/tagline
-- `POST /api/content/ab-test` — 3 landing-page variants w/ predicted CTR
-- `POST /api/content/bg-remove` — optimized prompt for client-side bg removal
+### S2S Postback Tracking
+- Asynchronous server-to-server event logging, fully decoupled from redirect path
+- Postback endpoint: `POST /postback` on edge server
+- Conversion events published to Kafka, processed by cold path
 
-Exposed via MCP hub: `content_banner`, `content_carousel`, `content_caption`, `content_brand_kit`, `content_ab_test`, `content_bg_remove`, `unified_content_funnel`.
+### Smart Traffic Routing
+- Rule-based distribution: geo (country/region/city), device, OS, browser, carrier, connection type
+- Weight-based A/B split testing
+- Time-window scheduling
+- Fallback rules with priority ordering
+- All rules evaluated in-memory — zero database calls
+
+### Real-time OLAP Reporting
+- ClickHouse MergeTree tables partitioned by month
+- Sub-second aggregations across multidimensional data
+- 90-day TTL with configurable retention
+- Pre-aggregated materialized views for common queries
+
+### Anti-Fraud Detection
+- Bot user-agent detection (40+ known bot signatures)
+- Proxy/VPN IP blocking (configurable list)
+- Missing/empty referer scoring
+- Empty user-agent detection
+- Configurable threshold (default: 0.8 blocks, lower scores logged)
+
+### Platform Dashboards
+- Decoupled publisher and advertiser interfaces
+- All UI components are headless consumers of the GraphQL/REST API
+- Real-time stats via SSE stream
+### Custom Domains & URL Shorteners
+- **Smartlink Custom Domains** — Configure branded domains (go.yourdomain.com) for smartlink redirects
+- **Default Domain Selection** — Mark one domain as default for new smartlinks
+- **SSL Configuration** — Enable/disable HTTPS per domain, Cloudflare Zone ID integration
+- **URL Shortener Integration** — Connect Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, or custom API endpoints
+- **Auto-Shortening** — Automatically shorten smartlinks at generation time
+- **Shortener Analytics** — Track shortened URL clicks and sync with external services
+- **Admin Panel Management** — Full CRUD via `/admin/index.html#domains` and `/admin/index.html#shorteners`
+
+## API & Integration
+
+### GraphQL API
+- Single endpoint for all analytics queries
+- Types: Click, Conversion, Campaign, Affiliate, Analytics
+- Mutations: createCampaign, updateCampaign, scheduleExport
+- Resolves against ClickHouse for analytics, MySQL for metadata
+
+### REST API
+- V3: Affiliates, commissions, offers
+- V2: Attribution models, exports, sandbox
+- V1: Legacy reporting (maintained for backward compatibility)
+
+### Webhooks
+- Outbound event streaming for external partner integrations
+- Events: click, conversion, fraud_block, cap_reached, campaign_paused
+- HMAC-SHA256 payload signing
+- Configurable per-user with event type filtering
+
+### CLI Tooling
+- `1ai campaign list|get|push` — Campaign management
+- `1ai analytics summary|export` — Analytics queries
+- `1ai webhook register|list|test` — Webhook management
+- `1ai redis flush-campaigns|stats` — Cache management
+- `1ai health` — System health check
+
+## Infrastructure & Scaling
+
+### Kubernetes Deployment
+- **edge-redirect**: 3-50 replicas, HPA on CPU (70%) + Kafka lag
+- **click-consumer**: 2-20 replicas, HPA on CPU (80%) + Kafka lag
+- Pod anti-affinity for edge nodes
+- Rolling updates with maxSurge=1, maxUnavailable=0
+
+### Fault Tolerance
+- Edge continues queueing events to Kafka even if cold path fails
+- No database dependency in redirect path
+- Redis cluster provides high availability for campaign state
+- Kafka provides durability for all click/conversion events
+
+### Global Edge Deployment
+- Edge instances deployed physically close to traffic sources
+- Geo-aware DNS routing
+- Stateless design enables horizontal scaling
 
 ## Quick Start
 
@@ -129,6 +213,9 @@ Exposed via MCP hub: `content_banner`, `content_carousel`, `content_caption`, `c
 # Core tracking platform
 composer install && cp 1ai-config-sample.php 1ai-config.php
 php scripts/run_migrations.php
+
+# Edge layer (Go)
+cd edge && go build ./cmd/edgeredirect && go build ./cmd/clickconsumer
 
 # Pipeline
 cd pipeline && pip install -r requirements.txt
@@ -143,10 +230,13 @@ cd poster && pip install -r requirements.txt
 # Core
 php8.4 vendor/bin/phpunit --no-configuration tests/
 
+# Edge
+cd edge && go test ./...
+
 # Pipeline + Poster — check individual READMEs
 ```
 
 ## Related
-- Upstream: tracking1ai/Prosper1ai
 - 1ai-ads: ~/projects/1ai-ads
 - 1ai-social: ~/projects/1ai-social
+- 1ai-ebook: ~/projects/1ai-ebook

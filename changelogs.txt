@@ -1,3 +1,17 @@
+Version 2.0.0
+-- New: Custom Domains for Smartlinks — Configure branded domains (go.yourdomain.com, r.yourdomain.com) for smartlink redirects
+-- New: URL Shortener Integration — Connect Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, or custom API endpoints
+-- New: Domain Management Admin UI — Add/edit/delete custom domains with SSL configuration and Cloudflare Zone ID integration
+-- New: Shortener Service Admin UI — Configure API keys, rate limits, and default shorteners
+-- New: Default Domain Selection — Mark one domain as default for all new smartlinks
+-- New: Smartlink API Extended — Added domain_id and shortener_service_id parameters to /api/smartlink/generate
+-- New: Database Tables — Added 1ai_smartlink_domains, 1ai_url_shortener_services, 1ai_short_url_logs
+-- New: Extended affiliate_links — Added domain_id, short_url, shortener_service_id columns
+-- New: Edge Server Route — Added /go/{slug} route for smartlink redirects
+-- New: URL Shortener API Integration — Implemented shortenUrl helper for Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, Custom
+-- Fixed: Foreign key constraints on smartlinks — Cannot delete domain with associated smartlinks
+-- Fixed: Inactive domain handling — Rejected when generating smartlinks with inactive domains
+
 Release notes
 
 Version 1.9.29
