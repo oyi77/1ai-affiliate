@@ -29,6 +29,14 @@ const {
   setOfferPostback,
   getOfferPostback,
   getPostbackLogs,
+  getDomains,
+  createDomain,
+  updateDomain,
+  deleteDomain,
+  getShortenerServices,
+  saveShortenerService,
+  deleteShortenerService,
+  testShortenerService,
 } = require('../controllers/adminController');
 
 router.use(authenticate);
@@ -63,5 +71,18 @@ router.put('/vip', saveVipProfile);
 router.post('/offers/:offerId/postback', requireAdmin, setOfferPostback);
 router.get('/offers/:offerId/postback', requireAdmin, getOfferPostback);
 router.get('/postback-logs', requireAdmin, getPostbackLogs);
+
+// Domain Management
+router.get('/domains', requireAdmin, getDomains);
+router.post('/domains', requireAdmin, createDomain);
+router.put('/domains/:id', requireAdmin, updateDomain);
+router.delete('/domains/:id', requireAdmin, deleteDomain);
+
+// URL Shortener Services
+router.get('/shorteners', requireAdmin, getShortenerServices);
+router.post('/shorteners', requireAdmin, saveShortenerService);
+router.put('/shorteners/:id', requireAdmin, saveShortenerService);
+router.delete('/shorteners/:id', requireAdmin, deleteShortenerService);
+router.post('/shorteners/:id/test', requireAdmin, testShortenerService);
 
 module.exports = router;
