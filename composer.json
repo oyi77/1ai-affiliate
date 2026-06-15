@@ -13,11 +13,10 @@
   },
   "autoload": {
     "psr-4": {
-      "OneAIAffiliate\\": "config/",
-      "Tracking202\\": "tracking_support/",
+      "OneAIAffiliate\\": ["config/", "tracking_support/"],
       "OneAIAffiliateInterfaces\\": "interfaces/",
       "Api\\": "api/",
-      "P202Cli\\": "cli/"
+      "OneAIAffiliateCli\\": "cli/"
     }
   },
   "bin": ["bin/p1ai"],
