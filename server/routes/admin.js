@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate, requireAdmin } = require('../middleware/auth');
-const { requireRole, requireAffiliate, requireAdvertiser } = require('../middleware/roleMiddleware');
+const { requireRole } = require('../middleware/roleMiddleware');
+const { rateLimitWrite, rateLimitRead } = require('../middleware/rateLimit');
 const {
   getUsers,
   createUser,
@@ -59,7 +60,7 @@ router.get('/system', requireAdmin, getSystemStatus);
 router.get('/clickservers', requireAdmin, getClickServers);
 router.post('/clickservers', requireAdmin, addClickServer);
 router.get('/offers', requireRole('admin', 'affiliate', 'advertiser'), getOffers); // Role-filtered inside controller
-router.post('/offers', createOffer); // Open to all, but requires admin/advertiser logic inside
+router.post('/offers', requireRole('admin', 'advertiser'), createOffer); // Restricted per Phase A
 router.post('/offer-campaign', requireAdmin, linkOfferToCampaign); // Link offer to campaign
 router.get('/margin/:userId', requireAdmin, getMargin); // Get margin for a user
 router.get('/margin', getMargin); // Get own margin (any role)

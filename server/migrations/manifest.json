@@ -1,0 +1,6 @@
+{
+  "_comment": "Curated execution order for Node migrations. Baseline PHP-era schema is assumed to already exist in the target database; this manifest lists only migrations managed by the Node runner.",
+  "migrations": [
+    "015_adtech_worldclass.sql"
+  ]
+}

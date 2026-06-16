@@ -1,17 +1,58 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
+const helmet = require('helmet');
+const pinoHttp = require('pino-http');
 const path = require('path');
+const crypto = require('crypto');
 const pool = require('./db/mysql');
+const logger = require('./logger');
+const metrics = require('./metrics');
+const { idempotency } = require('./middleware/idempotency');
+const { auditLog } = require('./middleware/auditLog');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// Security + observability middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:"],
+    },
+  },
+}));
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+app.use(pinoHttp({ logger, genReqId: req => req.get('X-Request-ID') || crypto.randomUUID() }));
+
+// Idempotency for mutating requests
+app.use(idempotency());
+
+// Mutation audit logging
+app.use(auditLog());
+
+// Metrics endpoint (public for load-balancer probes)
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.send(metrics.getMetrics());
+});
+
+// Request/response counting
+app.use((req, res, next) => {
+  const routeKey = `${req.method} ${req.route?.path || req.path}`;
+  metrics.incrementRequest(routeKey);
+  const originalSend = res.send.bind(res);
+  res.send = (body) => {
+    metrics.incrementResponseStatus(res.statusCode, routeKey);
+    return originalSend(body);
+  };
+  next();
+});
 
 // Static files — shared with PHP public dir
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,18 +80,13 @@ app.use('/api/poster', require('./routes/poster'));
 app.use('/api/pipeline', require('./routes/pipeline'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
-
-const postbackQueue = require('./services/postbackQueue');
-const posterWorker = require('./services/posterWorker');
-const pipelineWorker = require('./services/pipelineWorker');
-
 // Health check — deep probe: checks DB connectivity + queue status
 app.get('/health', async (req, res) => {
-  const checks = { status: 'ok', service: '1ai-affiliate-tracker', port: String(PORT), timestamp: new Date().toISOString(), uptime: Math.floor(process.uptime()), components: {} };
+  const checks = { status: 'ok', service: '1ai-affiliate-tracker', port: String(PORT), timestamp: new Date().toISOString(), uptime: Math.floor(process.uptime()), request_id: req.id, components: {} };
   // DB check
   try {
-    const [rows] = await pool.query('SELECT 1 AS ok');
-    checks.components.database = { status: 'ok', latency_ms: 0 };
+    await pool.query('SELECT 1 AS ok');
+    checks.components.database = { status: 'ok' };
   } catch (err) {
     checks.components.database = { status: 'degraded', error: err.message };
     checks.status = 'degraded';
@@ -79,10 +115,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/index.html'));
 });
 
-// Error handler
+// Error handler — log via pino, return request_id for 500s
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
+  const requestId = req.id || 'unknown';
+  logger.error({ err, requestId }, 'Unhandled error');
+  if (res.headersSent) return next(err);
+  const status = err.status || err.statusCode || 500;
+  const body = status >= 500
+    ? { error: 'Internal server error', request_id: requestId }
+    : { error: err.message || 'Error' };
+  res.status(status).json(body);
 });
 
 if (require.main === module) {
@@ -90,8 +132,8 @@ if (require.main === module) {
   posterWorker.start();
   pipelineWorker.start();
   app.listen(PORT, () => {
-    console.log(`1AI Affiliate Tracker server on port ${PORT}`);
-    console.log(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
+    logger.info(`1AI Affiliate Tracker server on port ${PORT}`);
+    logger.info(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
   });
 }
 

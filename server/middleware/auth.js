@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../db/mysql');
+const logger = require('../logger');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 
@@ -20,10 +21,14 @@ async function authenticate(req, res, next) {
       const resp = await fetch(`${V3_API_URL}/system/health`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
       });
-      if (!resp.ok) return res.status(401).json({ error: 'Invalid API key' });
+      if (!resp.ok) {
+        logger.warn({ apiKey: `${apiKey.slice(0, 4)}...`, status: resp.status }, 'API key rejected');
+        return res.status(401).json({ error: 'Invalid API key' });
+      }
       req.user = { id: 0, role: 'admin', apiKey };
       return next();
     } catch (e) {
+      logger.error({ err: e }, 'Auth service unreachable');
       return res.status(401).json({ error: 'Auth service unreachable' });
     }
   }
@@ -34,12 +39,22 @@ async function authenticate(req, res, next) {
   }
 
   const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Authorization required' });
+  }
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded || !decoded.role) {
+      logger.warn({ user: decoded?.id }, 'JWT missing role claim');
+      return res.status(401).json({ error: 'Invalid token payload' });
+    }
     req.user = decoded; // { id, email, role, affiliateId? }
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    const reason = err.name === 'TokenExpiredError' ? 'Token expired' : 'Invalid or expired token';
+    logger.warn({ err }, reason);
+    return res.status(401).json({ error: reason });
   }
 }
 
@@ -51,6 +66,7 @@ function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!roles.includes(req.user.role)) {
+      logger.warn({ userId: req.user.id, role: req.user.role, required: roles, path: req.path }, 'Authorization denied');
       return res.status(403).json({ error: `Role required: ${roles.join(' or ')}` });
     }
     next();
@@ -62,6 +78,7 @@ function requireRole(...roles) {
  */
 function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== 'admin') {
+    logger.warn({ userId: req.user?.id, role: req.user?.role, path: req.path }, 'Admin authorization denied');
     return res.status(403).json({ error: 'Admin access required' });
   }
   next();
