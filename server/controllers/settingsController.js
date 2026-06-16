@@ -9,7 +9,7 @@ async function getProfile(req, res) {
   try {
     const [rows] = await pool.query(
       `SELECT user_id, user_name, user_email, user_timezone, user_api_key,
-              clickserver_api_key, p1ai_customer_api_key, user_slack_incoming_webhook,
+              clickserver_api_key, customer_api_key, user_slack_incoming_webhook,
               user_role, user_date_added
        FROM 1ai_users WHERE user_id = ?`,
       [req.user.id]
@@ -42,7 +42,7 @@ async function getProfile(req, res) {
       role: user.user_role,
       api_key: user.user_api_key || null,
       clickserver_api_key: user.clickserver_api_key || null,
-      customer_api_key: user.p1ai_customer_api_key || null,
+      customer_api_key: user.customer_api_key || null,
       slack_webhook: user.user_slack_incoming_webhook || null,
       date_added: user.user_date_added,
       integrations: {

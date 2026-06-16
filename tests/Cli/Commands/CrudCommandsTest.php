@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Cli\Commands;
 
-use P202Cli\Commands\AttributionModelCreateCommand;
-use P202Cli\Commands\AttributionModelUpdateCommand;
-use P202Cli\Commands\CrudCommands;
+use OneAIAffiliateCli\Commands\AttributionModelCreateCommand;
+use OneAIAffiliateCli\Commands\AttributionModelUpdateCommand;
+use OneAIAffiliateCli\Commands\CrudCommands;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

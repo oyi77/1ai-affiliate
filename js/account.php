@@ -83,9 +83,9 @@ $(document).ready(function() {
 
 });
 
-$(document).on('closed.bs.alert', '#prosper-alerts', function() {
+$(document).on('closed.bs.alert', '#1ai-alerts', function() {
 	var id = $(this).data("alertid");
-    $.post("<?php echo get_absolute_url();?>account/ajax/alert-seen.php", { prosper_alert_id:id })
+    $.post("<?php echo get_absolute_url();?>account/ajax/alert-seen.php", { alert_id:id })
 });
 
 $(document).on('click', '#delete-rest-key', function() {

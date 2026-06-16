@@ -1,10 +1,10 @@
 -- 1ai-Affiliate: Development Data Seeder
 -- PURPOSE: Populate realistic sample data for development/testing.
--- RUN WITH: mysql -u root -p prosper1ai_test < scripts/007_dev_seed.sql
+-- RUN WITH: mysql -u root -p 1ai_affiliate_test < scripts/007_dev_seed.sql
 -- IDempotent: uses INSERT IGNORE / ON DUPLICATE KEY UPDATE
 -- DEV-ONLY: Do NOT register in run_migrations.php (test data)
 
-USE prosper1ai_test;
+USE 1ai_affiliate_test;
 
 -- ===========================================================================
 -- 1. USERS (1ai_users — upstream table, anchors all roles)

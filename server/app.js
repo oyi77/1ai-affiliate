@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
+const pool = require('./db/mysql');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,8 @@ app.get('/api-docs', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/om', require('./routes/om'));
+app.use('/api/am', require('./routes/am'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/content', require('./routes/content'));
 app.use('/api/geo', require('./routes/geoip'));
@@ -88,7 +91,7 @@ if (require.main === module) {
   pipelineWorker.start();
   app.listen(PORT, () => {
     console.log(`1AI Affiliate Tracker server on port ${PORT}`);
-    console.log(`Shared MySQL: ${process.env.DB_NAME || 'Prosper1ai'}`);
+    console.log(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
   });
 }
 

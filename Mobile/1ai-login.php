@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$log_stmt->execute();
 		$log_stmt->close();
 	} else {
-		prosper_log('login', 'Unable to prepare mobile login log statement: ' . $db->error);
+		affiliate_log('login', 'Unable to prepare mobile login log statement: ' . $db->error);
 	}
 
 	if (empty($error) && $user_row) {

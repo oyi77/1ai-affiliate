@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tracking202\Setup;
+namespace OneAIAffiliate\Setup;
 
 use AUTH;
 use User;

@@ -9,6 +9,6 @@ if (!hash_equals((string) ($_SESSION['token'] ?? ''), (string) ($_POST['token'] 
     die();
 }
 
-$mysql['prosper_alert_id'] = $db->real_escape_string((string)$_POST['prosper_alert_id']);
-$alert_sql = "INSERT INTO alerts SET prosper_alert_seen='1', prosper_alert_id='{$mysql['prosper_alert_id']}'";
+$mysql['alert_id'] = $db->real_escape_string((string)$_POST['alert_id']);
+$alert_sql = "INSERT INTO alerts SET alert_seen='1', alert_id='{$mysql['alert_id']}'";
 $alert_result = _mysqli_query($alert_sql, $db);

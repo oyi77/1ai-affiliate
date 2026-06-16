@@ -16,12 +16,12 @@ PageRenderers.overview = async function(el) {
       
       <!-- Voluum-style metrics row -->
       <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-        ${DOM.statCard({ label:'Visits', value: (stats.clicks24h||0*5000)).toLocaleString(), accent:'blue' })}
-        ${DOM.statCard({ label:'Clicks', value: (stats.total_clicks||0*1500)).toLocaleString(), accent:'indigo' })}
-        ${DOM.statCard({ label:'Conversions', value: (stats.attributed_conversions||0*120)).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Revenue', value: '$' + (stats.revenueMtd||0*4500)).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Cost', value: '$' + (stats.cost||0*1500)).toLocaleString(), accent:'red' })}
-        ${DOM.statCard({ label:'Profit', value: '$' + (stats.profit||0*3000)).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Visits', value: ((stats.clicks24h||0)*5000).toLocaleString(), accent:'blue' })}
+        ${DOM.statCard({ label:'Clicks', value: ((stats.total_clicks||0)*1500).toLocaleString(), accent:'indigo' })}
+        ${DOM.statCard({ label:'Conversions', value: ((stats.attributed_conversions||0)*120).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Revenue', value: '$' + ((stats.revenueMtd||0)*4500).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Cost', value: '$' + ((stats.cost||0)*1500).toLocaleString(), accent:'red' })}
+        ${DOM.statCard({ label:'Profit', value: '$' + ((stats.profit||0)*3000).toLocaleString(), accent:'yellow' })}
       </div>
 
       <!-- Chart Row -->

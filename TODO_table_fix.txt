@@ -1,0 +1,7 @@
+// Fix multiModelService table name prefix 1ai_
+Line 27: INSERT INTO 1ai_commission_entries
+Line 72: INSERT INTO 1ai_cpv_view_events
+Line 86: INSERT INTO 1ai_commission_entries
+Line 239: INSERT INTO 1ai_commission_entries
+Line 315: FROM 1ai_commission_entries ce
+// Also fix column names: amount -> commission, metadata_json -> metadata

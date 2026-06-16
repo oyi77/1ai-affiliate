@@ -14,13 +14,13 @@ template_top('Help Resources');  ?>
 			<div class="col-xs-8">
 				<h6>Help Resources</h6>
 
-				<p><small>Here are some places you can find help regarding Tracking202 & 1ai-Affiliate</small></p>
+				<p><small>Here are some places you can find help regarding 1ai-Affiliate</small></p>
 				
-				<p><small><em>Tracking202 Tutorials:</em> <a href="http://support.tracking1ai.com/" target="_blank">http://support.tracking1ai.com/</a></small></p>
+				<p><small><em>1ai-Affiliate Tutorials:</em> <a href="http://support.tracking1ai.com/" target="_blank">http://support.tracking1ai.com/</a></small></p>
 				
 				<p><small><em>202 Youtube</em> <a href="https://youtube.com/t1ainana" target="_blank">https://youtube.com/t1ainana</a></small></p>
 				
-				<p><small><em>Tracking202 Videos:</em> <a href="http://tracking1ai.com/videos/" target="_blank">http://tracking1ai.com/videos/</a></small></p>
+				<p><small><em>1ai-Affiliate Videos:</em> <a href="http://tracking1ai.com/videos/" target="_blank">http://tracking1ai.com/videos/</a></small></p>
 
 				<p><small><em>1ai-Affiliate Blog:</em> <a href="http://prosper.tracking1ai.com/blog/" target="_blank">http://prosper.tracking1ai.com/blog/</a></small></p>
 

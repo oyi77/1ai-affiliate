@@ -46,7 +46,7 @@ async function login(req, res) {
     const token = await generateToken(user);
 
     const [existingKeys] = await pool.query(
-      'SELECT api_key FROM api_keys WHERE user_id = ? LIMIT 1',
+      'SELECT api_key FROM 1ai_api_keys WHERE user_id = ? LIMIT 1',
       [user.user_id]
     );
     let apiKey = existingKeys.length > 0 ? existingKeys[0].api_key : null;
@@ -54,7 +54,7 @@ async function login(req, res) {
     if (!apiKey) {
       apiKey = crypto.randomBytes(32).toString('hex');
       await pool.query(
-        "INSERT INTO api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
+        "INSERT INTO 1ai_api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
         [apiKey, user.user_id]
       );
     }

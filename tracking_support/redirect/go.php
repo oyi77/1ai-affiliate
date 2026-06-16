@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use Tracking202\Redirect\RedirectHelper;
+use OneAIAffiliate\Redirect\RedirectHelper;
 
 $vars = explode(' ', base64_decode((string) RedirectHelper::getStringParam('202v')));
 

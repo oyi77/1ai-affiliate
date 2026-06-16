@@ -163,8 +163,8 @@ class AUTH
                     $length = (int) $matches[1];
                     if ($length < 60) {
                         $alter = $db->query('ALTER TABLE users MODIFY user_pass VARCHAR(255) NOT NULL');
-                        if ($alter === false && function_exists('prosper_log')) {
-                            prosper_log('login', 'Failed to expand user_pass column: ' . $db->error);
+                        if ($alter === false && function_exists('affiliate_log')) {
+                            affiliate_log('login', 'Failed to expand user_pass column: ' . $db->error);
                         }
                     }
                 }

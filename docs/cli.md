@@ -1,6 +1,6 @@
-# Prosper1ai CLI (`p1ai`)
+# 1ai-Affiliate CLI (`1ai`)
 
-A command-line tool for managing a Prosper1ai tracking instance. Distributed as a single static binary with zero dependencies.
+A command-line tool for managing a 1ai-affiliate tracking instance. Distributed as a single static binary with zero dependencies.
 
 ## Installation
 
@@ -33,8 +33,8 @@ make install        # Install to $GOPATH/bin
 ## Quick start
 
 ```bash
-# 1. Point the CLI at your Prosper1ai instance
-p1ai config set-url https://your-Prosper1ai.example.com
+# 1. Point the CLI at your 1ai-affiliate instance
+1ai config set-url https://your-1ai-affiliate.example.com
 
 # 2. Set your API key
 p1ai config set-key YOUR_API_KEY
@@ -67,7 +67,7 @@ The CLI stores its configuration in `~/.p1ai/config.json` with `0600` permission
   "active_profile": "default",
   "profiles": {
     "default": {
-      "url": "https://your-Prosper1ai.example.com",
+      "url": "https://your-1ai-affiliate.example.com",
       "api_key": "your_api_key_here",
       "defaults": {
         "report.period": "last30"
@@ -84,7 +84,7 @@ Legacy single-profile files (`url`, `api_key`) are auto-migrated in memory to `p
 
 ### `p1ai config set-url <url>`
 
-Set the Prosper1ai instance URL. Trailing slashes are stripped automatically.
+Set the 1ai-affiliate instance URL. Trailing slashes are stripped automatically.
 
 ### `p1ai config set-key <api-key>`
 
@@ -816,7 +816,7 @@ Use `--concurrency <n>` to limit parallel profile executions (default: `5`, mini
 
 ```bash
 p1ai system health       # Health check (unauthenticated)
-p1ai system version      # Prosper1ai + PHP + MySQL versions
+1ai system version      # 1ai-affiliate + PHP + MySQL versions
 p1ai system db-stats     # Database table sizes
 p1ai system cron         # Cron job status
 p1ai system errors       # Recent system errors

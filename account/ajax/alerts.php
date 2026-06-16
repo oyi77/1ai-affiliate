@@ -22,8 +22,8 @@ if (empty($alerts)) {
 foreach ($alerts as $alert) {
     $external_id = $alert['external_id'];
     if ($external_id) {
-        $mysql['prosper_alert_id'] = $db->real_escape_string($external_id);
-        $sql = "SELECT COUNT(*) AS count FROM alerts WHERE prosper_alert_id='{$mysql['prosper_alert_id']}' AND prosper_alert_seen='1'";
+        $mysql['alert_id'] = $db->real_escape_string($external_id);
+        $sql = "SELECT COUNT(*) AS count FROM alerts WHERE alert_id='{$mysql['alert_id']}' AND alert_seen='1'";
         $result = _mysqli_query($sql, $db);
         $row = $result->fetch_assoc();
         if ($row['count']) {
@@ -57,11 +57,11 @@ foreach ($alerts as $alert) {
     
     // Sanitize output
     $html['time'] = htmlentities($item_time);
-    $html['prosper_alert_id'] = htmlentities($external_id);
+    $html['alert_id'] = htmlentities($external_id);
     $html['title'] = htmlentities($alert['title'] ?? '');
     $html['description'] = nl2br(htmlentities($alert['description'] ?? '')); ?>
 
-    <div id="prosper-alerts" class="alert alert-error" data-alertid="<?php echo $html['prosper_alert_id'];?>">
+    <div id="1ai-alerts" class="alert alert-error" data-alertid="<?php echo $html['alert_id'];?>">
         <button type="button" class="close fui-cross" data-dismiss="alert"></button>
         <strong><?php echo $html['title']. " - " .$html['time'];?></strong><br/>
         <span class="small"><?php echo $html['description'];?></span>

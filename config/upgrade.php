@@ -234,10 +234,10 @@ if (!empty($version_error)) {
 	if (!isset($success)) $success = false;
 
 	if (version_compare(OneAIAffiliate::oneai_affiliate_version(), $version) > 0) {
-		$task_202 = "Downgrade";
+		$task_1ai = "Downgrade";
 		$task_1ai_2 = "Downgrading";
 	} else {
-		$task_202 = "Upgrade";
+		$task_1ai = "Upgrade";
 		$task_1ai_2 = "Upgrading";
 	}
 
@@ -247,7 +247,7 @@ if (!empty($version_error)) {
 		<?php if ($error == true) { ?>
 
 			<h2 style="color: #900;">An error occured</h2>
-			<span style="color: #900;">An unexpected error occured while you were trying to <?php echo strtolower($task_202); ?>, please try again or if you keep encountering problems review our <a href="http://support.tracking1ai.com">support docs</a>.</span>
+			<span style="color: #900;">An unexpected error occured while you were trying to <?php echo strtolower($task_1ai); ?>, please try again or if you keep encountering problems review our <a href="http://support.tracking1ai.com">support docs</a>.</span>
 			<br /><br />
 
 		<?php } else if ($success == true) {
@@ -255,12 +255,12 @@ if (!empty($version_error)) {
 			//('location: '.get_absolute_url().'account/signout.php');
 		?>
 			<h6>Success!</h6>
-			<small>1ai-Affiliate <?php echo strtolower($task_202); ?> Completed! Now you can <a href="<?php echo get_absolute_url(); ?>account/signout.php">log in</a>.</small>
+			<small>1ai-Affiliate <?php echo strtolower($task_1ai); ?> Completed! Now you can <a href="<?php echo get_absolute_url(); ?>account/signout.php">log in</a>.</small>
 
 		<?php } else { ?>
 
-			<h6><?php echo $task_202; ?> to 1ai-Affiliate <?php echo $version; ?></h6>
-			<small>You are <?php echo strtolower($task_1ai_2); ?> from version <span class="label label-primary"><?php echo OneAIAffiliate::oneai_affiliate_version(); ?></span> to <span class="label label-primary"><?php echo $version; ?></span>. To continue with the <?php echo strtolower($task_202); ?> press the button below to begin the process. This could take a while depending on the last time you updated your software.</small>
+			<h6><?php echo $task_1ai; ?> to 1ai-Affiliate <?php echo $version; ?></h6>
+			<small>You are <?php echo strtolower($task_1ai_2); ?> from version <span class="label label-primary"><?php echo OneAIAffiliate::oneai_affiliate_version(); ?></span> to <span class="label label-primary"><?php echo $version; ?></span>. To continue with the <?php echo strtolower($task_1ai); ?> press the button below to begin the process. This could take a while depending on the last time you updated your software.</small>
 			<div class="row">
 				<div class="col-xs-12">
 					<br />
@@ -327,7 +327,7 @@ if (!empty($version_error)) {
 					<br></br>
 				<?php } ?>
 
-				<button class="btn btn-lg btn-p1ai btn-block" id="upgrade-submit" type="submit"><?php echo $task_202; ?> 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
+				<button class="btn btn-lg btn-p1ai btn-block" id="upgrade-submit" type="submit"><?php echo $task_1ai; ?> 1ai-Affiliate<span class="fui-check-inverted pull-right"></span></button>
 			</form>
 	</div>
 

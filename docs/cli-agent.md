@@ -1,4 +1,4 @@
-# Prosper1ai CLI -- Agent & LLM Integration Guide
+# 1ai-Affiliate CLI -- Agent & LLM Integration Guide
 
 This document describes how to use the `p1ai` CLI from an AI agent, automation script, or LLM tool-use context. The CLI was explicitly designed for both human operators and programmatic consumers.
 
@@ -502,7 +502,7 @@ A single "execute p1ai command" tool is sufficient. The LLM constructs the full 
 ```json
 {
   "name": "p1ai",
-  "description": "Execute a Prosper1ai CLI command. Always include --json for parseable output and --force for delete operations.",
+  "description": "Execute a 1ai-affiliate CLI command. Always include --json for parseable output and --force for delete operations.",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -533,7 +533,7 @@ For tighter control, define separate tools per operation category:
 If embedding this CLI as a tool for an LLM agent, include this in the system prompt:
 
 ```
-You have access to the Prosper1ai CLI (p1ai) for managing an affiliate tracking platform.
+You have access to the 1ai-affiliate CLI (1ai) for managing an affiliate tracking platform.
 
 Rules:
 - Always append --json to get structured output

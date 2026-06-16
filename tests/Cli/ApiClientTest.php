@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Cli;
 
-use P202Cli\ApiClient;
-use P202Cli\ApiException;
-use P202Cli\Config;
+use OneAIAffiliateCli\ApiClient;
+use OneAIAffiliateCli\ApiException;
+use OneAIAffiliateCli\Config;
 use Tests\TestCase;
 
 class ApiClientTest extends TestCase

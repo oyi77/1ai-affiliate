@@ -38,5 +38,5 @@ if (!$autoloaded) {
     exit(1);
 }
 
-$app = new P202Cli\Application();
+$app = new OneAIAffiliateCli\Application();
 $app->run();

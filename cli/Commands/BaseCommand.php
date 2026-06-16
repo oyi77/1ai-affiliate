@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace P202Cli\Commands;
+namespace OneAIAffiliateCli\Commands;
 
-use P202Cli\ApiClient;
-use P202Cli\ApiException;
-use P202Cli\Config;
-use P202Cli\Formatter;
+use OneAIAffiliateCli\ApiClient;
+use OneAIAffiliateCli\ApiException;
+use OneAIAffiliateCli\Config;
+use OneAIAffiliateCli\Formatter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

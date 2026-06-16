@@ -29,7 +29,7 @@ final class AffiliateLinkService
         $now = time();
 
         $stmt = $this->conn->prepare(
-            'INSERT INTO affiliate_links
+            'INSERT INTO 1ai_affiliate_links
              (affiliate_id, campaign_id, link_token, status, click_limit, created_at, updated_at)
              VALUES (?, ?, ?, \'active\', ?, ?, ?)'
         );
@@ -55,8 +55,8 @@ final class AffiliateLinkService
         $stmt = $this->conn->prepareRead(
             'SELECT al.*, ac.aff_campaign_name, ac.affiliate_payout,
                     ac.aff_campaign_url
-             FROM affiliate_links al
-             JOIN aff_campaigns ac ON al.campaign_id = ac.aff_campaign_id
+             FROM 1ai_affiliate_links al
+             JOIN 1ai_aff_campaigns ac ON al.campaign_id = ac.aff_campaign_id
              WHERE al.affiliate_id = ? AND al.status = \'active\'
              ORDER BY al.created_at DESC'
         );
@@ -67,7 +67,7 @@ final class AffiliateLinkService
     public function revokeLink(int $linkId): void
     {
         $stmt = $this->conn->prepare(
-            'UPDATE affiliate_links SET status = \'revoked\', updated_at = ? WHERE id = ?'
+            'UPDATE 1ai_affiliate_links SET status = \'revoked\', updated_at = ? WHERE id = ?'
         );
         $this->conn->bind($stmt, 'ii', [time(), $linkId]);
         $this->conn->executeChecked($stmt, 'Link revoke failed');
@@ -78,9 +78,9 @@ final class AffiliateLinkService
         $stmt = $this->conn->prepareRead(
             'SELECT al.*, a.id AS aff_id, a.status AS aff_status,
                     ac.affiliate_payout, ac.aff_campaign_id
-             FROM affiliate_links al
-             JOIN affiliates a ON al.affiliate_id = a.id
-             JOIN aff_campaigns ac ON al.campaign_id = ac.aff_campaign_id
+             FROM 1ai_affiliate_links al
+             JOIN 1ai_affiliates a ON al.affiliate_id = a.id
+             JOIN 1ai_aff_campaigns ac ON al.campaign_id = ac.aff_campaign_id
              WHERE al.link_token = ? AND al.status = \'active\' AND a.status = \'active\''
         );
         $this->conn->bind($stmt, 's', [$token]);
@@ -95,7 +95,7 @@ final class AffiliateLinkService
         }
 
         $stmt = $this->conn->prepare(
-            'INSERT INTO affiliate_sessions (link_token, click_id, affiliate_payout, tracked_at)
+            'INSERT INTO 1ai_affiliate_sessions (link_token, click_id, affiliate_payout, tracked_at)
              VALUES (?, ?, ?, ?)'
         );
         $payout = isset($link['affiliate_payout']) ? (float) $link['affiliate_payout'] : null;
@@ -106,7 +106,7 @@ final class AffiliateLinkService
     public function findSessionByClickId(int $clickId): ?array
     {
         $stmt = $this->conn->prepareRead(
-            'SELECT * FROM affiliate_sessions WHERE click_id = ?'
+            'SELECT * FROM 1ai_affiliate_sessions WHERE click_id = ?'
         );
         $this->conn->bind($stmt, 'i', [$clickId]);
         return $this->conn->fetchOne($stmt) ?: null;

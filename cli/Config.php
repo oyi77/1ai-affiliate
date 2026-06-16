@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace P202Cli;
+namespace OneAIAffiliateCli;
 
 class Config
 {

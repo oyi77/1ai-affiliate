@@ -1,0 +1,235 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: 1ai-affiliate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edge-redirect
+  namespace: 1ai-affiliate
+  labels:
+    app: edge-redirect
+    tier: edge
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: edge-redirect
+  template:
+    metadata:
+      labels:
+        app: edge-redirect
+        tier: edge
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      terminationGracePeriodSeconds: 10
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - edge-redirect
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: edge-redirect
+        image: 1ai-affiliate/edge-redirect:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        - name: LISTEN_ADDR
+          value: ":8080"
+        - name: REDIS_ADDRS
+          value: "redis-cluster.1ai-affiliate.svc.cluster.local:6379"
+        - name: KAFKA_BROKERS
+          value: "kafka-cluster.1ai-affiliate.svc.cluster.local:9092"
+        - name: KAFKA_CLICK_TOPIC
+          value: "1ai-clicks"
+        - name: CLICKHOUSE_DSN
+          value: "clickhouse://clickhouse.1ai-affiliate.svc.cluster.local:9000/1ai_analytics"
+        - name: GEOIP_DB_PATH
+          value: "/data/GeoIP2-City.mmdb"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: LOG_JSON
+          value: "true"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 2
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: edge-redirect
+  namespace: 1ai-affiliate
+  labels:
+    app: edge-redirect
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    name: http
+  selector:
+    app: edge-redirect
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: edge-redirect
+  namespace: 1ai-affiliate
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: edge-redirect
+  minReplicas: 3
+  maxReplicas: 50
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: External
+    external:
+      metric:
+        name: kafka_consumer_lag
+        selector:
+          matchLabels:
+            topic: 1ai-clicks
+      target:
+        type: AverageValue
+        averageValue: 1000
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Pods
+        value: 5
+        periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: click-consumer
+  namespace: 1ai-affiliate
+  labels:
+    app: click-consumer
+    tier: cold-path
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: click-consumer
+  template:
+    metadata:
+      labels:
+        app: click-consumer
+        tier: cold-path
+    spec:
+      containers:
+      - name: click-consumer
+        image: 1ai-affiliate/click-consumer:latest
+        imagePullPolicy: Always
+        env:
+        - name: REDIS_ADDRS
+          value: "redis-cluster.1ai-affiliate.svc.cluster.local:6379"
+        - name: KAFKA_BROKERS
+          value: "kafka-cluster.1ai-affiliate.svc.cluster.local:9092"
+        - name: KAFKA_CLICK_TOPIC
+          value: "1ai-clicks"
+        - name: CLICKHOUSE_DSN
+          value: "clickhouse://clickhouse.1ai-affiliate.svc.cluster.local:9000/1ai_analytics"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: LOG_JSON
+          value: "true"
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "1000m"
+            memory: "512Mi"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: click-consumer
+  namespace: 1ai-affiliate
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: click-consumer
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: External
+    external:
+      metric:
+        name: kafka_consumer_lag
+        selector:
+          matchLabels:
+            group: 1ai-click-consumer
+      target:
+        type: AverageValue
+        averageValue: 5000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edge-config
+  namespace: 1ai-affiliate
+data:
+  READ_TIMEOUT: "5s"
+  WRITE_TIMEOUT: "5s"
+  IDLE_TIMEOUT: "30s"
+  KAFKA_BATCH_SIZE: "100"
+  METRICS_PATH: "/metrics"

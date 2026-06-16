@@ -25,8 +25,8 @@ function ipAddress($ip_address): stdClass
 
 //our own die, that will display the them around the error message
 
-// Add prosper_log function
-function prosper_log($category, $message): void {
+// Add affiliate_log function
+function affiliate_log($category, $message): void {
     // Simple logging function - you can expand this as needed
     error_log("[1ai-Affiliate][$category] $message");
 }
@@ -731,8 +731,8 @@ function info_top(): void
 
 		if (strlen($result) > 2000 || !$result) {
 			$result = [
-				'wallpaperImg' => 'https://tracking1ai-static.s3.amazonaws.com/wallpaper202.jpg',
-				'wallpaperUrl' => 'https://prosper.tracking1ai.com/apps/?utm_source=p1aiprofb'
+			'wallpaperImg' => 'https://tracking1ai-static.s3.amazonaws.com/wallpaper.jpg',
+			'wallpaperUrl' => 'https://1ai.aitradepulse.com/apps/?utm_source=p1aiprofb'
 			];
 			return $result;
 		}

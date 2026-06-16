@@ -21,7 +21,7 @@ if (!$attributionTestMode) {
 }
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-const ATTRIBUTION_AUTH_OVERRIDE_KEY = '__prosper_attribution_auth_override';
+const ATTRIBUTION_AUTH_OVERRIDE_KEY = '__1ai_attribution_auth_override';
 
 function create_attribution_app(?AttributionService $service = null): \Slim\App
 {
@@ -213,14 +213,14 @@ function attribution_authorization_middleware(string $permission): callable
             return respond_json($response, $auth['payload'], $auth['status']);
         }
 
-        $request = $request->withAttribute('prosper.attribution_auth', $auth);
+        $request = $request->withAttribute('1ai.attribution_auth', $auth);
         return $next($request, $response);
     };
 }
 
 function attribution_authorized_user_id(Request $request): ?int
 {
-    $auth = $request->getAttribute('prosper.attribution_auth');
+    $auth = $request->getAttribute('1ai.attribution_auth');
     if (is_array($auth) && isset($auth['user_id'])) {
         return (int) $auth['user_id'];
     }

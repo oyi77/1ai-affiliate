@@ -302,7 +302,7 @@ final readonly class AttributionJobRunner
 
     private function logModelRun(ModelDefinition $model, array $summary): void
     {
-        if (!function_exists('prosper_log')) {
+        if (!function_exists('affiliate_log')) {
             return;
         }
 
@@ -321,6 +321,6 @@ final readonly class AttributionJobRunner
             $summary['lookback_end'] ?? 0
         );
 
-        prosper_log('attribution_job', $message);
+        affiliate_log('attribution_job', $message);
     }
 }

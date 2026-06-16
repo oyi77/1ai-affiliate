@@ -7,8 +7,8 @@ include_once(__DIR__ . '/vendor/autoload.php');
 
 use UAParser\Parser;
 
-prosper_log('login', 'Request received with method ' . ($_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN') . ' from IP ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
-prosper_log('login', 'Session snapshot: ' . json_encode($_SESSION));
+affiliate_log('login', 'Request received with method ' . ($_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN') . ' from IP ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+affiliate_log('login', 'Session snapshot: ' . json_encode($_SESSION));
 
 // Initialize variables to prevent undefined variable warnings
 $error = [];
@@ -38,20 +38,20 @@ $result = $parser->parse($userAgent);
 
 function logged_in_redirect($safe_context = false)
 {
-	prosper_log('login', 'User already authenticated, preparing redirect.');
+	affiliate_log('login', 'User already authenticated, preparing redirect.');
 
 	// Honor the redirect parameter if present — only allow local paths to prevent open redirect
 	if (isset($_GET['redirect'])) {
 		$target = urldecode((string) $_GET['redirect']);
 		if ($target !== '' && $target[0] === '/') {
-			prosper_log('login', 'Redirecting authenticated user to ' . $target);
+			affiliate_log('login', 'Redirecting authenticated user to ' . $target);
 			header('location: ' . $target);
 			exit;
 		}
 	}
 
 	// Default: redirect to account dashboard
-	prosper_log('login', 'Redirecting to account dashboard.');
+	affiliate_log('login', 'Redirecting to account dashboard.');
 	header('location: ' . get_absolute_url() . 'account');
 	exit;
 }
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$username_raw = (string)($_POST['user_name'] ?? '');
 	$password = (string)($_POST['user_pass'] ?? '');
 	$username = trim($username_raw);
-	prosper_log('login', 'Processing login attempt for username ' . $username);
+	affiliate_log('login', 'Processing login attempt for username ' . $username);
 
 	if ($username === '') {
 		$error['user'] = 'Please enter a username.';
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			$login_result = AUTH::authenticate($username, $password, $db);
 		} catch (RuntimeException $exception) {
 			$error['user'] = 'We were unable to process your login. Please try again later.';
-			prosper_log('login', 'Login exception for username ' . $username . ': ' . $exception->getMessage());
+			affiliate_log('login', 'Login exception for username ' . $username . ': ' . $exception->getMessage());
 		}
 	}
 
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 	if (!$error && ($login_result['success'] ?? false) === false) {
 		$error['user'] = 'Your username or password is incorrect.';
-		prosper_log('login', 'Invalid credentials for username ' . $username);
+		affiliate_log('login', 'Invalid credentials for username ' . $username);
 	}
 
 	if ($error && $user_row && !empty($user_row['user_slack_incoming_webhook'])) {
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$login_log_stmt->execute();
 		$login_log_stmt->close();
 	} else {
-		prosper_log('login', 'Unable to prepare login log statement: ' . $db->error);
+		affiliate_log('login', 'Unable to prepare login log statement: ' . $db->error);
 	}
 
 	if (empty($error) && $user_row) {
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		AUTH::begin_user_session($user_row);
 		$_SESSION['user_mods_lb'] = $user_row['user_mods_lb'];
-		prosper_log('login', 'Post-login session: ' . json_encode($_SESSION));
+		affiliate_log('login', 'Post-login session: ' . json_encode($_SESSION));
 
 		if (isset($_POST['remember_me'])) {
 			AUTH::remember_me_on_auth();

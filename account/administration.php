@@ -367,7 +367,7 @@ function CronJobLastExecution($datetime, $full = false)
 
 <div class="row account">
 	<div class="col-xs-4">
-		<h6>Tracking202 Stats</h6>
+		<h6>1ai-Affiliate Stats</h6>
 	</div>
 	<div class="col-xs-8 text-right" style="padding-top: 15px;">
 		<small><span class="label label-primary"><?php echo $clicks; ?></span>

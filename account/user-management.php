@@ -272,8 +272,8 @@ $user_result_delete = _mysqli_query($user_sql_delete);
 		try {
 			$db->query($cleanupQuery);
 		} catch (mysqli_sql_exception $exception) {
-			if (function_exists('prosper_log')) {
-				prosper_log('attribution_cleanup', $exception->getMessage());
+		if (function_exists('affiliate_log')) {
+			affiliate_log('attribution_cleanup', $exception->getMessage());
 			}
 		}
 	}

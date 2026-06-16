@@ -45,7 +45,7 @@ final class MysqlCommissionRepository
         $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
         $countStmt = $this->conn->prepareRead(
-            "SELECT COUNT(*) AS total FROM commission_entries ce $whereClause"
+            "SELECT COUNT(*) AS total FROM 1ai_commission_entries ce $whereClause"
         );
         if ($binds) {
             $this->conn->bind($countStmt, $types, $binds);
@@ -54,9 +54,9 @@ final class MysqlCommissionRepository
 
         $sql = "SELECT ce.*, a.affiliate_code, a.company_name,
                        u.user_name, u.user_email
-                FROM commission_entries ce
-                LEFT JOIN affiliates a ON ce.affiliate_id = a.id
-                LEFT JOIN users u ON a.user_id = u.user_id
+                FROM 1ai_commission_entries ce
+                LEFT JOIN 1ai_affiliates a ON ce.affiliate_id = a.id
+                LEFT JOIN 1ai_users u ON a.user_id = u.user_id
                 $whereClause
                 ORDER BY ce.created_at DESC LIMIT ? OFFSET ?";
         $binds[] = $limit;
@@ -74,8 +74,8 @@ final class MysqlCommissionRepository
     {
         $stmt = $this->conn->prepareRead(
             'SELECT affiliate_id, balance_after
-             FROM commission_entries ce1
-             WHERE ce1.id = (SELECT MAX(ce2.id) FROM commission_entries ce2 WHERE ce2.affiliate_id = ce1.affiliate_id)'
+             FROM 1ai_commission_entries ce1
+             WHERE ce1.id = (SELECT MAX(ce2.id) FROM 1ai_commission_entries ce2 WHERE ce2.affiliate_id = ce1.affiliate_id)'
         );
         $rows = $this->conn->fetchAll($stmt);
         $totalBalance = 0.0;
@@ -97,9 +97,9 @@ final class MysqlCommissionRepository
         $now = time();
 
         $totalStmt = $this->conn->prepareRead(
-            'SELECT SUM(balance_after) AS total FROM commission_entries ce1
+            'SELECT SUM(balance_after) AS total FROM 1ai_commission_entries ce1
              WHERE ce1.id IN (
-                 SELECT MAX(ce2.id) FROM commission_entries ce2
+                 SELECT MAX(ce2.id) FROM 1ai_commission_entries ce2
                  WHERE ce2.affiliate_id IN (' . implode(',', array_fill(0, $count, '?')) . ')
                  GROUP BY ce2.affiliate_id
              )'
@@ -110,7 +110,7 @@ final class MysqlCommissionRepository
         $totalAmount = (float) ($row['total'] ?? 0);
 
         $stmt = $this->conn->prepare(
-            'INSERT INTO payout_batches
+            'INSERT INTO 1ai_payout_batches
              (batch_ref, status, total_amount, affiliate_count, payment_method, created_at)
              VALUES (?, \'draft\', ?, ?, ?, ?)'
         );
@@ -118,16 +118,14 @@ final class MysqlCommissionRepository
         $batchId = $this->conn->executeInsert($stmt);
 
         foreach ($affiliateIds as $affiliateId) {
-            $balanceStmt = $this->conn->prepareRead(
-                'SELECT balance_after FROM commission_entries
-                 WHERE affiliate_id = ? ORDER BY id DESC LIMIT 1'
+            'SELECT balance_after FROM 1ai_commission_entries
+             WHERE affiliate_id = ? ORDER BY id DESC LIMIT 1'
             );
             $this->conn->bind($balanceStmt, 'i', [$affiliateId]);
             $balanceRow = $this->conn->fetchOne($balanceStmt);
             $amount = (float) ($balanceRow['balance_after'] ?? 0);
 
-            $itemStmt = $this->conn->prepare(
-                'INSERT INTO payout_items (batch_id, affiliate_id, amount, earnings_count, status, created_at)
+            'INSERT INTO 1ai_payout_items (batch_id, affiliate_id, amount, earnings_count, status, created_at)
                  VALUES (?, ?, ?, 0, \'pending\', ?)'
             );
             $this->conn->bind($itemStmt, 'iidi', [$batchId, $affiliateId, $amount, $now]);
@@ -141,7 +139,7 @@ final class MysqlCommissionRepository
     public function listBatches(int $limit = 20): array
     {
         $stmt = $this->conn->prepareRead(
-            'SELECT * FROM payout_batches ORDER BY created_at DESC LIMIT ?'
+            'SELECT * FROM 1ai_payout_batches ORDER BY created_at DESC LIMIT ?'
         );
         $this->conn->bind($stmt, 'i', [$limit]);
         return $this->conn->fetchAll($stmt);
@@ -150,7 +148,7 @@ final class MysqlCommissionRepository
     public function getBatchWithItems(string $batchRef): ?array
     {
         $batchStmt = $this->conn->prepareRead(
-            'SELECT * FROM payout_batches WHERE batch_ref = ?'
+            'SELECT * FROM 1ai_payout_batches WHERE batch_ref = ?'
         );
         $this->conn->bind($batchStmt, 's', [$batchRef]);
         $batch = $this->conn->fetchOne($batchStmt);
@@ -160,8 +158,8 @@ final class MysqlCommissionRepository
 
         $itemsStmt = $this->conn->prepareRead(
             'SELECT pi.*, a.affiliate_code, a.company_name
-             FROM payout_items pi
-             JOIN affiliates a ON pi.affiliate_id = a.id
+             FROM 1ai_payout_items pi
+             JOIN 1ai_affiliates a ON pi.affiliate_id = a.id
              WHERE pi.batch_id = ?'
         );
         $this->conn->bind($itemsStmt, 'i', [(int) $batch['id']]);

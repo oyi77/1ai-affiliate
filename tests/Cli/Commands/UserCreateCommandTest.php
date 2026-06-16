@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Cli\Commands;
 
-use P202Cli\Commands\UserCreateCommand;
+use OneAIAffiliateCli\Commands\UserCreateCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputOption;
 use Tests\TestCase;

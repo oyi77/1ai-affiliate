@@ -1,7 +1,7 @@
 -- 1ai-Affiliate test bootstrap
 -- Creates minimum upstream tracking1ai tables + our renamed tables
 
-USE prosper1ai_test;
+USE 1ai_affiliate_test;
 
 -- ===== UPSTREAM (tracking1ai) — minimal for tests =====
 CREATE TABLE IF NOT EXISTS `1ai_users` (

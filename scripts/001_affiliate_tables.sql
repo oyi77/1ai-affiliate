@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `affiliates` (
     KEY `idx_status` (`status`),
     KEY `idx_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Affiliate profiles linked to Prosper1ai users';
+COMMENT='Affiliate profiles linked to 1ai-affiliate users';
 
 CREATE TABLE IF NOT EXISTS `affiliate_links` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,

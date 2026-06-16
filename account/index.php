@@ -18,7 +18,7 @@ template_top();  ?>
 				</div>
 			<?php } ?>
 			<div class="col-xs-12" style="min-height: 306px;">
-				<h6 class="h6-home">Tracking202 News <span class="glyphicon glyphicon-comment home-icons"></span></h6>
+				<h6 class="h6-home">1ai-Affiliate News <span class="glyphicon glyphicon-comment home-icons"></span></h6>
 				<div id="trackingposts"><img src="<?php echo get_absolute_url(); ?>img/loader-small.gif" style="display: block;" /></div>
 			</div>
 
@@ -92,7 +92,7 @@ template_top();  ?>
 						<a href="http://developers.tracking1ai.com" target="_blank"><img src="<?php echo get_absolute_url(); ?>img/new/icons/settings.svg"></a>
 					</div>
 					<div class="col-xs-10">
-						<a href="http://developers.tracking1ai.com" target="_blank">Developers</a><br /><span>Do cool things with the Tracking202 APIs.</span>
+						<a href="http://developers.tracking1ai.com" target="_blank">Developers</a><br /><span>Do cool things with the 1ai-Affiliate APIs.</span>
 					</div>
 				</div>
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Cli;
 
-use P202Cli\Formatter;
+use OneAIAffiliateCli\Formatter;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Tests\TestCase;
 

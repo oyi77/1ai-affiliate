@@ -313,7 +313,7 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 	if($type == 'wtkeywords')
 	$report_sql .= " LEFT OUTER JOIN keywords AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 else
-					$report_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
+					$report_sql .= " LEFT OUTER JOIN 1ai_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 				}
 
 				//If any of C1-C4 variables are set
@@ -377,7 +377,7 @@ else
 				   		if($type == 'wtkeywords')
 $click_sql .= " LEFT OUTER JOIN keywords AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 	else
-$click_sql .= " LEFT OUTER JOIN 202_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
+$click_sql .= " LEFT OUTER JOIN 1ai_".$type." AS 2l ON (2l.".$select_id." = 2ca.".$select_id.")";
 					   }
 
 					   //If any of C1-C4 variables are set

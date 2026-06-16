@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tracking202\Setup;
+namespace OneAIAffiliate\Setup;
 
 require_once __DIR__ . '/_base/SetupController.php';
 

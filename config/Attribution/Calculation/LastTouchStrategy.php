@@ -10,7 +10,7 @@ use OneAIAffiliate\Attribution\Snapshot;
 use OneAIAffiliate\Attribution\Touchpoint;
 
 /**
- * Simplistic last-touch attribution strategy that mirrors legacy Prosper behaviour.
+ * Simplistic last-touch attribution strategy that mirrors legacy single-touch behaviour.
  */
 final class LastTouchStrategy implements AttributionStrategyInterface
 {

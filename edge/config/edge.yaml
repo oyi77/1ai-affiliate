@@ -1,0 +1,16 @@
+server:
+  addr: ":8085"
+redis:
+  addrs: ["127.0.0.1:6379"]
+  password: ""
+  db: 0
+kafka:
+  brokers: ["127.0.0.1:9092"]
+  topic: "clicks"
+clickhouse:
+  dsn: "tcp://127.0.0.1:9000?username=default&password=&database=default"
+geoip:
+  db_path: "/data/GeoIP2-City.mmdb"
+log:
+  level: "info"
+  json: false

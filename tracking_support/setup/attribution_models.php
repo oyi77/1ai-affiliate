@@ -10,7 +10,7 @@ require_once __DIR__ . '/AttributionController.php';
 
 // Create and run the controller
 try {
-    $controller = new \Tracking202\Setup\AttributionController();
+    $controller = new \OneAIAffiliate\Setup\AttributionController();
     $controller->handleRequest();
 } catch (\Exception $e) {
     // Log the error and show a user-friendly message

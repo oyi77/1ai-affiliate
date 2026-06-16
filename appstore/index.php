@@ -57,7 +57,7 @@ template_top('1ai-Affiliate ClickServer App Store');
         <h4 class="modal-title" id="myModalLabel">Your 1ai-Affiliate ClickServer API Key Is Needed To Activate The App Store</h4>
       </div>
       <div class="modal-body">
-       <!--  If you've ever registered on the Tracking202.com site, you can quickly login below get your ClickServer API Key. If not, register below to automatically get an API Key. --> 
+       <!--  If you've ever registered on the 1ai-affiliate.com site, you can quickly login below get your ClickServer API Key. If not, register below to automatically get an API Key. --> 
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

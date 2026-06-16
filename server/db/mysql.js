@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASS || '',
-  database: process.env.DB_NAME || 'prosper202_test',
+  database: process.env.DB_NAME || '1ai_affiliate',
   waitForConnections: true,
   connectionLimit: 10,
 });

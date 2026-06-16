@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Redirect;
 
 use PHPUnit\Framework\TestCase;
-use Tracking202\Redirect\RedirectHelper;
+use OneAIAffiliate\Redirect\RedirectHelper;
 
 /**
  * Tests for RedirectHelper used by cl.php and dl.php.

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Tracking202\Redirect;
+namespace OneAIAffiliate\Redirect;
 
 class RedirectHelper
 {

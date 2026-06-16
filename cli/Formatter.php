@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace P202Cli;
+namespace OneAIAffiliateCli;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;

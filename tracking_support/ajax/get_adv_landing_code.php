@@ -91,7 +91,7 @@ $campaign_slack = '';
   
 // ------------------------------------------------------------------- 
 //
-// Tracking202 PHP Redirection, created on ' . date('D M, Y',time()) .'
+// 1ai-Affiliate PHP Redirection, created on ' . date('D M, Y',time()) .'
 //
 // This PHP code is to be used for the following campaign:
 // ' . $aff_campaign_row['aff_campaign_name'] . ' on ' . $landing_page_row['landing_page_url'] . '
@@ -129,7 +129,7 @@ header(\'location: \'.$tracking1aioutbound);
   
 // ------------------------------------------------------------------- 
 //
-// Tracking202 PHP Redirection, created on ' . date('D M, Y',time()) .'
+// 1ai-Affiliate PHP Redirection, created on ' . date('D M, Y',time()) .'
 //
 // This PHP code is to be used for the following campaign:
 // ' . $rotator_row['name'] . ' on ' . $landing_page_row['landing_page_url'] . '

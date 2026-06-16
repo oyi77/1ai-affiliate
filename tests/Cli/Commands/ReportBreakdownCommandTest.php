@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Cli\Commands;
 
-use P202Cli\Commands\ReportBreakdownCommand;
-use P202Cli\Commands\ReportDaypartCommand;
-use P202Cli\Commands\ReportWeekpartCommand;
+use OneAIAffiliateCli\Commands\ReportBreakdownCommand;
+use OneAIAffiliateCli\Commands\ReportDaypartCommand;
+use OneAIAffiliateCli\Commands\ReportWeekpartCommand;
 use Symfony\Component\Console\Application;
 use Tests\TestCase;
 

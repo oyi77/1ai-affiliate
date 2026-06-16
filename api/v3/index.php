@@ -29,7 +29,8 @@ try {
     Bootstrap::init();
     $db = Bootstrap::db();
 } catch (\Throwable $e) {
-    Bootstrap::errorResponse('Service unavailable', 503);
+    error_log('Bootstrap error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    Bootstrap::errorResponse('Service unavailable: ' . $e->getMessage(), 503);
     exit;
 }
 
@@ -478,9 +479,9 @@ try {
 } catch (HttpException $e) {
     $code = $e->getHttpStatus();
     $message = $code >= 500 ? 'Internal server error' : $e->getMessage();
-    Bootstrap::errorResponse($message, $code);
-} catch (\Throwable) {
-    Bootstrap::errorResponse('Internal server error', 500);
+} catch (\Throwable $e) {
+    error_log('Main error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . ' trace: ' . $e->getTraceAsString());
+    Bootstrap::errorResponse('Internal server error: ' . $e->getMessage(), 500);
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────

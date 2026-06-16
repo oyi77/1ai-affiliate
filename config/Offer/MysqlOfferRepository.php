@@ -15,7 +15,7 @@ final class MysqlOfferRepository
     /** @return array{rows: list<array<string, mixed>>, total: int} */
     public function list(int $userId, array $filters, int $offset, int $limit): array
     {
-        $where = ['o.user_id = ?'];
+        $where = ['o.advertiser_id = ?'];
         $binds = [$userId];
         $types = 'i';
 
@@ -37,13 +37,13 @@ final class MysqlOfferRepository
 
         $whereClause = 'WHERE ' . implode(' AND ', $where);
 
-        $countStmt = $this->conn->prepareRead("SELECT COUNT(*) AS total FROM offers o $whereClause");
+        $countStmt = $this->conn->prepareRead("SELECT COUNT(*) AS total FROM 1ai_offers o $whereClause");
         $this->conn->bind($countStmt, $types, $binds);
         $total = (int) ($this->conn->fetchOne($countStmt)['total'] ?? 0);
 
         $sql = "SELECT o.*, COUNT(DISTINCT oaa.affiliate_id) AS affiliate_count
-            FROM offers o
-            LEFT JOIN offer_affiliate_access oaa ON o.id = oaa.offer_id
+            FROM 1ai_offers o
+            LEFT JOIN 1ai_offer_affiliate_access oaa ON o.id = oaa.offer_id
             $whereClause
             GROUP BY o.id
             ORDER BY o.created_at DESC LIMIT ? OFFSET ?";
@@ -59,7 +59,7 @@ final class MysqlOfferRepository
 
     public function findById(int $id): ?array
     {
-        $stmt = $this->conn->prepareRead('SELECT * FROM offers WHERE id = ?');
+        $stmt = $this->conn->prepareRead('SELECT * FROM 1ai_offers WHERE id = ?');
         $this->conn->bind($stmt, 'i', [$id]);
         return $this->conn->fetchOne($stmt) ?: null;
     }
@@ -68,7 +68,7 @@ final class MysqlOfferRepository
     {
         $now = time();
         $stmt = $this->conn->prepare(
-            'INSERT INTO offers (user_id, name, network, network_offer_id, vertical, geo,
+            'INSERT INTO 1ai_offers (advertiser_id, name, network, network_offer_id, vertical, geo,
              type, payout, payout_currency, cap_daily, cap_monthly, traffic_allowed,
              status, notes, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -130,7 +130,7 @@ final class MysqlOfferRepository
 
         $binds[] = $id;
         $types .= 'i';
-        $sql = 'UPDATE offers SET ' . implode(', ', $sets) . ' WHERE id = ?';
+        $sql = 'UPDATE 1ai_offers SET ' . implode(', ', $sets) . ' WHERE id = ?';
         $stmt = $this->conn->prepare($sql);
         $this->conn->bind($stmt, $types, $binds);
         $this->conn->executeChecked($stmt, 'Offer update failed');
@@ -139,7 +139,7 @@ final class MysqlOfferRepository
     public function linkCampaign(int $offerId, int $campaignId): void
     {
         $stmt = $this->conn->prepare(
-            'INSERT IGNORE INTO offer_campaigns (offer_id, campaign_id, created_at) VALUES (?, ?, ?)'
+            'INSERT IGNORE INTO 1ai_offer_campaigns (offer_id, campaign_id, created_at) VALUES (?, ?, ?)'
         );
         $this->conn->bind($stmt, 'iii', [$offerId, $campaignId, time()]);
         $this->conn->executeChecked($stmt, 'Campaign link failed');
@@ -148,7 +148,7 @@ final class MysqlOfferRepository
     public function unlinkCampaign(int $offerId, int $campaignId): void
     {
         $stmt = $this->conn->prepare(
-            'DELETE FROM offer_campaigns WHERE offer_id = ? AND campaign_id = ?'
+            'DELETE FROM 1ai_offer_campaigns WHERE offer_id = ? AND campaign_id = ?'
         );
         $this->conn->bind($stmt, 'ii', [$offerId, $campaignId]);
         $this->conn->executeChecked($stmt, 'Campaign unlink failed');
@@ -158,8 +158,8 @@ final class MysqlOfferRepository
     public function getCampaigns(int $offerId): array
     {
         $stmt = $this->conn->prepareRead(
-            'SELECT ac.* FROM aff_campaigns ac
-             JOIN offer_campaigns oc ON ac.aff_campaign_id = oc.campaign_id
+            'SELECT ac.* FROM 1ai_aff_campaigns ac
+             JOIN 1ai_offer_campaigns oc ON ac.aff_campaign_id = oc.campaign_id
              WHERE oc.offer_id = ?'
         );
         $this->conn->bind($stmt, 'i', [$offerId]);
@@ -170,7 +170,7 @@ final class MysqlOfferRepository
     {
         $now = time();
         $stmt = $this->conn->prepare(
-            'INSERT INTO offer_affiliate_access (offer_id, affiliate_id, custom_payout, status, created_at, updated_at)
+            'INSERT INTO 1ai_offer_affiliate_access (offer_id, affiliate_id, custom_payout, status, created_at, updated_at)
              VALUES (?, ?, ?, \'approved\', ?, ?)
              ON DUPLICATE KEY UPDATE custom_payout = VALUES(custom_payout), status = \'approved\', updated_at = VALUES(updated_at)'
         );
@@ -181,7 +181,7 @@ final class MysqlOfferRepository
     public function revokeAccess(int $offerId, int $affiliateId): void
     {
         $stmt = $this->conn->prepare(
-            'UPDATE offer_affiliate_access SET status = \'revoked\', updated_at = ? WHERE offer_id = ? AND affiliate_id = ?'
+            'UPDATE 1ai_offer_affiliate_access SET status = \'revoked\', updated_at = ? WHERE offer_id = ? AND affiliate_id = ?'
         );
         $this->conn->bind($stmt, 'iii', [time(), $offerId, $affiliateId]);
         $this->conn->executeChecked($stmt, 'Access revoke failed');
@@ -193,8 +193,8 @@ final class MysqlOfferRepository
         $stmt = $this->conn->prepareRead(
             'SELECT a.*, oaa.custom_payout, oaa.status AS access_status,
                     oaa.created_at AS access_granted_at
-             FROM offer_affiliate_access oaa
-             JOIN affiliates a ON oaa.affiliate_id = a.id
+             FROM 1ai_offer_affiliate_access oaa
+             JOIN 1ai_affiliates a ON oaa.affiliate_id = a.id
              WHERE oaa.offer_id = ? AND oaa.status = \'approved\''
         );
         $this->conn->bind($stmt, 'i', [$offerId]);
@@ -206,8 +206,8 @@ final class MysqlOfferRepository
     {
         $stmt = $this->conn->prepareRead(
             'SELECT o.*, oaa.custom_payout
-             FROM offers o
-             JOIN offer_affiliate_access oaa ON o.id = oaa.offer_id
+             FROM 1ai_offers o
+             JOIN 1ai_offer_affiliate_access oaa ON o.id = oaa.offer_id
              WHERE oaa.affiliate_id = ? AND oaa.status = \'approved\' AND o.status = \'active\'
              ORDER BY o.name ASC'
         );

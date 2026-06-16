@@ -409,9 +409,9 @@ class UPGRADE
         if ($oneai_affiliate_version == '1.5.1') {
 
             $result = _mysqli_query("CREATE TABLE IF NOT EXISTS `alerts` (
-			  `prosper_alert_id` int(11) NOT NULL,
-			  `prosper_alert_seen` tinyint(1) NOT NULL,
-			  UNIQUE KEY `prosper_alert_id` (`prosper_alert_id`)
+			  `alert_id` int(11) NOT NULL,
+			  `alert_seen` tinyint(1) NOT NULL,
+			  UNIQUE KEY `alert_id` (`alert_id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;");
 
             $result = _mysqli_query("CREATE TABLE IF NOT EXISTS `tracking_offers` (

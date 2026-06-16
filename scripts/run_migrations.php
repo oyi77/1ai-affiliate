@@ -20,7 +20,7 @@ $migrations = [
     '008_postback_system.sql',
     '010_postback_ip_allowlist.sql',
     // '007_dev_seed.sql' is intentionally NOT included — it's dev-only test data.
-    // Run it manually with: mysql -u root -p prosper1ai_test < scripts/007_dev_seed.sql
+    // Run it manually with: mysql -u root -p 1ai_affiliate_test < scripts/007_dev_seed.sql
 ];
 
 foreach ($migrations as $file) {

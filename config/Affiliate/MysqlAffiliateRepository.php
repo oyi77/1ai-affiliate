@@ -41,8 +41,8 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
         $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
         $countStmt = $this->conn->prepareRead(
-            "SELECT COUNT(*) AS total FROM affiliates a
-             LEFT JOIN users u ON a.user_id = u.user_id
+            "SELECT COUNT(*) AS total FROM 1ai_affiliates a
+             LEFT JOIN 1ai_users u ON a.user_id = u.user_id
              $whereClause"
         );
         if ($binds) {
@@ -51,8 +51,8 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
         $total = (int) ($this->conn->fetchOne($countStmt)['total'] ?? 0);
 
         $sql = "SELECT a.*, u.user_email, u.user_name
-            FROM affiliates a
-            LEFT JOIN users u ON a.user_id = u.user_id
+            FROM 1ai_affiliates a
+            LEFT JOIN 1ai_users u ON a.user_id = u.user_id
             $whereClause
             ORDER BY a.created_at DESC LIMIT ? OFFSET ?";
         $binds[] = $limit;
@@ -70,7 +70,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
     public function findById(int $id): ?Affiliate
     {
         $stmt = $this->conn->prepareRead(
-            'SELECT * FROM affiliates WHERE id = ?'
+            'SELECT * FROM 1ai_affiliates WHERE id = ?'
         );
         $this->conn->bind($stmt, 'i', [$id]);
         $row = $this->conn->fetchOne($stmt);
@@ -80,7 +80,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
     public function findByUserId(int $userId): ?Affiliate
     {
         $stmt = $this->conn->prepareRead(
-            'SELECT * FROM affiliates WHERE user_id = ?'
+            'SELECT * FROM 1ai_affiliates WHERE user_id = ?'
         );
         $this->conn->bind($stmt, 'i', [$userId]);
         $row = $this->conn->fetchOne($stmt);
@@ -90,7 +90,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
     public function findByCode(string $code): ?Affiliate
     {
         $stmt = $this->conn->prepareRead(
-            'SELECT * FROM affiliates WHERE affiliate_code = ?'
+            'SELECT * FROM 1ai_affiliates WHERE affiliate_code = ?'
         );
         $this->conn->bind($stmt, 's', [$code]);
         $row = $this->conn->fetchOne($stmt);
@@ -103,7 +103,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
         $now = time();
 
         $stmt = $this->conn->prepare(
-            'INSERT INTO affiliates (user_id, affiliate_code, status, tier,
+            'INSERT INTO 1ai_affiliates (user_id, affiliate_code, status, tier,
              company_name, contact_email, payment_method, payment_details,
              minimum_payout, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -160,7 +160,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
 
         $binds[] = $id;
         $types .= 'i';
-        $sql = 'UPDATE affiliates SET ' . implode(', ', $sets) . ' WHERE id = ?';
+        $sql = 'UPDATE 1ai_affiliates SET ' . implode(', ', $sets) . ' WHERE id = ?';
         $stmt = $this->conn->prepare($sql);
         $this->conn->bind($stmt, $types, $binds);
         $this->conn->executeChecked($stmt, 'Affiliate update failed');
@@ -169,7 +169,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
     public function changeStatus(int $id, string $status): void
     {
         $stmt = $this->conn->prepare(
-            'UPDATE affiliates SET status = ?, updated_at = ? WHERE id = ?'
+            'UPDATE 1ai_affiliates SET status = ?, updated_at = ? WHERE id = ?'
         );
         $this->conn->bind($stmt, 'sii', [$status, time(), $id]);
         $this->conn->executeChecked($stmt, 'Affiliate status change failed');
@@ -183,7 +183,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
                 COALESCE(SUM(CASE WHEN status = \'pending\' THEN payout_amount ELSE 0 END), 0) AS pending,
                 COALESCE(SUM(CASE WHEN status IN (\'pending\',\'approved\') THEN payout_amount ELSE 0 END), 0) AS balance,
                 COUNT(*) AS conversion_count
-             FROM affiliate_earnings WHERE affiliate_id = ?'
+             FROM 1ai_affiliate_earnings WHERE affiliate_id = ?'
         );
         $this->conn->bind($stmt, 'i', [$affiliateId]);
         $row = $this->conn->fetchOne($stmt);
@@ -200,9 +200,9 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
         $stmt = $this->conn->prepareRead(
             'SELECT ae.*, cl.transaction_id, cl.click_payout AS network_payout,
                     ac.aff_campaign_name
-             FROM affiliate_earnings ae
-             LEFT JOIN conversion_logs cl ON ae.conversion_id = cl.conv_id
-             LEFT JOIN aff_campaigns ac ON cl.campaign_id = ac.aff_campaign_id
+             FROM 1ai_affiliate_earnings ae
+             LEFT JOIN 1ai_conversion_logs cl ON ae.conversion_id = cl.conv_id
+             LEFT JOIN 1ai_aff_campaigns ac ON cl.campaign_id = ac.aff_campaign_id
              WHERE ae.affiliate_id = ?
              ORDER BY ae.created_at DESC LIMIT ?'
         );
@@ -215,8 +215,8 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
         $stmt = $this->conn->prepareRead(
             'SELECT pi.*, pb.batch_ref, pb.completed_at AS batch_completed_at,
                     pb.payment_method AS batch_payment_method
-             FROM payout_items pi
-             JOIN payout_batches pb ON pi.batch_id = pb.id
+             FROM 1ai_payout_items pi
+             JOIN 1ai_payout_batches pb ON pi.batch_id = pb.id
              WHERE pi.affiliate_id = ?
              ORDER BY pb.completed_at DESC LIMIT ?'
         );

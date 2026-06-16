@@ -22,8 +22,8 @@ final class AffiliateAuth
     public function login(string $email, string $password): ?Affiliate
     {
         $stmt = $this->conn->prepareRead(
-            'SELECT a.* FROM affiliates a
-             JOIN users u ON a.user_id = u.user_id
+            'SELECT a.* FROM 1ai_affiliates a
+             JOIN 1ai_users u ON a.user_id = u.user_id
              WHERE u.user_email = ? AND a.status = \'active\''
         );
         $this->conn->bind($stmt, 's', [$email]);
@@ -35,7 +35,7 @@ final class AffiliateAuth
 
         // Verify password through the user table
         $userStmt = $this->conn->prepareRead(
-            'SELECT user_pass FROM users WHERE user_id = ?'
+            'SELECT user_pass FROM 1ai_users WHERE user_id = ?'
         );
         $this->conn->bind($userStmt, 'i', [(int) $row['user_id']]);
         $userRow = $this->conn->fetchOne($userStmt);

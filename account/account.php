@@ -491,7 +491,7 @@ if (!empty($_POST['change_user_statsapp_key']) && $_POST['change_user_statsapp_k
 
 		// Basic validation - you may need to adjust this based on actual requirements
 		if (empty($app_key) || strlen((string) $app_key) < 10 || empty($api_key)) {
-			$error['user_statsapp_key'] = '<div class="error">This Tracking202 API Key &amp; Stats202 App Key combination appears invalid.</div>';
+			$error['user_statsapp_key'] = '<div class="error">This 1ai-Affiliate API Key &amp; Stats202 App Key combination appears invalid.</div>';
 		}
 
 		if (!$error) {
@@ -577,7 +577,7 @@ if (!empty($_POST['change_user_pass']) && $_POST['change_user_pass'] == '1') {
 		$update_stmt->execute();
 		$update_stmt->close();
 	} else {
-		prosper_log('account', 'Failed to prepare password update statement: ' . $db->error);
+		affiliate_log('account', 'Failed to prepare password update statement: ' . $db->error);
 	}
 
 	$change_user_pass = true;
@@ -627,11 +627,11 @@ $html = array_map('htmlentities', $user_row);
 				<?php } ?>
 
 				<?php if ($change_api_key) { ?>
-					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> You have updated your Tracking202 API Key</small></div>
+					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> You have updated your 1ai-Affiliate API Key</small></div>
 				<?php } ?>
 
 				<?php if ($removed_user_api_key) { ?>
-					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> You have removed your Tracking202 API Key</small></div>
+					<div class="success" style="text-align:right"><small><span class="fui-check-inverted"></span> You have removed your 1ai-Affiliate API Key</small></div>
 				<?php } ?>
 
 				<?php if ($error) { ?>

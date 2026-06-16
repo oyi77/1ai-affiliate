@@ -44,8 +44,8 @@ final readonly class Auth
 
         $scopeColumnExists = self::apiKeyScopeColumnExists($db);
         $sql = $scopeColumnExists
-            ? 'SELECT user_id, scope FROM api_keys WHERE api_key = ? LIMIT 1'
-            : 'SELECT user_id FROM api_keys WHERE api_key = ? LIMIT 1';
+            ? 'SELECT user_id, scope FROM 1ai_api_keys WHERE api_key = ? LIMIT 1'
+            : 'SELECT user_id FROM 1ai_api_keys WHERE api_key = ? LIMIT 1';
         $stmt = $db->prepare($sql);
         if (!$stmt) {
             throw new AuthException('Authentication unavailable', 500);
@@ -76,9 +76,7 @@ final readonly class Auth
     {
         $roles = [];
         $stmt = $db->prepare(
-            'SELECT r.role_name FROM user_role ur '
-            . 'INNER JOIN roles r ON ur.role_id = r.role_id '
-            . 'WHERE ur.user_id = ?'
+            'SELECT user_role FROM 1ai_users WHERE user_id = ?'
         );
         if (!$stmt) {
             throw new AuthException('Authorization unavailable', 500);
@@ -96,8 +94,9 @@ final readonly class Auth
             throw new AuthException('Authorization unavailable', 500);
         }
 
-        while ($r = $roleResult->fetch_assoc()) {
-            $roles[] = strtolower($r['role_name']);
+        $row = $roleResult->fetch_assoc();
+        if ($row && isset($row['user_role'])) {
+            $roles[] = strtolower($row['user_role']);
         }
         $stmt->close();
 
@@ -163,7 +162,7 @@ final readonly class Auth
 
     private static function apiKeyScopeColumnExists(\mysqli $db): bool
     {
-        $stmt = $db->prepare("SHOW COLUMNS FROM api_keys LIKE 'scope'");
+        $stmt = $db->prepare("SHOW COLUMNS FROM 1ai_api_keys LIKE 'scope'");
         if (!$stmt) {
             return false;
         }
