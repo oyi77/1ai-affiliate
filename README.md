@@ -38,66 +38,125 @@ This platform now runs as a **polyglot stack** with three cooperating servers:
 
 ---
 
-## Key Features
+## 🐳 Deployment with cf-router (Recommended)
 
+The platform is designed to run behind **cf-router** for nginx reverse proxy, Cloudflare DNS, and SSL management. cf-router handles Cloudflare DNS, TLS (via Cloudflare proxy), and nginx reverse proxy configs automatically.
 
-- Application: `http://localhost:8000`
-- phpMyAdmin: `http://localhost:8080`
+### Prerequisites
+| Component | Version |
+|-----------|---------|
+| Docker | 24+ |
+| Docker Compose | v2+ |
+| cf-router | Running separately on host/port 3002 |
+| Cloudflare Account | With API Token (Zone:DNS:Edit) |
 
-### Manual Installation
+### Quick Start (Docker + cf-router)
 
-1. Clone and install dependencies:
-   ```bash
-   git clone https://github.com/tracking1ai/1ai-affiliate.git
-   cd 1ai-affiliate
-   composer install --no-dev
-   ```
+```bash
+# 1. Clone and prepare
+git clone https://github.com/oyi77/1ai-affiliate.git
+cd 1ai-affiliate
+cp .env.example .env
+# Edit .env with your credentials
 
-2. Configure the application:
-   ```bash
-   cp 1ai-config-sample.php 1ai-config.php
-   # Edit 1ai-config.php with your database credentials
-   ```
+# 2. Build and start the stack
+docker compose up -d --build
 
-3. Configure nginx to point to the project root. Example site configuration:
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-       root /path/to/1ai-affiliate;
-       index index.php index.html;
+# 3. Run migrations
+docker compose exec php php scripts/migrate.php
 
-       location / {
-           try_files $uri $uri/ /index.php?$query_string;
-       }
+# 4. Verify services
+docker compose ps
+# Should show: db, redis, php, node, (phpmyadmin if profile tools)
+```
 
-       location /api/v3/ {
-           try_files $uri $uri/ /api/v3/index.php?$query_string;
-       }
+### Register with cf-router (Automated nginx + Cloudflare DNS)
 
-       location /api/v2/ {
-           try_files $uri $uri/ /api/v2/index.php?$query_string;
-       }
+Run cf-router on a separate host/port (default port 3002):
+```bash
+# On cf-router host
+cd ~/projects/1ai-cf-router
+npm install
+npm run dev
+```
 
-       location ~ \.php$ {
-           fastcgi_pass unix:/path/to/php-fpm.sock; # or fastcgi_pass 127.0.0.1:9000; adjust to your PHP-FPM setup
-           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-           include fastcgi_params;
-       }
+```bash
+# 1. Add Cloudflare account
+cf-router account:add --name "BerkahKarya" --email "your@email.com" --api-key "cf_api_token_with_zone_dns_edit"
 
-       location ~ /\. {
-           deny all;
-       }
-   }
-   ```
+# 2. Discover zones
+cf-router zone:discover --account <account_id>
 
-4. Reload nginx:
-   ```bash
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
+# 3. Add your domain zone
+cf-router zone:add --account <account_id> --zone-id <zone_id> --domain berkahkarya.org
 
-5. Access the application in your browser.
+# 4. Add mapping for affiliate subdomains
+cf-router mapping:add --domain berkahkarya.org --subdomain affiliate --port 80 --host php
+cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-api --port 3001 --host node
+cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-tools --port 80 --host phpmyadmin
+```
 
+> After adding mappings, cf-router automatically:
+> 1. Creates Cloudflare DNS records (proxied = true, SSL via Cloudflare)
+> 3. Generates nginx reverse proxy configs pointing to `php:80`, `node:3001`, etc.
+> 4. Reloads nginx
+> 4. SSL handled by Cloudflare proxy (orange cloud)
+
+### Resulting URLs
+| Subdomain | Proxies To | Purpose |
+|-----------|------------|---------|
+| `affiliate.berkahkarya.org` | `php:80` | Main PHP app (tracking, admin, API v2/v3) |
+| `affiliate-api.berkahkarya.org` | `node:3001` | Node companion (smartlinks, poster, pipeline, auth) |
+| `affiliate-tools.berkahkarya.org` | `phpmyadmin:80` | phpMyAdmin (optional, `tools` profile) |
+
+### SSL/TLS
+- **Terminated at Cloudflare** (orange cloud = proxied)
+- No SSL cert management needed on your server
+- Cloudflare handles TLS 1.3, automatic cert renewal
+
+### Docker Compose Profiles
+
+| Profile | Services | Use Case |
+|---------|----------|----------|
+| `default` | db, redis, php, node | Production |
+| `tools` | + phpmyadmin, mailhog | Development/debug |
+
+```bash
+# Start with tools
+docker compose --profile tools up -d
+
+# Access phpMyAdmin at http://localhost:8080 (if local) or via cf-router tools subdomain
+# Access Mailhog UI at http://localhost:8025
+```
+
+### Environment Variables
+
+All configuration via `.env` file (copy from `.env.example`):
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DB_ROOT_PASSWORD` | MySQL root password | `secure_root_pass` |
+| `DB_NAME` | Database name | `Prosper1ai` |
+| `DB_USER` | DB user | `affiliate` |
+| `DB_PASSWORD` | DB password | `affiliate_pass` |
+| `DB_ROOT_PASSWORD` | MySQL root | `root_password` |
+| `JWT_SECRET` | Shared JWT secret (PHP + Node) | `long_random_string` |
+| `CF_DOMAIN` | Base domain for smartlinks | `affiliate.berkahkarya.org` |
+| `TG_BOT_TOKEN` | Telegram bot token (for poster) | `123:ABC...` |
+| `TG_CHANNEL_ID` | Telegram channel | `-1001234567890` |
+| `TRIPAY_*` | Tripay payment gateway | (see .env.example) |
+| `FB_PAGES_JSON` | Facebook pages config | `'[{"id":"...","token":"...","niche":"hijab"}]'` |
+| `IG_ACCOUNTS_JSON` | Instagram accounts | `'[{"id":"...","token":"...","niche":"hijab"}]'` |
+| `SHOPEE_LINKS_JSON` | Shopee affiliate links per niche | `'{"hijab":"https://lynk.id/..."}'` |
+| `EBOOK_API_URL` | Ebook service URL | `http://ebook:8765` |
+
+### Manual Installation (Legacy)
+### Docker Compose Profiles
+
+| Profile | Services | Use Case |
+|---------|----------|----------|
+| `default` | db, redis, php, node | Production |
+| `tools` | + phpmyadmin, mailhog | Development/debug |
 ## API v3
 
 REST API under `/api/v3/` with bearer token authentication. Covers all 1ai-Affiliate entities: campaigns, networks, traffic sources, trackers, landing pages, text ads, clicks, conversions, rotators, attribution models, users, and system operations.

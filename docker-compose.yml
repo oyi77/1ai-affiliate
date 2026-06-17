@@ -1,0 +1,233 @@
+version: '3.8'
+
+# 1ai-Affiliate ClickServer - Docker Compose
+# Designed to work with cf-router for nginx + Cloudflare DNS management
+#
+# Architecture:
+#   cf-router (separate service) → nginx (reverse proxy) → this stack
+#   cf-router manages: Cloudflare DNS, nginx configs, SSL via Cloudflare proxy
+#   This stack: PHP (web), Node companion (node), MySQL (db), Redis (redis)
+
+services:
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # DATABASE
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  db:
+    image: mysql:8.0
+    container_name: affiliate-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${DB_NAME:-Prosper1ai}
+      MYSQL_USER: ${DB_USER:-affiliate}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-affiliate_pass}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./server/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - affiliate-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # REDIS (sessions, caching, queue)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  redis:
+    image: redis:7-alpine
+    container_name: affiliate-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - affiliate-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # PHP APPLICATION (Core tracking platform)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile.php
+    container_name: affiliate-php
+    restart: unless-stopped
+    environment:
+      # Database
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-Prosper1ai}
+      DB_USER: ${DB_USER:-affiliate}
+      DB_PASS: ${DB_PASSWORD:-affiliate_pass}
+      DB_HOST_RO: db
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Memcached (if used)
+      MC_HOST: redis
+      # App
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: "false"
+      # cf-router integration
+      PHP_HOST: ${PHP_HOST:-php}
+      PHP_PORT: 80
+    volumes:
+      - .:/var/www/html
+    networks:
+      - affiliate-network
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "echo 'OK';"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # NODE COMPANION (Smartlinks, Auth, Poster, Pipeline, Payments)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  node:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: affiliate-node
+    restart: unless-stopped
+    environment:
+      # Database
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-Prosper1ai}
+      DB_USER: ${DB_USER:-affiliate}
+      DB_PASS: ${DB_PASSWORD:-affiliate_pass}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # App
+      NODE_ENV: production
+      PORT: 3001
+      # JWT (shared with PHP)
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      # cf-router: Node runs on port 3001, cf-router nginx proxies Node API routes
+      # Smartlink service
+      SMARTLINK_FALLBACK_DOMAIN: ${CF_DOMAIN:-affiliate.berkahkarya.org}
+      # External APIs
+      TG_BOT_TOKEN: ${TG_BOT_TOKEN:-}
+      TG_CHANNEL_ID: ${TG_CHANNEL_ID:-}
+      FB_PAGES_JSON: ${FB_PAGES_JSON:-}
+      IG_ACCOUNTS_JSON: ${IG_ACCOUNTS_JSON:-}
+      SHOPEE_LINKS_JSON: ${SHOPEE_LINKS_JSON:-}
+      TRIPAY_API_KEY: ${TRIPAY_API_KEY:-}
+      TRIPAY_MERCHANT_CODE: ${TRIPAY_MERCHANT_CODE:-}
+      TRIPAY_PRIVATE_KEY: ${TRIPAY_PRIVATE_KEY:-}
+      # Ebook service (if used)
+      EBOOK_API_URL: http://ebook:8765
+    ports:
+      - "3001:3001"  # Exposed for cf-router nginx to proxy
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    networks:
+      - affiliate-network
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # PHPMYADMIN (Optional - for DB management)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: affiliate-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    networks:
+      - affiliate-network
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - tools
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # MAILHOG (Optional - for email testing)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: affiliate-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - affiliate-network
+    profiles:
+      - tools
+
+networks:
+  affiliate-network:
+    driver: bridge
+    # cf-router's nginx runs on host or separate container
+    # This network allows inter-container communication
+
+volumes:
+  db_data:
+  redis_data:
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CF-ROUTER INTEGRATION NOTES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# cf-router runs SEPARATELY (on host or separate server):
+#   cd ~/projects/1ai-cf-router && npm run dev
+#
+# cf-router manages:
+#   1. Cloudflare DNS records → creates A/CNAME for subdomains
+#   2. Cloudflare Tunnel ingress rules → points to nginx
+#   3. nginx reverse proxy configs → proxies to container ports
+#   4. SSL via Cloudflare (proxied = orange cloud)
+#
+# To register 1ai-affiliate with cf-router:
+#   1. cf-router account:add --name "BerkahKarya" --email "..." --api-key "..."
+#   2. cf-router zone:discover --account <id>
+#   4. cf-router zone:add --account <id> --zone-id <zone> --domain berkahkarya.org
+#   5. cf-router mapping:add --domain berkahkarya.org --subdomain affiliate --port 80 --host php
+#   6. cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-api --port 3001 --host node
+#   7. cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-tools --port 8080 --host phpmyadmin
+#
+# nginx config generated by cf-router will:
+#   - affiliate.berkahkarya.org → proxy_pass http://php:80
+#   - affiliate-api.berkahkarya.org → proxy_pass http://node:3001
+#   - affiliate-tools.berkahkarya.org → proxy_pass http://phpmyadmin:80
+#   - All SSL terminated at Cloudflare (proxied = true)
+#
+# Required cf-router mappings for this stack:
+#   - subdomain: affiliate      → host: php     port: 80
+#   - subdomain: affiliate-api  → host: node    port: 3001
+#   - subdomain: affiliate-tools → host: phpmyadmin port: 80
+#
+# After adding mappings, cf-router regenerates nginx configs and reloads nginx.
+# Cloudflare DNS records are created automatically (proxied = true for SSL).
