@@ -16,12 +16,14 @@ async function enqueue(url, niche = null) {
     niche: niche || 'auto',
     status: 'queued',
     steps: [],
+    result: null,
+    error: null,
   });
 
   const job = {
     id: jobId,
     url,
-    niche,
+    niche: niche || 'auto',
     status: 'queued',
     steps: [],
     result: null,
@@ -61,13 +63,13 @@ async function processJob(jobId) {
     const mutated = await pipelineService.mutateVideoHash(video.buffer);
     job.steps.push({ step: 'mutate', status: 'ok' });
 
-    // 3. Detect niche + pick affiliate link
+    // 3. Detect niche + pick TRACKED affiliate link
     const detectedNiche =
       job.niche === 'auto'
         ? pipelineService.detectNiche(video.caption, video.hashtags)
         : job.niche;
 
-    const affiliateLink = pipelineService.pickAffiliateLink(detectedNiche);
+    const affiliateLink = await pipelineService.pickTrackedAffiliateLink(detectedNiche);
     job.steps.push({
       step: 'niche',
       status: 'ok',
@@ -167,10 +169,13 @@ function getStatus(jobId) {
   if (!job) return null;
   return {
     id: job.id,
+    url: job.url,
+    niche: job.niche,
     status: job.status,
     steps: job.steps,
     result: job.result,
     error: job.error,
+    createdAt: job.createdAt,
   };
 }
 

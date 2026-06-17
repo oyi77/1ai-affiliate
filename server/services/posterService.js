@@ -1,4 +1,5 @@
 const pool = require('../db/mysql');
+const { mintSmartlink } = require('./smartlinkService');
 
 const posterService = {
   /**
@@ -7,7 +8,7 @@ const posterService = {
    */
   async fetchNextPending() {
     const [rows] = await pool.query(
-      `SELECT id, product_name, normal_price, promo_price, product_url, image_url, affiliate_link
+      `SELECT id, product_name, normal_price, promo_price, product_url, image_url, affiliate_link, smartlink_slug, tracked_url, offer_id
        FROM 1ai_promo_queue
        WHERE status = 'pending'
        ORDER BY id ASC
@@ -19,22 +20,24 @@ const posterService = {
 
   /**
    * Format a product row as an HTML caption for Telegram.
+   * Uses tracked_url if available (smartlink), falls back to bare affiliate_link.
    * @param {object} row
    * @returns {string} HTML-formatted caption
    */
   formatCaption(row) {
-    const { id, product_name, normal_price, promo_price, product_url, image_url, affiliate_link } = row;
+    const { id, product_name, normal_price, promo_price, product_url, image_url, affiliate_link, tracked_url } = row;
     const normal = parseInt(normal_price) || 0;
     const promo = parseInt(promo_price) || 0;
     const discount = normal > 0 ? Math.round((1 - promo / normal) * 100) : 0;
     const tag = product_name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 15);
+    const link = tracked_url || affiliate_link;
 
     return (
       `<b>⚡ FLASH SALE!</b>\n\n` +
       `<b>${product_name}</b>\n\n` +
-      `Harga normal: <s>Rp${normal.toLocaleString('id-ID')}</s>\n` +
+      `Harga normal: Rp${normal.toLocaleString('id-ID')}\n` +
       `Harga promo: <b>Rp${promo.toLocaleString('id-ID')}</b> (hemat ${discount}%)\n\n` +
-      `👉 <a href="${affiliate_link}">BELI SEKARANG</a>\n\n` +
+      `👉 <a href="${link}">BELI SEKARANG</a>\n\n` +
       `#${tag} #FlashSale`
     );
   },
@@ -112,11 +115,12 @@ const posterService = {
 
   /**
    * Add a product to the poster queue.
-   * @param {object} data { product_url, product_name, image_url?, normal_price, promo_price, affiliate_link?, niche? }
+   * If offer_id and affiliate_link are provided, mints a tracked smartlink.
+   * @param {object} data { product_url, product_name, image_url?, normal_price, promo_price, affiliate_link?, niche?, offer_id? }
    * @returns {object} { id } of the inserted row
    */
   async addToQueue(data) {
-    const { product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche } = data;
+    const { product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche, offer_id } = data;
 
     if (!product_url || !product_name || !normal_price || !promo_price) {
       throw new Error('product_url, product_name, normal_price, and promo_price are required');
@@ -135,9 +139,30 @@ const posterService = {
     );
     if (existing.length) throw new Error('Product with this URL already exists in the queue');
 
+    let smartlinkSlug = null;
+    let trackedUrl = null;
+
+    // If offer_id and affiliate_link provided, mint a tracked smartlink
+    if (offer_id && affiliate_link) {
+      try {
+        const result = await mintSmartlink({
+          offerId: offer_id,
+          affiliateId: 1, // TODO: determine correct affiliate_id from context
+          domainId: null,
+          shortenerServiceId: null
+        });
+        smartlinkSlug = result.slug;
+        trackedUrl = result.url;
+        console.log(`[PosterService] Minted smartlink ${smartlinkSlug} for offer ${offer_id}`);
+      } catch (err) {
+        console.error('[PosterService] Failed to mint smartlink:', err.message);
+        // Continue without smartlink - will fall back to bare affiliate link
+      }
+    }
+
     const [result] = await pool.query(
-      `INSERT INTO 1ai_promo_queue (product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO 1ai_promo_queue (product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche, offer_id, smartlink_slug, tracked_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         product_url,
         product_name,
@@ -146,6 +171,9 @@ const posterService = {
         parseInt(promo_price),
         affiliate_link || null,
         niche || null,
+        offer_id || null,
+        smartlinkSlug,
+        trackedUrl
       ]
     );
 

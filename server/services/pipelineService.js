@@ -5,7 +5,50 @@ const execFileAsync = promisify(execFile);
 const fs = require('fs/promises');
 const path = require('path');
 const os = require('os');
+const { mintSmartlink } = require('./smartlinkService');
 
+const NICHES = ['hijab', 'sepatu', 'tas', 'atasan_pria', 'general'];
+const TIKTOK_API = process.env.TIKTOK_API_URL || 'https://www.tikwm.com/api/';
+const MAX_POSTS_PER_ACCOUNT_PER_DAY = 4;
+const MIN_DELAY_MS = 45 * 60 * 1000;
+const MAX_DELAY_MS = 120 * 60 * 1000;
+
+// In-memory rate limit tracking: { accountId: [timestamp, ...] }
+const rateLimitMap = new Map();
+
+// Niche to 1ai_offers.id mapping for smartlink minting
+// Update as offers are seeded with seed_jendralbot_offers.js
+const NICHE_OFFER_MAP = {
+  hijab: 1,
+  sepatu: 2,
+  tas: 3,
+  atasan_pria: 4,
+  general: 5,
+};
+
+/**
+ * Pick a tracked smartlink for the given niche.
+ * Mints a smartlink via mintSmartlink() so clicks are tracked.
+ * Falls back to bare SHOPEE_LINKS_JSON link if smartlink minting fails.
+ */
+async function pickTrackedAffiliateLink(niche, affiliateId = 1) {
+  const offerId = NICHE_OFFER_MAP[niche] || NICHE_OFFER_MAP.general;
+
+  try {
+    const result = await mintSmartlink({
+      offerId,
+      affiliateId,
+      domainId: null,
+      shortenerServiceId: null
+    });
+    console.log(`[PipelineService] Minted tracked smartlink ${result.slug} for niche ${niche} (offer ${offerId})`);
+    return result.url;
+  } catch (err) {
+    console.error(`[PipelineService] Failed to mint smartlink for niche ${niche}:`, err.message);
+    // Fallback to bare link from env
+    return pickAffiliateLink(niche);
+  }
+}
 const NICHES = ['hijab', 'sepatu', 'tas', 'atasan_pria', 'general'];
 const TIKTOK_API = process.env.TIKTOK_API_URL || 'https://www.tikwm.com/api/';
 const MAX_POSTS_PER_ACCOUNT_PER_DAY = 4;
@@ -282,6 +325,7 @@ module.exports = {
   mutateVideoHash,
   detectNiche,
   pickAffiliateLink,
+  pickTrackedAffiliateLink,
   checkRateLimit,
   recordPost,
   getRandomDelay,
