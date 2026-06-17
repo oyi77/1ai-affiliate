@@ -186,6 +186,29 @@ services:
       - affiliate-network
     profiles:
       - tools
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # DOCS SITE (1ai-playbook)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  playbook:
+    build:
+      context: ../1ai-playbook
+      dockerfile: Dockerfile
+    container_name: affiliate-playbook
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOSTNAME: "0.0.0.0"
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - affiliate-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
 networks:
   affiliate-network:
