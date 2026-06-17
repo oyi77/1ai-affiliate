@@ -2,57 +2,44 @@
 
 Self-hosted campaign tracking and marketing analytics platform. Track clicks, conversions, and revenue across any traffic source with full data ownership — your data stays on your servers.
 
-Since 2007, 1ai-Affiliate has helped marketers take control of their tracking with an open, self-hosted platform that works with any traffic source, any offer, and any network.
+## 🏗️ Integrated Architecture
+
+This platform now runs as a **polyglot stack** with three cooperating servers:
+
+| Layer | Tech | Purpose |
+|-------|------|---------|
+| **PHP 8.3+** | Laravel-style + Slim | Core tracking & APIs (v2/v3), admin SPA, offer/rotator/attribution engines, Go CLI, edge redirector |
+| **Node.js (Express)** | `server/app.js` on port 3001 | Companion services: auth, payment (Tripay), smartlinks, **Telegram poster**, **Funnel pipeline** (FB/IG video), AI content, geo, settings, postback queue |
+| **Go** | `edge/cmd/edgeredirect` | Ultra-fast redirect microservice (Redis + GeoIP + fraud + Kafka) |
+
+> **Key integration**: The Node.js companion server now **absorbs** the external Telegram poster and Funnel pipeline services — they are no longer external Python scripts but native Node modules (`server/services/posterService.js`, `server/services/pipelineService.js`). Both services mint **tracked smartlinks** via `smartlinkService.mintSmartlink()` so every posted affiliate link becomes a `/go/<slug>` redirect that the PHP platform attributes for click→conversion tracking.
+
+### Sibling Services (absorbed)
+
+| Service | Was | Now | Integration |
+|---------|-----|-----|-------------|
+| **Telegram Poster** | `telegram-poster/poster.py` (Python) | `server/services/posterService.js` + `posterWorker.js` + `/api/poster` | Native Node; mints smartlinks via `mintSmartlink()`; scheduled cron |
+| **Funnel Pipeline** | `funnel-pipeline/scripts/affiliate_content_pipeline.py` (Python) | `server/services/pipelineService.js` + `pipelineWorker.js` + `/api/pipeline` | Native Node; mints tracked smartlinks per niche; FB/IG posting |
+| **Affiliate Core** | `affiliate-core/` (Supabase + Fly.io) | Separate product; shared JWT contract | Not merged — runs independently on Fly.io |
+| **jendralbot** | `jendralbot/index.html` (static) | Landing page candidate | To be served as root `/` with tracked smartlink CTAs |
+
+### Data Layer
+
+- **MySQL 8** — System of record for all PHP + Node services
+- **Redis** — Session cache, edge redirector lookup, rate limits
+- **ClickHouse** — Cold-path click analytics (via Go consumer)
+- **Kafka** — Click event stream (Go edge → ClickHouse)
+
+### Telemetry & Monitoring
+
+- **Prometheus + Grafana** (included in docker-compose)
+- **BullMQ Dashboard** (`/api/bull-dashboard` on Node) for queue observability
+- **Structured logging** via Pino (Node) + Monolog (PHP)
+
+---
 
 ## Key Features
 
-- **Self-Hosted & Full Source Code** — Run 1ai-Affiliate 100% on your own servers for ultimate control of your proprietary data and marketing methods. Customize the full source code to meet your needs.
-- **Click & Conversion Tracking** — Real-time click capture with sub-ID parameters, referrer tracking, and automatic IP/UA logging. Server-to-server postback and pixel tracking with revenue, payout, and status fields.
-- **12+ Report Types** — Keywords, geo, device, browser, OS, referrer, ISP, landing page, and custom dimension reports. Track profit and loss, conversion metrics, EPC per keyword, per text ad, per referrer, and more.
-- **Multi-Touch Attribution** — Five attribution models including last-touch, time-decay, position-based, and algorithmic.
-- **Split Testing** — Run unlimited weighted split tests to discover your best marketing message and offer. Pause non-converting tests and automatically send all traffic to the winner.
-- **Smart Redirector & Traffic Rules** — Rule-based traffic distribution with weighted rotation, geo-targeting, and device filtering.
-- **BlazerCache Technology** — Fast redirects that continue working even if the database goes down, preventing lost revenue.
-- **Fraud Prevention** — Sentinel Traffic Quality Enforcer (T.Q.E.) redirects potentially fraudulent traffic away from your landing pages.
-- **Landing Page Personalization** — Dynamically display ISP, device, postal code, geo location, keyword, UTM variables, browser, OS, and more on your landing pages.
-- **Device Detection** — Automatically detect device types and models for full insights into mobile-targeted campaigns.
-- **Deep Linking** — Boost conversion rates by deep linking directly into apps, reducing friction for users.
-- **Custom Domains for Smartlinks** — Configure custom domains (e.g., go.yourdomain.com, r.yourdomain.com) for branded smartlink redirects. Set default domains, manage SSL, and route traffic through cf-router for high-throughput deployments.
-- **URL Shortener Integration** — Connect Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, or custom API endpoints to automatically shorten smartlinks. Configure API keys, rate limits, and branded short domains.
-- **Team Access** — Full role-based authentication with no limit on users and no per-seat costs.
-
-## Requirements
-
-- PHP 8.3+
-- MySQL 8.0+
-- Web server: **Nginx with PHP-FPM (recommended for manual installs)** or **Apache** (as used in the official Docker image)
-- Composer
-- Go 1.22+ (optional, for the Go CLI)
-
-## Installation
-
-### Quick Install
-
-```bash
-git clone https://github.com/tracking1ai/1ai-affiliate.git
-cd 1ai-affiliate
-./install.sh
-```
-
-The install script will:
-- Check for PHP and Composer (installs Composer if missing)
-- Install PHP dependencies
-- Create config file from sample
-
-### Docker
-
-```bash
-git clone https://github.com/tracking1ai/1ai-affiliate.git
-cd 1ai-affiliate
-docker compose up -d
-```
-
-Dependencies are automatically installed on container startup.
 
 - Application: `http://localhost:8000`
 - phpMyAdmin: `http://localhost:8080`

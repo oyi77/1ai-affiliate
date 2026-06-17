@@ -7,5 +7,9 @@
   },
   "scripts": {
     "test:playwright": "playwright test"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mysql2": "^3.22.5"
   }
 }
