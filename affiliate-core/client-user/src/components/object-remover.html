@@ -1,0 +1,179 @@
+<div id="content-object-remover" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-600 via-gray-500 to-slate-400 bg-clip-text text-transparent">
+        <i class="fas fa-eraser mr-3"></i>Penghapus Objek
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Hapus objek yang tidak diinginkan dari gambar dengan AI</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Object Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Objek</h2>
+          <div id="object-remover-object-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="people" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-slate-200 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-user text-2xl mb-1 text-slate-500"></i>
+              <span class="block font-medium">Orang</span>
+            </button>
+            <button type="button" data-type="text" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 transition text-center border-2 border-transparent">
+              <i class="fas fa-font text-2xl mb-1 text-gray-500"></i>
+              <span class="block font-medium">Teks</span>
+            </button>
+            <button type="button" data-type="watermark" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 transition text-center border-2 border-transparent">
+              <i class="fas fa-water text-2xl mb-1 text-gray-400"></i>
+              <span class="block font-medium">Watermark</span>
+            </button>
+            <button type="button" data-type="logo" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 transition text-center border-2 border-transparent">
+              <i class="fas fa-star text-2xl mb-1 text-yellow-500"></i>
+              <span class="block font-medium">Logo</span>
+            </button>
+            <button type="button" data-type="stamp" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 transition text-center border-2 border-transparent">
+              <i class="fas fa-stamp text-2xl mb-1 text-red-500"></i>
+              <span class="block font-medium">Cap</span>
+            </button>
+            <button type="button" data-type="wire" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 transition text-center border-2 border-transparent">
+              <i class="fas fa-wire text-2xl mb-1 text-gray-600"></i>
+              <span class="block font-medium">Kabel</span>
+            </button>
+            <button type="button" data-type="shadow" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 transition text-center border-2 border-transparent">
+              <i class="fas fa-moon text-2xl mb-1 text-gray-400"></i>
+              <span class="block font-medium">Bayangan</span>
+            </button>
+            <button type="button" data-type="other" class="object-remover-object-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 transition text-center border-2 border-transparent">
+              <i class="fas fa-question text-2xl mb-1 text-gray-400"></i>
+              <span class="block font-medium">Lainnya</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Removal Method -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Metode Penghapusan</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="object-remover-removal-method" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-magic mr-1 text-slate-500"></i>Metode
+              </label>
+              <select id="object-remover-removal-method" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
+                <option value="auto-detect">Deteksi Otomatis</option>
+                <option value="manual-brush">Kuas Manual</option>
+                <option value="point-click">Klik Titik</option>
+                <option value="edge-follow">Ikuti Tepi</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Image Upload -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Unggah Gambar</h2>
+          
+          <div id="object-remover-image-upload-area" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-slate-400 transition cursor-pointer bg-gray-50">
+            <input type="file" id="object-remover-image-input" class="hidden" accept="image/*">
+            <i class="fas fa-cloud-upload-alt text-4xl text-slate-400 mb-3"></i>
+            <p class="text-gray-600 font-medium">Klik atau seret gambar ke sini</p>
+            <p class="text-sm text-gray-500 mt-1">PNG, JPG, atau WEBP (maks. 10MB)</p>
+          </div>
+          
+          <div id="object-remover-image-preview-container" class="hidden mt-4">
+            <div class="relative">
+              <img id="object-remover-image-preview" src="" alt="Preview" class="w-full rounded-lg border border-gray-200">
+              <button type="button" id="object-remover-remove-image-btn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Fill Mode -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Mode Pengisian</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="object-remover-fill-mode" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-fill-drip mr-1 text-gray-500"></i>Mode Pengisian
+              </label>
+              <select id="object-remover-fill-mode" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500">
+                <option value="auto-fill">Isi Otomatis</option>
+                <option value="content-aware">Mengenal Konten</option>
+                <option value="texture-patch">Patch Tekstur</option>
+                <option value="clone-stamp">Kloning Stamp</option>
+                <option value="inpaint">Inpaint</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Edge Smoothing -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Perhalusan Tepi</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="object-remover-edge-smoothing" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-sliders-h mr-1 text-gray-500"></i>Perhalusan Tepi
+              </label>
+              <select id="object-remover-edge-smoothing" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500">
+                <option value="none">Tidak Ada</option>
+                <option value="light">Ringan</option>
+                <option value="strong">Kuat</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Output Quality -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Kualitas Output</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="object-remover-output-quality" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-star mr-1 text-yellow-500"></i>Kualitas
+              </label>
+              <select id="object-remover-output-quality" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500">
+                <option value="standard">Standar</option>
+                <option value="high">Tinggi</option>
+                <option value="maximum">Maksimum</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Generate Button -->
+        <button id="object-remover-generate-btn" class="w-full bg-gradient-to-r from-slate-600 via-gray-500 to-slate-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Hapus Objek
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="object-remover-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="object-remover-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-eraser text-6xl mb-4 text-slate-400"></i>
+            <p class="text-xl">Hasil penghapusan objek akan muncul di sini</p>
+            <p class="text-sm mt-2">Unggah gambar dan klik Hapus Objek</p>
+          </div>
+          <div id="object-remover-results" class="hidden space-y-6"></div>
+          <div id="object-remover-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-slate-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang menghapus objek...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

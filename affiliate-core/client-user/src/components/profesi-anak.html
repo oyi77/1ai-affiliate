@@ -1,0 +1,238 @@
+<div id="content-profesi-anak" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+        <i class="fas fa-child mr-3"></i>Konten Profesi Anak
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat konten yang inspiratif dan edukatif untuk perjalanan karier anak Anda</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Content Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Konten</h2>
+          <div id="profesi-anak-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="career-exploration" class="type-btn-profesi-anak p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-search text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Eksplorasi</span>
+            </button>
+            <button type="button" data-type="skills" class="type-btn-profesi-anak p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-star text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Keterampilan</span>
+            </button>
+            <button type="button" data-type="education" class="type-btn-profesi-anak p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-graduation-cap text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Pendidikan</span>
+            </button>
+            <button type="button" data-type="inspiration" class="type-btn-profesi-anak p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-lightbulb text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Inspirasi</span>
+            </button>
+            <button type="button" data-type="role-models" class="type-btn-profesi-anak p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-user-astronaut text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Idola</span>
+            </button>
+            <button type="button" data-type="tips" class="type-btn-profesi-anak p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-rocket text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Tips</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Age & Grade -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Usia & Tingkat</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="profesi-anak-age" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-birthday-cake mr-1 text-blue-500"></i>Usia Anak
+              </label>
+              <select id="profesi-anak-age" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="3-5">Usia 3-5 tahun (Pra-sekolah)</option>
+                <option value="6-12">Usia 6-12 tahun (Sekolah Dasar)</option>
+                <option value="13-15">Usia 13-15 tahun (SMP)</option>
+                <option value="16-18">Usia 16-18 tahun (SMA/SMK)</option>
+                <option value="all">Semua Usia</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="profesi-anak-grade" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-school mr-1 text-blue-500"></i>Tingkat Pendidikan
+              </label>
+              <select id="profesi-anak-grade" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="preschool">Pra-sekolah</option>
+                <option value="elementary">Sekolah Dasar</option>
+                <option value="junior-high">SMP</option>
+                <option value="senior-high">SMA/SMK</option>
+                <option value="all">Semua Tingkat</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Profession Category -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Kategori Profesi</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="profesi-anak-category" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-briefcase mr-1 text-blue-500"></i>Kategori Profesi
+              </label>
+              <select id="profesi-anak-category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="science">Sains & Teknologi</option>
+                <option value="arts">Seni & Kreativitas</option>
+                <option value="sports">Olahraga & Kesehatan</option>
+                <option value="business">Bisnis & Kewirausahaan</option>
+                <option value="education">Pendidikan & Pengajaran</option>
+                <option value="healthcare">Kesehatan & Medis</option>
+                <option value="engineering">Teknik & Engineering</option>
+                <option value="public-service">Layanan Publik</option>
+                <option value="all">Semua Kategori</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="profesi-anak-profession" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-user-tie mr-1 text-blue-500"></i>Profesi Spesifik
+              </label>
+              <input type="text" id="profesi-anak-profession" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Dokter, Pilot, Seniman, Programmer">
+            </div>
+            
+            <div>
+              <label for="profesi-anak-keywords" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-key mr-1 text-blue-500"></i>Kata Kunci
+              </label>
+              <input type="text" id="profesi-anak-keywords" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: karier, masa depan, pendidikan">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="profesi-anak-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-blue-500"></i>Target Audiens
+              </label>
+              <select id="profesi-anak-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="children">Anak-anak</option>
+                <option value="parents">Orang Tua</option>
+                <option value="educators">Pendidik/Guru</option>
+                <option value="counselors">Konselor Karier</option>
+                <option value="all">Semua Audiens</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="profesi-anak-interests" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-heart mr-1 text-blue-500"></i>Minat Audiens
+              </label>
+              <textarea id="profesi-anak-interests" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Apa yang paling dibutuhkan oleh audiens Anda?"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Tone & Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Gaya & Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="profesi-anak-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-smile mr-1 text-blue-500"></i>Tone Konten
+              </label>
+              <select id="profesi-anak-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="encouraging">Mendorong & Memotivasi</option>
+                <option value="educational">Edukatif & Informatif</option>
+                <option value="fun">Menyenangkan & Seru</option>
+                <option value="inspiring">Inspiratif & Menginspirasi</option>
+                <option value="supportive">Mendukung & Memberi Semangat</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="profesi-anak-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-paint-brush mr-1 text-blue-500"></i>Gaya Penulisan
+              </label>
+              <select id="profesi-anak-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="storytelling">Cerita & Naratif</option>
+                <option value="casual">Santai & Gaul</option>
+                <option value="question-answer">Tanya Jawab</option>
+                <option value="stepbystep">Langkah demi Langkah</option>
+                <option value="fact-based">Fakta & Data</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="profesi-anak-length" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-text-width mr-1 text-blue-500"></i>Panjang Konten
+              </label>
+              <select id="profesi-anak-length" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="short">Pendek (1-2 paragraf)</option>
+                <option value="medium">Sedang (3-5 paragraf)</option>
+                <option value="long">Panjang (artikel lengkap)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Additional Details -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Detail Tambahan</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="profesi-anak-goals" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-bullseye mr-1 text-blue-500"></i>Tujuan Konten
+              </label>
+              <textarea id="profesi-anak-goals" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Apa tujuan Anda membuat konten ini?"></textarea>
+            </div>
+            
+            <div>
+              <label for="profesi-anak-cta" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-mouse-pointer mr-1 text-blue-500"></i>Call to Action
+              </label>
+              <input type="text" id="profesi-anak-cta" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Siapa profesi idamanmu? Tulis di kolom komentar!">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="profesi-anak-generate-btn" class="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Konten Profesi Anak
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="profesi-anak-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="profesi-anak-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-child text-6xl mb-4 text-blue-400"></i>
+            <p class="text-xl">Hasil konten profesi anak akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Konten Profesi Anak</p>
+          </div>
+          <div id="profesi-anak-results" class="hidden space-y-6"></div>
+          <div id="profesi-anak-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat konten profesi anak...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

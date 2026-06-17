@@ -1,0 +1,242 @@
+<div id="content-umrah-haji" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+        <i class="fas fa-kaaba mr-3"></i>Konten Umrah & Haji
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat konten yang bermakna dan inspiratif untuk perjalanan spiritual Anda</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Content Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Konten</h2>
+          <div id="umrah-haji-content-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="guide" class="type-btn-umrah-haji p-3 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-compass text-2xl mb-1 text-emerald-500"></i>
+              <span class="block font-medium">Panduan</span>
+            </button>
+            <button type="button" data-type="preparation" class="type-btn-umrah-haji p-3 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-clipboard-check text-2xl mb-1 text-emerald-500"></i>
+              <span class="block font-medium">Persiapan</span>
+            </button>
+            <button type="button" data-type="tips" class="type-btn-umrah-haji p-3 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-lightbulb text-2xl mb-1 text-emerald-500"></i>
+              <span class="block font-medium">Tips</span>
+            </button>
+            <button type="button" data-type="dua" class="type-btn-umrah-haji p-3 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-praying-hands text-2xl mb-1 text-emerald-500"></i>
+              <span class="block font-medium">Doa</span>
+            </button>
+            <button type="button" data-type="experience" class="type-btn-umrah-haji p-3 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-heart text-2xl mb-1 text-emerald-500"></i>
+              <span class="block font-medium">Pengalaman</span>
+            </button>
+            <button type="button" data-type="checklist" class="type-btn-umrah-haji p-3 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-list-check text-2xl mb-1 text-emerald-500"></i>
+              <span class="block font-medium">Checklist</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Pilgrimage Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Jenis Ibadah</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="umrah-haji-type" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-mosque mr-1 text-emerald-500"></i>Pilihan Ibadah
+              </label>
+              <select id="umrah-haji-type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="umrah">Umrah</option>
+                <option value="hajj">Haji</option>
+                <option value="both">Umrah & Haji</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="umrah-haji-season" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-calendar-alt mr-1 text-emerald-500"></i>Waktu Pelaksanaan
+              </label>
+              <select id="umrah-haji-season" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="anytime">Kapan Saja</option>
+                <option value="ramadan">Ramadan</option>
+                <option value="hajj-season">Musim Haji</option>
+                <option value="school-holiday">Liburan Sekolah</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="umrah-haji-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-emerald-500"></i>Target Audiens
+              </label>
+              <select id="umrah-haji-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="first-timers">Jamaah Pertama Kali</option>
+                <option value="experienced">Jamaah Berpengalaman</option>
+                <option value="family">Keluarga</option>
+                <option value="senior">Jamaah Senior</option>
+                <option value="youth">Pemuda</option>
+                <option value="all">Semua Jamaah</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="umrah-haji-experience-level" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-signal mr-1 text-emerald-500"></i>Tingkat Pengalaman
+              </label>
+              <select id="umrah-haji-experience-level" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="beginner">Pemula</option>
+                <option value="intermediate">Menengah</option>
+                <option value="advanced">Mahir</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Tone & Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Gaya & Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="umrah-haji-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-heart mr-1 text-emerald-500"></i>Tone Konten
+              </label>
+              <select id="umrah-haji-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="devout">Khusyuk & Devotis</option>
+                <option value="informative">Informatif & Edukatif</option>
+                <option value="warm">Hangat & Ramah</option>
+                <option value="inspirational">Inspiratif & Motivasi</option>
+                <option value="practical">Praktis & Terstruktur</option>
+                <option value="spiritual">Spiritual & Mendalam</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="umrah-haji-language" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-language mr-1 text-emerald-500"></i>Bahasa
+              </label>
+              <select id="umrah-haji-language" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="indonesian">Indonesia</option>
+                <option value="arabic-indonesian">Arab & Indonesia</option>
+                <option value="simple-indonesian">Indonesia Sederhana</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="umrah-haji-length" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-text-width mr-1 text-emerald-500"></i>Panjang Konten
+              </label>
+              <select id="umrah-haji-length" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="short">Singkat</option>
+                <option value="medium">Sedang</option>
+                <option value="long">Panjang & Komprehensif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Specific Topics -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Topik Spesifik</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="umrah-haji-topic" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-book-open mr-1 text-emerald-500"></i>Topik Utama
+              </label>
+              <select id="umrah-haji-topic" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="rituals">Ritual & Tata Cara</option>
+                <option value="supplies">Perlengkapan</option>
+                <option value="health">Kesehatan & Kebugaran</option>
+                <option value="spiritual">Persiapan Spiritual</option>
+                <option value="logistics">Logistik & Akomodasi</option>
+                <option value="dua-doa">Doa-Doa Penting</option>
+                <option value="historical">Sejarah & Makna</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="umrah-haji-special" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-star mr-1 text-emerald-500"></i>Fokus Khusus
+              </label>
+              <textarea id="umrah-haji-special" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Topik khusus yang ingin dibahas..."></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Additional Details -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Detail Tambahan</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="umrah-haji-goal" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-bullseye mr-1 text-emerald-500"></i>Tujuan Konten
+              </label>
+              <select id="umrah-haji-goal" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="educate">Pendidikan & Pembelajaran</option>
+                <option value="motivate">Motivasi & Inspirasi</option>
+                <option value="guide">Panduan Praktis</option>
+                <option value="prepare">Persiapan Ibadah</option>
+                <option value="reflect">Refleksi Spiritual</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="umrah-haji-format" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-file-alt mr-1 text-emerald-500"></i>Format Konten
+              </label>
+              <select id="umrah-haji-format" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="article">Artikel</option>
+                <option value="guide">Panduan Langkah</option>
+                <option value="checklist">Daftar Periksa</option>
+                <option value="timeline">Timeline</option>
+                <option value="faq">FAQ</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="umrah-haji-generate-btn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Konten Umrah & Haji
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="umrah-haji-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="umrah-haji-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-kaaba text-6xl mb-4 text-emerald-400"></i>
+            <p class="text-xl">Hasil konten umrah & haji akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Konten Umrah & Haji</p>
+          </div>
+          <div id="umrah-haji-results" class="hidden space-y-6"></div>
+          <div id="umrah-haji-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-emerald-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat konten umrah & Haji...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

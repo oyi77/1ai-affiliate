@@ -1,0 +1,335 @@
+<!-- Riset Pasar Component -->
+<div id="riset-pasar-container" class="bg-gradient-to-br from-green-600 to-emerald-500 min-h-screen p-6">
+    <!-- Header -->
+    <div id="riset-pasar-header" class="text-center mb-8">
+        <h1 id="riset-pasar-title" class="text-3xl font-bold text-white mb-2">
+            <i class="fas fa-chart-line mr-2"></i>Riset Pasar
+        </h1>
+        <p id="riset-pasar-subtitle" class="text-white/90 text-lg">
+            Analisis industri, kompetitor, dan tren pasar untuk peluang affiliate
+        </p>
+    </div>
+
+    <!-- Main Form -->
+    <div id="riset-pasar-form-container" class="max-w-4xl mx-auto">
+        <form id="riset-pasar-form" class="bg-white rounded-xl shadow-xl p-6 space-y-6">
+            <!-- Industry/Niche Selection -->
+            <div id="riset-pasar-industry-section">
+                <label id="riset-pasar-industry-label" for="riset-pasar-industry" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-industry mr-2 text-green-600"></i>Industri/Niche
+                </label>
+                <select id="riset-pasar-industry" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                    <option value="">-- Pilih Industri --</option>
+                    <option value="ecommerce">E-commerce & Retail</option>
+                    <option value="technology">Teknologi & Software</option>
+                    <option value="health">Kesehatan & Wellness</option>
+                    <option value="finance">Keuangan & Investasi</option>
+                    <option value="education">Pendidikan & Kursus</option>
+                    <option value="travel">Travel & Hospitality</option>
+                    <option value="food">Makanan & Minuman</option>
+                    <option value="fashion">Fashion & Kecantikan</option>
+                    <option value="gaming">Gaming & Hiburan</option>
+                    <option value="realestate">Properti & Real Estate</option>
+                    <option value="automotive">Otomotif</option>
+                    <option value="other">Lainnya</option>
+                </select>
+                <input type="text" id="riset-pasar-industry-other" placeholder="Sebutkan industri lain..." class="w-full px-4 py-3 border border-gray-300 rounded-lg mt-2 hidden focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+            </div>
+
+            <!-- Target Location -->
+            <div id="riset-pasar-location-section">
+                <label id="riset-pasar-location-label" for="riset-pasar-location" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>Lokasi Target
+                </label>
+                <input type="text" id="riset-pasar-location" placeholder="Contoh: Jakarta, Indonesia atau ASEAN" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                <p id="riset-pasar-location-help" class="text-sm text-gray-500 mt-1">Masukkan negara, kota, atau wilayah yang ingin ditargetkan</p>
+            </div>
+
+            <!-- Competitor Analysis -->
+            <div id="riset-pasar-competitor-section">
+                <label id="riset-pasar-competitor-label" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-users mr-2 text-green-600"></i>Analisis Kompetitor
+                </label>
+                <div id="riset-pasar-competitor-list" class="space-y-3">
+                    <div id="riset-pasar-competitor-1" class="flex gap-2">
+                        <input type="text" id="riset-pasar-competitor-name-1" placeholder="Nama kompetitor/brand" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                        <input type="url" id="riset-pasar-competitor-url-1" placeholder="https://..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                    </div>
+                </div>
+                <button type="button" id="riset-pasar-add-competitor" class="mt-3 text-green-600 hover:text-green-700 font-medium text-sm flex items-center">
+                    <i class="fas fa-plus-circle mr-1"></i>Tambah Kompetitor
+                </button>
+            </div>
+
+            <!-- Trends Identification -->
+            <div id="riset-pasar-trends-section">
+                <label id="riset-pasar-trends-label" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-arrow-trend-up mr-2 text-green-600"></i>Identifikasi Tren
+                </label>
+                <div id="riset-pasar-trends-options" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="riset-pasar-trend-1" value="rising-demand" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                        <span class="text-gray-700">Permintaan Meningkat</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="riset-pasar-trend-2" value="new-technology" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                        <span class="text-gray-700">Teknologi Baru</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="riset-pasar-trend-3" value="seasonal" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                        <span class="text-gray-700">Musiman</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="riset-pasar-trend-4" value="regulatory" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                        <span class="text-gray-700">Peraturan Pemerintah</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="riset-pasar-trend-5" value="consumer-behavior" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                        <span class="text-gray-700">Perilaku Konsumen</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-green-50 cursor-pointer transition-colors">
+                        <input type="checkbox" id="riset-pasar-trend-6" value="market-gap" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                        <span class="text-gray-700">Celah Pasar</span>
+                    </label>
+                </div>
+                <input type="text" id="riset-pasar-custom-trend" placeholder="Tren khusus lainnya..." class="w-full px-4 py-3 border border-gray-300 rounded-lg mt-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+            </div>
+
+            <!-- Additional Notes -->
+            <div id="riset-pasar-notes-section">
+                <label id="riset-pasar-notes-label" for="riset-pasar-notes" class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-sticky-note mr-2 text-green-600"></i>Catatan Tambahan
+                </label>
+                <textarea id="riset-pasar-notes" rows="3" placeholder="Informasi tambahan yang ingin disertakan dalam riset pasar..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none"></textarea>
+            </div>
+
+            <!-- Generate Button -->
+            <div id="riset-pasar-actions" class="pt-4">
+                <button type="submit" id="riset-pasar-generate-btn" class="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white font-bold py-4 px-6 rounded-lg hover:from-green-700 hover:to-emerald-600 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center">
+                    <i class="fas fa-search-dollar mr-2 text-lg"></i>
+                    <span class="text-lg">Generate Riset Pasar</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Section (Hidden by default) -->
+    <div id="riset-pasar-results-container" class="max-w-4xl mx-auto mt-8 hidden">
+        <div id="riset-pasar-results" class="bg-white rounded-xl shadow-xl p-6">
+            <div id="riset-pasar-results-header" class="flex justify-between items-center mb-6 pb-4 border-b">
+                <h2 id="riset-pasar-results-title" class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-chart-pie mr-2 text-green-600"></i>Hasil Riset Pasar
+                </h2>
+                <button type="button" id="riset-pasar-new-analysis" class="text-green-600 hover:text-green-700 font-medium">
+                    <i class="fas fa-plus mr-1"></i>Analisis Baru
+                </button>
+            </div>
+            
+            <div id="riset-pasar-results-content" class="space-y-6">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="riset-pasar-loading" class="max-w-4xl mx-auto mt-8 hidden">
+        <div class="bg-white rounded-xl shadow-xl p-12 text-center">
+            <div class="animate-spin inline-block w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full mb-4"></div>
+            <p id="riset-pasar-loading-text" class="text-gray-600 text-lg">Sedang menganalisis pasar...</p>
+            <p class="text-gray-500 text-sm mt-2">Ini mungkin memerlukan waktu beberapa saat</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Riset Pasar Component Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const industrySelect = document.getElementById('riset-pasar-industry');
+    const otherIndustryInput = document.getElementById('riset-pasar-industry-other');
+    const addCompetitorBtn = document.getElementById('riset-pasar-add-competitor');
+    const form = document.getElementById('riset-pasar-form');
+    const resultsContainer = document.getElementById('riset-pasar-results-container');
+    const loadingContainer = document.getElementById('riset-pasar-loading');
+    const formContainer = document.getElementById('riset-pasar-form-container');
+    const newAnalysisBtn = document.getElementById('riset-pasar-new-analysis');
+    
+    let competitorCount = 1;
+
+    // Show/hide other industry input
+    industrySelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            otherIndustryInput.classList.remove('hidden');
+            otherIndustryInput.required = true;
+        } else {
+            otherIndustryInput.classList.add('hidden');
+            otherIndustryInput.required = false;
+        }
+    });
+
+    // Add competitor field
+    addCompetitorBtn.addEventListener('click', function() {
+        competitorCount++;
+        const competitorList = document.getElementById('riset-pasar-competitor-list');
+        const newCompetitor = document.createElement('div');
+        newCompetitor.id = `riset-pasar-competitor-${competitorCount}`;
+        newCompetitor.className = 'flex gap-2';
+        newCompetitor.innerHTML = `
+            <input type="text" id="riset-pasar-competitor-name-${competitorCount}" placeholder="Nama kompetitor/brand" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+            <input type="url" id="riset-pasar-competitor-url-${competitorCount}" placeholder="https://..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+            <button type="button" onclick="removeCompetitor(${competitorCount})" class="px-3 py-2 text-red-500 hover:text-red-600">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        competitorList.appendChild(newCompetitor);
+    });
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading
+        formContainer.classList.add('hidden');
+        loadingContainer.classList.remove('hidden');
+        
+        // Collect form data
+        const formData = {
+            industry: industrySelect.value === 'other' ? otherIndustryInput.value : industrySelect.value,
+            location: document.getElementById('riset-pasar-location').value,
+            competitors: [],
+            trends: [],
+            notes: document.getElementById('riset-pasar-notes').value
+        };
+
+        // Collect competitors
+        for (let i = 1; i <= competitorCount; i++) {
+            const name = document.getElementById(`riset-pasar-competitor-name-${i}`);
+            const url = document.getElementById(`riset-pasar-competitor-url-${i}`);
+            if (name && name.value) {
+                formData.competitors.push({
+                    name: name.value,
+                    url: url ? url.value : ''
+                });
+            }
+        }
+
+        // Collect trends
+        const trendCheckboxes = document.querySelectorAll('#riset-pasar-trends-options input[type="checkbox"]:checked');
+        trendCheckboxes.forEach(checkbox => {
+            formData.trends.push(checkbox.value);
+        });
+
+        // Add custom trend
+        const customTrend = document.getElementById('riset-pasar-custom-trend').value;
+        if (customTrend) {
+            formData.trends.push(customTrend);
+        }
+
+        // Simulate API call (replace with actual API integration)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Show results
+        loadingContainer.classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+        
+        // Render results
+        renderResults(formData);
+    });
+
+    // New analysis button
+    newAnalysisBtn.addEventListener('click', function() {
+        form.reset();
+        otherIndustryInput.classList.add('hidden');
+        competitorCount = 1;
+        
+        // Reset competitors to just one field
+        const competitorList = document.getElementById('riset-pasar-competitor-list');
+        competitorList.innerHTML = `
+            <div id="riset-pasar-competitor-1" class="flex gap-2">
+                <input type="text" id="riset-pasar-competitor-name-1" placeholder="Nama kompetitor/brand" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+                <input type="url" id="riset-pasar-competitor-url-1" placeholder="https://..." class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors">
+            </div>
+        `;
+        
+        resultsContainer.classList.add('hidden');
+        formContainer.classList.remove('hidden');
+    });
+});
+
+// Remove competitor field
+function removeCompetitor(id) {
+    const competitor = document.getElementById(`riset-pasar-competitor-${id}`);
+    if (competitor) {
+        competitor.remove();
+    }
+}
+
+// Render results
+function renderResults(data) {
+    const resultsContent = document.getElementById('riset-pasar-results-content');
+    
+    let html = `
+        <!-- Industry Overview -->
+        <div class="bg-green-50 rounded-lg p-4">
+            <h3 class="font-bold text-green-800 mb-2">
+                <i class="fas fa-building mr-2"></i>Industri: ${data.industry || 'Tidak ditentukan'}
+            </h3>
+            <p class="text-gray-700">Lokasi Target: <strong>${data.location || 'Tidak ditentukan'}</strong></p>
+        </div>
+    `;
+
+    if (data.competitors.length > 0) {
+        html += `
+            <!-- Competitor Analysis -->
+            <div>
+                <h3 class="font-bold text-gray-800 mb-3">
+                    <i class="fas fa-users mr-2 text-green-600"></i>Analisis Kompetitor
+                </h3>
+                <div class="grid gap-3">
+        `;
+        data.competitors.forEach(comp => {
+            html += `
+                <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-green-500">
+                    <p class="font-semibold text-gray-800">${comp.name}</p>
+                    ${comp.url ? `<a href="${comp.url}" target="_blank" class="text-green-600 hover:text-green-700 text-sm">${comp.url}</a>` : ''}
+                </div>
+            `;
+        });
+        html += `
+                </div>
+            </div>
+        `;
+    }
+
+    if (data.trends.length > 0) {
+        html += `
+            <!-- Trends -->
+            <div>
+                <h3 class="font-bold text-gray-800 mb-3">
+                    <i class="fas fa-arrow-trend-up mr-2 text-green-600"></i>Tren yang Teridentifikasi
+                </h3>
+                <div class="flex flex-wrap gap-2">
+        `;
+        data.trends.forEach(trend => {
+            html += `<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">${trend}</span>`;
+        });
+        html += `
+                </div>
+            </div>
+        `;
+    }
+
+    if (data.notes) {
+        html += `
+            <!-- Notes -->
+            <div class="bg-yellow-50 rounded-lg p-4">
+                <h3 class="font-bold text-yellow-800 mb-2">
+                    <i class="fas fa-sticky-note mr-2"></i>Catatan Tambahan
+                </h3>
+                <p class="text-gray-700">${data.notes}</p>
+            </div>
+        `;
+    }
+
+    resultsContent.innerHTML = html;
+}
+</script>

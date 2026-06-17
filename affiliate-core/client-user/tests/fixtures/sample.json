@@ -1,0 +1,30 @@
+{
+  "name": "Sample Test Fixture",
+  "description": "A sample fixture for testing purposes",
+  "version": "1.0.0",
+  "data": {
+    "users": [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "role": "admin"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "role": "user"
+      }
+    ],
+    "settings": {
+      "theme": "light",
+      "language": "en",
+      "notifications": true
+    }
+  },
+  "metadata": {
+    "created": "2025-01-01T00:00:00Z",
+    "updated": "2025-01-15T12:30:00Z"
+  }
+}

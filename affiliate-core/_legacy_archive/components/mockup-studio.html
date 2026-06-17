@@ -1,0 +1,119 @@
+                    <div id=content-mockup-studio class="main-content-panel hidden">
+                        <div class="container mx-auto max-w-7xl">
+                            <header class="text-center mb-8">
+                                <h1 class="text-4xl md:text-5xl font-bold mb-3 drop-shadow-lg"><i
+                                        class="fas fa-palette mr-3"></i>Mockup Studio</h1>
+                                <p class="text-lg opacity-90">Buat 7 mockup profesional dari design Anda dengan berbagai
+                                    template</p>
+                                <p class="text-sm opacity-75 mt-2">Upload design → Pilih template mockup atau tema →
+                                    Dapatkan hasil mockup realistis!</p>
+                            </header>
+                            <div class="card mb-8">
+                                <div class=mb-6>
+                                    <h2 class="text-2xl font-bold mb-4 text-gray-800"><i
+                                            class="fas fa-cloud-upload-alt mr-2"></i>Upload Design/Artwork</h2>
+                                    <div id=mockup-upload-area class="upload-area cursor-pointer">
+                                        <div id=mockup-upload-placeholder style=display:block><i
+                                                class="fas fa-images text-6xl text-purple-500 mb-4"></i>
+                                            <p class="text-xl font-semibold text-gray-700 mb-2">Klik atau drag design
+                                                Anda di sini</p>
+                                            <p class="text-sm text-gray-500">Format: JPG, PNG, WEBP (Max 10MB)</p>
+                                        </div>
+                                        <div id=mockup-preview-container class=hidden><img id=mockup-preview-image
+                                                alt=Preview class=preview-image></div>
+                                    </div><input type=file id=mockup-design-input accept=image/* class=hidden>
+                                </div>
+                                <div class=mb-6>
+                                    <h3 class="text-xl font-bold mb-3 text-gray-800"><i
+                                            class="fas fa-image mr-2"></i>Template Mockup Referensi (Opsional)</h3>
+                                    <div id=mockup-template-upload-area class="upload-area cursor-pointer"
+                                        style=min-height:150px>
+                                        <div id=mockup-template-placeholder style=display:block><i
+                                                class="fas fa-file-image text-4xl text-indigo-500 mb-3"></i>
+                                            <p class="text-lg font-semibold text-gray-700 mb-1">Upload foto template
+                                                mockup (Opsional)</p>
+                                            <p class="text-xs text-gray-500">Design akan ditempelkan ke template ini</p>
+                                        </div>
+                                        <div id=mockup-template-preview-container class="hidden relative"><img
+                                                id=mockup-template-preview-image alt="Template Preview"
+                                                class=preview-image> <button id=mockup-template-remove-btn
+                                                class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all"><i
+                                                    class="fas fa-times"></i></button></div>
+                                    </div><input type=file id=mockup-template-input accept=image/* class=hidden>
+                                    <p class="text-xs text-gray-500 mt-2"><i class="fas fa-lightbulb mr-1"></i> Tips:
+                                        Upload foto template (contoh: foto kaos, gelas, poster, dll). Design akan
+                                        ditempelkan secara realistis</p>
+                                </div>
+                                <div class=mb-6>
+                                    <h3 class="text-xl font-bold mb-3 text-gray-800"><i
+                                            class="fas fa-magic mr-2"></i>Tema Mockup Manual (Opsional)</h3><input
+                                        type=text id=mockup-theme-input
+                                        placeholder="Contoh: gelas, kaos, poster, mug, buku, smartphone, tote bag, dll..."
+                                        class="w-full p-4 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all">
+                                    <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle mr-1"></i> Tips:
+                                        Sebutkan jenis mockup yang Anda inginkan. Kosongkan untuk variasi otomatis</p>
+                                </div>
+                                <div class=mb-6>
+                                    <h3 class="text-xl font-bold mb-3 text-gray-800"><i
+                                            class="fas fa-expand-arrows-alt mr-2"></i>Rasio Aspek</h3>
+                                    <div id=mockup-ratio-selection class="grid grid-cols-2 sm:grid-cols-4 gap-3"><button
+                                            type=button data-ratio=1:1 class=ratio-btn-mockup><i
+                                                class="fas fa-square mr-2"></i>1:1</button> <button type=button
+                                            data-ratio=16:9 class="ratio-btn-mockup selected"><i
+                                                class="fas fa-rectangle-landscape mr-2"></i>16:9</button> <button
+                                            type=button data-ratio=3:4 class=ratio-btn-mockup><i
+                                                class="fas fa-rectangle-portrait mr-2"></i>3:4</button> <button
+                                            type=button data-ratio=9:16 class=ratio-btn-mockup><i
+                                                class="fas fa-mobile-alt mr-2"></i>9:16</button></div>
+                                    <p class="text-xs text-gray-500 mt-2"><i class="fas fa-lightbulb mr-1"></i> Pilih
+                                        rasio aspek untuk semua mockup yang akan di-generate</p>
+                                </div>
+                                <div class=text-center><button id=mockup-generate-btn
+                                        class="btn-generate disabled:opacity-50" disabled=disabled><i
+                                            class="fas fa-magic mr-3"></i> Generate 7 Mockup</button></div>
+                            </div>
+                            <div id=mockup-loading-section class="hidden text-center py-12">
+                                <div class="card inline-block">
+                                    <div class="flex flex-col items-center">
+                                        <div class="pov-loader mb-6"></div>
+                                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Sedang Membuat Mockup...</h3>
+                                        <p class="text-gray-600 mb-4">Mohon tunggu, AI sedang menghasilkan <span
+                                                id=mockup-progress-text>0/7</span> mockup</p>
+                                        <div class="w-full max-w-md bg-gray-200 rounded-full h-3">
+                                            <div id=mockup-progress-bar
+                                                class="bg-gradient-to-r from-purple-500 to-indigo-600 h-3 rounded-full transition-all duration-300"
+                                                style=width:0%></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id=mockup-results-section class=hidden>
+                                <div class=card>
+                                    <div class="flex justify-between items-center mb-6">
+                                        <h2 class="text-3xl font-bold text-gray-800"><i
+                                                class="fas fa-check-circle text-green-500 mr-2"></i> Hasil Mockup (<span
+                                                id=mockup-result-count>0</span> mockup)</h2><button
+                                            id=mockup-download-all-btn
+                                            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all"><i
+                                                class="fas fa-download mr-2"></i> Download Semua</button>
+                                    </div>
+                                    <div id=mockup-results-grid class=result-grid></div>
+                                </div>
+                            </div>
+                            <div id=mockup-error-section class=hidden>
+                                <div class="card bg-red-50 border-2 border-red-300">
+                                    <div class="flex items-start"><i
+                                            class="fas fa-exclamation-triangle text-red-500 text-3xl mr-4 mt-1"></i>
+                                        <div>
+                                            <h3 class="text-xl font-bold text-red-800 mb-2">Terjadi Kesalahan</h3>
+                                            <p id=mockup-error-message class=text-red-700></p><button
+                                                id=mockup-retry-btn
+                                                class="mt-4 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-all"><i
+                                                    class="fas fa-redo mr-2"></i>Coba Lagi</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id=content-miniature class="main-content-panel hidden">

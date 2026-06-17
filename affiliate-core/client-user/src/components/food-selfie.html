@@ -1,0 +1,567 @@
+<div id="content-food-selfie" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+        <i class="fas fa-utensils mr-3"></i>Food Selfie
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat foto makanan yang menarik dengan sentuhan AI</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Upload -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Unggah Foto Makanan</h2>
+          <div class="upload-area">
+            <label for="food-selfie-image-input" class="file-input-label block border-3 border-dashed border-emerald-300 rounded-xl p-8 text-center cursor-pointer hover:border-emerald-500 transition-colors">
+              <input type="file" id="food-selfie-image-input" class="hidden" accept="image/*">
+              <i class="fas fa-camera text-4xl text-emerald-400 mb-3"></i>
+              <p class="text-gray-600">Klik atau seret foto makanan di sini</p>
+            </label>
+          </div>
+          <div id="food-selfie-image-preview-container" class="hidden mt-4">
+            <img id="food-selfie-image-preview" src="#" alt="Pratinjau Makanan" class="rounded-lg w-full h-auto object-contain">
+            <button id="food-selfie-remove-image-btn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Food Category -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Kategori Makanan</h2>
+          <div id="food-selfie-category-options" class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+            <button type="button" data-category="" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-ban mr-1"></i>Umum
+            </button>
+            <button type="button" data-category="Masakan Indonesia tradisional dengan cita rasa autentik, tampilan tradisional yang kaya rempah" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-flag mr-1"></i>Indonesian
+            </button>
+            <button type="button" data-category="Masakan Timur Tengah dengan nuansa oriental, warna hangat, dan garnish khas arab" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-globe mr-1"></i>Middle Eastern
+            </button>
+            <button type="button" data-category="Asian fusion dengan sentuhan modern, plating aesthetic, warna vibrant" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-globe-asia mr-1"></i>Asian Fusion
+            </button>
+            <button type="button" data-category="Masakan Barat dengan style modern, plating elegant, fine dining presentation" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-utensils mr-1"></i>Western
+            </button>
+            <button type="button" data-category="Street food dengan tampilan casual, vibrant, appetizing, dan relatable" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-street-view mr-1"></i>Street Food
+            </button>
+            <button type="button" data-category="Dessert manis dengan tampilan cute, colorful, dan Instagram-worthy" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-ice-cream mr-1"></i>Dessert
+            </button>
+            <button type="button" data-category="Minuman segar dengan tampilan refreshing, aesthetic, dan cool" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-glass-cheers mr-1"></i>Minuman
+            </button>
+            <button type="button" data-category="Healthy food dengan tampilan fresh, organic, natural, dan nutritious" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-leaf mr-1"></i>Healthy
+            </button>
+            <button type="button" data-category="Coffee & cafe dengan suasana cozy, warm lighting, aesthetic cafe vibes" class="category-btn-food-selfie p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-coffee mr-1"></i>Coffee Shop
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 3: Enhancement Options -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Opsi Peningkatan</h2>
+          
+          <div class="space-y-4">
+            <!-- Brightness -->
+            <div>
+              <label for="food-selfie-brightness" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-sun mr-1 text-emerald-500"></i>Kecerahan
+              </label>
+              <input type="range" id="food-selfie-brightness" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+              <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Gelap</span>
+                <span id="food-selfie-brightness-value">Normal</span>
+                <span>Terang</span>
+              </div>
+            </div>
+            
+            <!-- Saturation -->
+            <div>
+              <label for="food-selfie-saturation" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-palette mr-1 text-emerald-500"></i>Saturasi
+              </label>
+              <input type="range" id="food-selfie-saturation" min="0" max="200" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+              <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Putih</span>
+                <span id="food-selfie-saturation-value">Normal</span>
+                <span>Vibrant</span>
+              </div>
+            </div>
+            
+            <!-- Filter Selection -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-filter mr-1 text-emerald-500"></i>Filter
+              </label>
+              <div id="food-selfie-filter-options" class="grid grid-cols-4 gap-2">
+                <button type="button" data-filter="none" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent selected" data-selected="true">
+                  <div class="w-8 h-8 rounded bg-white border border-gray-300"></div>
+                  <span class="mt-1 block">Normal</span>
+                </button>
+                <button type="button" data-filter="warm" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent">
+                  <div class="w-8 h-8 rounded bg-orange-100"></div>
+                  <span class="mt-1 block">Warm</span>
+                </button>
+                <button type="button" data-filter="cool" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent">
+                  <div class="w-8 h-8 rounded bg-blue-100"></div>
+                  <span class="mt-1 block">Cool</span>
+                </button>
+                <button type="button" data-filter="vintage" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent">
+                  <div class="w-8 h-8 rounded bg-amber-100"></div>
+                  <span class="mt-1 block">Vintage</span>
+                </button>
+                <button type="button" data-filter="crisp" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent">
+                  <div class="w-8 h-8 rounded bg-gray-200"></div>
+                  <span class="mt-1 block">Crisp</span>
+                </button>
+                <button type="button" data-filter="food" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent">
+                  <div class="w-8 h-8 rounded bg-green-100"></div>
+                  <span class="mt-1 block">Food</span>
+                </button>
+                <button type="button" data-filter="dramatic" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent">
+                  <div class="w-8 h-8 rounded bg-gray-800"></div>
+                  <span class="mt-1 block">Dramatic</span>
+                </button>
+                <button type="button" data-filter="bright" class="filter-btn-food-selfie p-2 rounded-lg text-xs bg-gray-100 hover:bg-emerald-100 transition border-2 border-transparent">
+                  <div class="w-8 h-8 rounded bg-white border-2 border-emerald-400"></div>
+                  <span class="mt-1 block">Bright</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Generate Button -->
+        <button id="food-selfie-generate-btn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Food Selfie
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="food-selfie-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="food-selfie-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-utensils text-6xl mb-4 text-emerald-400"></i>
+            <p class="text-xl">Hasil akan muncul di sini</p>
+            <p class="text-sm mt-2">Unggah foto makanan dan klik Buat Food Selfie</p>
+          </div>
+          <div id="food-selfie-results" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
+          <div id="food-selfie-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-emerald-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat food selfie...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>
+
+<script>
+// Food Selfie Component Logic
+(function() {
+  'use strict';
+  
+  // State management
+  const state = {
+    foodImage: null,
+    selectedCategory: '',
+    brightness: 100,
+    saturation: 100,
+    selectedFilter: 'none',
+    isGenerating: false
+  };
+  
+  // DOM Elements
+  const elements = {
+    imageInput: document.getElementById('food-selfie-image-input'),
+    imagePreview: document.getElementById('food-selfie-image-preview'),
+    imagePreviewContainer: document.getElementById('food-selfie-image-preview-container'),
+    removeImageBtn: document.getElementById('food-selfie-remove-image-btn'),
+    categoryOptions: document.getElementById('food-selfie-category-options'),
+    brightnessSlider: document.getElementById('food-selfie-brightness'),
+    brightnessValue: document.getElementById('food-selfie-brightness-value'),
+    saturationSlider: document.getElementById('food-selfie-saturation'),
+    saturationValue: document.getElementById('food-selfie-saturation-value'),
+    filterOptions: document.getElementById('food-selfie-filter-options'),
+    generateBtn: document.getElementById('food-selfie-generate-btn'),
+    results: document.getElementById('food-selfie-results'),
+    emptyState: document.getElementById('food-selfie-empty-state'),
+    loading: document.getElementById('food-selfie-loading')
+  };
+  
+  // Initialize component
+  function init() {
+    setupEventListeners();
+  }
+  
+  // Setup event listeners
+  function setupEventListeners() {
+    // Image upload
+    elements.imageInput?.addEventListener('change', handleImageUpload);
+    
+    // Remove image
+    elements.removeImageBtn?.addEventListener('click', removeImage);
+    
+    // Category selection
+    elements.categoryOptions?.addEventListener('click', handleCategorySelection);
+    
+    // Brightness slider
+    elements.brightnessSlider?.addEventListener('input', handleBrightnessChange);
+    
+    // Saturation slider
+    elements.saturationSlider?.addEventListener('input', handleSaturationChange);
+    
+    // Filter selection
+    elements.filterOptions?.addEventListener('click', handleFilterSelection);
+    
+    // Generate button
+    elements.generateBtn?.addEventListener('click', generateFoodSelfie);
+  }
+  
+  // Handle image upload
+  function handleImageUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('Tipe file tidak valid. Silakan pilih gambar.');
+      return;
+    }
+    
+    // Read file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      state.foodImage = {
+        base64,
+        mimeType: file.type,
+        filename: file.name
+      };
+      
+      // Show preview
+      elements.imagePreview.src = e.target.result;
+      elements.imagePreviewContainer.classList.remove('hidden');
+      
+      // Enable generate button
+      updateGenerateButton();
+    };
+    reader.readAsDataURL(file);
+  }
+  
+  // Remove image
+  function removeImage() {
+    state.foodImage = null;
+    elements.imageInput.value = '';
+    elements.imagePreviewContainer.classList.add('hidden');
+    updateGenerateButton();
+  }
+  
+  // Handle category selection
+  function handleCategorySelection(event) {
+    const btn = event.target.closest('.category-btn-food-selfie');
+    if (!btn) return;
+    
+    // Remove selected class from all buttons
+    document.querySelectorAll('.category-btn-food-selfie').forEach(b => {
+      b.classList.remove('border-emerald-500', 'bg-emerald-100');
+      b.classList.add('border-transparent');
+      b.setAttribute('data-selected', 'false');
+    });
+    
+    // Add selected class to clicked button
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-emerald-500', 'bg-emerald-100');
+    btn.setAttribute('data-selected', 'true');
+    
+    state.selectedCategory = btn.dataset.category || '';
+    updateGenerateButton();
+  }
+  
+  // Handle brightness change
+  function handleBrightnessChange(event) {
+    const value = event.target.value;
+    state.brightness = parseInt(value, 10);
+    
+    // Update display value
+    if (value < 80) {
+      elements.brightnessValue.textContent = 'Gelap';
+    } else if (value > 120) {
+      elements.brightnessValue.textContent = 'Terang';
+    } else {
+      elements.brightnessValue.textContent = 'Normal';
+    }
+    
+    // Apply preview effect
+    applyPreviewEffect();
+  }
+  
+  // Handle saturation change
+  function handleSaturationChange(event) {
+    const value = event.target.value;
+    state.saturation = parseInt(value, 10);
+    
+    // Update display value
+    if (value < 80) {
+      elements.saturationValue.textContent = 'Putih';
+    } else if (value > 120) {
+      elements.saturationValue.textContent = 'Vibrant';
+    } else {
+      elements.saturationValue.textContent = 'Normal';
+    }
+    
+    // Apply preview effect
+    applyPreviewEffect();
+  }
+  
+  // Handle filter selection
+  function handleFilterSelection(event) {
+    const btn = event.target.closest('.filter-btn-food-selfie');
+    if (!btn) return;
+    
+    // Remove selected class from all buttons
+    document.querySelectorAll('.filter-btn-food-selfie').forEach(b => {
+      b.classList.remove('border-emerald-500', 'bg-emerald-100');
+      b.classList.add('border-transparent');
+      b.setAttribute('data-selected', 'false');
+    });
+    
+    // Add selected class to clicked button
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-emerald-500', 'bg-emerald-100');
+    btn.setAttribute('data-selected', 'true');
+    
+    state.selectedFilter = btn.dataset.filter || 'none';
+    
+    // Apply preview effect
+    applyPreviewEffect();
+  }
+  
+  // Apply preview effect to image
+  function applyPreviewEffect() {
+    if (!elements.imagePreview.src || elements.imagePreview.src === '#') return;
+    
+    // Apply CSS filters based on state
+    let filterString = '';
+    
+    // Brightness
+    filterString += `brightness(${state.brightness}%) `;
+    
+    // Saturation
+    filterString += `saturate(${state.saturation}%) `;
+    
+    // Apply filter
+    switch (state.selectedFilter) {
+      case 'warm':
+        filterString += 'sepia(30%) contrast(110%)';
+        break;
+      case 'cool':
+        filterString += 'hue-rotate(15deg) contrast(110%)';
+        break;
+      case 'vintage':
+        filterString += 'sepia(40%) contrast(90%) brightness(90%)';
+        break;
+      case 'crisp':
+        filterString += 'contrast(120%) saturate(110%)';
+        break;
+      case 'food':
+        filterString += 'saturate(130%) contrast(110%) brightness(105%)';
+        break;
+      case 'dramatic':
+        filterString += 'contrast(140%) brightness(90%) saturate(120%)';
+        break;
+      case 'bright':
+        filterString += 'brightness(115%) contrast(105%)';
+        break;
+      default:
+        // Normal - no additional filter
+        break;
+    }
+    
+    elements.imagePreview.style.filter = filterString;
+  }
+  
+  // Update generate button state
+  function updateGenerateButton() {
+    if (!elements.generateBtn) return;
+    
+    const hasImage = state.foodImage !== null;
+    elements.generateBtn.disabled = !hasImage || state.isGenerating;
+  }
+  
+  // Generate food selfie
+  async function generateFoodSelfie() {
+    if (!window.checkApiKey?.()) return;
+    
+    state.isGenerating = true;
+    updateGenerateButton();
+    
+    // Show loading
+    elements.emptyState.classList.add('hidden');
+    elements.results.classList.add('hidden');
+    elements.loading.classList.remove('hidden');
+    
+    try {
+      // Build prompt
+      const prompt = buildPrompt();
+      
+      // Call API
+      const response = await callGeminiImage(prompt, state.foodImage.base64, state.foodImage.mimeType);
+      
+      // Process response
+      const result = processResponse(response);
+      
+      // Display results
+      displayResults(result);
+      
+    } catch (error) {
+      showToast(`Error: ${error.message}`);
+      elements.emptyState.classList.remove('hidden');
+    } finally {
+      state.isGenerating = false;
+      elements.loading.classList.add('hidden');
+      updateGenerateButton();
+    }
+  }
+  
+  // Build prompt from state
+  function buildPrompt() {
+    const category = state.selectedCategory || 'Professional food photography';
+    const brightness = state.brightness;
+    const saturation = state.saturation;
+    const filter = state.selectedFilter;
+    
+    let filterDescription = '';
+    switch (filter) {
+      case 'warm':
+        filterDescription = 'warm tones, cozy atmosphere';
+        break;
+      case 'cool':
+        filterDescription = 'cool tones, fresh look';
+        break;
+      case 'vintage':
+        filterDescription = 'vintage/retro style, nostalgic feel';
+        break;
+      case 'crisp':
+        filterDescription = 'crisp, sharp details';
+        break;
+      case 'food':
+        filterDescription = 'appetizing food photography, vibrant colors';
+        break;
+      case 'dramatic':
+        filterDescription = 'dramatic lighting, high contrast';
+        break;
+      case 'bright':
+        filterDescription = 'bright, airy, clean look';
+        break;
+      default:
+        filterDescription = 'natural, balanced look';
+        break;
+    }
+    
+    return `Enhance this food photo with the following specifications:
+    
+Category/Style: ${category}
+Brightness adjustment: ${brightness}%
+Saturation adjustment: ${saturation}%
+Filter effect: ${filterDescription}
+
+Create an enhanced, professional food photograph that:
+1. Makes the food look appetizing and appealing
+2. Has proper lighting and color balance
+3. Is suitable for social media (Instagram, TikTok, etc.)
+4. Highlights the food's best features
+5. Has a cohesive and attractive presentation
+
+Return the enhanced image.`;
+  }
+  
+  // Process API response
+  function processResponse(response) {
+    try {
+      const imageData = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData)?.inlineData?.data;
+      
+      if (!imageData) {
+        throw new Error('No image data in response');
+      }
+      
+      return {
+        type: 'image',
+        data: imageData,
+        mimeType: response.candidates[0].content.parts.find(part => part.inlineData)?.inlineData?.mimeType || 'image/png'
+      };
+    } catch (error) {
+      throw new Error('Gagal memproses response dari AI');
+    }
+  }
+  
+  // Display results
+  function displayResults(result) {
+    elements.loading.classList.add('hidden');
+    elements.results.classList.remove('hidden');
+    
+    if (result.type === 'image') {
+      const imageUrl = `data:${result.mimeType};base64,${result.data}`;
+      elements.results.innerHTML = `
+        <div class="col-span-2">
+          <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+            <h3 class="font-semibold text-lg text-emerald-800 mb-4">Food Selfie Hasil AI</h3>
+            <div class="relative">
+              <img src="${imageUrl}" alt="Food Selfie Result" class="rounded-lg w-full h-auto object-contain">
+              <div class="absolute bottom-4 right-4 flex gap-2">
+                <button id="food-selfie-download-btn" data-image-url="${imageUrl}" data-filename="food-selfie-result.png" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors shadow-lg">
+                  <i class="fas fa-download mr-2"></i>Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add download functionality
+      const downloadBtn = document.getElementById('food-selfie-download-btn');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', async () => {
+          const imageUrl = downloadBtn.dataset.imageUrl;
+          const filename = downloadBtn.dataset.filename;
+          if (window.downloadImage) {
+            await window.downloadImage(imageUrl, filename);
+          }
+        });
+      }
+    } else {
+      elements.results.innerHTML = `
+        <div class="col-span-2 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+          <h3 class="font-semibold text-lg text-emerald-800 mb-4">Hasil</h3>
+          <div class="prose prose-emerald max-w-none">
+            ${JSON.stringify(result, null, 2)}
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

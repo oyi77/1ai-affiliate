@@ -1,0 +1,200 @@
+<div id="content-packaging-design" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 bg-clip-text text-transparent">
+        <i class="fas fa-box-open mr-3"></i>Desain Kemasan
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat desain kemasan profesional dengan AI</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Package Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Kemasan</h2>
+          <div id="packaging-design-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="box" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-teal-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-box text-2xl mb-1 text-teal-500"></i>
+              <span class="block font-medium">Kotak</span>
+            </button>
+            <button type="button" data-type="bottle" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-wine-bottle text-2xl mb-1 text-emerald-500"></i>
+              <span class="block font-medium">Botol</span>
+            </button>
+            <button type="button" data-type="pouch" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-green-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-shopping-bag text-2xl mb-1 text-green-500"></i>
+              <span class="block font-medium">Pouch</span>
+            </button>
+            <button type="button" data-type="tube" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-cyan-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-prescription-bottle text-2xl mb-1 text-cyan-500"></i>
+              <span class="block font-medium">Tube</span>
+            </button>
+            <button type="button" data-type="jar" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-jar text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Toples</span>
+            </button>
+            <button type="button" data-type="can" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-indigo-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-beer text-2xl mb-1 text-indigo-500"></i>
+              <span class="block font-medium">Kaleng</span>
+            </button>
+            <button type="button" data-type="wrapper" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-gift text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Bungkus</span>
+            </button>
+            <button type="button" data-type="bag" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-pink-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-shopping-cart text-2xl mb-1 text-pink-500"></i>
+              <span class="block font-medium">Kantong</span>
+            </button>
+            <button type="button" data-type="blister" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-yellow-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-pills text-2xl mb-1 text-yellow-500"></i>
+              <span class="block font-medium">Blister</span>
+            </button>
+            <button type="button" data-type="tube-stand" class="packaging-design-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-spray-can text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Tube Stand</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Material -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Material</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="packaging-design-material" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-layer-group mr-1 text-teal-500"></i>Material Kemasan
+              </label>
+              <select id="packaging-design-material" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                <option value="cardboard">Karton</option>
+                <option value="plastic">Plastik</option>
+                <option value="glass">Kaca</option>
+                <option value="metal">Logam</option>
+                <option value="paper">Kertas</option>
+                <option value="biodegradable">Biodegradable</option>
+                <option value="composite">Komposit</option>
+                <option value="fabric">Kain</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Gaya</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="packaging-design-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-paint-brush mr-1 text-emerald-500"></i>Gaya Desain
+              </label>
+              <select id="packaging-design-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="minimalist">Minimalis</option>
+                <option value="luxury">Mewah</option>
+                <option value="vintage">Vintage</option>
+                <option value="modern">Modern</option>
+                <option value="eco-friendly">Ramah Lingkungan</option>
+                <option value="colorful">Warna-warni</option>
+                <option value="premium">Premium</option>
+                <option value="playful">Playful</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Brand Elements -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Elemen Brand</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="packaging-design-brand-elements" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-copyright mr-1 text-green-500"></i>Elemen Brand
+              </label>
+              <select id="packaging-design-brand-elements" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="logo">Logo</option>
+                <option value="tagline">Tagline</option>
+                <option value="barcode">Barcode</option>
+                <option value="certification">Sertifikasi</option>
+                <option value="nutritional-info">Info Nutrisi</option>
+                <option value="ingredients">Bahan-bahan</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="packaging-design-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-cyan-500"></i>Target Audiens
+              </label>
+              <select id="packaging-design-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="food-beverage">Makanan & Minuman</option>
+                <option value="cosmetics">Kosmetik</option>
+                <option value="electronics">Elektronik</option>
+                <option value="fashion">Fashion</option>
+                <option value="pharmaceuticals">Farmasi</option>
+                <option value="retail">Retail</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Tone -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="packaging-design-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-comment-alt mr-1 text-blue-500"></i>Nuansa
+              </label>
+              <select id="packaging-design-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="premium">Premium</option>
+                <option value="accessible">Mudah Dijangkau</option>
+                <option value="eco-conscious">Sadar Lingkungan</option>
+                <option value="fun">Menyenangkan</option>
+                <option value="professional">Profesional</option>
+                <option value="artisanal">Artisanal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="packaging-design-generate-btn" class="w-full bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Buat Desain Kemasan
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="packaging-design-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="packaging-design-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-box-open text-6xl mb-4 text-teal-400"></i>
+            <p class="text-xl">Hasil desain kemasan akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Desain Kemasan</p>
+          </div>
+          <div id="packaging-design-results" class="hidden space-y-6"></div>
+          <div id="packaging-design-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-teal-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat desain kemasan...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

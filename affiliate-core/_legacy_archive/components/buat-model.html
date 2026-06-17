@@ -1,0 +1,242 @@
+                    <div id=content-buat-model class="main-content-panel hidden">
+                        <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+                            <header class="text-center mb-8">
+                                <h1
+                                    class="text-4xl sm:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600">
+                                    <i class="fas fa-user-astronaut mr-3"></i>Membuat Model
+                                </h1>
+                                <p class="text-lg text-gray-500 mt-3 max-w-3xl mx-auto">Buat foto model AI berkualitas
+                                    tinggi untuk digunakan di semua fitur aplikasi</p>
+                            </header>
+                            <div
+                                class="bg-gradient-to-r from-violet-50 via-purple-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-6 mb-8">
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-lightbulb text-white text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-800 mb-2">Tujuan Fitur Ini</h3>
+                                        <p class="text-gray-600 leading-relaxed mb-3">Fitur <strong>"Membuat
+                                                Model"</strong> dirancang untuk membuat foto model AI berkualitas tinggi
+                                            dengan latar belakang simple dan pose standar. Foto yang dihasilkan dapat
+                                            digunakan sebagai <strong>foto model</strong> di berbagai fitur lain dalam
+                                            aplikasi ini, seperti:</p>
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm"><span
+                                                class="bg-white px-3 py-1.5 rounded-lg border border-violet-200 text-violet-700"><i
+                                                    class="fas fa-tshirt mr-1"></i> Virtual Try-On</span> <span
+                                                class="bg-white px-3 py-1.5 rounded-lg border border-violet-200 text-violet-700"><i
+                                                    class="fas fa-camera mr-1"></i> Product Review</span> <span
+                                                class="bg-white px-3 py-1.5 rounded-lg border border-violet-200 text-violet-700"><i
+                                                    class="fas fa-spa mr-1"></i> Skincare Review</span> <span
+                                                class="bg-white px-3 py-1.5 rounded-lg border border-violet-200 text-violet-700"><i
+                                                    class="fas fa-users mr-1"></i> UGC Content</span></div>
+                                        <p class="text-gray-500 text-sm mt-3"><i class="fas fa-info-circle mr-1"></i>
+                                            Upload foto wajah Anda atau orang lain, AI akan membuat foto model dengan
+                                            wajah tersebut dalam pose dan kualitas yang konsisten.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-1 space-y-6">
+                                    <div class="card p-6 bg-white rounded-2xl shadow-lg">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold text-sm shadow-lg">
+                                                1</div>
+                                            <h2 class="text-xl font-semibold text-gray-800">Upload Foto Wajah</h2>
+                                        </div>
+                                        <div id=buat-model-upload-area><label for=buat-model-image-input
+                                                class="file-input-label rounded-xl p-8 text-center text-gray-500 flex flex-col items-center justify-center min-h-[160px] cursor-pointer hover:bg-gradient-to-br hover:from-violet-50 hover:to-indigo-50 transition-all border-2 border-dashed border-gray-300 hover:border-violet-400"><svg
+                                                    xmlns=http://www.w3.org/2000/svg
+                                                    class="w-14 h-14 mb-3 text-violet-400" fill=none viewBox="0 0 24 24"
+                                                    stroke=currentColor>
+                                                    <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg> <span class="font-medium text-base">Klik atau seret foto
+                                                    wajah</span> <span class="text-xs mt-2 text-gray-400">PNG, JPG,
+                                                    WEBP, HEIC - Wajah terlihat jelas</span></label> <input type=file
+                                                id=buat-model-image-input class=hidden
+                                                accept="image/png, image/jpeg, image/webp, image/heic, .heic"></div>
+                                        <div id=buat-model-preview-container class="hidden mt-4 relative"><img
+                                                id=buat-model-preview src=# alt="Preview Wajah"
+                                                class="rounded-xl w-full h-auto object-cover shadow-md max-h-48">
+                                            <button id=buat-model-remove-btn
+                                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-all shadow-lg hover:shadow-xl active:scale-95"><svg
+                                                    xmlns=http://www.w3.org/2000/svg class="h-4 w-4" fill=none
+                                                    viewBox="0 0 24 24" stroke=currentColor>
+                                                    <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                        d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg></button>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-3"><i class="fas fa-face-smile mr-1"></i>
+                                            Gunakan foto dengan wajah menghadap kamera, pencahayaan baik</p>
+                                    </div>
+                                    <div class="card p-6 bg-white rounded-2xl shadow-lg">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold text-sm shadow-lg">
+                                                2</div>
+                                            <h2 class="text-xl font-semibold text-gray-800">Jenis Kelamin</h2>
+                                        </div>
+                                        <div id=buat-model-gender-selection class="grid grid-cols-2 gap-3"><button
+                                                type=button
+                                                class="gender-btn-model selected flex items-center justify-center gap-2 p-3 border-2 rounded-xl transition-all active:scale-95"
+                                                data-gender=pria
+                                                style="border-color:#7c3aed;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;box-shadow:0 4px 12px rgba(124,58,237,.3)"><i
+                                                    class="fas fa-mars text-lg"></i> <span
+                                                    class=font-semibold>Pria</span></button> <button type=button
+                                                class="gender-btn-model flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95"
+                                                data-gender=wanita><i class="fas fa-venus text-lg text-violet-500"></i>
+                                                <span class="font-semibold text-gray-700">Wanita</span></button></div>
+                                    </div>
+                                    <div class="card p-6 bg-white rounded-2xl shadow-lg">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold text-sm shadow-lg">
+                                                3</div>
+                                            <h2 class="text-xl font-semibold text-gray-800">Tipe Foto Model</h2>
+                                        </div>
+                                        <div id=buat-model-type-selection class=space-y-3><button type=button
+                                                class="type-btn-model selected w-full flex items-center gap-3 p-4 border-2 rounded-xl transition-all active:scale-95 text-left"
+                                                data-type=full-body
+                                                style="border-color:#7c3aed;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;box-shadow:0 4px 12px rgba(124,58,237,.3)"><i
+                                                    class="fas fa-person text-2xl"></i>
+                                                <div><span class="font-semibold block">Full Body</span> <span
+                                                        class="text-xs opacity-80">Seluruh badan dari kepala hingga
+                                                        kaki</span></div>
+                                            </button> <button type=button
+                                                class="type-btn-model w-full flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95 text-left"
+                                                data-type=half-body><i class="fas fa-user text-2xl text-violet-500"></i>
+                                                <div><span class="font-semibold text-gray-700 block">Half Body</span>
+                                                    <span class="text-xs text-gray-500">Setengah badan dari pinggang ke
+                                                        atas</span>
+                                                </div>
+                                            </button> <button type=button
+                                                class="type-btn-model w-full flex items-center gap-3 p-4 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95 text-left"
+                                                data-type=portrait><i
+                                                    class="fas fa-id-badge text-2xl text-violet-500"></i>
+                                                <div><span class="font-semibold text-gray-700 block">Portrait /
+                                                        Close-up</span> <span class="text-xs text-gray-500">Fokus pada
+                                                        wajah dan bahu</span></div>
+                                            </button></div>
+                                    </div>
+                                    <div class="card p-6 bg-white rounded-2xl shadow-lg">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold text-sm shadow-lg">
+                                                4</div>
+                                            <h2 class="text-xl font-semibold text-gray-800">Pakaian <span
+                                                    class="text-sm text-gray-400">(Opsional)</span></h2>
+                                        </div><textarea id=buat-model-outfit-input rows=2
+                                            class="w-full p-4 bg-white border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-none"
+                                            placeholder="Contoh: Kemeja putih polos, Kaos hitam, Blazer formal..."></textarea>
+                                        <p class="text-xs text-gray-400 mt-2"><i class="fas fa-shirt mr-1"></i>
+                                            Kosongkan untuk pakaian casual default</p>
+                                    </div>
+                                    <div class="card p-6 bg-white rounded-2xl shadow-lg">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold text-sm shadow-lg">
+                                                5</div>
+                                            <h2 class="text-xl font-semibold text-gray-800">Aspect Ratio</h2>
+                                        </div>
+                                        <div id=buat-model-ratio-selection class="grid grid-cols-2 gap-3"><button
+                                                type=button
+                                                class="ratio-btn-model flex items-center gap-2 p-3 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95"
+                                                data-ratio=1:1><svg xmlns=http://www.w3.org/2000/svg width=20 height=20
+                                                    viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2
+                                                    stroke-linecap=round stroke-linejoin=round>
+                                                    <rect width=16 height=16 x=4 y=4 rx=2></rect>
+                                                </svg> <span class="font-medium text-sm">1:1 Square</span></button>
+                                            <button type=button
+                                                class="ratio-btn-model selected flex items-center gap-2 p-3 border-2 rounded-xl transition-all active:scale-95"
+                                                data-ratio=3:4
+                                                style="border-color:#7c3aed;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;box-shadow:0 4px 12px rgba(124,58,237,.3)"><svg
+                                                    xmlns=http://www.w3.org/2000/svg width=20 height=20
+                                                    viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2
+                                                    stroke-linecap=round stroke-linejoin=round>
+                                                    <rect width=14 height=18 x=5 y=3 rx=2></rect>
+                                                </svg> <span class="font-medium text-sm">3:4 Portrait</span></button>
+                                            <button type=button
+                                                class="ratio-btn-model flex items-center gap-2 p-3 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95"
+                                                data-ratio=9:16><svg xmlns=http://www.w3.org/2000/svg width=20 height=20
+                                                    viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2
+                                                    stroke-linecap=round stroke-linejoin=round>
+                                                    <rect width=12 height=20 x=6 y=2 rx=2></rect>
+                                                </svg> <span class="font-medium text-sm">9:16 Story</span></button>
+                                            <button type=button
+                                                class="ratio-btn-model flex items-center gap-2 p-3 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95"
+                                                data-ratio=16:9><svg xmlns=http://www.w3.org/2000/svg width=20 height=20
+                                                    viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2
+                                                    stroke-linecap=round stroke-linejoin=round>
+                                                    <rect width=18 height=12 x=3 y=6 rx=2></rect>
+                                                </svg> <span class="font-medium text-sm">16:9 Wide</span></button>
+                                        </div>
+                                    </div>
+                                    <div class="card p-6 bg-white rounded-2xl shadow-lg">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <div
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold text-sm shadow-lg">
+                                                6</div>
+                                            <h2 class="text-xl font-semibold text-gray-800">Jumlah Foto</h2>
+                                        </div>
+                                        <div id=buat-model-count-selection class="grid grid-cols-3 gap-3"><button
+                                                type=button
+                                                class="count-btn-model flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95"
+                                                data-count=2><span class="font-bold text-lg">2</span> <span
+                                                    class="font-medium text-sm">Foto</span></button> <button type=button
+                                                class="count-btn-model selected flex items-center justify-center gap-2 p-3 border-2 rounded-xl transition-all active:scale-95"
+                                                data-count=4
+                                                style="border-color:#7c3aed;background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;box-shadow:0 4px 12px rgba(124,58,237,.3)"><span
+                                                    class="font-bold text-lg">4</span> <span
+                                                    class="font-medium text-sm">Foto</span></button> <button type=button
+                                                class="count-btn-model flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-xl hover:border-violet-400 transition-all active:scale-95"
+                                                data-count=6><span class="font-bold text-lg">6</span> <span
+                                                    class="font-medium text-sm">Foto</span></button></div>
+                                    </div><button id=buat-model-generate-btn
+                                        class="w-full btn-primary font-bold py-4 px-6 rounded-xl flex items-center justify-center text-lg shadow-xl hover:shadow-2xl transition-all bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white"
+                                        disabled=disabled><svg xmlns=http://www.w3.org/2000/svg class="h-6 w-6 mr-2"
+                                            fill=none viewBox="0 0 24 24" stroke=currentColor>
+                                            <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg> <span>Buat <span id=buat-model-count-text>4</span> Foto
+                                            Model</span></button>
+                                </div>
+                                <div class=lg:col-span-2>
+                                    <div class="card p-6 bg-white rounded-2xl shadow-lg">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h3 class="text-xl font-bold text-gray-800"><i
+                                                    class="fas fa-images mr-2 text-violet-500"></i>Hasil Foto Model</h3>
+                                            <button id=buat-model-download-all-btn
+                                                class="hidden bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-all flex items-center gap-2 text-sm shadow-md hover:shadow-lg"><i
+                                                    class="fas fa-download"></i> <span>Download Semua</span></button>
+                                        </div>
+                                        <div id=buat-model-results-grid class="grid grid-cols-2 gap-4">
+                                            <div class="col-span-2 text-center py-16 text-gray-400"><i
+                                                    class="fas fa-user-astronaut text-6xl mb-4 opacity-50"></i>
+                                                <p class=text-lg>Hasil foto model akan muncul di sini</p>
+                                                <p class="text-sm mt-2">Upload foto wajah dan klik "Buat Foto Model"</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="mt-6 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-xl p-5">
+                                        <h4 class="font-bold text-amber-800 mb-2"><i class="fas fa-star mr-2"></i>Tips
+                                            Hasil Terbaik</h4>
+                                        <ul class="text-sm text-amber-700 space-y-1">
+                                            <li><i class="fas fa-check mr-2"></i>Gunakan foto wajah dengan pencahayaan
+                                                yang baik</li>
+                                            <li><i class="fas fa-check mr-2"></i>Wajah menghadap kamera secara langsung
+                                                (tidak miring)</li>
+                                            <li><i class="fas fa-check mr-2"></i>Hindari foto dengan aksesori yang
+                                                menutupi wajah</li>
+                                            <li><i class="fas fa-check mr-2"></i>Foto hasil dapat di-download dan
+                                                digunakan di fitur lain</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </main>
+                        </div>
+                    </div>
+                    <div id=content-mockup-studio class="main-content-panel hidden">

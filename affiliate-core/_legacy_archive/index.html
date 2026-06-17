@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang=id>
+
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <title>1affiliate by 1affiliate</title>
+    <script src=https://cdn.tailwindcss.com></script>
+    <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel=stylesheet>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel=stylesheet>
+    <script src=https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js></script>
+    <script src=https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="login-overlay-placeholder"></div>
+    <div id="user-badge-placeholder"></div>
+    <div id=main-app>
+        <div id="mobile-header-placeholder"></div>
+        <div class=app-container>
+            <div id="sidebar-placeholder"></div>
+            <button id=toggle-sidebar-btn class=toggle-sidebar-btn title="Toggle Sidebar"><i
+                    class="fas fa-chevron-left"></i></button>
+            <main class=main-content-wrapper>
+                <header class="text-center mb-8">
+                    <h2
+                        class="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-violet-500">
+                        Selamat Datang</h2>
+                    <p class="text-base text-gray-500 mt-2">Semua kebutuhan kreasi foto AI Anda dalam satu tempat.</p>
+                </header>
+                <div id=main-tab-content>
+                    <div id="api-settings-placeholder"></div>
+                    <div id="beranda-placeholder"></div>
+<div id="ai-beauty-placeholder"></div>
+<div id="halu-placeholder"></div>
+<div id="mobile-nav-placeholder"></div>
+<div id="photo-editor-placeholder"></div>
+<div id="pose-fashion-placeholder"></div>
+<div id="virtual-tryon-placeholder"></div>
+<div id="buat-model-placeholder"></div>
+                    <div id="mockup-studio-placeholder"></div>
+                        <div class="container mx-auto">
+                            <header class="text-center mb-8">
+                                <h1 class="text-4xl md:text-5xl font-bold text-[#1e3a8a]">Miniature Me</h1>
+                                <p class="text-lg text-gray-600 mt-2">Ubah fotomu menjadi miniatur AI yang unik ✨</p>
+                            </header>
+                            <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div id=miniature-result-container
+                                    class="w-full p-6 md:p-8 rounded-2xl shadow-lg glassmorphism flex flex-col justify-center items-center text-center min-h-[400px]">
+                                    <div id=miniature-placeholder-result><i
+                                            class="fas fa-user-astronaut text-8xl text-[#a5b4fc]"></i>
+                                        <p class="mt-4 text-xl text-gray-600">20 Pilihan miniatur AI akan muncul di sini
+                                        </p>
+                                    </div>
+                                    <div id=miniature-loader class="hidden flex-col items-center">
+                                        <div class=loader></div>
+                                        <p class="mt-4 text-lg text-gray-700">AI sedang menyusutkan Anda... Mohon
+                                            tunggu!</p>
+                                    </div>
+                                    <div id=miniature-result-content
+                                        class="hidden w-full grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                                    <div id=miniature-error-message class="hidden text-red-600"></div>
+                                </div>
+                                <div class="w-full p-6 md:p-8 rounded-2xl shadow-lg glassmorphism">
+                                    <div><label class="block text-xl font-semibold mb-3 text-[#1e3a8a]">1. Unggah Fotomu
+                                            (Wajib)</label>
+                                        <div id=miniature-person-image-uploader
+                                            class="image-uploader-box rounded-lg p-6 text-center cursor-pointer transition-colors">
+                                            <input type=file id=miniature-person-file-input class=hidden accept=image/*>
+                                            <div id=miniature-person-upload-prompt><i
+                                                    class="fas fa-user-circle text-4xl text-[#a5b4fc] mb-2"></i>
+                                                <p class=text-gray-700>Klik atau seret fotomu ke sini</p>
+                                            </div><img id=miniature-person-image-preview src="" alt="Pratinjau Foto"
+                                                class="hidden max-h-80 mx-auto rounded-lg shadow-lg">
+                                        </div>
+                                    </div>
+                                    <div class=mt-6><label class="block text-xl font-semibold mb-3 text-[#1e3a8a]">2.
+                                            Pilih Rasio Aspek</label>
+                                        <div id=miniature-ratio-selection class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                            <button type=button data-ratio=1:1 class=ratio-btn-mini><i
+                                                    class="fas fa-square mr-2"></i>1:1</button> <button type=button
+                                                data-ratio=16:9 class="ratio-btn-mini selected"><i
+                                                    class="fas fa-rectangle-landscape mr-2"></i>16:9</button> <button
+                                                type=button data-ratio=3:4 class=ratio-btn-mini><i
+                                                    class="fas fa-rectangle-portrait mr-2"></i>3:4</button> <button
+                                                type=button data-ratio=9:16 class=ratio-btn-mini><i
+                                                    class="fas fa-mobile-alt mr-2"></i>9:16</button>
+                                        </div>
+                                    </div>
+                                    <div class=mt-6><label for=miniature-manual-prompt
+                                            class="block text-xl font-semibold mb-2 text-[#1e3a8a]">3. Tulis Prompt
+                                            Manual (Opsional)</label>
+                                        <p class="text-sm text-gray-600 mb-3">Tambahkan detail spesifik untuk semua
+                                            gambar.</p><textarea id=miniature-manual-prompt
+                                            class="w-full p-3 rounded-lg border-2 min-h-[100px]"
+                                            placeholder="Contoh: cute chibi style, ultra realistic, 8k"></textarea>
+                                    </div>
+                                    <div class=mt-8><button id=miniature-generate-btn
+                                            class="w-full bg-[#4f46e5] text-white py-4 px-6 rounded-lg text-lg font-bold hover:bg-[#4338ca] transition-transform transform hover:scale-105 shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                                            disabled=disabled><i class="fas fa-magic mr-2"></i>Generate 6
+                                            Miniatur</button></div>
+                                </div>
+                            </main>
+                        </div>
+                    </div>
+                        <div class="container mx-auto px-4 py-8">
+                            <header class="text-center mb-8">
+                                <h1
+                                    class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-violet-500 bg-clip-text text-transparent">
+                                    Photo Editor Pro</h1>
+                                <p class="text-lg text-gray-600 mt-2">Edit foto dengan preset profesional ala Lightroom
+                                    ✨📸</p>
+                            </header>
+                            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div class="lg:col-span-2 space-y-6">
+                                    <div class="w-full p-6 md:p-8 rounded-2xl shadow-lg bg-white">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <div
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-violet-500 text-white font-bold text-sm shadow-lg">
+                                                1</div><label class="text-xl font-semibold text-gray-800">Unggah
+                                                Foto</label>
+                                        </div><label for=photoeditor-image-input
+                                            class="upload-box-photoeditor block relative border-3 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer bg-gradient-to-br from-purple-50 to-violet-50 hover:shadow-xl transition-all"><input
+                                                type=file id=photoeditor-image-input class=hidden
+                                                accept="image/png, image/jpeg, image/webp, image/heic, .heic">
+                                            <div id=photoeditor-upload-prompt><i
+                                                    class="fas fa-images text-5xl text-purple-400 mb-3"></i>
+                                                <p class="text-gray-700 font-semibold">Klik atau seret foto di sini</p>
+                                                <p class="text-sm text-gray-500 mt-1">PNG, JPG, WEBP, HEIC</p>
+                                            </div><img id=photoeditor-image-preview src="" alt=Preview
+                                                class="hidden w-full h-auto rounded-lg">
+                                        </label>
+                                        <div id=photoeditor-preview-container class="mt-3 hidden lg:hidden"><img
+                                                id=photoeditor-mobile-preview src="" alt=Preview
+                                                class="w-full rounded-lg shadow-lg max-h-48 object-cover"> <button
+                                                id=photoeditor-remove-preview
+                                                class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white text-sm py-2 px-3 rounded-lg transition-colors"><i
+                                                    class="fas fa-times mr-1"></i> Hapus Foto</button></div>
+                                    </div>
+                                    <div class="w-full p-6 md:p-8 rounded-2xl shadow-lg bg-white">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h2 class="text-2xl font-bold text-gray-800"><i
+                                                    class="fas fa-image text-purple-500 mr-2"></i> Preview</h2><button
+                                                id=photoeditor-apply-btn
+                                                class="hidden bg-gradient-to-r from-purple-600 to-violet-500 hover:from-purple-700 hover:to-violet-600 text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-300"><i
+                                                    class="fas fa-magic mr-2"></i> <span>Apply Edit</span></button>
+                                        </div>
+                                        <div id=photoeditor-placeholder
+                                            class="flex flex-col items-center justify-center min-h-[400px] text-center">
+                                            <i class="fas fa-sliders-h text-8xl text-purple-300 mb-4"></i>
+                                            <p class="text-xl text-gray-600">Preview akan muncul di sini</p>
+                                            <p class="text-sm text-gray-500 mt-2">Unggah foto untuk mulai editing</p>
+                                        </div>
+                                        <div id=photoeditor-preview-area class=hidden><canvas id=photoeditor-canvas
+                                                class="w-full rounded-lg shadow-lg"></canvas>
+<div id="miniature-placeholder"></div>
+                                                class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-violet-500 text-white font-bold text-sm shadow-lg">
+                                                3</div><label class="text-xl font-semibold text-gray-800">Manual
+                                                Adjust</label>
+                                        </div>
+                                        <div class=space-y-4>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Brightness</label>
+                                                    <span id=photoeditor-brightness-value
+                                                        class="text-sm font-bold text-purple-600">0</span>
+                                                </div><input type=range id=photoeditor-brightness
+                                                    class=slider-photoeditor min=-100 max=100 value=0 step=1>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Contrast</label> <span
+                                                        id=photoeditor-contrast-value
+                                                        class="text-sm font-bold text-purple-600">0</span></div><input
+                                                    type=range id=photoeditor-contrast class=slider-photoeditor min=-100
+                                                    max=100 value=0 step=1>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Saturation</label>
+                                                    <span id=photoeditor-saturation-value
+                                                        class="text-sm font-bold text-purple-600">0</span>
+                                                </div><input type=range id=photoeditor-saturation
+                                                    class=slider-photoeditor min=-100 max=100 value=0 step=1>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Warmth</label> <span
+                                                        id=photoeditor-warmth-value
+                                                        class="text-sm font-bold text-purple-600">0</span></div><input
+                                                    type=range id=photoeditor-warmth class=slider-photoeditor min=-100
+                                                    max=100 value=0 step=1>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Highlights</label>
+                                                    <span id=photoeditor-highlights-value
+                                                        class="text-sm font-bold text-purple-600">0</span>
+                                                </div><input type=range id=photoeditor-highlights
+                                                    class=slider-photoeditor min=-100 max=100 value=0 step=1>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Shadows</label> <span
+                                                        id=photoeditor-shadows-value
+                                                        class="text-sm font-bold text-purple-600">0</span></div><input
+                                                    type=range id=photoeditor-shadows class=slider-photoeditor min=-100
+                                                    max=100 value=0 step=1>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Sharpness</label>
+                                                    <span id=photoeditor-sharpness-value
+                                                        class="text-sm font-bold text-purple-600">0</span>
+                                                </div><input type=range id=photoeditor-sharpness
+                                                    class=slider-photoeditor min=0 max=100 value=0 step=1>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between items-center mb-2"><label
+                                                        class="text-sm font-medium text-gray-700">Vignette</label> <span
+<div id="karikatur-placeholder"></div>
+                                                    class="fas fa-rectangle-portrait mr-2"></i>3:4</button> <button
+                                                type=button data-ratio=9:16 class=ratio-btn-halu><i
+                                                    class="fas fa-mobile-alt mr-2"></i>9:16</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">4. Deskripsi Momen <span
+                                                class="text-sm text-gray-400">(Opsional)</span></h2><textarea
+                                            id=halu-moment-desc-input rows=3
+                                            class="w-full p-3 bg-pink-50 border-pink-200 text-gray-800 rounded-lg"
+                                            placeholder="Contoh: Kencan pertama..."></textarea>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">5. Gaya Foto <span
+                                                class="text-sm text-gray-400">(Opsional)</span></h2><textarea
+                                            id=halu-photo-style-input rows=3
+                                            class="w-full p-3 bg-pink-50 border-pink-200 text-gray-800 rounded-lg"
+                                            placeholder="Contoh: Gaya foto polaroid..."></textarea>
+                                    </div><button id=halu-generate-btn
+                                        class="w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg"
+                                        disabled=disabled><span>Buat 6 Foto Halu</span></button>
+                                </div>
+                            </div>
+                            <div class=flex-grow>
+                                <div id=halu-b-roll-grid class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+<div id="affiliate-placeholder"></div>

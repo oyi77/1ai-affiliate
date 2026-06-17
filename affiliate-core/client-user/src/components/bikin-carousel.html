@@ -1,0 +1,180 @@
+<div id="content-bikin-carousel" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+        <i class="fas fa-images mr-3"></i>Bikin Carousel
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat carousel yang menarik dan kreatif untuk media sosial Anda</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Content Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Konten</h2>
+          <div id="bikin-carousel-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="product-showcase" class="type-btn-bikin-carousel p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-box-open text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Produk</span>
+            </button>
+            <button type="button" data-type="educational" class="type-btn-bikin-carousel p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-graduation-cap text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Edukasi</span>
+            </button>
+            <button type="button" data-type="storytelling" class="type-btn-bikin-carousel p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-book-open text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Storytelling</span>
+            </button>
+            <button type="button" data-type="promotional" class="type-btn-bikin-carousel p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-bullhorn text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Promosi</span>
+            </button>
+            <button type="button" data-type="event-recap" class="type-btn-bikin-carousel p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-calendar-check text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Event Recap</span>
+            </button>
+            <button type="button" data-type="personal-brand" class="type-btn-bikin-carousel p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-user-tie text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Personal Brand</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Platform -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Platform</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="bikin-carousel-platform" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fab fa-instagram mr-1 text-orange-500"></i>Platform
+              </label>
+              <select id="bikin-carousel-platform" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="facebook">Facebook</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="twitter">Twitter</option>
+                <option value="youtube">YouTube</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Number of Slides -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Jumlah Slide</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="bikin-carousel-slides" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-layer-group mr-1 text-orange-500"></i>Jumlah Slide (3-20)
+              </label>
+              <input type="number" id="bikin-carousel-slides" min="3" max="20" value="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Gaya</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="bikin-carousel-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-paint-brush mr-1 text-orange-500"></i>Gaya Visual
+              </label>
+              <select id="bikin-carousel-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="minimalist">Minimalis</option>
+                <option value="bold">Berani</option>
+                <option value="playful">Playful</option>
+                <option value="elegant">Elegan</option>
+                <option value="vintage">Vintage</option>
+                <option value="modern">Modern</option>
+                <option value="colorful">Warna-warni</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="bikin-carousel-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-orange-500"></i>Target Audiens
+              </label>
+              <select id="bikin-carousel-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="followers">Followers</option>
+                <option value="customers">Customers</option>
+                <option value="clients">Clients</option>
+                <option value="employees">Employees</option>
+                <option value="general-public">Umum</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Tone -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="bikin-carousel-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-heart mr-1 text-orange-500"></i>Nuansa
+              </label>
+              <select id="bikin-carousel-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="professional">Profesional</option>
+                <option value="casual">Casual</option>
+                <option value="humorous">Humoris</option>
+                <option value="inspirational">Inspiratif</option>
+                <option value="educational">Edukatif</option>
+                <option value="promotional">Promosi</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="bikin-carousel-description" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-align-left mr-1 text-orange-500"></i>Deskripsi Konten
+              </label>
+              <textarea id="bikin-carousel-description" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Jelaskan konten carousel yang diinginkan..."></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="bikin-carousel-generate-btn" class="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Buat Carousel
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="bikin-carousel-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="bikin-carousel-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-images text-6xl mb-4 text-orange-400"></i>
+            <p class="text-xl">Hasil carousel akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Carousel</p>
+          </div>
+          <div id="bikin-carousel-results" class="hidden space-y-6"></div>
+          <div id="bikin-carousel-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-orange-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat carousel...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

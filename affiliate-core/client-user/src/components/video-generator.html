@@ -1,0 +1,153 @@
+<div id="content-video-generator" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-500 via-orange-500 to-red-400 bg-clip-text text-transparent">
+        <i class="fas fa-video mr-3"></i>Generator Video AI
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat video profesional dengan AI</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Video Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Video</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="video-generator-type" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-film mr-1 text-red-500"></i>Jenis Video
+              </label>
+              <select id="video-generator-type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                <option value="short">Short Video</option>
+                <option value="long">Long Video</option>
+                <option value="reels">Reels</option>
+                <option value="story">Story</option>
+                <option value="commercial">Commercial</option>
+                <option value="tutorial">Tutorial</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 2: Topic Description -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Deskripsi Topik</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="video-generator-topic" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-align-left mr-1 text-orange-500"></i>Deskripsi Topik
+              </label>
+              <textarea id="video-generator-topic" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Jelaskan topik atau konten video yang ingin dibuat..."></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Duration -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Durasi</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="video-generator-duration" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-clock mr-1 text-red-500"></i>Durasi Video
+              </label>
+              <select id="video-generator-duration" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                <option value="15">15 Detik</option>
+                <option value="30">30 Detik</option>
+                <option value="60">1 Menit</option>
+                <option value="180">3 Menit</option>
+                <option value="300">5 Menit</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Gaya</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="video-generator-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-palette mr-1 text-orange-500"></i>Gaya Video
+              </label>
+              <select id="video-generator-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="cinematic">Cinematic</option>
+                <option value="documentary">Documentary</option>
+                <option value="vlog">Vlog</option>
+                <option value="animation">Animation</option>
+                <option value="commercial">Commercial</option>
+                <option value="social-media">Social Media</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Aspect Ratio -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Aspect Ratio</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="video-generator-aspect-ratio" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-expand-arrows-alt mr-1 text-red-500"></i>Aspect Ratio
+              </label>
+              <select id="video-generator-aspect-ratio" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                <option value="16:9">16:9 (Landscape)</option>
+                <option value="9:16">9:16 (Portrait)</option>
+                <option value="1:1">1:1 (Square)</option>
+                <option value="4:5">4:5 (Portrait)</option>
+                <option value="21:9">21:9 (Ultrawide)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Voiceover -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Voiceover</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="video-generator-voiceover" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-microphone mr-1 text-orange-500"></i>Voiceover
+              </label>
+              <select id="video-generator-voiceover" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="none">Tidak Ada</option>
+                <option value="male">Male AI</option>
+                <option value="female">Female AI</option>
+                <option value="background-music">Music Background Saja</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Generate Button -->
+        <button id="video-generator-generate-btn" class="w-full bg-gradient-to-r from-red-500 via-orange-500 to-red-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Buat Video
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="video-generator-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="video-generator-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-video text-6xl mb-4 text-orange-400"></i>
+            <p class="text-xl">Hasil video akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Video</p>
+          </div>
+          <div id="video-generator-results" class="hidden space-y-6"></div>
+          <div id="video-generator-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-orange-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat video...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

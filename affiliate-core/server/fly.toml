@@ -1,0 +1,16 @@
+app = "1affiliate-backend"
+primary_region = "sin" # Singapore is usually good for Indonesia/nearby, or use 'sjc' etc.
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-1x"

@@ -1,0 +1,69 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build Admin
+      - name: Install Admin Dependencies
+        working-directory: ./admin
+        run: npm install
+
+      - name: Build Admin
+        working-directory: ./admin
+        run: npm run build
+
+      # Build Client User
+      - name: Install Client Dependencies
+        working-directory: ./client-user
+        run: npm install
+
+      - name: Build Client User
+        working-directory: ./client-user
+        run: npm run build
+
+      # Prepare Server for Deployment
+      - name: Prepare Server Assets
+        run: |
+          mkdir -p server/public/admin
+          mkdir -p server/public/client
+          cp -r admin/dist/* server/public/admin/
+          cp -r client-user/dist/* server/public/client/
+
+      # Deploy to Fly.io
+      - name: Setup Flyctl
+        if: success() && env.FLY_API_TOKEN != ''
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io
+        if: success() && env.FLY_API_TOKEN != ''
+        working-directory: ./server
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Setup Supabase CLI
+        if: success() && env.SUPABASE_ACCESS_TOKEN != ''
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Sync Database Schema
+        continue-on-error: true
+        if: success() && env.SUPABASE_ACCESS_TOKEN != '' && env.SUPABASE_DB_URL != ''
+        run: |
+          supabase db push --db-url "$SUPABASE_DB_URL"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

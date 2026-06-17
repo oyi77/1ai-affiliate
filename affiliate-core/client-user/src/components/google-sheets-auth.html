@@ -1,0 +1,135 @@
+<div id="content-google-sheets-auth" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-400 bg-clip-text text-transparent">
+        <i class="fab fa-google mr-3"></i>Autentikasi Google Sheets
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Koneksikan dan autentikasi Google Sheets dengan aman</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Google Sheets URL -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">URL Google Sheets</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="google-sheets-auth-url" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-link mr-1 text-blue-500"></i>URL Spreadsheet
+              </label>
+              <input type="url" id="google-sheets-auth-url" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://docs.google.com/spreadsheets/d/...">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Access Level -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Level Akses</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="google-sheets-auth-access-level" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-shield-alt mr-1 text-cyan-500"></i>Tingkat Akses
+              </label>
+              <select id="google-sheets-auth-access-level" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="read-only">Baca Saja</option>
+                <option value="read-write">Baca & Tulis</option>
+                <option value="admin-full">Admin Akses Penuh</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Email Whitelist -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Daftar Putih Email</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="google-sheets-auth-email-whitelist" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-envelope mr-1 text-blue-400"></i>Email yang Diizinkan
+              </label>
+              <textarea id="google-sheets-auth-email-whitelist" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400" placeholder="email1@example.com, email2@example.com, ..."></textarea>
+              <p class="text-xs text-gray-500 mt-1">Pisahkan dengan koma untuk beberapa email</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- API Key -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">API Key</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="google-sheets-auth-api-key" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-key mr-1 text-cyan-400"></i>Kunci API
+              </label>
+              <input type="text" id="google-sheets-auth-api-key" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400" placeholder="Masukkan API key Anda">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sheet Name -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Nama Sheet</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="google-sheets-auth-sheet-name" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-table mr-1 text-blue-500"></i>Mode Deteksi Sheet
+              </label>
+              <select id="google-sheets-auth-sheet-name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="auto-detect">Deteksi Otomatis</option>
+                <option value="manual-entry">Input Manual</option>
+                <option value="specific-sheet">Sheet Tertentu</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Connection Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Jenis Koneksi</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="google-sheets-auth-connection-type" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-plug mr-1 text-cyan-500"></i>Tipe Koneksi
+              </label>
+              <select id="google-sheets-auth-connection-type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="direct-link">Tautan Langsung</option>
+                <option value="service-account">Service Account</option>
+                <option value="oauth-2">OAuth 2.0</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Generate Button -->
+        <button id="google-sheets-auth-generate-btn" class="w-full bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Buat Koneksi
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="google-sheets-auth-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="google-sheets-auth-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fab fa-google text-6xl mb-4 text-blue-400"></i>
+            <p class="text-xl">Hasil koneksi akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Koneksi</p>
+          </div>
+          <div id="google-sheets-auth-results" class="hidden space-y-6"></div>
+          <div id="google-sheets-auth-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat koneksi...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

@@ -1,0 +1,148 @@
+<div id="content-trending-video-analyzer" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-400 bg-clip-text text-transparent">
+        <i class="fas fa-chart-line mr-3"></i>Analisis Video Trending
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Analisis video trending dari berbagai platform dengan AI</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Video URL -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">URL Video</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="trending-video-analyzer-url" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-link mr-1 text-orange-500"></i>Link Video
+              </label>
+              <input type="url" id="trending-video-analyzer-url" placeholder="https://www.tiktok.com/..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
+            </div>
+          </div>
+        </div>
+        
+        <!-- Platform -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Platform</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="trending-video-analyzer-platform" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-mobile-alt mr-1 text-yellow-500"></i>Pilih Platform
+              </label>
+              <select id="trending-video-analyzer-platform" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                <option value="tiktok">TikTok</option>
+                <option value="instagram-reels">Instagram Reels</option>
+                <option value="youtube-shorts">YouTube Shorts</option>
+                <option value="youtube-video">YouTube Video</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Analysis Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Jenis Analisis</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="trending-video-analyzer-analysis-type" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-search mr-1 text-orange-500"></i>Tipe Analisis
+              </label>
+              <select id="trending-video-analyzer-analysis-type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="full">Analisis Lengkap</option>
+                <option value="copywriting">Copywriting Saja</option>
+                <option value="hashtag">Analisis Hashtag</option>
+                <option value="trend">Deteksi Trend</option>
+                <option value="engagement">Metrik Engagement</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Target Audiens</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="trending-video-analyzer-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-yellow-500"></i>Target Audiens
+              </label>
+              <select id="trending-video-analyzer-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                <option value="gen-z">Gen Z</option>
+                <option value="millennials">Millennials</option>
+                <option value="gen-x">Gen X</option>
+                <option value="general">Umum</option>
+                <option value="niche">Niche Market</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Language -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Bahasa</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="trending-video-analyzer-language" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-language mr-1 text-orange-500"></i>Pilih Bahasa
+              </label>
+              <select id="trending-video-analyzer-language" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                <option value="indonesian">Indonesia</option>
+                <option value="english">English</option>
+                <option value="bilingual">Bilingual</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Output Format -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Format Output</h2>
+          <div class="space-y-4">
+            <div>
+              <label for="trending-video-analyzer-output-format" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-file-alt mr-1 text-yellow-500"></i>Format Output
+              </label>
+              <select id="trending-video-analyzer-output-format" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                <option value="detailed">Laporan Detail</option>
+                <option value="summary">Ringkasan</option>
+                <option value="action-items">Action Items</option>
+                <option value="copy-paste">Siap Copy Paste</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Generate Button -->
+        <button id="trending-video-analyzer-generate-btn" class="w-full bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Analisis Video
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="trending-video-analyzer-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="trending-video-analyzer-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-chart-line text-6xl mb-4 text-orange-400"></i>
+            <p class="text-xl">Hasil analisis video akan muncul di sini</p>
+            <p class="text-sm mt-2">Masukkan URL video dan klik Analisis Video</p>
+          </div>
+          <div id="trending-video-analyzer-results" class="hidden space-y-6"></div>
+          <div id="trending-video-analyzer-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-orange-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang menganalisis video...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

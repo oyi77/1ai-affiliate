@@ -1,0 +1,195 @@
+<div id="content-story-update" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 via-cyan-500 to-purple-500 bg-clip-text text-transparent">
+        <i class="fas fa-history mr-3"></i>Update Story
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat story menarik untuk update terbaru Anda dengan mudah</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Story Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Story</h2>
+          <div id="story-update-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="daily-vlog" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-video text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Daily Vlog</span>
+            </button>
+            <button type="button" data-type="product-reveal" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-box-open text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Product Reveal</span>
+            </button>
+            <button type="button" data-type="tutorial" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-cyan-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-chalkboard-teacher text-2xl mb-1 text-cyan-500"></i>
+              <span class="block font-medium">Tutorial</span>
+            </button>
+            <button type="button" data-type="behind-scenes" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-pink-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-film text-2xl mb-1 text-pink-500"></i>
+              <span class="block font-medium">Behind Scenes</span>
+            </button>
+            <button type="button" data-type="announcement" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-green-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-bullhorn text-2xl mb-1 text-green-500"></i>
+              <span class="block font-medium">Pengumuman</span>
+            </button>
+            <button type="button" data-type="throwback" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-yellow-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-history text-2xl mb-1 text-yellow-500"></i>
+              <span class="block font-medium">Throwback</span>
+            </button>
+            <button type="button" data-type="q&a" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-orange-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-question-circle text-2xl mb-1 text-orange-500"></i>
+              <span class="block font-medium">Q&A</span>
+            </button>
+            <button type="button" data-type="poll-story" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-red-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-poll text-2xl mb-1 text-red-500"></i>
+              <span class="block font-medium">Poll Story</span>
+            </button>
+            <button type="button" data-type="countdown" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-indigo-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-clock text-2xl mb-1 text-indigo-500"></i>
+              <span class="block font-medium">Countdown</span>
+            </button>
+            <button type="button" data-type="collaboration" class="story-update-type-btn p-3 rounded-lg text-sm bg-gray-100 hover:bg-teal-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-handshake text-2xl mb-1 text-teal-500"></i>
+              <span class="block font-medium">Kolaborasi</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Duration -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Durasi</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="story-update-duration" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-stopwatch mr-1 text-blue-500"></i>Durasi Story
+              </label>
+              <select id="story-update-duration" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="15s">15 Detik</option>
+                <option value="30s">30 Detik</option>
+                <option value="60s">1 Menit</option>
+                <option value="90s">90 Detik</option>
+                <option value="full-minute">Full Minute</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Gaya</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="story-update-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-paint-brush mr-1 text-purple-500"></i>Gaya Visual
+              </label>
+              <select id="story-update-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="casual">Casual</option>
+                <option value="professional">Professional</option>
+                <option value="aesthetic">Aesthetic</option>
+                <option value="fun">Fun</option>
+                <option value="minimal">Minimal</option>
+                <option value="bold">Bold</option>
+                <option value="retro">Retro</option>
+                <option value="cinematic">Cinematic</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Music -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Musik</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="story-update-music" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-music mr-1 text-cyan-500"></i>Jenis Musik
+              </label>
+              <select id="story-update-music" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="trending">Trending</option>
+                <option value="chill">Chill</option>
+                <option value="upbeat">Upbeat</option>
+                <option value="emotional">Emotional</option>
+                <option value="none">Tanpa Musik</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="story-update-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-pink-500"></i>Target Audiens
+              </label>
+              <select id="story-update-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500">
+                <option value="followers">Followers</option>
+                <option value="customers">Customers</option>
+                <option value="subscribers">Subscribers</option>
+                <option value="friends">Friends</option>
+                <option value="public">Public</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Tone -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="story-update-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-smile mr-1 text-blue-500"></i>Nuansa
+              </label>
+              <select id="story-update-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="authentic">Authentic</option>
+                <option value="entertaining">Entertaining</option>
+                <option value="informative">Informative</option>
+                <option value="inspiring">Inspiring</option>
+                <option value="mysterious">Mysterious</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="story-update-generate-btn" class="w-full bg-gradient-to-r from-blue-500 via-cyan-500 to-purple-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Buat Story
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="story-update-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="story-update-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-history text-6xl mb-4 text-blue-400"></i>
+            <p class="text-xl">Hasil story akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Story</p>
+          </div>
+          <div id="story-update-results" class="hidden space-y-6"></div>
+          <div id="story-update-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat story...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

@@ -1,0 +1,244 @@
+<div id="deskripsi-produk-container" class="w-full max-w-4xl mx-auto p-6">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 mb-4">
+            <i class="fas fa-box-open text-white text-2xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Deskripsi Produk</h2>
+        <p class="text-gray-600">Buat deskripsi produk yang menarik dan persuasif</p>
+    </div>
+
+    <!-- Form Container -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        <!-- Product Category Selection -->
+        <div class="mb-6">
+            <label for="deskripsi-produk-kategori" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-tag mr-2 text-pink-500"></i>Kategori Produk
+            </label>
+            <select id="deskripsi-produk-kategori" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white">
+                <option value="">Pilih kategori produk...</option>
+                <option value="fashion">Fashion & Pakaian</option>
+                <option value="beauty">Beauty & Skincare</option>
+                <option value="elektronik">Elektronik & Gadget</option>
+                <option value="rumah">Rumah & Dapur</option>
+                <option value="kesehatan">Kesehatan & Fitness</option>
+                <option value="makanan">Makanan & Minuman</option>
+                <option value="otomotif">Otomotif</option>
+                <option value="lainnya">Lainnya</option>
+            </select>
+        </div>
+
+        <!-- Product Name Input -->
+        <div class="mb-6">
+            <label for="deskripsi-produk-nama" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-box mr-2 text-pink-500"></i>Nama Produk
+            </label>
+            <input 
+                type="text" 
+                id="deskripsi-produk-nama" 
+                placeholder="Masukkan nama produk Anda..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+            >
+        </div>
+
+        <!-- Key Features Input -->
+        <div class="mb-6">
+            <label for="deskripsi-produk-fitur" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-star mr-2 text-pink-500"></i>Fitur Utama Produk
+            </label>
+            <textarea 
+                id="deskripsi-produk-fitur" 
+                rows="4"
+                placeholder="Masukkan fitur utama produk (pisahkan dengan baris baru):&#10;- Bahan berkualitas tinggi&#10;- Desain modern&#10;- Tahan lama"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors resize-y"
+            ></textarea>
+            <p class="text-xs text-gray-500 mt-1">Satu fitur per baris, maksimal 5 fitur</p>
+        </div>
+
+        <!-- Target Audience Selection -->
+        <div class="mb-8">
+            <label for="deskripsi-produk-target" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-users mr-2 text-pink-500"></i>Target Audiens
+            </label>
+            <select id="deskripsi-produk-target" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors bg-white">
+                <option value="">Pilih target audiens...</option>
+                <option value="remaja">Remaja (15-24 tahun)</option>
+                <option value="dewasa-muda">Dewasa Muda (25-35 tahun)</option>
+                <option value="dewasa">Dewasa (36-50 tahun)</option>
+                <option value="orang-tua">Orang Tua (50+ tahun)</option>
+                <option value="profesional">Profesional</option>
+                <option value="mahasiswa">Mahasiswa</option>
+                <option value="ibu-rumah-tangga">Ibu Rumah Tangga</option>
+                <option value="semua">Semua Umur</option>
+            </select>
+        </div>
+
+        <!-- Generate Button -->
+        <button 
+            id="deskripsi-produk-generate"
+            class="w-full py-4 px-6 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
+        >
+            <i class="fas fa-magic"></i>
+            <span>Generate Deskripsi Produk</span>
+        </button>
+    </div>
+
+    <!-- Result Section (Hidden by default) -->
+    <div id="deskripsi-produk-result" class="hidden mt-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-file-alt mr-2 text-pink-500"></i>Hasil Deskripsi Produk
+                </h3>
+                <button 
+                    id="deskripsi-produk-copy"
+                    class="px-4 py-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-colors flex items-center gap-2"
+                >
+                    <i class="fas fa-copy"></i>
+                    <span>Salin</span>
+                </button>
+            </div>
+            <div id="deskripsi-produk-output" class="prose prose-pink max-w-none p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <!-- Generated content will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="deskripsi-produk-loading" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent mb-4"></div>
+            <p class="text-gray-600">Sedang membuat deskripsi produk...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Deskripsi Produk Component Logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateBtn = document.getElementById('deskripsi-produk-generate');
+        const copyBtn = document.getElementById('deskripsi-produk-copy');
+        
+        if (generateBtn) {
+            generateBtn.addEventListener('click', generateProductDescription);
+        }
+        
+        if (copyBtn) {
+            copyBtn.addEventListener('click', copyDescription);
+        }
+    });
+
+    function generateProductDescription() {
+        const kategori = document.getElementById('deskripsi-produk-kategori').value;
+        const namaProduk = document.getElementById('deskripsi-produk-nama').value.trim();
+        const fitur = document.getElementById('deskripsi-produk-fitur').value.trim();
+        const target = document.getElementById('deskripsi-produk-target').value;
+
+        // Validation
+        if (!kategori) {
+            showNotification('Pilih kategori produk terlebih dahulu!', 'error');
+            return;
+        }
+        if (!namaProduk) {
+            showNotification('Masukkan nama produk!', 'error');
+            return;
+        }
+        if (!fitur) {
+            showNotification('Masukkan fitur utama produk!', 'error');
+            return;
+        }
+        if (!target) {
+            showNotification('Pilih target audiens!', 'error');
+            return;
+        }
+
+        // Show loading
+        document.getElementById('deskripsi-produk-loading').classList.remove('hidden');
+
+        // Simulate API call (replace with actual Gemini API integration)
+        setTimeout(() => {
+            const description = createProductDescription(kategori, namaProduk, fitur, target);
+            displayDescription(description);
+            document.getElementById('deskripsi-produk-loading').classList.add('hidden');
+        }, 2000);
+    }
+
+    function createProductDescription(kategori, namaProduk, fitur, target) {
+        const fiturList = fitur.split('\n').filter(f => f.trim().startsWith('-')).map(f => f.trim().substring(1).trim());
+        const targetLabels = {
+            'remaja': 'remaja yang aktif dan mengikuti tren',
+            'dewasa-muda': 'dewasa muda yang mengutamakan kualitas',
+            'dewasa': 'dewasa yang menghargai kepraktisan',
+            'orang-tua': 'orang tua yang mengutamakan kenyamanan',
+            'profesional': 'profesional yang sibuk',
+            'mahasiswa': 'mahasiswa dengan budget terbatas',
+            'ibu-rumah-tangga': 'ibu rumah tangga yang cerdas',
+            'semua': 'semua kalangan'
+        };
+
+        let description = `<h3>${namaProduk}</h3>`;
+        description += `<p><strong>Kategori:</strong> ${getCategoryLabel(kategori)}</p>`;
+        description += `<p>Produk ini dirancang khusus untuk ${targetLabels[target]}. Dengan desain yang modern dan fungsional, ${namaProduk} menjadi pilihan tepat untuk kebutuhan Anda.</p>`;
+        
+        description += `<h4>Fitur Utama:</h4><ul>`;
+        fiturList.forEach(fiturItem => {
+            description += `<li>${fiturItem}</li>`;
+        });
+        description += `</ul>`;
+        
+        description += `<p><strong>Keunggulan:</strong> ${namaProduk} menawarkan kombinasi sempurna antara kualitas, desain, dan nilai. Setiap detail dirancang dengan teliti untuk memberikan pengalaman terbaik bagi penggunanya.</p>`;
+        description += `<p><strong>Kesimpulan:</strong> Jangan lewatkan kesempatan untuk memiliki ${namaProduk}. Investasi tepat untuk ${targetLabels[target]} yang menginginkan yang terbaik.</p>`;
+
+        return description;
+    }
+
+    function getCategoryLabel(kategori) {
+        const labels = {
+            'fashion': 'Fashion & Pakaian',
+            'beauty': 'Beauty & Skincare',
+            'elektronik': 'Elektronik & Gadget',
+            'rumah': 'Rumah & Dapur',
+            'kesehatan': 'Kesehatan & Fitness',
+            'makanan': 'Makanan & Minuman',
+            'otomotif': 'Otomotif',
+            'lainnya': 'Lainnya'
+        };
+        return labels[kategori] || kategori;
+    }
+
+    function displayDescription(description) {
+        const output = document.getElementById('deskripsi-produk-output');
+        const result = document.getElementById('deskripsi-produk-result');
+        output.innerHTML = description;
+        result.classList.remove('hidden');
+        result.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyDescription() {
+        const output = document.getElementById('deskripsi-produk-output');
+        const text = output.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            showNotification('Deskripsi produk berhasil disalin!', 'success');
+        }).catch(() => {
+            showNotification('Gagal menyalin deskripsi produk', 'error');
+        });
+    }
+
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 ${
+            type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(notification);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>

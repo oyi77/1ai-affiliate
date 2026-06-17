@@ -1,0 +1,184 @@
+<div id="content-video-frames" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 bg-clip-text text-transparent">
+        <i class="fas fa-film mr-3"></i>Video Frames
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat frame video yang cinematic dan kreatif untuk konten Anda</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Frame Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Frame</h2>
+          <div id="video-frames-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="thumbnail" class="type-btn-video-frames p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-image text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Thumbnail</span>
+            </button>
+            <button type="button" data-type="intro" class="type-btn-video-frames p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-play-circle text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Intro</span>
+            </button>
+            <button type="button" data-type="outro" class="type-btn-video-frames p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-stop-circle text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Outro</span>
+            </button>
+            <button type="button" data-type="lower-third" class="type-btn-video-frames p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-closed-captioning text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Lower Third</span>
+            </button>
+            <button type="button" data-type="transition" class="type-btn-video-frames p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-random text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Transisi</span>
+            </button>
+            <button type="button" data-type="caption" class="type-btn-video-frames p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-comment-alt text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Caption</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Video Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Gaya Video</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="video-frames-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-video mr-1 text-blue-500"></i>Gaya Video
+              </label>
+              <select id="video-frames-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="vlog">Vlog</option>
+                <option value="cinematic">Cinematic</option>
+                <option value="documentary">Documentary</option>
+                <option value="tutorial">Tutorial</option>
+                <option value="gaming">Gaming</option>
+                <option value="music-video">Music Video</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Aspect Ratio -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Aspect Ratio</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="video-frames-aspect-ratio" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-expand-arrows-alt mr-1 text-blue-500"></i>Aspect Ratio
+              </label>
+              <select id="video-frames-aspect-ratio" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="16:9">16:9 (Landscape)</option>
+                <option value="9:16">9:16 (Portrait)</option>
+                <option value="1:1">1:1 (Square)</option>
+                <option value="4:5">4:5 (Portrait)</option>
+                <option value="21:9">21:9 (Ultrawide)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Duration -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Durasi</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="video-frames-duration" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-clock mr-1 text-blue-500"></i>Durasi
+              </label>
+              <select id="video-frames-duration" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="5s">5 Detik</option>
+                <option value="10s">10 Detik</option>
+                <option value="15s">15 Detik</option>
+                <option value="30s">30 Detik</option>
+                <option value="60s">60 Detik</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="video-frames-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-blue-500"></i>Target Audiens
+              </label>
+              <select id="video-frames-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="social-media">Media Sosial</option>
+                <option value="youtube">YouTube</option>
+                <option value="tiktok">TikTok</option>
+                <option value="instagram">Instagram</option>
+                <option value="professional">Profesional</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Tone -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="video-frames-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-heart mr-1 text-blue-500"></i>Nuansa
+              </label>
+              <select id="video-frames-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="professional">Profesional</option>
+                <option value="casual">Casual</option>
+                <option value="dramatic">Dramatis</option>
+                <option value="fun">Seru</option>
+                <option value="minimal">Minimalis</option>
+                <option value="energetic">Energik</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="video-frames-description" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-align-left mr-1 text-blue-500"></i>Deskripsi Frame
+              </label>
+              <textarea id="video-frames-description" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Jelaskan frame video yang diinginkan..."></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="video-frames-generate-btn" class="w-full bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-magic mr-2"></i>Buat Video Frames
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="video-frames-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="video-frames-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-film text-6xl mb-4 text-blue-400"></i>
+            <p class="text-xl">Hasil video frames akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Video Frames</p>
+          </div>
+          <div id="video-frames-results" class="hidden space-y-6"></div>
+          <div id="video-frames-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat video frames...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>

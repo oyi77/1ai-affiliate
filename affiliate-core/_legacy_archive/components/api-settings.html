@@ -1,0 +1,76 @@
+<div id="content-settings" class="main-content-panel hidden">
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <header class="mb-8 flex items-center gap-4">
+            <div
+                class="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white shadow-lg">
+                <i class="fas fa-cog fa-lg"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-gray-800 tracking-tight">Pengaturan</h2>
+                <p class="text-gray-500 font-medium">Konfigurasi API dan Sistem</p>
+            </div>
+        </header>
+
+        <div class="space-y-6">
+            <!-- API Key Section -->
+            <div
+                class="card overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800">Gemini AI API Key</h3>
+                    </div>
+
+                    <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                        Aplikasi ini menggunakan teknologi AI terbaru dari 1affiliate (Gemini). Untuk mengaktifkan fitur
+                        chat dan pembuatan gambar, Anda perlu memasukkan API Key Anda sendiri. API Key ini akan disimpan
+                        secara aman di browser Anda dan tidak dikirim ke server kami.
+                    </p>
+
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <label for="gemini-api-key-input"
+                                class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">API Key
+                                Anda</label>
+                            <div class="relative group">
+                                <input type="password" id="gemini-api-key-input"
+                                    class="w-full bg-gray-50 border-2 border-gray-200 rounded-xl py-3 px-4 focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-200"
+                                    placeholder="Masukkan API Key (AIza...)">
+                                <button id="toggle-api-visibility"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3 pt-2">
+                            <button id="save-api-key-btn"
+                                class="flex-1 min-w-[120px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-blue-200/50 hover:-translate-y-0.5 transition-all duration-200">
+                                <i class="fas fa-save mr-2"></i>Simpan API Key
+                            </button>
+                            <button id="clear-api-key-btn"
+                                class="px-6 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all duration-200">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-gray-100">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Cara Mendapatkan API
+                            Key:</h4>
+                        <ol class="text-sm text-gray-600 space-y-2 list-decimal ml-4">
+                            <li>Buka <a href="https://aistudio.google.com/" target="_blank"
+                                    class="text-blue-600 hover:underline font-bold">Google AI Studio</a>.</li>
+                            <li>Login dengan akun Google Anda.</li>
+                            <li>Klik tombol <span class="font-bold">"Get API Key"</span> di sidebar kiri.</li>
+                            <li>Pilih <span class="font-bold">"Create API key in new project"</span>.</li>
+                            <li>Salin kodenya dan masukkan di sini.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

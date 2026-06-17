@@ -1,0 +1,558 @@
+<div id="content-rencana-bisnis" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        <i class="fas fa-briefcase mr-3"></i>Rencana Bisnis
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat rencana bisnis profesional dengan bantuan AI</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Business Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Bisnis</h2>
+          <div id="rencana-bisnis-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="umkm" class="type-btn-rencana-bisnis p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-store text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">UMKM</span>
+            </button>
+            <button type="button" data-type="startup" class="type-btn-rencana-bisnis p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-rocket text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Startup</span>
+            </button>
+            <button type="button" data-type="franchise" class="type-btn-rencana-bisnis p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-copy text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Franchise</span>
+            </button>
+            <button type="button" data-type="digital" class="type-btn-rencana-bisnis p-3 rounded-lg text-sm bg-gray-100 hover:bg-blue-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-laptop text-2xl mb-1 text-blue-500"></i>
+              <span class="block font-medium">Digital</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Business Info -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Informasi Bisnis</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="rencana-bisnis-name" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-building mr-1 text-blue-500"></i>Nama Bisnis
+              </label>
+              <input type="text" id="rencana-bisnis-name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Toko Kopi Sejuk">
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-desc" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-align-left mr-1 text-blue-500"></i>Deskripsi Singkat
+              </label>
+              <textarea id="rencana-bisnis-desc" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Jelaskan bisnis Anda dalam beberapa kalimat..."></textarea>
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-location" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-map-marker-alt mr-1 text-blue-500"></i>Lokasi
+              </label>
+              <input type="text" id="rencana-bisnis-location" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Jakarta Selatan">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Target Market -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Target Market</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="rencana-bisnis-target-age" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-blue-500"></i>Target Usia
+              </label>
+              <select id="rencana-bisnis-target-age" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="all">Semua Usia</option>
+                <option value="18-24">18-24 tahun (Gen Z)</option>
+                <option value="25-34">25-34 tahun (Milenial)</option>
+                <option value="35-44">35-44 tahun (Gen X)</option>
+                <option value="45-54">45-54 tahun (Boomers)</option>
+                <option value="55+">55 tahun ke atas</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-target-gender" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-venus-mars mr-1 text-blue-500"></i>Target Jenis Kelamin
+              </label>
+              <select id="rencana-bisnis-target-gender" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="all">Semua Jenis Kelamin</option>
+                <option value="male">Laki-laki</option>
+                <option value="female">Perempuan</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-target-income" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-money-bill-wave mr-1 text-blue-500"></i>Target Pendapatan
+              </label>
+              <select id="rencana-bisnis-target-income" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="low">Menengah Bawah (Rp 1-5 juta/bulan)</option>
+                <option value="middle" selected>Menengah (Rp 5-15 juta/bulan)</option>
+                <option value="high">Menengah Atas (Rp 15-50 juta/bulan)</option>
+                <option value="premium">Premium (Rp 50 juta+/bulan)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Goals & Objectives -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Goals & Objectives</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="rencana-bisnis-goals" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-bullseye mr-1 text-blue-500"></i>Tujuan Bisnis
+              </label>
+              <textarea id="rencana-bisnis-goals" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Apa tujuan utama bisnis Anda dalam 1-3 tahun ke depan?"></textarea>
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-kpi" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-chart-line mr-1 text-blue-500"></i>KPI Utama
+              </label>
+              <textarea id="rencana-bisnis-kpi" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Target omset Rp 100 juta/bulan, 1000 pelanggan aktif"></textarea>
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-competitors" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-crosshairs mr-1 text-blue-500"></i>Competitor Utama
+              </label>
+              <textarea id="rencana-bisnis-competitors" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Siapa kompetitor utama Anda?"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Financial Projections -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Proyeksi Keuangan</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="rencana-bisnis-initial-capital" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-coins mr-1 text-blue-500"></i>Modal Awal (Rp)
+              </label>
+              <input type="number" id="rencana-bisnis-initial-capital" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: 50000000">
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-monthly-cost" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-file-invoice-dollar mr-1 text-blue-500"></i>Biaya Bulanan (Rp)
+              </label>
+              <input type="number" id="rencana-bisnis-monthly-cost" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: 10000000">
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-target-revenue" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-chart-pie mr-1 text-blue-500"></i>Target Pendapatan (Rp/bulan)
+              </label>
+              <input type="number" id="rencana-bisnis-target-revenue" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: 50000000">
+            </div>
+            
+            <div>
+              <label for="rencana-bisnis-break-even" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-clock mr-1 text-blue-500"></i>Target Break Even (bulan)
+              </label>
+              <input type="number" id="rencana-bisnis-break-even" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: 6">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Generate Button -->
+        <button id="rencana-bisnis-generate-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Rencana Bisnis
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="rencana-bisnis-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="rencana-bisnis-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-briefcase text-6xl mb-4 text-blue-400"></i>
+            <p class="text-xl">Hasil rencana bisnis akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Rencana Bisnis</p>
+          </div>
+          <div id="rencana-bisnis-results" class="hidden space-y-6"></div>
+          <div id="rencana-bisnis-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat rencana bisnis...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>
+
+<script>
+// Rencana Bisnis Component Logic
+(function() {
+  'use strict';
+  
+  // State management
+  const state = {
+    businessType: 'umkm',
+    businessName: '',
+    businessDesc: '',
+    location: '',
+    targetAge: 'all',
+    targetGender: 'all',
+    targetIncome: 'middle',
+    goals: '',
+    kpi: '',
+    competitors: '',
+    initialCapital: '',
+    monthlyCost: '',
+    targetRevenue: '',
+    breakEven: '',
+    isGenerating: false
+  };
+  
+  // DOM Elements
+  const elements = {
+    typeOptions: document.getElementById('rencana-bisnis-type-options'),
+    businessName: document.getElementById('rencana-bisnis-name'),
+    businessDesc: document.getElementById('rencana-bisnis-desc'),
+    location: document.getElementById('rencana-bisnis-location'),
+    targetAge: document.getElementById('rencana-bisnis-target-age'),
+    targetGender: document.getElementById('rencana-bisnis-target-gender'),
+    targetIncome: document.getElementById('rencana-bisnis-target-income'),
+    goals: document.getElementById('rencana-bisnis-goals'),
+    kpi: document.getElementById('rencana-bisnis-kpi'),
+    competitors: document.getElementById('rencana-bisnis-competitors'),
+    initialCapital: document.getElementById('rencana-bisnis-initial-capital'),
+    monthlyCost: document.getElementById('rencana-bisnis-monthly-cost'),
+    targetRevenue: document.getElementById('rencana-bisnis-target-revenue'),
+    breakEven: document.getElementById('rencana-bisnis-break-even'),
+    generateBtn: document.getElementById('rencana-bisnis-generate-btn'),
+    results: document.getElementById('rencana-bisnis-results'),
+    emptyState: document.getElementById('rencana-bisnis-empty-state'),
+    loading: document.getElementById('rencana-bisnis-loading')
+  };
+  
+  // Initialize component
+  function init() {
+    setupEventListeners();
+  }
+  
+  // Setup event listeners
+  function setupEventListeners() {
+    // Business type selection
+    elements.typeOptions?.addEventListener('click', handleTypeSelection);
+    
+    // Business info inputs
+    elements.businessName?.addEventListener('input', updateGenerateButton);
+    elements.businessDesc?.addEventListener('input', updateGenerateButton);
+    elements.location?.addEventListener('input', updateGenerateButton);
+    
+    // Target market inputs
+    elements.targetAge?.addEventListener('change', updateGenerateButton);
+    elements.targetGender?.addEventListener('change', updateGenerateButton);
+    elements.targetIncome?.addEventListener('change', updateGenerateButton);
+    
+    // Goals inputs
+    elements.goals?.addEventListener('input', updateGenerateButton);
+    elements.kpi?.addEventListener('input', updateGenerateButton);
+    elements.competitors?.addEventListener('input', updateGenerateButton);
+    
+    // Financial inputs
+    elements.initialCapital?.addEventListener('input', updateGenerateButton);
+    elements.monthlyCost?.addEventListener('input', updateGenerateButton);
+    elements.targetRevenue?.addEventListener('input', updateGenerateButton);
+    elements.breakEven?.addEventListener('input', updateGenerateButton);
+    
+    // Generate button
+    elements.generateBtn?.addEventListener('click', generateBusinessPlan);
+  }
+  
+  // Handle business type selection
+  function handleTypeSelection(event) {
+    const btn = event.target.closest('.type-btn-rencana-bisnis');
+    if (!btn) return;
+    
+    // Remove selected class from all buttons
+    document.querySelectorAll('.type-btn-rencana-bisnis').forEach(b => {
+      b.classList.remove('border-blue-500', 'bg-blue-100');
+      b.classList.add('border-transparent');
+      b.setAttribute('data-selected', 'false');
+    });
+    
+    // Add selected class to clicked button
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-blue-500', 'bg-blue-100');
+    btn.setAttribute('data-selected', 'true');
+    
+    state.businessType = btn.dataset.type || 'umkm';
+    updateGenerateButton();
+  }
+  
+  // Update generate button state
+  function updateGenerateButton() {
+    if (!elements.generateBtn) return;
+    
+    // Update state from inputs
+    state.businessName = elements.businessName?.value || '';
+    state.businessDesc = elements.businessDesc?.value || '';
+    state.location = elements.location?.value || '';
+    state.targetAge = elements.targetAge?.value || 'all';
+    state.targetGender = elements.targetGender?.value || 'all';
+    state.targetIncome = elements.targetIncome?.value || 'middle';
+    state.goals = elements.goals?.value || '';
+    state.kpi = elements.kpi?.value || '';
+    state.competitors = elements.competitors?.value || '';
+    state.initialCapital = elements.initialCapital?.value || '';
+    state.monthlyCost = elements.monthlyCost?.value || '';
+    state.targetRevenue = elements.targetRevenue?.value || '';
+    state.breakEven = elements.breakEven?.value || '';
+    
+    const hasRequiredInfo = state.businessName.trim() !== '' && 
+                           state.businessDesc.trim() !== '';
+    
+    elements.generateBtn.disabled = !hasRequiredInfo || state.isGenerating;
+  }
+  
+  // Generate business plan
+  async function generateBusinessPlan() {
+    if (!window.checkApiKey?.()) return;
+    
+    state.isGenerating = true;
+    updateGenerateButton();
+    
+    // Show loading
+    elements.emptyState.classList.add('hidden');
+    elements.results.classList.add('hidden');
+    elements.loading.classList.remove('hidden');
+    
+    try {
+      // Build prompt
+      const prompt = buildPrompt();
+      
+      // Call API
+      const response = await callGeminiReview(prompt);
+      
+      // Process response
+      const result = processResponse(response);
+      
+      // Display results
+      displayResults(result);
+      
+    } catch (error) {
+      showToast(`Error: ${error.message}`);
+      elements.emptyState.classList.remove('hidden');
+    } finally {
+      state.isGenerating = false;
+      elements.loading.classList.add('hidden');
+      updateGenerateButton();
+    }
+  }
+  
+  // Build prompt from state
+  function buildPrompt() {
+    const typeNames = {
+      'umkm': 'UMKM',
+      'startup': 'Startup',
+      'franchise': 'Franchise',
+      'digital': 'Bisnis Digital'
+    };
+    
+    const incomeNames = {
+      'low': 'Menengah Bawah (Rp 1-5 juta/bulan)',
+      'middle': 'Menengah (Rp 5-15 juta/bulan)',
+      'high': 'Menengah Atas (Rp 15-50 juta/bulan)',
+      'premium': 'Premium (Rp 50 juta+/bulan)'
+    };
+    
+    // Format currency
+    const formatCurrency = (value) => {
+      if (!value) return 'Belum ditentukan';
+      return 'Rp ' + parseInt(value).toLocaleString('id-ID');
+    };
+    
+    // Target audience description
+    let targetAudience = '';
+    if (state.targetAge !== 'all') {
+      targetAudience += `Usia ${state.targetAge} tahun`;
+    }
+    if (state.targetGender !== 'all') {
+      targetAudience += targetAudience ? ' ' : '';
+      targetAudience += state.targetGender === 'male' ? 'Laki-laki' : 'Perempuan';
+    }
+    targetAudience += targetAudience ? ', ' : '';
+    targetAudience += `Target Pendapatan: ${incomeNames[state.targetIncome]}`;
+    if (state.location) {
+      targetAudience += `, Lokasi: ${state.location}`;
+    }
+    
+    return `Buat rencana bisnis yang komprehensif dan profesional untuk:
+
+**Jenis Bisnis:** ${typeNames[state.businessType] || 'UMKM'}
+**Nama Bisnis:** ${state.businessName}
+**Deskripsi:** ${state.businessDesc}
+**Lokasi:** ${state.location || 'Belum ditentukan'}
+
+**Target Market:**
+- ${targetAudience}
+
+**Goals & Objectives:**
+- Tujuan: ${state.goals || 'Belum ditentukan'}
+- KPI: ${state.kpi || 'Belum ditentukan'}
+- Competitor: ${state.competitors || 'Belum ditentukan'}
+
+**Proyeksi Keuangan:**
+- Modal Awal: ${formatCurrency(state.initialCapital)}
+- Biaya Bulanan: ${formatCurrency(state.monthlyCost)}
+- Target Pendapatan: ${formatCurrency(state.targetRevenue)}
+- Target Break Even: ${state.breakEven ? state.breakEven + ' bulan' : 'Belum ditentukan'}
+
+Mohon buat rencana bisnis yang lengkap dengan struktur berikut:
+1. Executive Summary
+2. Deskripsi Bisnis
+3. Analisis Market
+4. Strategi Marketing
+5. Struktur Organisasi
+6. Proyeksi Keuangan (5 tahun)
+7. Analisis SWOT
+8. Kesimpulan dan Rekomendasi
+
+Gunakan bahasa Indonesia yang profesional dan format yang mudah dibaca. Sertakan tabel untuk proyeksi keuangan jika memungkinkan.`;
+  }
+  
+  // Process API response
+  function processResponse(response) {
+    try {
+      const text = response.candidates?.[0]?.content?.parts?.find(part => part.text)?.text;
+      
+      if (!text) {
+        throw new Error('No text data in response');
+      }
+      
+      return {
+        type: 'text',
+        content: text,
+        businessType: state.businessType,
+        businessName: state.businessName
+      };
+    } catch (error) {
+      throw new Error('Gagal memproses response dari AI');
+    }
+  }
+  
+  // Display results
+  function displayResults(result) {
+    elements.loading.classList.add('hidden');
+    elements.results.classList.remove('hidden');
+    
+    if (result.type === 'text') {
+      elements.results.innerHTML = `
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="font-semibold text-lg text-blue-800">Rencana Bisnis: ${result.businessName}</h3>
+              <p class="text-sm text-gray-600">Jenis: ${result.businessType.toUpperCase()}</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="rencana-bisnis-copy-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-sm">
+                <i class="fas fa-copy mr-2"></i>Salin
+              </button>
+              <button id="rencana-bisnis-download-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg text-sm">
+                <i class="fas fa-download mr-2"></i>Unduh
+              </button>
+            </div>
+          </div>
+          <div id="rencana-bisnis-content" class="prose prose-blue max-w-none">
+            ${formatBusinessPlan(result.content)}
+          </div>
+        </div>
+      `;
+      
+      // Add copy functionality
+      const copyBtn = document.getElementById('rencana-bisnis-copy-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          const content = result.content;
+          if (window.copyToClipboard) {
+            await window.copyToClipboard(content, copyBtn);
+          }
+        });
+      }
+      
+      // Add download functionality
+      const downloadBtn = document.getElementById('rencana-bisnis-download-btn');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+          downloadBusinessPlan(result.content, result.businessName);
+        });
+      }
+    } else {
+      elements.results.innerHTML = `
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+          <h3 class="font-semibold text-lg text-blue-800 mb-4">Hasil</h3>
+          <div class="prose prose-blue max-w-none">
+            ${JSON.stringify(result, null, 2)}
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Format business plan content
+  function formatBusinessPlan(content) {
+    // Convert markdown-style headers to HTML
+    let formatted = content
+      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold text-blue-800 mt-6 mb-3">$1</h3>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold text-blue-800 mt-8 mb-4">$1</h2>')
+      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold text-blue-800 mt-8 mb-4">$1</h1>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-blue-700">$1</strong>')
+      .replace(/\n\n/g, '</p><p class="mb-4">')
+      .replace(/\n/g, '<br>');
+    
+    // Wrap in paragraph if not already wrapped
+    if (!formatted.startsWith('<')) {
+      formatted = '<p class="mb-4">' + formatted + '</p>';
+    }
+    
+    return formatted;
+  }
+  
+  // Download business plan as text file
+  function downloadBusinessPlan(content, businessName) {
+    const filename = `rencana-bisnis-${businessName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
+    
+    if (window.downloadTextFile) {
+      window.downloadTextFile(content, filename);
+    } else {
+      // Fallback download method
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

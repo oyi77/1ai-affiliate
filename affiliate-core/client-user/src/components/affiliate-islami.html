@@ -1,0 +1,361 @@
+<div id="content-affiliate-islami" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+        <i class="fas fa-moon mr-3"></i>Affiliate Islami
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat konten affiliate produk islami dengan tema yang sesuai</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Upload -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Unggah Foto Produk</h2>
+          <div class="upload-area">
+            <label for="islami-product-image-input" class="file-input-label block border-3 border-dashed border-emerald-300 rounded-xl p-8 text-center cursor-pointer hover:border-emerald-500 transition-colors">
+              <input type="file" id="islami-product-image-input" class="hidden" accept="image/*">
+              <i class="fas fa-cloud-upload-alt text-4xl text-emerald-400 mb-3"></i>
+              <p class="text-gray-600">Klik atau seret foto produk di sini</p>
+            </label>
+          </div>
+          <div id="islami-product-image-preview-container" class="hidden mt-4">
+            <img id="islami-product-image-preview" src="#" alt="Pratinjau Produk" class="rounded-lg w-full h-auto object-contain">
+            <button id="islami-remove-product-image-btn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Product Info -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Info Produk</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="islami-product-name" class="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
+              <input type="text" id="islami-product-name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Contoh: Mukena Premium Arab">
+            </div>
+            
+            <div>
+              <label for="islami-product-price" class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label>
+              <input type="number" id="islami-product-price" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="150000">
+            </div>
+            
+            <div>
+              <label for="islami-product-desc" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Produk</label>
+              <textarea id="islami-product-desc" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Deskripsi singkat tentang produk..."></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Theme Selection -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Tema Visual</h2>
+          <div id="islami-theme-options" class="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
+            <button type="button" data-theme="" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-ban mr-1"></i>Tidak Ada
+            </button>
+            <button type="button" data-theme="Islamic elegant dengan nuansa arabian night, warna gold dan deep blue, luxurious dan sophisticated" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-gem mr-1"></i>Arabian
+            </button>
+            <button type="button" data-theme="Minimalis modern dengan background putih bersih, pencahayaan soft, aesthetic simple dan clean" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-minimize mr-1"></i>Minimalis
+            </button>
+            <button type="button" data-theme="Islamic calligraphy style dengan arabic typography, artistic dan elegant" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-pen-fancy mr-1"></i>Calligraphy
+            </button>
+            <button type="button" data-theme="Warm cozy dengan tone earth tone, wooden texture, homey dan comfortable" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-home mr-1"></i>Cozy Home
+            </button>
+            <button type="button" data-theme="Premium luxury dengan gold accents, elegant packaging, high-end presentation" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-crown mr-1"></i>Premium
+            </button>
+            <button type="button" data-theme="Natural lifestyle dengan cahaya alami, fresh dan peaceful atmosphere" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-leaf mr-1"></i>Natural
+            </button>
+            <button type="button" data-theme="Studio professional dengan lighting perfect, clean background, business ready" class="theme-btn-islami p-2 rounded-lg text-sm bg-gray-100 hover:bg-emerald-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-camera mr-1"></i>Studio Pro
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 4: Generate Button -->
+        <button id="islami-generate-btn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Konten Affiliate
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="islami-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="islami-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-moon text-6xl mb-4 text-emerald-400"></i>
+            <p class="text-xl">Hasil akan muncul di sini</p>
+            <p class="text-sm mt-2">Unggah foto produk dan klik Buat Konten Affiliate</p>
+          </div>
+          <div id="islami-results" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
+          <div id="islami-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-emerald-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat konten affiliate islami...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>
+
+<script>
+// Affiliate Islami Component Logic
+(function() {
+  'use strict';
+  
+  // State management
+  const state = {
+    productImage: null,
+    productName: '',
+    productPrice: '',
+    productDesc: '',
+    selectedTheme: '',
+    isGenerating: false
+  };
+  
+  // DOM Elements
+  const elements = {
+    imageInput: document.getElementById('islami-product-image-input'),
+    imagePreview: document.getElementById('islami-product-image-preview'),
+    imagePreviewContainer: document.getElementById('islami-product-image-preview-container'),
+    removeImageBtn: document.getElementById('islami-remove-product-image-btn'),
+    productName: document.getElementById('islami-product-name'),
+    productPrice: document.getElementById('islami-product-price'),
+    productDesc: document.getElementById('islami-product-desc'),
+    themeOptions: document.getElementById('islami-theme-options'),
+    generateBtn: document.getElementById('islami-generate-btn'),
+    results: document.getElementById('islami-results'),
+    emptyState: document.getElementById('islami-empty-state'),
+    loading: document.getElementById('islami-loading')
+  };
+  
+  // Initialize component
+  function init() {
+    setupEventListeners();
+  }
+  
+  // Setup event listeners
+  function setupEventListeners() {
+    // Image upload
+    elements.imageInput?.addEventListener('change', handleImageUpload);
+    
+    // Remove image
+    elements.removeImageBtn?.addEventListener('click', removeImage);
+    
+    // Product info changes
+    elements.productName?.addEventListener('input', updateGenerateButton);
+    elements.productPrice?.addEventListener('input', updateGenerateButton);
+    elements.productDesc?.addEventListener('input', updateGenerateButton);
+    
+    // Theme selection
+    elements.themeOptions?.addEventListener('click', handleThemeSelection);
+    
+    // Generate button
+    elements.generateBtn?.addEventListener('click', generateContent);
+  }
+  
+  // Handle image upload
+  function handleImageUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('Tipe file tidak valid. Silakan pilih gambar.');
+      return;
+    }
+    
+    // Read file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      state.productImage = {
+        base64,
+        mimeType: file.type,
+        filename: file.name
+      };
+      
+      // Show preview
+      elements.imagePreview.src = e.target.result;
+      elements.imagePreviewContainer.classList.remove('hidden');
+      
+      // Enable generate button
+      updateGenerateButton();
+    };
+    reader.readAsDataURL(file);
+  }
+  
+  // Remove image
+  function removeImage() {
+    state.productImage = null;
+    elements.imageInput.value = '';
+    elements.imagePreviewContainer.classList.add('hidden');
+    updateGenerateButton();
+  }
+  
+  // Handle theme selection
+  function handleThemeSelection(event) {
+    const btn = event.target.closest('.theme-btn-islami');
+    if (!btn) return;
+    
+    // Remove selected class from all buttons
+    document.querySelectorAll('.theme-btn-islami').forEach(b => {
+      b.classList.remove('border-emerald-500', 'bg-emerald-100');
+      b.classList.add('border-transparent');
+      b.setAttribute('data-selected', 'false');
+    });
+    
+    // Add selected class to clicked button
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-emerald-500', 'bg-emerald-100');
+    btn.setAttribute('data-selected', 'true');
+    
+    state.selectedTheme = btn.dataset.theme || '';
+    updateGenerateButton();
+  }
+  
+  // Update generate button state
+  function updateGenerateButton() {
+    if (!elements.generateBtn) return;
+    
+    const hasImage = state.productImage !== null;
+    const hasName = state.productName?.value.trim() !== '';
+    const hasPrice = state.productPrice?.value.trim() !== '';
+    
+    elements.generateBtn.disabled = !hasImage || !hasName || !hasPrice || state.isGenerating;
+  }
+  
+  // Generate content
+  async function generateContent() {
+    if (!window.checkApiKey?.()) return;
+    
+    state.isGenerating = true;
+    updateGenerateButton();
+    
+    // Show loading
+    elements.emptyState.classList.add('hidden');
+    elements.results.classList.add('hidden');
+    elements.loading.classList.remove('hidden');
+    
+    try {
+      // Build prompt
+      const prompt = buildPrompt();
+      
+      // Call API
+      const response = await callGeminiImage(prompt, state.productImage.base64, state.productImage.mimeType);
+      
+      // Process response
+      const result = processResponse(response);
+      
+      // Display results
+      displayResults(result);
+      
+    } catch (error) {
+      showToast(`Error: ${error.message}`);
+      elements.emptyState.classList.remove('hidden');
+    } finally {
+      state.isGenerating = false;
+      elements.loading.classList.add('hidden');
+      updateGenerateButton();
+    }
+  }
+  
+  // Build prompt from state
+  function buildPrompt() {
+    const productName = state.productName?.value || 'Produk';
+    const productPrice = state.productPrice?.value || '0';
+    const productDesc = state.productDesc?.value || '';
+    const theme = state.selectedTheme || 'Professional product photography';
+    
+    return `Buat konten affiliate islami yang menarik untuk produk "${productName}" dengan harga Rp${parseInt(productPrice).toLocaleString('id-ID')}.
+
+Deskripsi produk: ${productDesc}
+
+Tema visual: ${theme}
+
+Buat 4 variasi konten affiliate yang:
+1. Cocok untuk Instagram/TikTok
+2. Menarik perhatian calon pembeli
+3. Mengandung nilai-nilai islami yang sesuai
+4. Professional dan berkualitas tinggi
+
+Format output dalam HTML yang bisa langsung digunakan.`;
+  }
+  
+  // Process API response
+  function processResponse(response) {
+    try {
+      const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      // Try to parse as JSON if possible
+      try {
+        return JSON.parse(text);
+      } catch {
+        // Return as text if not JSON
+        return { type: 'html', content: text };
+      }
+    } catch (error) {
+      throw new Error('Gagal memproses response dari AI');
+    }
+  }
+  
+  // Display results
+  function displayResults(result) {
+    elements.loading.classList.add('hidden');
+    elements.results.classList.remove('hidden');
+    
+    if (result.type === 'html' || typeof result === 'string') {
+      const htmlContent = typeof result === 'string' ? result : result.content;
+      elements.results.innerHTML = `
+        <div class="col-span-2 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+          <h3 class="font-semibold text-lg text-emerald-800 mb-4">Konten Affiliate Islami</h3>
+          <div class="prose prose-emerald max-w-none">
+            ${htmlContent}
+          </div>
+        </div>
+      `;
+    } else if (result.variations) {
+      elements.results.innerHTML = result.variations.map((variation, index) => `
+        <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+          <h3 class="font-semibold text-lg text-emerald-800 mb-2">${variation.title || `Variasi ${index + 1}`}</h3>
+          <div class="prose prose-emerald max-w-none text-sm">
+            ${variation.content || variation}
+          </div>
+        </div>
+      `).join('');
+    } else {
+      elements.results.innerHTML = `
+        <div class="col-span-2 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+          <h3 class="font-semibold text-lg text-emerald-800 mb-4">Konten Affiliate Islami</h3>
+          <div class="prose prose-emerald max-w-none">
+            ${JSON.stringify(result, null, 2)}
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

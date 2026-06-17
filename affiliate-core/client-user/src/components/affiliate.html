@@ -1,0 +1,256 @@
+                        <main class="flex flex-col lg:flex-row gap-8">
+                            <div class="card p-6 w-full lg:w-1/3 lg:max-w-sm flex-shrink-0 self-start">
+                                <div class="flex flex-col gap-6">
+                                    <div>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">1. Unggah Gambar Produk
+                                        </h2>
+                                        <div id=broll-image-upload-area><label for=broll-image-input
+                                                class="file-input-label rounded-lg text-center text-gray-500"><svg
+                                                    xmlns=http://www.w3.org/2000/svg class="w-10 h-10 mb-2" fill=none
+                                                    viewBox="0 0 24 24" stroke=currentColor>
+                                                    <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                                    </path>
+                                                </svg> <span>Pilih Gambar Produk (Bisa lebih dari 1)</span></label>
+                                            <input type=file id=broll-image-input class=hidden
+                                                accept="image/png, image/jpeg, image/webp" multiple=multiple>
+                                        </div>
+                                        <div id=broll-image-preview-container
+                                            class="hidden mt-4 grid grid-cols-3 gap-2"></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between items-center mb-3">
+                                            <h2 class="text-xl font-semibold text-gray-800">2. Deskripsi Produk</h2>
+                                            <button id=broll-generate-desc-btn
+                                                class="btn-secondary text-sm font-semibold py-1 px-3 rounded-md flex items-center"
+                                                disabled=disabled>✨ Buat Deskripsi</button>
+                                        </div><textarea id=broll-product-desc-input rows=4
+                                            class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                            placeholder="Contoh: Smartwatch X200 tahan air dengan GPS..."></textarea>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">3. Unggah Foto Model <span
+                                                class="text-sm text-gray-500">(Opsional)</span></h2>
+                                        <div id=broll-model-image-upload-area><label for=broll-model-image-input
+                                                class="file-input-label rounded-lg text-center text-gray-500"><svg
+                                                    xmlns=http://www.w3.org/2000/svg class="w-10 h-10 mb-2" fill=none
+                                                    viewBox="0 0 24 24" stroke=currentColor>
+                                                    <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg> <span>Pilih Foto Model</span></label> <input type=file
+                                                id=broll-model-image-input class=hidden
+                                                accept="image/png, image/jpeg, image/webp"></div>
+                                        <div id=broll-model-image-preview-container class="hidden mt-4 relative"><img
+                                                id=broll-model-image-preview src=# alt="Pratinjau Model"
+                                                class="rounded-lg w-full h-auto object-contain"> <button
+                                                id=broll-remove-model-image-btn
+                                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"><svg
+                                                    xmlns=http://www.w3.org/2000/svg class="h-4 w-4" fill=none
+                                                    viewBox="0 0 24 24" stroke=currentColor>
+                                                    <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                        d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg></button></div>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">4. Tema Foto <span
+                                                class="text-sm text-gray-500">(Opsional)</span></h2>
+                                        <div id=broll-theme-options
+                                            class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3 max-h-96 overflow-y-auto p-2 border border-gray-200 rounded-lg"
+                                            style=grid-template-columns:repeat(auto-fit,minmax(100px,1fr))><button
+                                                type=button data-theme="" class="theme-btn-broll selected"><i
+                                                    class="fas fa-ban mr-1"></i>Tidak Ada</button> <button type=button
+                                                data-theme=custom class=theme-btn-broll><i
+                                                    class="fas fa-pen mr-1"></i>Custom</button> <button type=button
+                                                data-theme="Minimalis modern dengan background putih bersih, pencahayaan soft, aesthetic simple dan clean"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-minimize mr-1"></i>Minimalis</button> <button
+                                                type=button
+                                                data-theme="Studio profesional dengan lighting perfect, background solid, hasil tajam dan detail"
+                                                class=theme-btn-broll><i class="fas fa-camera mr-1"></i>Studio
+                                                Pro</button> <button type=button
+                                                data-theme="Flat lay from top view, creative composition, organized layout, perfect for Instagram grid"
+                                                class=theme-btn-broll><i class="fas fa-th mr-1"></i>Flat Lay</button>
+                                            <button type=button
+                                                data-theme="Dark & moody dengan lighting dramatic, shadow bermain, mysterious dan artistic atmosphere"
+                                                class=theme-btn-broll><i class="fas fa-moon mr-1"></i>Dark
+                                                Moody</button> <button type=button
+                                                data-theme="Bright & airy dengan cahaya terang alami, white background, fresh dan clean look"
+                                                class=theme-btn-broll><i class="fas fa-sun mr-1"></i>Bright
+                                                Airy</button> <button type=button
+                                                data-theme="Lifestyle natural dengan nuansa alam, cahaya alami, suasana hangat dan relax"
+                                                class=theme-btn-broll><i class="fas fa-leaf mr-1"></i>Natural</button>
+                                            <button type=button
+                                                data-theme="Cozy home dengan suasana rumah yang nyaman, warm lighting, intimate dan personal"
+                                                class=theme-btn-broll><i class="fas fa-home mr-1"></i>Cozy Home</button>
+                                            <button type=button
+                                                data-theme="Outdoor adventure dengan background alam terbuka, energetic, fresh dan dynamic"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-mountain mr-1"></i>Outdoor</button> <button
+                                                type=button
+                                                data-theme="Beach summer vibes dengan pasir putih, laut biru, tropical dan refreshing atmosphere"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-umbrella-beach mr-1"></i>Beach</button> <button
+                                                type=button
+                                                data-theme="Coffee shop aesthetic dengan wooden table, warm lighting, cozy dan hipster vibes"
+                                                class=theme-btn-broll><i class="fas fa-mug-hot mr-1"></i>Coffee
+                                                Shop</button> <button type=button
+                                                data-theme="Urban street style dengan suasana kota modern, industrial vibe, energik dan trendy"
+                                                class=theme-btn-broll><i class="fas fa-city mr-1"></i>Urban</button>
+                                            <button type=button
+                                                data-theme="Luxury premium dengan nuansa mewah, elegant, sophisticated dengan detail gold/silver"
+                                                class=theme-btn-broll><i class="fas fa-gem mr-1"></i>Luxury</button>
+                                            <button type=button
+                                                data-theme="Professional corporate dengan clean lines, business aesthetic, formal dan trustworthy"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-briefcase mr-1"></i>Corporate</button> <button
+                                                type=button
+                                                data-theme="Elegant classic dengan sophisticated styling, timeless appeal, high-end presentation"
+                                                class=theme-btn-broll><i class="fas fa-crown mr-1"></i>Elegant</button>
+                                            <button type=button
+                                                data-theme="Bokeh dreamy dengan depth of field shallow, blurred background, soft dan romantic"
+                                                class=theme-btn-broll><i class="fas fa-heart mr-1"></i>Bokeh</button>
+                                            <button type=button
+                                                data-theme="Golden hour magic dengan warm sunset lighting, golden tones, cinematic dan dreamy"
+                                                class=theme-btn-broll><i class="fas fa-cloud-sun mr-1"></i>Golden
+                                                Hour</button> <button type=button
+                                                data-theme="Neon cyberpunk dengan warna neon vibrant, futuristic vibe, modern dan eye-catching"
+                                                class=theme-btn-broll><i class="fas fa-bolt mr-1"></i>Neon</button>
+                                            <button type=button
+                                                data-theme="Monochrome black & white dengan contrast tinggi, timeless, artistic dan dramatic"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-adjust mr-1"></i>Monochrome</button> <button
+                                                type=button
+                                                data-theme="Vintage retro dengan filter klasik, warm tones, nostalgic atmosphere"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-clock-rotate-left mr-1"></i>Vintage</button> <button
+                                                type=button
+                                                data-theme="Rustic farmhouse dengan wooden texture, earthy tones, authentic dan homey feel"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-warehouse mr-1"></i>Rustic</button> <button
+                                                type=button
+                                                data-theme="Fresh & clean dengan warna pastel, bright, cheerful, dan refreshing vibes"
+                                                class=theme-btn-broll><i class="fas fa-sparkles mr-1"></i>Fresh</button>
+                                            <button type=button
+                                                data-theme="Pastel sweet dengan warna-warna pastel lembut, cute, kawaii aesthetic, soft vibes"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-candy-cane mr-1"></i>Pastel</button> <button
+                                                type=button
+                                                data-theme="Vibrant colorful dengan warna-warna bold dan berani, energetic, eye-popping"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-palette mr-1"></i>Colorful</button> <button
+                                                type=button
+                                                data-theme="Earth tone natural dengan warna-warna tanah, brown beige green, organic dan calming"
+                                                class=theme-btn-broll><i class="fas fa-seedling mr-1"></i>Earth
+                                                Tone</button> <button type=button
+                                                data-theme="Spring fresh dengan bunga-bunga, warna cerah, cheerful dan blooming atmosphere"
+                                                class=theme-btn-broll><i class="fas fa-flower mr-1"></i>Spring</button>
+                                            <button type=button
+                                                data-theme="Summer bright dengan sunshine vibes, tropical colors, energetic dan fun"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-sun-plant-wilt mr-1"></i>Summer</button> <button
+                                                type=button
+                                                data-theme="Autumn warm dengan warna-warna fall leaves, cozy, warm tones orange brown"
+                                                class=theme-btn-broll><i class="fas fa-tree mr-1"></i>Autumn</button>
+                                            <button type=button
+                                                data-theme="Winter snow dengan suasana dingin, white & blue tones, cozy dan serene"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-snowflake mr-1"></i>Winter</button> <button
+                                                type=button
+                                                data-theme="Romantic love dengan rose petals, soft pink lighting, intimate dan dreamy"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-heart-circle-plus mr-1"></i>Romantic</button> <button
+                                                type=button
+                                                data-theme="Party celebration dengan confetti, colorful decorations, festive dan joyful"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-champagne-glasses mr-1"></i>Party</button> <button
+                                                type=button
+                                                data-theme="Christmas holiday dengan dekorasi Natal, red & green, warm cozy festive vibes"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-gifts mr-1"></i>Christmas</button> <button type=button
+                                                data-theme="Instagram aesthetic dengan trendy composition, perfect for social media, viral worthy"
+                                                class=theme-btn-broll><i
+                                                    class="fab fa-instagram mr-1"></i>Instagram</button> <button
+                                                type=button
+                                                data-theme="Aesthetic minimalist dengan clean lines, negative space, modern dan sophisticated"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-shapes mr-1"></i>Aesthetic</button> <button
+                                                type=button
+                                                data-theme="Influencer style dengan professional setup, trendy props, aspirational lifestyle"
+                                                class=theme-btn-broll><i
+                                                    class="fas fa-star mr-1"></i>Influencer</button>
+                                        </div>
+                                        <div id=broll-custom-theme-container class=hidden><textarea
+                                                id=broll-photo-theme-input rows=3
+                                                class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                                placeholder="Contoh: Minimalis & bersih, nuansa alam tropis..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">5. Unggah Background <span
+                                                class="text-sm text-gray-500">(Opsional)</span></h2>
+                                        <div id=broll-background-image-upload-area><label
+                                                for=broll-background-image-input
+                                                class="file-input-label rounded-lg text-center text-gray-500"><svg
+                                                    xmlns=http://www.w3.org/2000/svg class="w-10 h-10 mb-2" fill=none
+                                                    viewBox="0 0 24 24" stroke=currentColor>
+                                                    <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                                    </path>
+                                                </svg> <span>Pilih Background Custom</span></label> <input type=file
+                                                id=broll-background-image-input class=hidden
+                                                accept="image/png, image/jpeg, image/webp"></div>
+                                        <div id=broll-background-image-preview-container class="hidden mt-4 relative">
+                                            <img id=broll-background-image-preview src=# alt="Pratinjau Background"
+                                                class="rounded-lg w-full h-auto object-contain"> <button
+                                                id=broll-remove-background-image-btn
+                                                class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"><svg
+                                                    xmlns=http://www.w3.org/2000/svg class="h-4 w-4" fill=none
+                                                    viewBox="0 0 24 24" stroke=currentColor>
+                                                    <path stroke-linecap=round stroke-linejoin=round stroke-width=2
+                                                        d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg></button>
+                                        </div>
+                                    </div>
+                                    <div class=mt-6>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">6. Rasio Aspek</h2>
+                                        <div id=broll-ratio-selection class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                            <button type=button data-ratio=1:1 class=ratio-btn-broll><i
+                                                    class="fas fa-square mr-2"></i>1:1</button> <button type=button
+                                                data-ratio=16:9 class="ratio-btn-broll selected"><i
+                                                    class="fas fa-rectangle-landscape mr-2"></i>16:9</button> <button
+                                                type=button data-ratio=3:4 class=ratio-btn-broll><i
+                                                    class="fas fa-rectangle-portrait mr-2"></i>3:4</button> <button
+                                                type=button data-ratio=9:16 class=ratio-btn-broll><i
+                                                    class="fas fa-mobile-alt mr-2"></i>9:16</button>
+                                        </div>
+                                    </div>
+                                    <div class=mt-6>
+                                        <h2 class="text-xl font-semibold mb-3 text-gray-800">7. Jumlah Foto</h2>
+                                        <div id=broll-count-selection class="grid grid-cols-3 gap-3"><button type=button
+                                                data-count=7 class="ratio-btn-broll selected"><i
+                                                    class="fas fa-images mr-2"></i>7 Foto</button> <button type=button
+                                                data-count=14 class=ratio-btn-broll><i class="fas fa-images mr-2"></i>14
+                                                Foto</button> <button type=button data-count=20 class=ratio-btn-broll><i
+                                                    class="fas fa-images mr-2"></i>20 Foto</button></div>
+                                    </div><button id=broll-generate-btn
+                                        class="w-full btn-primary font-bold py-3 px-4 rounded-lg flex items-center justify-center text-lg mt-6"
+                                        disabled=disabled><span>Buat <span id=broll-count-text>7</span> Pose
+                                            Produk</span></button>
+                                </div>
+                            </div>
+                            <div class=flex-grow>
+                                <div id=broll-results-header class="hidden mb-4 flex items-center justify-between">
+                                    <h3 class="text-xl font-bold text-gray-800"><span id=broll-result-count>0</span>
+                                        Foto Berhasil Di-generate</h3><button id=broll-download-all-btn
+                                        class="btn-primary px-6 py-2 rounded-lg flex items-center gap-2"><i
+                                            class="fas fa-download"></i> Download Semua</button>
+                                </div>
+                                <div id=broll-b-roll-grid
+                                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                                </div>
+                            </div>
+                        </main>
+                    </div>
+                    <div id=content-virtual-tryon class="main-content-panel hidden">
+                        <div class="container mx-auto max-w-7xl">
+                            <header class="text-center mb-10">

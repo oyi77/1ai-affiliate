@@ -1,0 +1,590 @@
+<div id="content-maternity" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-500 to-violet-500 bg-clip-text text-transparent">
+        <i class="fas fa-baby-carriage mr-3"></i>Konten Kehamilan
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat konten yang lembut dan bermanfaat untuk perjalanan kehamilan Anda</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Content Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Konten</h2>
+          <div id="maternity-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="journey" class="type-btn-maternity p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-calendar-alt text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Perjalanan</span>
+            </button>
+            <button type="button" data-type="nutrition" class="type-btn-maternity p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-apple-alt text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Nutrisi</span>
+            </button>
+            <button type="button" data-type="health" class="type-btn-maternity p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-heartbeat text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Kesehatan</span>
+            </button>
+            <button type="button" data-type="preparation" class="type-btn-maternity p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-baby text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Persiapan</span>
+            </button>
+            <button type="button" data-type="emotions" class="type-btn-maternity p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-smile text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Perasaan</span>
+            </button>
+            <button type="button" data-type="tips" class="type-btn-maternity p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-lightbulb text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Tips</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Trimester -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Trimester Kehamilan</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="maternity-trimester" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-clock mr-1 text-purple-500"></i>Trimester Saat Ini
+              </label>
+              <select id="maternity-trimester" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="1">Trimester Pertama (Minggu 1-12)</option>
+                <option value="2">Trimester Kedua (Minggu 13-26)</option>
+                <option value="3">Trimester Ketiga (Minggu 27-40)</option>
+                <option value="all">Semua Trimester</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="maternity-week" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-calendar-check mr-1 text-purple-500"></i>Minggu Kehamilan
+              </label>
+              <input type="number" id="maternity-week" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Contoh: 20" min="1" max="42">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Topic & Niche -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Topik & Niche</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="maternity-topic" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-tag mr-1 text-purple-500"></i>Topik Utama
+              </label>
+              <input type="text" id="maternity-topic" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Contoh: Tips nutrisi sehat untuk ibu hamil">
+            </div>
+            
+            <div>
+              <label for="maternity-niche" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-folder mr-1 text-purple-500"></i>Niche Spesifik
+              </label>
+              <input type="text" id="maternity-niche" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Contoh: Nutrisi trimester kedua">
+            </div>
+            
+            <div>
+              <label for="maternity-keywords" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-key mr-1 text-purple-500"></i>Kata Kunci
+              </label>
+              <input type="text" id="maternity-keywords" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Contoh: ibu hamil, nutrisi, kesehatan">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="maternity-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-purple-500"></i>Target Audiens
+              </label>
+              <select id="maternity-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="expecting-mothers">Ibu Hamil</option>
+                <option value="expecting-fathers">Ayah Hamil</option>
+                <option value="couples">Pasangan Suami Istri</option>
+                <option value="family">Keluarga</option>
+                <option value="all">Semua Orang</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="maternity-interests" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-heart mr-1 text-purple-500"></i>Minat Audiens
+              </label>
+              <textarea id="maternity-interests" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Apa yang paling dibutuhkan oleh audiens Anda?"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Tone & Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Gaya & Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="maternity-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-smile mr-1 text-purple-500"></i>Tone Konten
+              </label>
+              <select id="maternity-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="supportive">Mendukung & Memberi Semangat</option>
+                <option value="informative">Informatif & Edukatif</option>
+                <option value="warm">Hangat & Ramah</option>
+                <option value="reassuring">Menenangkan & Memberi Kepercayaan</option>
+                <option value="encouraging">Mendorong & Memotivasi</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="maternity-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-paint-brush mr-1 text-purple-500"></i>Gaya Penulisan
+              </label>
+              <select id="maternity-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="casual">Santai & Gaul</option>
+                <option value="formal">Formal & Profesional</option>
+                <option value="storytelling">Cerita & Naratif</option>
+                <option value="stepbystep">Langkah demi Langkah</option>
+                <option value="qa"> Tanya Jawab</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="maternity-length" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-text-width mr-1 text-purple-500"></i>Panjang Konten
+              </label>
+              <select id="maternity-length" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="short">Pendek (1-2 paragraf)</option>
+                <option value="medium">Sedang (3-5 paragraf)</option>
+                <option value="long">Panjang (artikel lengkap)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Additional Details -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Detail Tambahan</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="maternity-goals" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-bullseye mr-1 text-purple-500"></i>Tujuan Konten
+              </label>
+              <textarea id="maternity-goals" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Apa tujuan Anda membuat konten ini?"></textarea>
+            </div>
+            
+            <div>
+              <label for="maternity-cta" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-mouse-pointer mr-1 text-purple-500"></i>Call to Action
+              </label>
+              <input type="text" id="maternity-cta" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Contoh: Bagikan pengalaman Anda di kolom komentar!">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="maternity-generate-btn" class="w-full bg-gradient-to-r from-purple-500 to-violet-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Konten Kehamilan
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="maternity-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="maternity-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-baby-carriage text-6xl mb-4 text-purple-400"></i>
+            <p class="text-xl">Hasil konten kehamilan akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Konten Kehamilan</p>
+          </div>
+          <div id="maternity-results" class="hidden space-y-6"></div>
+          <div id="maternity-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-purple-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat konten kehamilan...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>
+
+<script>
+// Maternity Content Component Logic
+(function() {
+  'use strict';
+  
+  // State management
+  const state = {
+    contentType: 'journey',
+    trimester: '1',
+    week: '',
+    topic: '',
+    niche: '',
+    keywords: '',
+    audience: 'expecting-mothers',
+    interests: '',
+    tone: 'supportive',
+    style: 'casual',
+    length: 'medium',
+    goals: '',
+    cta: '',
+    isGenerating: false
+  };
+  
+  // DOM Elements
+  const elements = {
+    typeOptions: document.getElementById('maternity-type-options'),
+    trimester: document.getElementById('maternity-trimester'),
+    week: document.getElementById('maternity-week'),
+    topic: document.getElementById('maternity-topic'),
+    niche: document.getElementById('maternity-niche'),
+    keywords: document.getElementById('maternity-keywords'),
+    audience: document.getElementById('maternity-audience'),
+    interests: document.getElementById('maternity-interests'),
+    tone: document.getElementById('maternity-tone'),
+    style: document.getElementById('maternity-style'),
+    length: document.getElementById('maternity-length'),
+    goals: document.getElementById('maternity-goals'),
+    cta: document.getElementById('maternity-cta'),
+    generateBtn: document.getElementById('maternity-generate-btn'),
+    results: document.getElementById('maternity-results'),
+    emptyState: document.getElementById('maternity-empty-state'),
+    loading: document.getElementById('maternity-loading')
+  };
+  
+  // Initialize component
+  function init() {
+    setupEventListeners();
+  }
+  
+  // Setup event listeners
+  function setupEventListeners() {
+    // Content type selection
+    elements.typeOptions?.addEventListener('click', handleTypeSelection);
+    
+    // Trimester & week inputs
+    elements.trimester?.addEventListener('change', updateGenerateButton);
+    elements.week?.addEventListener('input', updateGenerateButton);
+    
+    // Topic & niche inputs
+    elements.topic?.addEventListener('input', updateGenerateButton);
+    elements.niche?.addEventListener('input', updateGenerateButton);
+    elements.keywords?.addEventListener('input', updateGenerateButton);
+    
+    // Target audience inputs
+    elements.audience?.addEventListener('change', updateGenerateButton);
+    elements.interests?.addEventListener('input', updateGenerateButton);
+    
+    // Tone & style inputs
+    elements.tone?.addEventListener('change', updateGenerateButton);
+    elements.style?.addEventListener('change', updateGenerateButton);
+    elements.length?.addEventListener('change', updateGenerateButton);
+    
+    // Additional details inputs
+    elements.goals?.addEventListener('input', updateGenerateButton);
+    elements.cta?.addEventListener('input', updateGenerateButton);
+    
+    // Generate button
+    elements.generateBtn?.addEventListener('click', generateMaternityContent);
+  }
+  
+  // Handle content type selection
+  function handleTypeSelection(event) {
+    const btn = event.target.closest('.type-btn-maternity');
+    if (!btn) return;
+    
+    // Remove selected class from all buttons
+    document.querySelectorAll('.type-btn-maternity').forEach(b => {
+      b.classList.remove('border-purple-500', 'bg-purple-100');
+      b.classList.add('border-transparent');
+      b.setAttribute('data-selected', 'false');
+    });
+    
+    // Add selected class to clicked button
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-purple-500', 'bg-purple-100');
+    btn.setAttribute('data-selected', 'true');
+    
+    state.contentType = btn.dataset.type || 'journey';
+    updateGenerateButton();
+  }
+  
+  // Update generate button state
+  function updateGenerateButton() {
+    if (!elements.generateBtn) return;
+    
+    // Update state from inputs
+    state.trimester = elements.trimester?.value || '1';
+    state.week = elements.week?.value || '';
+    state.topic = elements.topic?.value || '';
+    state.niche = elements.niche?.value || '';
+    state.keywords = elements.keywords?.value || '';
+    state.audience = elements.audience?.value || 'expecting-mothers';
+    state.interests = elements.interests?.value || '';
+    state.tone = elements.tone?.value || 'supportive';
+    state.style = elements.style?.value || 'casual';
+    state.length = elements.length?.value || 'medium';
+    state.goals = elements.goals?.value || '';
+    state.cta = elements.cta?.value || '';
+    
+    const hasRequiredInfo = state.topic.trim() !== '' && 
+                           state.niche.trim() !== '';
+    
+    elements.generateBtn.disabled = !hasRequiredInfo || state.isGenerating;
+  }
+  
+  // Generate maternity content
+  async function generateMaternityContent() {
+    if (!window.checkApiKey?.()) return;
+    
+    state.isGenerating = true;
+    updateGenerateButton();
+    
+    // Show loading
+    elements.emptyState.classList.add('hidden');
+    elements.results.classList.add('hidden');
+    elements.loading.classList.remove('hidden');
+    
+    try {
+      // Build prompt
+      const prompt = buildPrompt();
+      
+      // Call API
+      const response = await callGeminiReview(prompt);
+      
+      // Process response
+      const result = processResponse(response);
+      
+      // Display results
+      displayResults(result);
+      
+    } catch (error) {
+      showToast(`Error: ${error.message}`);
+      elements.emptyState.classList.remove('hidden');
+    } finally {
+      state.isGenerating = false;
+      elements.loading.classList.add('hidden');
+      updateGenerateButton();
+    }
+  }
+  
+  // Build prompt from state
+  function buildPrompt() {
+    const typeNames = {
+      'journey': 'Perjalanan Kehamilan',
+      'nutrition': 'Nutrisi Kehamilan',
+      'health': 'Kesehatan Kehamilan',
+      'preparation': 'Persiapan Kehamilan',
+      'emotions': 'Perasaan Kehamilan',
+      'tips': 'Tips Kehamilan'
+    };
+    
+    const trimesterNames = {
+      '1': 'Trimester Pertama (Minggu 1-12)',
+      '2': 'Trimester Kedua (Minggu 13-26)',
+      '3': 'Trimester Ketiga (Minggu 27-40)',
+      'all': 'Semua Trimester'
+    };
+    
+    const audienceNames = {
+      'expecting-mothers': 'Ibu Hamil',
+      'expecting-fathers': 'Ayah Hamil',
+      'couples': 'Pasangan Suami Istri',
+      'family': 'Keluarga',
+      'all': 'Semua Orang'
+    };
+    
+    const toneNames = {
+      'supportive': 'Mendukung & Memberi Semangat',
+      'informative': 'Informatif & Edukatif',
+      'warm': 'Hangat & Ramah',
+      'reassuring': 'Menenangkan & Memberi Kepercayaan',
+      'encouraging': 'Mendorong & Memotivasi'
+    };
+    
+    const styleNames = {
+      'casual': 'Santai & Gaul',
+      'formal': 'Formal & Profesional',
+      'storytelling': 'Cerita & Naratif',
+      'stepbystep': 'Langkah demi Langkah',
+      'qa': 'Tanya Jawab'
+    };
+    
+    const lengthNames = {
+      'short': 'Pendek (1-2 paragraf)',
+      'medium': 'Sedang (3-5 paragraf)',
+      'long': 'Panjang (artikel lengkap)'
+    };
+    
+    // Target audience description
+    let targetAudience = audienceNames[state.audience] || 'Ibu Hamil';
+    
+    // Week info
+    let weekInfo = state.week ? `Minggu Ke-${state.week}` : 'Belum ditentukan';
+    
+    return `Buat konten kehamilan yang lembut dan bermanfaat untuk:
+
+**Jenis Konten:** ${typeNames[state.contentType] || 'Perjalanan Kehamilan'}
+**Trimester:** ${trimesterNames[state.trimester] || 'Trimester Pertama'}
+**Minggu Kehamilan:** ${weekInfo}
+**Topik Utama:** ${state.topic}
+**Niche Spesifik:** ${state.niche}
+**Kata Kunci:** ${state.keywords || 'kehamilan, ibu hamil, kesehatan'}
+
+**Target Audiens:**
+- ${targetAudience}
+- Minat: ${state.interests || 'Belum ditentukan'}
+
+**Gaya & Nuansa:**
+- Tone: ${toneNames[state.tone]}
+- Gaya Penulisan: ${styleNames[state.style]}
+- Panjang Konten: ${lengthNames[state.length]}
+
+**Detail Tambahan:**
+- Tujuan Konten: ${state.goals || 'Belum ditentukan'}
+- Call to Action: ${state.cta || 'Tidak ada'}
+
+Mohon buat konten kehamilan yang lengkap dengan struktur berikut:
+1. Judul yang menarik dan relevan
+2. Pendahuluan yang lembut dan mengundang
+3. Konten utama sesuai jenis yang dipilih
+4. Tips atau langkah-langkah praktis
+5. Penutup dengan call to action
+
+Gunakan bahasa Indonesia yang lemah lembut, hangat, dan mudah dipahami. Sertakan emoji yang sesuai untuk menambah kehangatan. Format yang mudah dibaca dan cocok untuk dibagikan di media sosial atau blog kesehatan kehamilan.`;
+  }
+  
+  // Process API response
+  function processResponse(response) {
+    try {
+      const text = response.candidates?.[0]?.content?.parts?.find(part => part.text)?.text;
+      
+      if (!text) {
+        throw new Error('No text data in response');
+      }
+      
+      return {
+        type: 'text',
+        content: text,
+        contentType: state.contentType,
+        topic: state.topic
+      };
+    } catch (error) {
+      throw new Error('Gagal memproses response dari AI');
+    }
+  }
+  
+  // Display results
+  function displayResults(result) {
+    elements.loading.classList.add('hidden');
+    elements.results.classList.remove('hidden');
+    
+    if (result.type === 'text') {
+      elements.results.innerHTML = `
+        <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-200">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="font-semibold text-lg text-purple-800">${result.topic}</h3>
+              <p class="text-sm text-gray-600">Jenis: ${result.contentType.charAt(0).toUpperCase() + result.contentType.slice(1)}</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="maternity-copy-btn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors shadow-lg text-sm">
+                <i class="fas fa-copy mr-2"></i>Salin
+              </button>
+              <button id="maternity-download-btn" class="bg-violet-600 text-white px-4 py-2 rounded-lg hover:bg-violet-700 transition-colors shadow-lg text-sm">
+                <i class="fas fa-download mr-2"></i>Unduh
+              </button>
+            </div>
+          </div>
+          <div id="maternity-content" class="prose prose-purple max-w-none">
+            ${formatMaternityContent(result.content)}
+          </div>
+        </div>
+      `;
+      
+      // Add copy functionality
+      const copyBtn = document.getElementById('maternity-copy-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          const content = result.content;
+          if (window.copyToClipboard) {
+            await window.copyToClipboard(content, copyBtn);
+          }
+        });
+      }
+      
+      // Add download functionality
+      const downloadBtn = document.getElementById('maternity-download-btn');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', () => {
+          downloadMaternityContent(result.content, result.topic);
+        });
+      }
+    } else {
+      elements.results.innerHTML = `
+        <div class="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-200">
+          <h3 class="font-semibold text-lg text-purple-800 mb-4">Hasil</h3>
+          <div class="prose prose-purple max-w-none">
+            ${JSON.stringify(result, null, 2)}
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Format maternity content
+  function formatMaternityContent(content) {
+    // Convert markdown-style headers to HTML
+    let formatted = content
+      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold text-purple-800 mt-6 mb-3">$1</h3>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold text-purple-800 mt-8 mb-4">$1</h2>')
+      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold text-purple-800 mt-8 mb-4">$1</h1>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-purple-700">$1</strong>')
+      .replace(/\n\n/g, '</p><p class="mb-4">')
+      .replace(/\n/g, '<br>');
+    
+    // Wrap in paragraph if not already wrapped
+    if (!formatted.startsWith('<')) {
+      formatted = '<p class="mb-4">' + formatted + '</p>';
+    }
+    
+    return formatted;
+  }
+  
+  // Download maternity content as text file
+  function downloadMaternityContent(content, topic) {
+    const filename = `konten-kehamilan-${topic.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
+    
+    if (window.downloadTextFile) {
+      window.downloadTextFile(content, filename);
+    } else {
+      // Fallback download method
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

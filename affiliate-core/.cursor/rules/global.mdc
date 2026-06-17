@@ -1,0 +1,25 @@
+---
+description: Global conventions for 1affiliate Gemini canvas static web app
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+### Project context
+
+- Repo: static front-end Gemini canvas app served from plain HTML + Tailwind CDN, custom CSS, and vanilla JavaScript in `js/*.js`.
+- Authentication/licensing: handled via a Google Apps Script endpoint (`SCRIPT_URL`) and `localStorage` keys prefixed with `1affiliate_`.
+
+### Editing guidelines
+
+- Preserve the static-HTML + CDN-powered architecture; **do not introduce bundlers, Node.js backends, or SPA frameworks** unless the user explicitly asks.
+- Keep all copy and UI tone in Indonesian unless the user explicitly requests another language.
+- When changing markup, respect existing placeholders (e.g. `*-placeholder` containers) used by JavaScript to inject components.
+- Maintain responsiveness and Tailwind utility class patterns; add custom CSS in `css/style.css` only when Tailwind utilities are insufficient.
+- Before refactoring JavaScript, ensure login/session behavior via `auth.js` and `localStorage` remains intact and backwards compatible.
+
+### AI assistant behavior
+
+- Prefer small, targeted edits over large rewrites.
+- Explain security-sensitive changes briefly (anything touching `SCRIPT_URL`, tokens, or `localStorage`).
+- When adding new features, keep them framework-free and compatible with direct `<script>` usage in the browser.

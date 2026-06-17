@@ -1,0 +1,451 @@
+<div id="content-face-swap" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pink-500 to-rose-400 bg-clip-text text-transparent">
+        <i class="fas fa-exchange-alt mr-3"></i>Face Swap
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Tukar wajah dengan mudah dan seru menggunakan AI</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Source Face Upload -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Unggah Wajah Sumber</h2>
+          <div class="upload-area">
+            <label for="face-swap-source-image-input" class="file-input-label block border-3 border-dashed border-pink-300 rounded-xl p-8 text-center cursor-pointer hover:border-pink-500 transition-colors">
+              <input type="file" id="face-swap-source-image-input" class="hidden" accept="image/*">
+              <i class="fas fa-user text-4xl text-pink-400 mb-3"></i>
+              <p class="text-gray-600">Klik atau seret foto wajah di sini</p>
+            </label>
+          </div>
+          <div id="face-swap-source-image-preview-container" class="hidden mt-4 relative">
+            <img id="face-swap-source-image-preview" src="#" alt="Pratinjau Wajah Sumber" class="rounded-lg w-full h-auto object-contain">
+            <button id="face-swap-remove-source-image-btn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Target Image Upload -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Unggah Gambar Target</h2>
+          <div class="upload-area">
+            <label for="face-swap-target-image-input" class="file-input-label block border-3 border-dashed border-rose-300 rounded-xl p-8 text-center cursor-pointer hover:border-rose-500 transition-colors">
+              <input type="file" id="face-swap-target-image-input" class="hidden" accept="image/*">
+              <i class="fas fa-image text-4xl text-rose-400 mb-3"></i>
+              <p class="text-gray-600">Klik atau seret foto target di sini</p>
+            </label>
+          </div>
+          <div id="face-swap-target-image-preview-container" class="hidden mt-4 relative">
+            <img id="face-swap-target-image-preview" src="#" alt="Pratinjau Gambar Target" class="rounded-lg w-full h-auto object-contain">
+            <button id="face-swap-remove-target-image-btn" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 3: Face Detection Options -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Deteksi Wajah</h2>
+          <div id="face-swap-detection-options" class="space-y-3">
+            <button type="button" data-detection="auto" class="detection-btn-face-swap w-full p-3 rounded-lg text-sm bg-pink-100 hover:bg-pink-200 transition text-center border-2 border-pink-400 selected" data-selected="true">
+              <i class="fas fa-magic mr-2"></i>Otomatis
+            </button>
+            <button type="button" data-detection="manual" class="detection-btn-face-swap w-full p-3 rounded-lg text-sm bg-gray-100 hover:bg-pink-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-mouse-pointer mr-2"></i>Manual (Pilih Area)
+            </button>
+          </div>
+          <div id="face-swap-manual-selection-info" class="hidden mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="text-sm text-yellow-700">
+              <i class="fas fa-info-circle mr-1"></i>
+              Klik dan seret pada gambar target untuk memilih area wajah yang akan ditukar.
+            </p>
+          </div>
+        </div>
+        
+        <!-- Step 4: Swap Intensity -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Intensitas Swap</h2>
+          <div>
+            <label for="face-swap-intensity" class="block text-sm font-medium text-gray-700 mb-1">
+              <i class="fas fa-sliders-h mr-1 text-pink-500"></i>Tingkat Intensitas
+            </label>
+            <input type="range" id="face-swap-intensity" min="0" max="100" value="80" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pink-500">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Halus</span>
+              <span id="face-swap-intensity-value">80%</span>
+              <span>Kuat</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Generate Button -->
+        <button id="face-swap-generate-btn" class="w-full bg-gradient-to-r from-pink-500 to-rose-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Face Swap
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="face-swap-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="face-swap-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-exchange-alt text-6xl mb-4 text-pink-400"></i>
+            <p class="text-xl">Hasil akan muncul di sini</p>
+            <p class="text-sm mt-2">Unggah wajah sumber dan gambar target, lalu klik Buat Face Swap</p>
+          </div>
+          <div id="face-swap-results" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
+          <div id="face-swap-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-pink-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat face swap...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>
+
+<script>
+// Face Swap Component Logic
+(function() {
+  'use strict';
+  
+  // State management
+  const state = {
+    sourceImage: null,
+    targetImage: null,
+    detectionMode: 'auto',
+    intensity: 80,
+    isGenerating: false,
+    manualSelection: null
+  };
+  
+  // DOM Elements
+  const elements = {
+    sourceImageInput: document.getElementById('face-swap-source-image-input'),
+    sourceImagePreview: document.getElementById('face-swap-source-image-preview'),
+    sourceImagePreviewContainer: document.getElementById('face-swap-source-image-preview-container'),
+    removeSourceImageBtn: document.getElementById('face-swap-remove-source-image-btn'),
+    targetImageInput: document.getElementById('face-swap-target-image-input'),
+    targetImagePreview: document.getElementById('face-swap-target-image-preview'),
+    targetImagePreviewContainer: document.getElementById('face-swap-target-image-preview-container'),
+    removeTargetImageBtn: document.getElementById('face-swap-remove-target-image-btn'),
+    detectionOptions: document.getElementById('face-swap-detection-options'),
+    manualSelectionInfo: document.getElementById('face-swap-manual-selection-info'),
+    intensitySlider: document.getElementById('face-swap-intensity'),
+    intensityValue: document.getElementById('face-swap-intensity-value'),
+    generateBtn: document.getElementById('face-swap-generate-btn'),
+    results: document.getElementById('face-swap-results'),
+    emptyState: document.getElementById('face-swap-empty-state'),
+    loading: document.getElementById('face-swap-loading')
+  };
+  
+  // Initialize component
+  function init() {
+    setupEventListeners();
+  }
+  
+  // Setup event listeners
+  function setupEventListeners() {
+    // Source image upload
+    elements.sourceImageInput?.addEventListener('change', handleSourceImageUpload);
+    
+    // Remove source image
+    elements.removeSourceImageBtn?.addEventListener('click', removeSourceImage);
+    
+    // Target image upload
+    elements.targetImageInput?.addEventListener('change', handleTargetImageUpload);
+    
+    // Remove target image
+    elements.removeTargetImageBtn?.addEventListener('click', removeTargetImage);
+    
+    // Detection mode selection
+    elements.detectionOptions?.addEventListener('click', handleDetectionSelection);
+    
+    // Intensity slider
+    elements.intensitySlider?.addEventListener('input', handleIntensityChange);
+    
+    // Generate button
+    elements.generateBtn?.addEventListener('click', generateFaceSwap);
+  }
+  
+  // Handle source image upload
+  function handleSourceImageUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('Tipe file tidak valid. Silakan pilih gambar.');
+      return;
+    }
+    
+    // Read file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      state.sourceImage = {
+        base64,
+        mimeType: file.type,
+        filename: file.name
+      };
+      
+      // Show preview
+      elements.sourceImagePreview.src = e.target.result;
+      elements.sourceImagePreviewContainer.classList.remove('hidden');
+      
+      // Enable generate button
+      updateGenerateButton();
+    };
+    reader.readAsDataURL(file);
+  }
+  
+  // Remove source image
+  function removeSourceImage() {
+    state.sourceImage = null;
+    elements.sourceImageInput.value = '';
+    elements.sourceImagePreviewContainer.classList.add('hidden');
+    updateGenerateButton();
+  }
+  
+  // Handle target image upload
+  function handleTargetImageUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('Tipe file tidak valid. Silakan pilih gambar.');
+      return;
+    }
+    
+    // Read file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1];
+      state.targetImage = {
+        base64,
+        mimeType: file.type,
+        filename: file.name
+      };
+      
+      // Show preview
+      elements.targetImagePreview.src = e.target.result;
+      elements.targetImagePreviewContainer.classList.remove('hidden');
+      
+      // Enable generate button
+      updateGenerateButton();
+    };
+    reader.readAsDataURL(file);
+  }
+  
+  // Remove target image
+  function removeTargetImage() {
+    state.targetImage = null;
+    elements.targetImageInput.value = '';
+    elements.targetImagePreviewContainer.classList.add('hidden');
+    updateGenerateButton();
+  }
+  
+  // Handle detection mode selection
+  function handleDetectionSelection(event) {
+    const btn = event.target.closest('.detection-btn-face-swap');
+    if (!btn) return;
+    
+    // Remove selected class from all buttons
+    document.querySelectorAll('.detection-btn-face-swap').forEach(b => {
+      b.classList.remove('border-pink-400', 'bg-pink-100');
+      b.classList.add('border-transparent');
+      b.setAttribute('data-selected', 'false');
+    });
+    
+    // Add selected class to clicked button
+    btn.classList.remove('border-transparent');
+    btn.classList.add('border-pink-400', 'bg-pink-100');
+    btn.setAttribute('data-selected', 'true');
+    
+    state.detectionMode = btn.dataset.detection || 'auto';
+    
+    // Show/hide manual selection info
+    if (state.detectionMode === 'manual') {
+      elements.manualSelectionInfo?.classList.remove('hidden');
+    } else {
+      elements.manualSelectionInfo?.classList.add('hidden');
+    }
+    
+    updateGenerateButton();
+  }
+  
+  // Handle intensity change
+  function handleIntensityChange(event) {
+    const value = event.target.value;
+    state.intensity = parseInt(value, 10);
+    
+    // Update display value
+    elements.intensityValue.textContent = `${value}%`;
+  }
+  
+  // Update generate button state
+  function updateGenerateButton() {
+    if (!elements.generateBtn) return;
+    
+    const hasSource = state.sourceImage !== null;
+    const hasTarget = state.targetImage !== null;
+    elements.generateBtn.disabled = !hasSource || !hasTarget || state.isGenerating;
+  }
+  
+  // Generate face swap
+  async function generateFaceSwap() {
+    if (!window.checkApiKey?.()) return;
+    
+    state.isGenerating = true;
+    updateGenerateButton();
+    
+    // Show loading
+    elements.emptyState.classList.add('hidden');
+    elements.results.classList.add('hidden');
+    elements.loading.classList.remove('hidden');
+    
+    try {
+      // Build prompt
+      const prompt = buildPrompt();
+      
+      // Call API
+      const response = await callGeminiImage(prompt, state.targetImage.base64, state.targetImage.mimeType, state.sourceImage.base64);
+      
+      // Process response
+      const result = processResponse(response);
+      
+      // Display results
+      displayResults(result);
+      
+    } catch (error) {
+      showToast(`Error: ${error.message}`);
+      elements.emptyState.classList.remove('hidden');
+    } finally {
+      state.isGenerating = false;
+      elements.loading.classList.add('hidden');
+      updateGenerateButton();
+    }
+  }
+  
+  // Build prompt from state
+  function buildPrompt() {
+    const intensity = state.intensity;
+    const detectionMode = state.detectionMode;
+    
+    let intensityDescription = '';
+    if (intensity < 30) {
+      intensityDescription = 'very subtle face swap, barely noticeable';
+    } else if (intensity < 60) {
+      intensityDescription = 'subtle face swap, natural looking';
+    } else if (intensity < 80) {
+      intensityDescription = 'moderate face swap, clearly visible';
+    } else {
+      intensityDescription = 'strong face swap, very noticeable';
+    }
+    
+    let detectionDescription = '';
+    if (detectionMode === 'auto') {
+      detectionDescription = 'automatically detect and swap the face';
+    } else {
+      detectionDescription = 'swap the face in the selected area';
+    }
+    
+    return `Perform a face swap on this image with the following specifications:
+    
+Face swap intensity: ${intensityDescription}
+Detection mode: ${detectionDescription}
+
+Create a realistic face swap that:
+1. Naturally blends the source face onto the target image
+2. Maintains proper lighting and skin tone
+3. Preserves facial expressions and angles
+4. Looks seamless and realistic
+5. Is suitable for social media sharing
+
+Return the face-swapped image.`;
+  }
+  
+  // Process API response
+  function processResponse(response) {
+    try {
+      const imageData = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData)?.inlineData?.data;
+      
+      if (!imageData) {
+        throw new Error('No image data in response');
+      }
+      
+      return {
+        type: 'image',
+        data: imageData,
+        mimeType: response.candidates[0].content.parts.find(part => part.inlineData)?.inlineData?.mimeType || 'image/png'
+      };
+    } catch (error) {
+      throw new Error('Gagal memproses response dari AI');
+    }
+  }
+  
+  // Display results
+  function displayResults(result) {
+    elements.loading.classList.add('hidden');
+    elements.results.classList.remove('hidden');
+    
+    if (result.type === 'image') {
+      const imageUrl = `data:${result.mimeType};base64,${result.data}`;
+      elements.results.innerHTML = `
+        <div class="col-span-2">
+          <div class="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-6 border border-pink-200">
+            <h3 class="font-semibold text-lg text-pink-800 mb-4">Face Swap Hasil AI</h3>
+            <div class="relative">
+              <img src="${imageUrl}" alt="Face Swap Result" class="rounded-lg w-full h-auto object-contain">
+              <div class="absolute bottom-4 right-4 flex gap-2">
+                <button id="face-swap-download-btn" data-image-url="${imageUrl}" data-filename="face-swap-result.png" class="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors shadow-lg">
+                  <i class="fas fa-download mr-2"></i>Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add download functionality
+      const downloadBtn = document.getElementById('face-swap-download-btn');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', async () => {
+          const imageUrl = downloadBtn.dataset.imageUrl;
+          const filename = downloadBtn.dataset.filename;
+          if (window.downloadImage) {
+            await window.downloadImage(imageUrl, filename);
+          }
+        });
+      }
+    } else {
+      elements.results.innerHTML = `
+        <div class="col-span-2 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-6 border border-pink-200">
+          <h3 class="font-semibold text-lg text-pink-800 mb-4">Hasil</h3>
+          <div class="prose prose-pink max-w-none">
+            ${JSON.stringify(result, null, 2)}
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

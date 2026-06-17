@@ -1,0 +1,207 @@
+<div id="content-sketsa-gambar" class="main-content-panel hidden">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 bg-clip-text text-transparent">
+        <i class="fas fa-pencil-alt mr-3"></i>Sketsa & Gambar
+      </h1>
+      <p class="text-lg text-gray-600 mt-2">Buat inspirasi sketsa dan gambar yang kreatif dan artistik</p>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Panel: Controls -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Step 1: Drawing Type -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">1. Jenis Gambar</h2>
+          <div id="sketsa-gambar-type-options" class="grid grid-cols-2 gap-2">
+            <button type="button" data-type="portrait" class="type-btn-sketsa-gambar p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent selected" data-selected="true">
+              <i class="fas fa-user text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Potret</span>
+            </button>
+            <button type="button" data-type="landscape" class="type-btn-sketsa-gambar p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-mountain text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Pemandangan</span>
+            </button>
+            <button type="button" data-type="still-life" class="type-btn-sketsa-gambar p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-apple-alt text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Still Life</span>
+            </button>
+            <button type="button" data-type="abstract" class="type-btn-sketsa-gambar p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-shapes text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Abstrak</span>
+            </button>
+            <button type="button" data-type="cartoon" class="type-btn-sketsa-gambar p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-smile text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Kartun</span>
+            </button>
+            <button type="button" data-type="manga" class="type-btn-sketsa-gambar p-3 rounded-lg text-sm bg-gray-100 hover:bg-purple-100 transition text-center border-2 border-transparent">
+              <i class="fas fa-book-open text-2xl mb-1 text-purple-500"></i>
+              <span class="block font-medium">Manga</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Step 2: Style -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">2. Gaya</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="sketsa-gambar-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-paint-brush mr-1 text-purple-500"></i>Gaya
+              </label>
+              <select id="sketsa-gambar-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="realistic">Realistis</option>
+                <option value="impressionist">Impresionis</option>
+                <option value="abstract">Abstrak</option>
+                <option value="cartoon">Kartun</option>
+                <option value="line-art">Line Art</option>
+                <option value="watercolor">Akwarel</option>
+                <option value="digital">Digital</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="sketsa-gambar-custom-style" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-pen mr-1 text-purple-500"></i>Gaya Custom
+              </label>
+              <input type="text" id="sketsa-gambar-custom-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Masukkan gaya custom...">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Medium -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Media</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="sketsa-gambar-medium" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-pencil-alt mr-1 text-purple-500"></i>Media
+              </label>
+              <select id="sketsa-gambar-medium" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="pencil">Pensil</option>
+                <option value="charcoal">Arang</option>
+                <option value="ink">Tinta</option>
+                <option value="pastel">Pastel</option>
+                <option value="digital">Digital</option>
+                <option value="mixed-media">Campuran</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="sketsa-gambar-custom-medium" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-pen-nib mr-1 text-purple-500"></i>Media Custom
+              </label>
+              <input type="text" id="sketsa-gambar-custom-medium" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Masukkan media custom...">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Subject -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">4. Subjek</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="sketsa-gambar-subject" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-eye mr-1 text-purple-500"></i>Subjek
+              </label>
+              <select id="sketsa-gambar-subject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="people">Manusia</option>
+                <option value="nature">Alam</option>
+                <option value="animals">Hewan</option>
+                <option value="objects">Objek</option>
+                <option value="architecture">Arsitektur</option>
+                <option value="fantasy">Fantasi</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="sketsa-gambar-custom-subject" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-star mr-1 text-purple-500"></i>Subjek Custom
+              </label>
+              <input type="text" id="sketsa-gambar-custom-subject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Masukkan subjek custom...">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 5: Target Audience -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">5. Target Audiens</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="sketsa-gambar-audience" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-users mr-1 text-purple-500"></i>Target Audiens
+              </label>
+              <select id="sketsa-gambar-audience" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="art-students">Mahasiswa Seni</option>
+                <option value="hobbyists">Hobi</option>
+                <option value="professionals">Profesional</option>
+                <option value="social-media">Media Sosial</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 6: Tone -->
+        <div class="card p-6 rounded-2xl shadow-lg bg-white">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">6. Nuansa</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label for="sketsa-gambar-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-heart mr-1 text-purple-500"></i>Nuansa
+              </label>
+              <select id="sketsa-gambar-tone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <option value="detailed">Detail</option>
+                <option value="simplified">Sederhana</option>
+                <option value="expressive">Ekspresif</option>
+                <option value="minimal">Minimal</option>
+                <option value="dramatic">Dramatis</option>
+                <option value="whimsical">Unik & Licik</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="sketsa-gambar-special" class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-magic mr-1 text-purple-500"></i>Permintaan Khusus
+              </label>
+              <textarea id="sketsa-gambar-special" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" placeholder="Detail khusus yang diinginkan..."></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 7: Generate Button -->
+        <button id="sketsa-gambar-generate-btn" class="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fas fa-magic mr-2"></i>Buat Sketsa & Gambar
+        </button>
+        
+      </div>
+      
+      <!-- Right Panel: Results -->
+      <div class="lg:col-span-2">
+        <div id="sketsa-gambar-results-container" class="card p-6 rounded-2xl shadow-lg bg-white min-h-[500px]">
+          <div id="sketsa-gambar-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-12">
+            <i class="fas fa-pencil-alt text-6xl mb-4 text-purple-400"></i>
+            <p class="text-xl">Hasil sketsa dan gambar akan muncul di sini</p>
+            <p class="text-sm mt-2">Isi informasi dan klik Buat Sketsa & Gambar</p>
+          </div>
+          <div id="sketsa-gambar-results" class="hidden space-y-6"></div>
+          <div id="sketsa-gambar-loading" class="hidden flex flex-col items-center justify-center py-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-purple-500 h-12 w-12 mb-4"></div>
+            <p class="text-gray-600">Sedang membuat sketsa dan gambar...</p>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+  </div>
+</div>
