@@ -94,6 +94,7 @@ cf-router zone:add --account <account_id> --zone-id <zone_id> --domain berkahkar
 cf-router mapping:add --domain berkahkarya.org --subdomain affiliate --port 80 --host php
 cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-api --port 3001 --host node
 cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-tools --port 80 --host phpmyadmin
+cf-router mapping:add --domain berkahkarya.org --subdomain docs --port 3000 --host playbook
 ```
 
 > After adding mappings, cf-router automatically:
