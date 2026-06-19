@@ -17,7 +17,7 @@ const integrations = new Map();
 // Auto-load all .js files from ./platforms/
 const platformsDir = path.join(__dirname, 'platforms');
 if (fs.existsSync(platformsDir)) {
-  for (const file of fs.readdirSync(platformsDir).filter(f => f.endsWith('.js'))) {
+  for (const file of fs.readdirSync(platformsDir).filter(f => f.endsWith('.js') && !f.startsWith('_'))) {
     const mod = require(path.join(platformsDir, file));
     if (mod.meta?.id) integrations.set(mod.meta.id, mod);
   }
