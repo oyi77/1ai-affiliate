@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Palette, Globe, ImageIcon, Save, Loader2, CheckCircle2, Code2, Eye } from 'lucide-react';
-import api from '../lib/api';
+import { Palette, Globe, ImageIcon, Save, Loader2, CheckCircle2, Eye } from 'lucide-react';
 
 const defaultConfig = {
   brand_name: '',
@@ -208,7 +207,7 @@ export function WhiteLabel() {
               {/* Footer preview */}
               <div className="bg-slate-950 px-3 py-2 text-xs text-slate-500 border-t border-white/5">
                 {form.footer_html ? (
-                  <div dangerouslySetInnerHTML={{ __html: form.footer_html }} />
+                  <div className="whitespace-pre-wrap">{form.footer_html.replace(/<[^>]*>/g, '')}</div>
                 ) : (
                   <span>Footer preview</span>
                 )}

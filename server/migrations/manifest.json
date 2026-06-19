@@ -12,6 +12,7 @@
     "015_adtech_worldclass.sql",
     "023_bemob_entity_model.sql",
     "024_automation_rules.sql",
+    "021_blocker_schema_fixes.sql",
     "025_schema_alignment_fixes.sql",
     "026_traffic_rules.sql",
     "026_webhooks_and_capi.sql",

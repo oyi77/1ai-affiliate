@@ -96,8 +96,30 @@ function toCSV(data) {
 }
 
 async function sendExportEmail(to, subject, body, format) {
-  // ponytail: log-only until SMTP is configured. Add nodemailer when needed.
-  console.log(`[ScheduledExport] Would email ${to}: ${subject} (${format}, ${body.length} bytes)`);
+  // ponytail: optional nodemailer — only sends if SMTP_HOST is configured
+  if (!process.env.SMTP_HOST) {
+    console.log(`[ScheduledExport] No SMTP configured. Would email ${to}: ${subject} (${format}, ${body.length} bytes)`);
+    return;
+  }
+  try {
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+    });
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'noreply@berkahkarya.org',
+      to,
+      subject: `📊 ${subject}`,
+      text: `Scheduled report export attached.\n\nFormat: ${format}\nSize: ${body.length} bytes`,
+      attachments: [{ filename: `report.${format}`, content: body, contentType: format === 'csv' ? 'text/csv' : 'application/json' }],
+    });
+    console.log(`[ScheduledExport] Sent ${subject} to ${to}`);
+  } catch (err) {
+    console.error(`[ScheduledExport] Email failed: ${err.message}`);
+  }
 }
 
 module.exports = { runScheduledExports };

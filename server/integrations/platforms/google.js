@@ -44,6 +44,10 @@ async function fetchStats(pool, trafficSourceId, config, dateFrom, dateTo) {
   const now = Math.floor(Date.now() / 1000);
   const errors = [];
 
+  // Validate date format to prevent GAQL injection
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom) || !/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) {
+    throw new Error('Invalid date format. Use YYYY-MM-DD.');
+  }
   const query = `SELECT campaign.id, campaign.name, metrics.impressions, metrics.clicks, metrics.cost_micros
     FROM campaign WHERE segments.date BETWEEN '${dateFrom}' AND '${dateTo}' AND campaign.status != 'REMOVED'`;
 

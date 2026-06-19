@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Modal } from '../components/ui/Modal';
-import { Key, Plus, Trash2, Copy, Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { Key, Plus, Trash2, Copy, Loader2, CheckCircle2 } from 'lucide-react';
 import api from '../lib/api';
 
 const SCOPE_OPTIONS = [

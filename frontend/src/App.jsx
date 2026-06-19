@@ -111,7 +111,7 @@ function App() {
             <Route path="/laporan-pembayaran" element={<LaporanPembayaran />} />
             <Route path="/saldo-budget" element={<SaldoBudget />} />
             <Route path="/traffic-rules" element={<TrafficRules />} />
-            <Route path="/campaign-compare" element={<CampaignCompare />} />
+            <Route path="/conversion-log" element={<ConversionLog />} />
             <Route path="/report-builder" element={<ReportBuilder />} />
             <Route path="/conversion-statuses" element={<ConversionStatuses />} />
             <Route path="/attribution-view" element={<AttributionView />} />
