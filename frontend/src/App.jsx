@@ -56,6 +56,7 @@ const WhiteLabel = lazy(() => import('./pages/WhiteLabel.jsx').then(m => ({ defa
 const ApiKeys = lazy(() => import('./pages/ApiKeys.jsx').then(m => ({ default: m.ApiKeys })).catch(() => fallback));
 const ABTests = lazy(() => import('./pages/ABTests.jsx').then(m => ({ default: m.ABTests })).catch(() => fallback));
 const ScheduledExports = lazy(() => import('./pages/ScheduledExports.jsx').then(m => ({ default: m.ScheduledExports })).catch(() => fallback));
+const RealtimeDashboard = lazy(() => import('./pages/RealtimeDashboard.jsx').then(m => ({ default: m.RealtimeDashboard })).catch(() => fallback));
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -117,6 +118,7 @@ function App() {
             <Route path="/attribution-view" element={<AttributionView />} />
             <Route path="/white-label" element={<WhiteLabel />} />
             <Route path="/api-keys" element={<ApiKeys />} />
+            <Route path="/realtime" element={<RealtimeDashboard />} />
             <Route path="/ab-tests" element={<ABTests />} />
             <Route path="/scheduled-exports" element={<ScheduledExports />} />
             <Route path="*" element={<Dashboard />} />
