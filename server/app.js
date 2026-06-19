@@ -95,6 +95,7 @@ app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
 app.use('/api', require('./routes/postback'));
 app.use('/api/templates', require('./routes/templates'));
+app.use('/api/enterprise', require('./routes/enterprise'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/admin/stats', require('./routes/statsSSE'));
 app.use('/api/poster', require('./routes/poster'));
@@ -188,6 +189,11 @@ if (require.main === module) {
   cron.schedule('*/15 * * * *', () => {
     const { evaluateCampaignRules } = require('./services/campaignAutoRules');
     evaluateCampaignRules().catch(err => logger.error({ err }, '[cron] Campaign auto-rules failed'));
+  });
+  // Scheduled report exports — daily at 07:00 UTC
+  cron.schedule('0 7 * * *', () => {
+    const { runScheduledExports } = require('./services/scheduledExportService');
+    runScheduledExports().catch(err => logger.error({ err }, '[cron] Scheduled exports failed'));
   });
   const server = app.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);

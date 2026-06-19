@@ -316,6 +316,16 @@ async function evaluateClick(pool, params) {
     }
   }
 
+  // 10. ML-style behavioral analysis
+  try {
+    const { analyzeBehavior } = require('./mlFraudService');
+    const mlResult = await analyzeBehavior(ip, { country_code: params.country_code, device_type: params.device_type });
+    if (mlResult.score > 0) {
+      matched.push({ name: 'behavioral_analysis', score: mlResult.score, reason: mlResult.signals.map(s => s.detail).join('; ') });
+      totalScore += mlResult.score;
+    }
+  } catch { /* mlFraudService not available — skip */ }
+
   // Clamp score to 0–100
   const finalScore = Math.min(100, Math.max(0, totalScore));
 

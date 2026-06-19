@@ -18,6 +18,8 @@
     "027_capi_gclid_eventid.sql",
     "027b_seed_fraud_rules.sql",
     "028_gdpr_consent.sql",
-    "029_exchange_rates_platform.sql"
+    "029_exchange_rates_platform.sql",
+    "030_p1_gaps.sql",
+    "030b_seed_postback_templates.sql"
   ]
 }

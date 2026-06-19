@@ -52,6 +52,10 @@ const Webhooks = lazy(() => import('./pages/Webhooks.jsx').then(m => ({ default:
 const ReportBuilder = lazy(() => import('./pages/ReportBuilder.jsx').then(m => ({ default: m.ReportBuilder })).catch(() => fallback));
 const ConversionStatuses = lazy(() => import('./pages/ConversionStatuses.jsx').then(m => ({ default: m.ConversionStatuses })).catch(() => fallback));
 const AttributionView = lazy(() => import('./pages/AttributionView.jsx').then(m => ({ default: m.AttributionView })).catch(() => fallback));
+const WhiteLabel = lazy(() => import('./pages/WhiteLabel.jsx').then(m => ({ default: m.WhiteLabel })).catch(() => fallback));
+const ApiKeys = lazy(() => import('./pages/ApiKeys.jsx').then(m => ({ default: m.ApiKeys })).catch(() => fallback));
+const ABTests = lazy(() => import('./pages/ABTests.jsx').then(m => ({ default: m.ABTests })).catch(() => fallback));
+const ScheduledExports = lazy(() => import('./pages/ScheduledExports.jsx').then(m => ({ default: m.ScheduledExports })).catch(() => fallback));
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -111,6 +115,10 @@ function App() {
             <Route path="/report-builder" element={<ReportBuilder />} />
             <Route path="/conversion-statuses" element={<ConversionStatuses />} />
             <Route path="/attribution-view" element={<AttributionView />} />
+            <Route path="/white-label" element={<WhiteLabel />} />
+            <Route path="/api-keys" element={<ApiKeys />} />
+            <Route path="/ab-tests" element={<ABTests />} />
+            <Route path="/scheduled-exports" element={<ScheduledExports />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
           </ErrorBoundary>
