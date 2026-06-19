@@ -11,7 +11,7 @@ AUTH::require_user();?>
 			<option value="">---</option>
 				<?php
 					$ppc_network_sql = "SELECT * FROM `pixel_types`";
-					$ppc_network_result = _mysqli_query($ppc_network_sql); //($ppc_network_sql);
+					$ppc_network_result = $conn->query($ppc_network_sql); //($ppc_network_sql);
 					while ($ppc_network_row = $ppc_network_result->fetch_array(MYSQLI_ASSOC)) {
 
 						$html['pixel_type'] = htmlentities((string)($ppc_network_row['pixel_type'] ?? ''), ENT_QUOTES, 'UTF-8');

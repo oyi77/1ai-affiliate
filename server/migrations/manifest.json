@@ -1,8 +1,15 @@
 {
   "_comment": "Curated execution order for Node migrations. Baseline PHP-era schema is assumed to already exist in the target database; this manifest lists only migrations managed by the Node runner.",
   "migrations": [
+    "000-postback-schema-columns.sql",
+    "001-postback-dedup.sql",
     "011_smartlink_domains.sql",
+    "2026_06_10_add_pipeline_jobs.sql",
+    "2026_06_10_add_promo_queue.sql",
     "2026_07_01_add_promo_queue_smartlink.sql",
-    "015_adtech_worldclass.sql"
+    "2026_07_01_add_deep_link_pages.sql",
+    "2026_07_02_postback_consolidated.sql",
+    "015_adtech_worldclass.sql",
+    "023_bemob_entity_model.sql"
   ]
 }

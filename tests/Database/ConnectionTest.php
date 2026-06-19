@@ -300,6 +300,31 @@ final class ConnectionTest extends TestCase
         $conn->bind($stmt, '', [1]);
     }
 
+    public function testBindMultipleValuesByReference(): void
+    {
+        $stmt = new BindCapturingStmt();
+
+        $conn = new Connection($this->createFakeMysqli());
+        $conn->bind($stmt, 'isi', [42, 'hello', null]);
+
+        $this->assertSame('isi', $stmt->capturedTypes);
+        $this->assertSame(42, $stmt->capturedValues[0]);
+        $this->assertSame('hello', $stmt->capturedValues[1]);
+        $this->assertNull($stmt->capturedValues[2]);
+    }
+
+    public function testBindReindexesNonContiguousValues(): void
+    {
+        $stmt = new BindCapturingStmt();
+
+        $conn = new Connection($this->createFakeMysqli());
+        $conn->bind($stmt, 'ii', [0 => 1, 2 => 3]);
+
+        $this->assertSame('ii', $stmt->capturedTypes);
+        $this->assertSame(1, $stmt->capturedValues[0]);
+        $this->assertSame(3, $stmt->capturedValues[1]);
+    }
+
     public function testBindNullableIntAsI(): void
     {
         $stmt = new BindCapturingStmt();

@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	if (empty($error) && $user_row) {
 		AUTH::delete_old_auth_hash();
 		$ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '0.0.0.0';
-		$ip_id = (int) INDEXES::get_ip_id($ip);
+	$ip_id = (int) get_ip_id($ip);
 		$update_stmt = $db->prepare('UPDATE users SET user_last_login_ip_id = ? WHERE user_id = ?');
 		if ($update_stmt) {
 			$user_id = (int) $user_row['user_id'];

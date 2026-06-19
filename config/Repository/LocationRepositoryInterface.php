@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OneAIAffiliate\Repository;
 
+use OneAIAffiliate\Repository\IpLookupInput;
+
 interface LocationRepositoryInterface
 {
     public function findOrCreateCountry(string $name, string $code): int;
@@ -14,7 +16,7 @@ interface LocationRepositoryInterface
 
     public function findOrCreateIsp(string $name): int;
 
-    public function findOrCreateIp(string $address): int;
+    public function findOrCreateIp(string $address, ?IpLookupInput $geo = null): int;
 
     public function findOrCreateSiteDomain(string $url): int;
 

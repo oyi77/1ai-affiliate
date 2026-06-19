@@ -3,6 +3,7 @@
 class User
 {
     private static $db;
+    private static \OneAIAffiliate\Database\Connection $conn;
     private $userRoles; // Added property definition
 
     public function __construct($user_id)
@@ -10,6 +11,7 @@ class User
         try {
             $database = DB::getInstance();
             self::$db = $database->getConnection();
+            self::$conn = new \OneAIAffiliate\Database\Connection(self::$db);
         } catch (Exception) {
             self::$db = false;
             return; // Exit constructor if DB connection fails
@@ -26,9 +28,9 @@ class User
         $this->userRoles = [];
 
         try {
-            $mysql['user_id'] = self::$db->real_escape_string((string) $user_id);
+            $mysql['user_id'] = self::$conn->escape((string) $user_id);
             $sql = "SELECT user_id FROM users WHERE user_id = '" . $mysql['user_id'] . "'";
-            $results = self::$db->query($sql);
+            $results = self::$conn->query($sql);
             if ($results && $results->num_rows) {
                 $row = $results->fetch_assoc();
                 $this->loadRoles($row['user_id']);
@@ -46,9 +48,9 @@ class User
             return; // Skip if database connection failed or is not a mysqli object
         }
 
-        $mysql['user_id'] = self::$db->real_escape_string((string) $user_id);
+        $mysql['user_id'] = self::$conn->escape((string) $user_id);
         $sql = "SELECT 2ur.role_id, 2r.role_name FROM user_role AS 2ur INNER JOIN roles AS 2r ON 2ur.role_id = 2r.role_id WHERE 2ur.user_id = '" . $mysql['user_id'] . "'";
-        $results = self::$db->query($sql);
+        $results = self::$conn->query($sql);
 
         if ($results && $results->num_rows > 0) {
             while ($row = $results->fetch_assoc()) {

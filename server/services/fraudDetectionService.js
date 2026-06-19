@@ -116,20 +116,18 @@ function checkBotUserAgent(userAgent) {
  */
 async function checkBlacklist(ip, userAgent) {
     const [blacklisted] = await db.query(
-        `SELECT type, value, severity, reason
+        `SELECT ip_address, reason
          FROM 1ai_fraud_blacklist
-         WHERE (type = 'ip' AND value = ?)
-            OR (type = 'ua' AND value = ?)
-            OR (type = 'ip_range' AND ? LIKE value)
-         LIMIT 5`,
-        [ip, userAgent, ip]
+         WHERE ip_address = ?
+         LIMIT 1`,
+        [ip]
     );
 
     if (blacklisted.length > 0) {
         const entry = blacklisted[0];
         return {
             blocked: true,
-            reason: `Blacklisted ${entry.type}: "${entry.value}" — ${entry.reason || 'No reason provided'} (severity: ${entry.severity || 'medium'})`
+            reason: `Blacklisted IP "${entry.ip_address}" — ${entry.reason || 'No reason provided'}`
         };
     }
 
@@ -222,60 +220,44 @@ async function recordClickVelocity(ip, slug, offer_id, affiliate_id, user_agent,
  * @returns {Promise<Object>} created blacklist entry
  */
 async function addToBlacklist(type, value, reason, severity, auto_detected) {
-    const validTypes = ['ip', 'ua', 'ip_range'];
-    const validSeverities = ['low', 'medium', 'high', 'critical'];
+    // Accept old API for compatibility but map to actual schema (IP-only)
+    const ip = (type === 'ip' || type === 'ip_range') ? value : null;
 
-    if (!validTypes.includes(type)) {
-        throw new Error(`Invalid blacklist type: ${type}. Must be one of: ${validTypes.join(', ')}`);
-    }
-
-    if (!value || value.trim() === '') {
-        throw new Error('Blacklist value is required');
-    }
-
-    if (!validSeverities.includes(severity)) {
-        severity = 'medium';
+    if (!ip || ip.trim() === '') {
+        throw new Error('Blacklist value (IP) is required');
     }
 
     // Check if already blacklisted
     const [existing] = await db.query(
-        `SELECT id FROM 1ai_fraud_blacklist WHERE type = ? AND value = ?`,
-        [type, value]
+        `SELECT id FROM 1ai_fraud_blacklist WHERE ip_address = ?`,
+        [ip]
     );
 
     if (existing.length > 0) {
-        // Update severity and reason
         await db.query(
             `UPDATE 1ai_fraud_blacklist
-             SET severity = ?, reason = ?, auto_detected = ?, updated_at = NOW(), blocked_count = blocked_count + 1
+             SET reason = ?, updated_at = CURRENT_TIMESTAMP()
              WHERE id = ?`,
-            [severity, reason || 'Auto-detected', auto_detected ? 1 : 0, existing[0].id]
+            [reason || 'Auto-detected', existing[0].id]
         );
         return {
             id: existing[0].id,
-            type,
-            value,
-            severity,
+            ip_address: ip,
             reason: reason || 'Auto-detected',
-            auto_detected,
             updated: true
         };
     }
 
     const [result] = await db.query(
-        `INSERT INTO 1ai_fraud_blacklist
-         (type, value, reason, severity, auto_detected, blocked_count, created_at)
-         VALUES (?, ?, ?, ?, ?, 1, NOW())`,
-        [type, value, reason || null, severity, auto_detected ? 1 : 0]
+        `INSERT INTO 1ai_fraud_blacklist (ip_address, reason, created_by, created_at)
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP())`,
+        [ip, reason || null, 1] // created_by=1 (admin)
     );
 
     return {
         id: result.insertId,
-        type,
-        value,
-        severity,
+        ip_address: ip,
         reason: reason || null,
-        auto_detected,
         updated: false
     };
 }
@@ -373,28 +355,21 @@ function checkNegativeMargin(network_payout, payout) {
     };
 }
 
-/**
- * Get blacklist entries with optional filters
- * @param {Object} filters
- * @param {string} [filters.type]
- * @param {string} [filters.severity]
- * @param {number} [filters.limit]
- * @returns {Promise<Array>}
- */
+
 async function getBlacklist(filters = {}) {
-    let sql = 'SELECT * FROM 1ai_fraud_blacklist WHERE 1=1';
+    let sql = 'SELECT id, ip_address, reason, created_by, expires_at, created_at, updated_at FROM 1ai_fraud_blacklist WHERE 1=1';
     const params = [];
 
-    if (filters.type) {
-        sql += ' AND type = ?';
-        params.push(filters.type);
+    if (filters.ip) {
+        sql += ' AND ip_address LIKE ?';
+        params.push(`%${filters.ip}%`);
     }
-    if (filters.severity) {
-        sql += ' AND severity = ?';
-        params.push(filters.severity);
+    if (filters.reason) {
+        sql += ' AND reason LIKE ?';
+        params.push(`%${filters.reason}%`);
     }
 
-    sql += ' ORDER BY updated_at DESC';
+    sql += ' ORDER BY created_at DESC';
     const limit = filters.limit || 100;
     sql += ' LIMIT ?';
     params.push(limit);
@@ -402,7 +377,6 @@ async function getBlacklist(filters = {}) {
     const [rows] = await db.query(sql, params);
     return rows;
 }
-
 /**
  * Remove an entry from the blacklist
  * @param {number} id

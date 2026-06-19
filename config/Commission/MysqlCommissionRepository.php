@@ -91,7 +91,7 @@ final class MysqlCommissionRepository
 
     // ─── Payout Batch Operations ───
 
-    public function createBatch(string $batchRef, array $affiliateIds, string $paymentMethod = null): int
+    public function createBatch(string $batchRef, array $affiliateIds, ?string $paymentMethod = null): int
     {
         $count = count($affiliateIds);
         $now = time();
@@ -109,7 +109,7 @@ final class MysqlCommissionRepository
         $row = $this->conn->fetchOne($totalStmt);
         $totalAmount = (float) ($row['total'] ?? 0);
 
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO 1ai_payout_batches
              (batch_ref, status, total_amount, affiliate_count, payment_method, created_at)
              VALUES (?, \'draft\', ?, ?, ?, ?)'
@@ -118,6 +118,7 @@ final class MysqlCommissionRepository
         $batchId = $this->conn->executeInsert($stmt);
 
         foreach ($affiliateIds as $affiliateId) {
+            $balanceStmt = $this->conn->prepareRead(
             'SELECT balance_after FROM 1ai_commission_entries
              WHERE affiliate_id = ? ORDER BY id DESC LIMIT 1'
             );
@@ -125,11 +126,12 @@ final class MysqlCommissionRepository
             $balanceRow = $this->conn->fetchOne($balanceStmt);
             $amount = (float) ($balanceRow['balance_after'] ?? 0);
 
+            $itemStmt = $this->conn->prepareWrite(
             'INSERT INTO 1ai_payout_items (batch_id, affiliate_id, amount, earnings_count, status, created_at)
                  VALUES (?, ?, ?, 0, \'pending\', ?)'
             );
             $this->conn->bind($itemStmt, 'iidi', [$batchId, $affiliateId, $amount, $now]);
-            $this->conn->executeChecked($itemStmt, 'Payout item insert failed');
+            $this->conn->executeInsert($itemStmt);
         }
 
         return $batchId;

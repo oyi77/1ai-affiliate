@@ -32,9 +32,7 @@ final class ConnectionFactory
             throw new \RuntimeException('Unable to obtain write database connection.');
         }
 
-        $read = method_exists($database, 'getConnectionro')
-            ? $database->getConnectionro()
-            : null;
+        $read = $database->getConnectionro();
 
         if ($read !== null && !$read instanceof \mysqli) {
             $read = null;

@@ -53,4 +53,35 @@ final class MysqlTrackerRepository implements TrackerRepositoryInterface
 
         return $this->conn->fetchOne($stmt);
     }
+
+    public function findById(int $trackerId, int $userId): ?array
+    {
+        $sql = 'SELECT tracker_id, tracker_id_public
+                FROM trackers
+                WHERE tracker_id = ? AND user_id = ? LIMIT 1';
+
+        $stmt = $this->conn->prepareRead($sql);
+        $this->conn->bind($stmt, 'ii', [$trackerId, $userId]);
+
+        return $this->conn->fetchOne($stmt);
+    }
+
+    public function findTrackingDomain(int $userId): ?string
+    {
+        $sql = 'SELECT user_tracking_domain FROM users_pref WHERE user_id = ? LIMIT 1';
+        $stmt = $this->conn->prepareRead($sql);
+        $this->conn->bind($stmt, 'i', [$userId]);
+        $row = $this->conn->fetchOne($stmt);
+
+        if ($row === null || !isset($row['user_tracking_domain'])) {
+            return null;
+        }
+
+        $domain = $row['user_tracking_domain'];
+        if (!is_string($domain) || $domain === '') {
+            return null;
+        }
+
+        return $domain;
+    }
 }

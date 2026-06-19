@@ -11,10 +11,10 @@ try {
 
     $snippet = "";
     $start = isset($_GET['s']) ? (int)$_GET['s'] : time() - 3600;
-    //$end =$_GET['e'];
+    $userId = isset($_GET['u']) ? (int)$_GET['u'] : 1;
 
     $de = new DataEngine();
-    $de->getSummary($start, $start + 3599, $snippet, 1, true);
+    $de->getSummary($start, $start + 3599, $snippet, $userId, true);
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
     error_log("DEJ Error: " . $e->getMessage());

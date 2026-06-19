@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OneAIAffiliate\Repository\InMemory;
 
+use OneAIAffiliate\Repository\IpLookupInput;
 use OneAIAffiliate\Repository\LocationRepositoryInterface;
 
 final class InMemoryLocationRepository implements LocationRepositoryInterface
@@ -48,7 +49,7 @@ final class InMemoryLocationRepository implements LocationRepositoryInterface
         return $this->isps[$name] ??= $this->nextId++;
     }
 
-    public function findOrCreateIp(string $address): int
+    public function findOrCreateIp(string $address, ?IpLookupInput $geo = null): int
     {
         if ($address === '') {
             return 0;

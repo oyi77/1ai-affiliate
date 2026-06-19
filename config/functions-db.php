@@ -33,7 +33,9 @@ if (!function_exists('memcache_set')) {
 if (!function_exists('query')) {
     function query($sql)
     {
-        return _mysqli_query($sql);
+        global $db;
+        $conn = new \OneAIAffiliate\Database\Connection($db);
+        return $conn->query($sql);
     }
 }
 
@@ -73,11 +75,13 @@ if (!function_exists('foreach_memcache_mysql_fetch_assoc')) {
 if (!function_exists('delay_sql')) {
     function delay_sql($sql, $delay = 0)
     {
+    global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         if ($delay > 0) {
             sleep($delay);
         }
 
-        return _mysqli_query($sql);
+        return $conn->query($sql);
     }
 }
 
@@ -99,6 +103,7 @@ if (!function_exists('user_cache_time')) {
 if (!function_exists('get_user_data_feedback')) {
     function get_user_data_feedback($user_id)
     {
+        global $db;
         $cache_key = 'user_data_feedback_' . $user_id;
         $data = memcache_get($cache_key);
         if ($data) {
@@ -106,8 +111,9 @@ if (!function_exists('get_user_data_feedback')) {
         }
 
         try {
+            $conn = new \OneAIAffiliate\Database\Connection($db);
             $sql = "SELECT * FROM user_data_feedback WHERE user_id = " . intval($user_id);
-            $result = _mysqli_query($sql);
+            $result = $conn->query($sql);
             $data = foreach_memcache_mysql_fetch_assoc($result);
 
             if ($data) {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 include_once(substr(__DIR__, 0, -19) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(substr(__DIR__, 0, -19) . '/config/class-dataengine-slim.php');
 
 AUTH::require_user();
@@ -15,7 +16,7 @@ if (!$userObj->hasPermission("access_to_update_section") || !$userObj->hasPermis
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 
 	$subids = $_POST['subids'] ?? '';
 	$subids = trim((string) $subids);
@@ -23,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	$subids = str_replace("\n", '', $subids);
 
 	foreach ($subids as $click_id) {
-		$mysql['click_id'] = $db->real_escape_string($click_id);
+		$mysql['click_id'] = $conn->escape($click_id);
 
 		$click_sql = "
 			SELECT 2c.click_id 
@@ -33,12 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				2c.click_id ='" . $mysql['click_id'] . "'
 				AND 2c.user_id='" . $mysql['user_id'] . "'  
 		";
-		$click_result = $db->query($click_sql) or record_mysql_error($click_sql);
+		$click_result = $conn->query($click_sql) or record_mysql_error($click_sql);
 		$click_row = $click_result->fetch_assoc();
 
 		// Check if click_row exists and click_id is not null before processing
 		if ($click_row && isset($click_row['click_id']) && $click_row['click_id'] !== null) {
-			$mysql['click_id'] = $db->real_escape_string((string)$click_row['click_id']);
+			$mysql['click_id'] = $conn->escape((string)$click_row['click_id']);
 		} else {
 			// Skip this iteration if no valid click found
 			continue;
@@ -54,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				AND user_id='" . $mysql['user_id'] . "'
 		";
 		try {
-			$update_result = $db->query($update_sql);
+			$update_result = $conn->query($update_sql);
 		} catch (Exception $e) {
 			error_log("Database query failed: " . $e->getMessage());
 			$success = false;
@@ -70,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				click_id='" . $mysql['click_id'] . "'
 				AND user_id='" . $mysql['user_id'] . "'
 		";
-		$update_result = $db->query($update_sql) or die($db->error);
+		$update_result = $conn->query($update_sql) or die($conn->writeConnection()->error);
 
 		$de = new DataEngine();
 		$de->setDirtyHour($mysql['click_id']);

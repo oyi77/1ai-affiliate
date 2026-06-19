@@ -4,6 +4,7 @@ declare(strict_types=1);
 use OneAIAffiliate\Redirect\RedirectHelper;
 
 require_once substr(__DIR__, 0, -21) . '/config/connect2.php';
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 require_once substr(__DIR__, 0, -21) . '/config/class-dataengine-slim.php';
 
 // Validate landing page id
@@ -12,11 +13,11 @@ if ($landingId === null) {
     RedirectHelper::redirect('/404.php');
 }
 
-$mysql['landing_page_id_public'] = $db->real_escape_string((string)$landingId);
+$mysql['landing_page_id_public'] = $conn->escape((string)$landingId);
 
 $varsParam = RedirectHelper::getStringParam('202vars');
 if ($varsParam !== null) {
-    $mysql['202vars'] = base64_decode((string) $db->real_escape_string($varsParam));
+    $mysql['202vars'] = base64_decode((string) $conn->escape($varsParam));
 }
 
 $tracker_sql = "SELECT  aff_campaign_name,
@@ -38,7 +39,7 @@ $html['aff_campaign_name'] = htmlentities((string)($tracker_row['aff_campaign_na
 $redirect_site_url = rotateTrackerUrl($db, $tracker_row);
 
 // get the click id
-$mysql['click_id']=$db->real_escape_string((string)($_COOKIE['tracking1aisubid'] ?? ''));
+$mysql['click_id']=$conn->escape((string)($_COOKIE['tracking1aisubid'] ?? ''));
 
 $redirect_site_url = replaceTrackerPlaceholders($db, $redirect_site_url,$mysql['click_id']);
 

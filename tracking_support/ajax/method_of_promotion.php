@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 include_once(substr(__DIR__, 0, -17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 //switch method of promotion based on if users is on a page with the refine box or not
-if (isset($_POST['page']) && $db->real_escape_string(trim((string) $_POST['page'])) == 'refine')
+if (isset($_POST['page']) && $conn->escape(trim((string) $_POST['page'])) == 'refine')
 	$method_of_promotion = "landingpages";
 else
 	$method_of_promotion = "landingpage";

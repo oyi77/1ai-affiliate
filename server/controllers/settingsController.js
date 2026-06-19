@@ -246,6 +246,40 @@ async function updateIntegration(req, res) {
   }
 }
 
+/**
+ * Get white-label config for current user.
+ */
+async function getWhiteLabel(req, res) {
+  const userId = req.user.id;
+  const [rows] = await pool.query('SELECT * FROM 1ai_white_label WHERE user_id = ?', [userId]);
+  const config = rows[0] || {
+    brand_name: '',
+    logo_url: '',
+    primary_color: '#6366f1',
+    custom_domain: '',
+    hide_branding: 0,
+  };
+  res.json({ data: config });
+}
+
+/**
+ * Save white-label config (upsert).
+ */
+async function saveWhiteLabel(req, res) {
+  const userId = req.user.id;
+  const { brand_name, logo_url, primary_color, custom_domain, hide_branding } = req.body || {};
+  const now = Math.floor(Date.now() / 1000);
+  await pool.query(
+    `INSERT INTO 1ai_white_label (user_id, brand_name, logo_url, primary_color, custom_domain, hide_branding, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE brand_name = VALUES(brand_name), logo_url = VALUES(logo_url),
+       primary_color = VALUES(primary_color), custom_domain = VALUES(custom_domain),
+       hide_branding = VALUES(hide_branding), updated_at = VALUES(updated_at)`,
+    [userId, brand_name || null, logo_url || null, primary_color || '#6366f1', custom_domain || null, hide_branding ? 1 : 0, now, now]
+  );
+  res.json({ success: true });
+}
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -255,4 +289,6 @@ module.exports = {
   updateIntegration,
   getPostback,
   updatePostback,
+  getWhiteLabel,
+  saveWhiteLabel,
 };

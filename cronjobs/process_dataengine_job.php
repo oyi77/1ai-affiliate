@@ -5,33 +5,49 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 include_once(str_repeat("../", 1) . 'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(str_repeat("../", 1) . 'config/class-dataengine.php');
 
 set_time_limit(0);
+
+// Accept --user-id CLI argument; default to all active users.
+$cliOptions = getopt('', ['user-id::']);
+$userIdArg = isset($cliOptions['user-id']) ? (int)$cliOptions['user-id'] : null;
+
+if ($userIdArg !== null) {
+    $userIds = [$userIdArg];
+} else {
+    $userResult = $conn->queryResult("SELECT user_id FROM users ORDER BY user_id ASC");
+    $userIds = [];
+    while ($uRow = $userResult->fetch_assoc()) {
+        $userIds[] = (int)$uRow['user_id'];
+    }
+    $userResult->free();
+}
 
 try {
 
     /*
  RollingCurl code Authored by Josh Fraser (www.joshfraser.com)
- */
+*/
 
     $query = "SELECT * FROM dataengine_job WHERE processed = '0' and processing != '1'";
-    $result = $db->query($query);
+    $result = $conn->query($query);
     $row = $result->fetch_assoc();
 
     if ($result->num_rows) {
         if (! $row['processing']) {
-            $snippet = "AND 2c.user_id = " . 1;
-
-            $mysql['click_time_from'] = $db->real_escape_string((string)$row['time_from']);
-            $mysql['click_time_to'] = $db->real_escape_string((string)$row['time_to']);
+            $mysql['click_time_from'] = $conn->escape((string)$row['time_from']);
+            $mysql['click_time_to'] = $conn->escape((string)$row['time_to']);
             $sql = "UPDATE dataengine_job SET processing = '1' WHERE time_from ='" . $mysql['click_time_from'] . "' AND time_to = '" . $mysql['click_time_to'] . "'";
-            $db->query($sql);
+            $conn->query($sql);
 
             $urls = [];
-            for ($i = $mysql['click_time_from']; $i < $mysql['click_time_to']; $i += 3599) {
-                $nextval = $i + 3599;
-                $urls[] = 'http://' . getTrackingDomain() . get_absolute_url() . 'cronjobs/dej.php?s=' . $i . '&e=' . $nextval;
+            foreach ($userIds as $userId) {
+                for ($i = $mysql['click_time_from']; $i < $mysql['click_time_to']; $i += 3599) {
+                    $nextval = $i + 3599;
+                    $urls[] = 'http://' . getTrackingDomain() . get_absolute_url() . 'cronjobs/dej.php?s=' . $i . '&e=' . $nextval . '&u=' . $userId;
+                }
             }
 
 
@@ -95,7 +111,7 @@ try {
 
 
             $sql = "UPDATE dataengine_job SET processing = '0', processed = '1' WHERE time_from = '" . $mysql['click_time_from'] . "' AND time_to = '" . $mysql['click_time_to'] . "'";
-            $db->query($sql);
+            $conn->query($sql);
         }
     }
 } catch (Exception $e) {

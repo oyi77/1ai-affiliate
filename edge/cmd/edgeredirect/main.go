@@ -106,6 +106,20 @@ func main() {
 		geo:      geo,
 	}
 
+	// Load proxy IPs from Redis (or fallback to embedded list)
+	proxyCtx, proxyCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer proxyCancel()
+	proxyIPs, proxyErr := rdb.GetProxyIPs(proxyCtx)
+	if proxyErr != nil {
+		logger.Warn().Err(proxyErr).Msg("failed to load proxy IPs from Redis, using embedded list")
+		proxyIPs = builtinProxyIPs()
+	}
+	if len(proxyIPs) == 0 {
+		proxyIPs = builtinProxyIPs()
+	}
+	srv.detector.LoadProxyIPs(proxyIPs)
+	logger.Info().Int("count", len(proxyIPs)).Msg("proxy IPs loaded")
+
 	// HTTP router
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -145,8 +159,14 @@ func main() {
 
 	go func() {
 		logger.Info().Str("addr", cfg.ListenAddr).Msg("listening")
-		if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal().Err(err).Msg("http server error")
+		var serveErr error
+		if cfg.TLSCertFile != "" && cfg.TLSKeyFile != "" {
+			serveErr = httpSrv.ListenAndServeTLS(cfg.TLSCertFile, cfg.TLSKeyFile)
+		} else {
+			serveErr = httpSrv.ListenAndServe()
+		}
+		if serveErr != nil && serveErr != http.ErrServerClosed {
+			logger.Fatal().Err(serveErr).Msg("http server error")
 		}
 	}()
 
@@ -262,10 +282,12 @@ func (s *Server) handleClick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 9. Publish click event to Kafka (async, non-blocking)
-	data, err := event.Marshal()
-	if err == nil {
-		if err := s.kafka.SendClick(r.Context(), clickID, data); err != nil {
-			s.logger.Error().Err(err).Msg("failed to publish click event")
+	if s.kafka != nil {
+		data, err := event.Marshal()
+		if err == nil {
+			if err := s.kafka.SendClick(r.Context(), clickID, data); err != nil {
+				s.logger.Error().Err(err).Msg("failed to publish click event")
+			}
 		}
 	}
 
@@ -315,10 +337,12 @@ func (s *Server) handlePostback(w http.ResponseWriter, r *http.Request) {
 		IP:           realIP(r),
 	}
 
-	data, err := conv.Marshal()
-	if err == nil {
-		if err := s.kafka.SendConversion(r.Context(), conv.ConversionID, data); err != nil {
-			s.logger.Error().Err(err).Msg("failed to publish conversion event")
+	if s.kafka != nil {
+		data, err := conv.Marshal()
+		if err == nil {
+			if err := s.kafka.SendConversion(r.Context(), conv.ConversionID, data); err != nil {
+				s.logger.Error().Err(err).Msg("failed to publish conversion event")
+			}
 		}
 	}
 
@@ -387,4 +411,13 @@ func prometheusMiddleware(next http.Handler) http.Handler {
 		// TODO: record request count and latency
 		next.ServeHTTP(w, r)
 	})
+}
+
+// builtinProxyIPs returns a hardcoded list of known proxy/VPN IP addresses
+// used as fallback when Redis is unavailable.
+func builtinProxyIPs() []string {
+	return []string{
+		// Common VPN/proxy exit nodes (sample list for dev/staging)
+		"1.2.3.4", "5.6.7.8",
+	}
 }

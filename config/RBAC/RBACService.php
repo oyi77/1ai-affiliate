@@ -79,7 +79,7 @@ class RBACService
 
     private PDO $db;
     private array $cache = [];
-    private int $cacheTTL = 300; // 5 minutes
+    // cacheTTL intentionally unused: in-memory cache lives for request duration only.
 
     public function __construct(PDO $database)
     {

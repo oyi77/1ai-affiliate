@@ -12,6 +12,7 @@ function record_mysql_error($dbOrSql, $sql = null): never
     } else {
         $db = $dbOrSql;
     }
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     global $server_row;
 
@@ -24,18 +25,18 @@ function record_mysql_error($dbOrSql, $sql = null): never
     $auth = new AUTH();
     $auth->set_timezone($_SESSION['user_timezone']);
 
-    $ip_id = INDEXES::get_ip_id($_SERVER['HTTP_X_FORWARDED_FOR']);
-    $mysql['ip_id'] = $db->real_escape_string($ip_id);
+    $ip_id = get_ip_id($_SERVER['HTTP_X_FORWARDED_FOR']);
+    $mysql['ip_id'] = $conn->escape($ip_id);
 
     $site_url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-    $site_id = INDEXES::get_site_url_id($site_url);
-    $mysql['site_id'] = $db->real_escape_string($site_id);
+    $site_id = get_site_url_id($site_url);
+    $mysql['site_id'] = $conn->escape($site_id);
 
-    $mysql['user_id'] = isset($_SESSION['user_id']) ? $db->real_escape_string(strip_tags((string) $_SESSION['user_id'])) : 0;
-    $mysql['mysql_error_text'] = $db->real_escape_string($clean['mysql_error_text']);
-    $mysql['mysql_error_sql'] = $db->real_escape_string($sql);
-    $mysql['script_url'] = $db->real_escape_string(strip_tags((string) $_SERVER['SCRIPT_URL']));
-    $mysql['server_name'] = $db->real_escape_string(strip_tags((string) $_SERVER['SERVER_NAME']));
+    $mysql['user_id'] = isset($_SESSION['user_id']) ? $conn->escape(strip_tags((string) $_SESSION['user_id'])) : 0;
+    $mysql['mysql_error_text'] = $conn->escape($clean['mysql_error_text']);
+    $mysql['mysql_error_sql'] = $conn->escape($sql);
+    $mysql['script_url'] = $conn->escape(strip_tags((string) $_SERVER['SCRIPT_URL']));
+    $mysql['server_name'] = $conn->escape(strip_tags((string) $_SERVER['SERVER_NAME']));
     $mysql['mysql_error_time'] = time();
 
     $report_sql = "INSERT     INTO  mysql_errors
@@ -45,7 +46,7 @@ function record_mysql_error($dbOrSql, $sql = null): never
 										ip_id='" . $mysql['ip_id'] . "',
 										site_id='" . $mysql['site_id'] . "',
 										mysql_error_time='" . $mysql['mysql_error_time'] . "'";
-    $report_query = _mysqli_query($report_sql);
+    $report_query = $conn->query($report_sql);
 
     // report error to user and end page
 ?>
@@ -127,6 +128,7 @@ function display_calendar($page, $show_time, $show_adv, $show_bottom, $show_limi
     global $navigation;
     $database = DB::getInstance();
     $db = $database->getConnection();
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $auth = new AUTH();
     $auth->set_timezone($_SESSION['user_timezone']);
 
@@ -137,7 +139,7 @@ function display_calendar($page, $show_time, $show_adv, $show_bottom, $show_limi
 
     $userId = (int) ($_SESSION['user_id'] ?? 0);
     $user_sql = "SELECT * FROM users_pref WHERE user_id=" . $userId;
-    $user_result = _mysqli_query($user_sql);
+    $user_result = $conn->query($user_sql);
     $user_row = ($user_result instanceof mysqli_result) ? ($user_result->fetch_assoc() ?? []) : [];
 
     $html['user_pref_aff_network_id'] = htmlentities((string) ($user_row['user_pref_aff_network_id'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -191,7 +193,7 @@ function display_calendar($page, $show_time, $show_adv, $show_bottom, $show_limi
     $ssr_ppc_network_options = '';
     if (!$hide_publisher_sections) {
         $ppc_net_sql = "SELECT ppc_network_id, ppc_network_name FROM ppc_networks WHERE user_id=" . $userId . " AND ppc_network_deleted='0' ORDER BY ppc_network_name ASC";
-        $ppc_net_result = $db->query($ppc_net_sql);
+        $ppc_net_result = $conn->query($ppc_net_sql);
         if ($ppc_net_result) {
             while ($row = $ppc_net_result->fetch_assoc()) {
                 $val = htmlentities((string) ($row['ppc_network_id'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -206,7 +208,7 @@ function display_calendar($page, $show_time, $show_adv, $show_bottom, $show_limi
     $ssr_aff_network_options = '';
     if (!$hide_publisher_sections) {
         $aff_net_sql = "SELECT aff_network_id, aff_network_name FROM aff_networks WHERE user_id=" . $userId . " AND aff_network_deleted='0' ORDER BY aff_network_name ASC";
-        $aff_net_result = $db->query($aff_net_sql);
+        $aff_net_result = $conn->query($aff_net_sql);
         if ($aff_net_result) {
             while ($row = $aff_net_result->fetch_assoc()) {
                 $val = htmlentities((string) ($row['aff_network_id'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -977,9 +979,9 @@ function display_calendar($page, $show_time, $show_adv, $show_bottom, $show_limi
                 <?php
                 // for the time from, do something special select the exact date this user was registered and use that :)
                 if (isset($_SESSION['user_id'])) {
-                    $mysql['user_id'] = $db->real_escape_string((string) $_SESSION['user_id']);
+                    $mysql['user_id'] = $conn->escape((string) $_SESSION['user_id']);
                     $user_sql = "SELECT user_time_register FROM users WHERE user_id='" . $mysql['user_id'] . "'";
-                    $user_result = $db->query($user_sql) or record_mysql_error($user_sql);
+                    $user_result = $conn->query($user_sql) or record_mysql_error($user_sql);
                     $user_row = $user_result->fetch_assoc();
                     if ($user_row !== null) {
                         $time['from'] = $user_row['user_time_register'];
@@ -1043,10 +1045,11 @@ function grab_timeframe($unused = null): array
 
     $database = DB::getInstance();
     $db = $database->getConnection();
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
-    $mysql['user_id'] = isset($_SESSION['user_id']) ? $db->real_escape_string((string) $_SESSION['user_id']) : 0;
+    $mysql['user_id'] = isset($_SESSION['user_id']) ? $conn->escape((string) $_SESSION['user_id']) : 0;
     $user_sql = "SELECT user_pref_time_predefined, user_pref_time_from, user_pref_time_to FROM users_pref WHERE user_id='" . $mysql['user_id'] . "'";
-    $user_result = _mysqli_query($user_sql);; // ($user_sql);
+    $user_result = $conn->query($user_sql);; // ($user_sql);
     $user_row = ($user_result instanceof mysqli_result) ? ($user_result->fetch_assoc() ?? []) : [];
     $pref_time = $user_row['user_pref_time_predefined'] ?? '';
 
@@ -1104,9 +1107,9 @@ function grab_timeframe($unused = null): array
 
         // for the time from, do something special select the exact date this user was registered and use that :)
         if (isset($_SESSION['user_id'])) {
-            $mysql['user_id'] = $db->real_escape_string((string) $_SESSION['user_id']);
+            $mysql['user_id'] = $conn->escape((string) $_SESSION['user_id']);
             $user2_sql = "SELECT user_time_register FROM users WHERE user_id='" . $mysql['user_id'] . "'";
-            $user2_result = $db->query($user2_sql) or record_mysql_error($user2_sql);
+            $user2_result = $conn->query($user2_sql) or record_mysql_error($user2_sql);
             $user2_row = $user2_result->fetch_assoc();
             if ($user2_row !== null) {
                 $time['from'] = $user2_row['user_time_register'];
@@ -1148,15 +1151,16 @@ function getTrackingDomain(): string
     
     $database = DB::getInstance();
     $db = $database->getConnection();
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $tracking_domain_sql = "
 		SELECT
 			`user_tracking_domain`
 		FROM
 			`users_pref`
 		WHERE
-			`user_id`='" . $db->real_escape_string((string)$_SESSION['user_id']) . "'
+			`user_id`='" . $conn->escape((string)$_SESSION['user_id']) . "'
 	";
-    $tracking_domain_result = _mysqli_query($tracking_domain_sql);
+    $tracking_domain_result = $conn->query($tracking_domain_sql);
     
     if ($tracking_domain_result && $tracking_domain_row = $tracking_domain_result->fetch_assoc()) {
         if (isset($tracking_domain_row['user_tracking_domain']) && 
@@ -1187,15 +1191,17 @@ function query(
     $database = DB::getInstance();
     if ($isspy) {
         $db = $database->getConnectionro();
+        $conn = new \OneAIAffiliate\Database\Connection($db);
     } else {
         $db = $database->getConnection();
+        $conn = new \OneAIAffiliate\Database\Connection($db);
     }
 
 
     // grab user preferences
-    $mysql['user_id'] = isset($_SESSION['user_id']) ? $db->real_escape_string((string) $_SESSION['user_id']) : 0;
+    $mysql['user_id'] = isset($_SESSION['user_id']) ? $conn->escape((string) $_SESSION['user_id']) : 0;
     $user_sql = "SELECT * FROM users_pref WHERE user_id='" . $mysql['user_id'] . "'";
-    $user_result = _mysqli_query($user_sql); // ($user_sql);
+    $user_result = $conn->query($user_sql); // ($user_sql);
     $user_row = ($user_result instanceof mysqli_result) ? ($user_result->fetch_assoc() ?? []) : [];
 
     // Apply sane defaults when optional arguments are omitted
@@ -1330,7 +1336,7 @@ function query(
         $count_where = " WHERE $db_table.user_id='" . $_SESSION['user_own_id'] . "' ";
     }
     if ($user_row['user_pref_subid']) {
-        $mysql['user_landing_subid'] = $db->real_escape_string($user_row['user_pref_subid']);
+        $mysql['user_landing_subid'] = $conn->escape($user_row['user_pref_subid']);
         $click_sql .= " AND      2c.click_id='" . $mysql['user_landing_subid'] . "'";
     }
 
@@ -1354,7 +1360,7 @@ function query(
     // set advanced preferences
     if ($pref_adv == true) {
         if ($user_row['user_pref_ppc_network_id'] and ! ($user_row['user_pref_ppc_account_id'])) {
-            $mysql['user_pref_ppc_network_id'] = $db->real_escape_string($user_row['user_pref_ppc_network_id']);
+            $mysql['user_pref_ppc_network_id'] = $conn->escape($user_row['user_pref_ppc_network_id']);
             if ($user_row['user_pref_ppc_network_id'] == '16777215') {
                 $click_sql .= "  AND      2pn.ppc_network_id IS NULL";
                 $count_where .= "  AND      NOT EXISTS (SELECT 1 FROM ppc_accounts AS 2pa2 WHERE 2pa2.ppc_account_id = 2c.ppc_account_id AND 2pa2.ppc_network_id IS NOT NULL)";
@@ -1365,25 +1371,25 @@ function query(
         }
 
         if ($user_row['user_pref_ppc_account_id']) {
-            $mysql['user_pref_ppc_account_id'] = $db->real_escape_string($user_row['user_pref_ppc_account_id']);
+            $mysql['user_pref_ppc_account_id'] = $conn->escape($user_row['user_pref_ppc_account_id']);
             $click_sql .= " AND      2c.ppc_account_id='" . $mysql['user_pref_ppc_account_id'] . "'";
             $count_where .= " AND      2c.ppc_account_id='" . $mysql['user_pref_ppc_account_id'] . "'";
         }
 
         if ($user_row['user_pref_aff_network_id'] and ! $user_row['user_pref_aff_campaign_id']) {
 
-            $mysql['user_pref_aff_network_id'] = $db->real_escape_string($user_row['user_pref_aff_network_id']);
+            $mysql['user_pref_aff_network_id'] = $conn->escape($user_row['user_pref_aff_network_id']);
             $click_sql .= "  AND      2an.aff_network_id='" . $mysql['user_pref_aff_network_id'] . "'";
             $count_where .= "  AND      2c.aff_network_id='" . $mysql['user_pref_aff_network_id'] . "'";
         }
 
         if ($user_row['user_pref_aff_campaign_id']) {
-            $mysql['user_pref_aff_campaign_id'] = $db->real_escape_string($user_row['user_pref_aff_campaign_id']);
+            $mysql['user_pref_aff_campaign_id'] = $conn->escape($user_row['user_pref_aff_campaign_id']);
             $click_sql .= " AND      2c.aff_campaign_id='" . $mysql['user_pref_aff_campaign_id'] . "'";
             $count_where .= " AND      2c.aff_campaign_id='" . $mysql['user_pref_aff_campaign_id'] . "'";
         }
         if ($user_row['user_pref_text_ad_id']) {
-            $mysql['user_pref_text_ad_id'] = $db->real_escape_string($user_row['user_pref_text_ad_id']);
+            $mysql['user_pref_text_ad_id'] = $conn->escape($user_row['user_pref_text_ad_id']);
             $click_sql .= " AND      2ca.text_ad_id='" . $mysql['user_pref_text_ad_id'] . "'";
             $count_where .= " AND      2c.text_ad_id='" . $mysql['user_pref_text_ad_id'] . "'";
         }
@@ -1398,37 +1404,37 @@ function query(
         }
 
         if ($user_row['user_pref_landing_page_id']) {
-            $mysql['user_landing_page_id'] = $db->real_escape_string($user_row['user_pref_landing_page_id']);
+            $mysql['user_landing_page_id'] = $conn->escape($user_row['user_pref_landing_page_id']);
             $click_sql .= " AND      2c.landing_page_id='" . $mysql['user_landing_page_id'] . "'";
             $count_where .= " AND      2c.landing_page_id='" . $mysql['user_landing_page_id'] . "'";
         }
 
         if ($user_row['user_pref_country_id']) {
-            $mysql['user_pref_country_id'] = $db->real_escape_string($user_row['user_pref_country_id']);
+            $mysql['user_pref_country_id'] = $conn->escape($user_row['user_pref_country_id']);
             $click_sql .= " AND      2ca.country_id=" . $mysql['user_pref_country_id'];
             $count_where .= " AND      2c.country_id=" . $mysql['user_pref_country_id'];
         }
 
         if ($user_row['user_pref_region_id']) {
-            $mysql['user_pref_region_id'] = $db->real_escape_string($user_row['user_pref_region_id']);
+            $mysql['user_pref_region_id'] = $conn->escape($user_row['user_pref_region_id']);
             $click_sql .= " AND      2ca.region_id=" . $mysql['user_pref_region_id'];
             $count_where .= " AND      2c.region_id=" . $mysql['user_pref_region_id'];
         }
 
         if ($user_row['user_pref_isp_id']) {
-            $mysql['user_pref_isp_id'] = $db->real_escape_string($user_row['user_pref_isp_id']);
+            $mysql['user_pref_isp_id'] = $conn->escape($user_row['user_pref_isp_id']);
             $click_sql .= " AND      2is.isp_id=" . $mysql['user_pref_isp_id'];
             $count_where .= " AND      2c.isp_id=" . $mysql['user_pref_isp_id'];
         }
 
         if ($user_row['user_pref_referer']) {
-            $mysql['user_pref_referer'] = $db->real_escape_string($user_row['user_pref_referer']);
+            $mysql['user_pref_referer'] = $conn->escape($user_row['user_pref_referer']);
             $click_sql .= " AND 2sd.site_domain_host LIKE '%" . $mysql['user_pref_referer'] . "%'";
             $count_where .= " AND EXISTS (SELECT 1 FROM clicks_site AS 2cs2 JOIN site_urls AS 2su2 ON (2cs2.click_referer_site_url_id = 2su2.site_url_id) JOIN site_domains AS 2sd2 ON (2su2.site_domain_id = 2sd2.site_domain_id) WHERE 2cs2.click_id = 2c.click_id AND 2sd2.site_domain_host LIKE '%" . $mysql['user_pref_referer'] . "%')";
         }
 
         if ($user_row['user_pref_keyword']) {
-            $mysql['user_pref_keyword'] = $db->real_escape_string($user_row['user_pref_keyword']);
+            $mysql['user_pref_keyword'] = $conn->escape($user_row['user_pref_keyword']);
             $click_sql .= " AND 2k.keyword_id in (SELECT keyword_id from keywords where keyword LIKE CONVERT( _utf8 '%" . $mysql['user_pref_keyword'] . "%' USING utf8 )
 							COLLATE utf8_general_ci) ";
             $count_where .= " AND 2c.keyword_id IN (SELECT keyword_id FROM keywords WHERE keyword LIKE CONVERT( _utf8 '%" . $mysql['user_pref_keyword'] . "%' USING utf8 )
@@ -1436,25 +1442,25 @@ function query(
         }
 
         if ($user_row['user_pref_ip']) {
-            $mysql['user_pref_ip'] = $db->real_escape_string($user_row['user_pref_ip']);
+            $mysql['user_pref_ip'] = $conn->escape($user_row['user_pref_ip']);
             $click_sql .= " AND 2i.ip_address LIKE '%" . $mysql['user_pref_ip'] . "%'";
             $count_where .= " AND 2c.ip_id IN (SELECT ip_id FROM ips WHERE ip_address LIKE '%" . $mysql['user_pref_ip'] . "%')";
         }
 
         if ($user_row['user_pref_device_id']) {
-            $mysql['user_pref_device_id'] = $db->real_escape_string($user_row['user_pref_device_id']);
+            $mysql['user_pref_device_id'] = $conn->escape($user_row['user_pref_device_id']);
             $click_sql .= " AND      2d.device_type=" . $mysql['user_pref_device_id'];
             $count_where .= " AND      2c.device_id IN (SELECT device_id FROM device_models WHERE device_type=" . $mysql['user_pref_device_id'] . ")";
         }
 
         if ($user_row['user_pref_browser_id']) {
-            $mysql['user_pref_browser_id'] = $db->real_escape_string($user_row['user_pref_browser_id']);
+            $mysql['user_pref_browser_id'] = $conn->escape($user_row['user_pref_browser_id']);
             $click_sql .= " AND      2b.browser_id=" . $mysql['user_pref_browser_id'];
             $count_where .= " AND      2c.browser_id=" . $mysql['user_pref_browser_id'];
         }
 
         if ($user_row['user_pref_platform_id']) {
-            $mysql['user_pref_platform_id'] = $db->real_escape_string($user_row['user_pref_platform_id']);
+            $mysql['user_pref_platform_id'] = $conn->escape($user_row['user_pref_platform_id']);
             $click_sql .= " AND      2p.platform_id=" . $mysql['user_pref_platform_id'];
             $count_where .= " AND      2c.platform_id=" . $mysql['user_pref_platform_id'];
         }
@@ -1464,8 +1470,8 @@ function query(
     if ($pref_time == true) {
         $time = grab_timeframe();
 
-        $mysql['from'] = $db->real_escape_string((string)$time['from']);
-        $mysql['to'] = $db->real_escape_string((string)$time['to']);
+        $mysql['from'] = $conn->escape((string)$time['from']);
+        $mysql['to'] = $conn->escape((string)$time['to']);
         if ($mysql['from'] != '') {
             $click_sql .= " AND click_time > " . $mysql['from'] . " ";
             $count_where .= " AND click_time > " . $mysql['from'] . " ";
@@ -1527,7 +1533,7 @@ function query(
         if (isset($mysql['user_landing_subid']) && $mysql['user_landing_subid']) {
             $count_sql_to_run .= " AND 2c.click_id='" . $mysql['user_landing_subid'] . "'";
         }
-        $count_result = _mysqli_query($count_sql_to_run);
+        $count_result = $conn->query($count_sql_to_run);
         $count_row = $count_result ? $count_result->fetch_assoc() : null;
         $rows = (int)($count_row !== null ? ($count_row['count'] ?? 0) : 0);
     }
@@ -1542,7 +1548,7 @@ function query(
         $offsetValue = (is_numeric($offset) && $offset >= 0) ? (int)$offset : 0;
         if ($offsetValue > 0) {
             $limitOffset = $offsetValue * $limitValue;
-            $click_sql .= $db->real_escape_string((string)$limitOffset) . ",";
+            $click_sql .= $conn->escape((string)$limitOffset) . ",";
         }
         $click_sql .= $limitValue;
 
@@ -1935,12 +1941,13 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['country_name'] = $db->real_escape_string($country_name);
-                $mysql['country_code'] = $db->real_escape_string($country_code);
+                $mysql['country_name'] = $conn->escape($country_name);
+                $mysql['country_code'] = $conn->escape($country_code);
 
                 $country_sql = "SELECT country_id FROM locations_country WHERE country_code='" . $mysql['country_code'] . "'";
-                $country_result = _mysqli_query($country_sql);
+                $country_result = $conn->query($country_sql);
                 $country_row = $country_result->fetch_assoc();
                 if ($country_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -1951,8 +1958,8 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $country_sql = "INSERT INTO locations_country SET country_code='" . $mysql['country_code'] . "', country_name='" . $mysql['country_name'] . "'";
-                    $country_result = _mysqli_query($country_sql); // ($ip_sql);
-                    $country_id = $db->insert_id;
+                    $country_result = $conn->query($country_sql); // ($ip_sql);
+                    $country_id = $conn->writeConnection()->insert_id;
                     // add to memcached
                     $setID = setCache(md5("country-id" . $country_name . systemHash()), $country_id, $time);
                     return $country_id;
@@ -1961,12 +1968,13 @@ class INDEXES
         } else {
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['country_name'] = $db->real_escape_string($country_name);
-            $mysql['country_code'] = $db->real_escape_string($country_code);
+            $mysql['country_name'] = $conn->escape($country_name);
+            $mysql['country_code'] = $conn->escape($country_code);
 
             $country_sql = "SELECT country_id FROM locations_country WHERE country_code='" . $mysql['country_code'] . "'";
-            $country_result = _mysqli_query($country_sql);
+            $country_result = $conn->query($country_sql);
             $country_row = $country_result->fetch_assoc();
             if ($country_row) {
                 // if this country already exists, return the location_country_id for it.
@@ -1976,8 +1984,8 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new countryrow, and return the_id for this new row we found
                 $country_sql = "INSERT INTO locations_country SET country_code='" . $mysql['country_code'] . "', country_name='" . $mysql['country_name'] . "'";
-                $country_result = _mysqli_query($country_sql); // ($ip_sql);
-                $country_id = $db->insert_id;
+                $country_result = $conn->query($country_sql); // ($ip_sql);
+                $country_id = $conn->writeConnection()->insert_id;
 
                 return $country_id;
             }
@@ -2001,12 +2009,13 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['city_name'] = $db->real_escape_string($city_name);
-                $mysql['country_id'] = $db->real_escape_string($country_id);
+                $mysql['city_name'] = $conn->escape($city_name);
+                $mysql['country_id'] = $conn->escape($country_id);
 
                 $city_sql = "SELECT city_id FROM locations_city WHERE city_name='" . $mysql['city_name'] . "'";
-                $city_result = _mysqli_query($city_sql);
+                $city_result = $conn->query($city_sql);
                 $city_row = $city_result->fetch_assoc();
                 if ($city_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -2017,8 +2026,8 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $city_sql = "INSERT INTO locations_city SET city_name='" . $mysql['city_name'] . "', main_country_id='" . $mysql['country_id'] . "'";
-                    $city_result = _mysqli_query($city_sql); // ($ip_sql);
-                    $city_id = $db->insert_id;
+                    $city_result = $conn->query($city_sql); // ($ip_sql);
+                    $city_id = $conn->writeConnection()->insert_id;
                     // add to memcached
                     $setID = setCache(md5("city-id" . $city_name . $country_id . systemHash()), $city_id, $time);
                     return $city_id;
@@ -2028,12 +2037,13 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['city_name'] = $db->real_escape_string($city_name);
-            $mysql['country_id'] = $db->real_escape_string($country_id);
+            $mysql['city_name'] = $conn->escape($city_name);
+            $mysql['country_id'] = $conn->escape($country_id);
 
             $city_sql = "SELECT city_id FROM locations_city WHERE city_name='" . $mysql['city_name'] . "'";
-            $city_result = _mysqli_query($city_sql);
+            $city_result = $conn->query($city_sql);
             $city_row = $city_result->fetch_assoc();
             if ($city_row) {
                 // if this country already exists, return the location_country_id for it.
@@ -2043,8 +2053,8 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new cityrow, and return the_id for this new row we found
                 $city_sql = "INSERT INTO locations_city SET city_name='" . $mysql['city_name'] . "', main_country_id='" . $mysql['country_id'] . "'";
-                $city_result = _mysqli_query($city_sql); // ($ip_sql);
-                $city_id = $db->insert_id;
+                $city_result = $conn->query($city_sql); // ($ip_sql);
+                $city_id = $conn->writeConnection()->insert_id;
 
                 return $city_id;
             }
@@ -2068,11 +2078,12 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['isp'] = $db->real_escape_string($isp);
+                $mysql['isp'] = $conn->escape($isp);
 
                 $isp_sql = "SELECT isp_id FROM locations_isp WHERE isp_name='" . $mysql['isp'] . "'";
-                $isp_result = _mysqli_query($isp_sql);
+                $isp_result = $conn->query($isp_sql);
                 $isp_row = $isp_result->fetch_assoc();
                 if ($isp_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -2083,8 +2094,8 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $isp_sql = "INSERT INTO locations_isp SET isp_name='" . $mysql['isp'] . "'";
-                    $isp_result = _mysqli_query($isp_sql); // ($isp_sql);
-                    $isp_id = $db->insert_id;
+                    $isp_result = $conn->query($isp_sql); // ($isp_sql);
+                    $isp_id = $conn->writeConnection()->insert_id;
                     // add to memcached
                     $setID = setCache(md5("isp-id" . $isp . systemHash()), $isp_id, $time);
                     return $isp_id;
@@ -2094,11 +2105,12 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['isp'] = $db->real_escape_string($isp);
+            $mysql['isp'] = $conn->escape($isp);
 
             $isp_sql = "SELECT isp_id FROM locations_isp WHERE isp_name='" . $mysql['isp'] . "'";
-            $isp_result = _mysqli_query($isp_sql);
+            $isp_result = $conn->query($isp_sql);
             $isp_row = $isp_result->fetch_assoc();
             if ($isp_row) {
                 // if this isp already exists, return the isp_id for it.
@@ -2108,8 +2120,8 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new isp row, and return the_id for this new row we found
                 $isp_sql = "INSERT INTO locations_isp SET isp_name='" . $mysql['isp'] . "'";
-                $isp_result = _mysqli_query($isp_sql); // ($isp_sql);
-                $isp_id = $db->insert_id;
+                $isp_result = $conn->query($isp_sql); // ($isp_sql);
+                $isp_id = $conn->writeConnection()->insert_id;
 
                 return $isp_id;
             }
@@ -2120,6 +2132,7 @@ class INDEXES
     public static function get_ip_id($ip)
     {
         global $db, $memcacheWorking, $memcache, $inet6_ntoa, $inet6_aton;
+        $conn = new \OneAIAffiliate\Database\Connection($db);
 
         if (!isset($inet6_ntoa)) {
             $inet6_ntoa = '';
@@ -2141,7 +2154,7 @@ class INDEXES
 
         $ipType = $ip->type ?? (filter_var($ip->address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ? 'ipv6' : 'ipv4');
 
-        $mysql['ip_address'] = $db->real_escape_string((string) $ip->address);
+        $mysql['ip_address'] = $conn->escape((string) $ip->address);
 
         if ($inet6_ntoa === '' && $ipType === 'ipv6') {
             $mysql['ip_address'] = inet6_aton($mysql['ip_address']); //encode for db check
@@ -2162,7 +2175,7 @@ class INDEXES
                 $ip_id = $getID;
             } else {
 
-                $ip_result = _mysqli_query($ip_sql);
+                $ip_result = $conn->query($ip_sql);
                 $ip_row = $ip_result->fetch_assoc();
                 if ($ip_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -2171,20 +2184,20 @@ class INDEXES
                     $setID = setCache(md5("ip-id" . $mysql['ip_address'] . systemHash()), $ip_id, $time);
                 } else {
                     //insert ip
-                    $ip_id = INDEXES::insert_ip($db, $ip);
+                    $ip_id = get_ip_id($ip);
                     // add to memcached
                     $setID = setCache(md5("ip-id" . $mysql['ip_address'] . systemHash()), $ip_id, $time);
                 }
             }
         } else {
-            $ip_result = _mysqli_query($ip_sql);
+            $ip_result = $conn->query($ip_sql);
             $ip_row = $ip_result->fetch_assoc();
             if ($ip_row !== null && $ip_row['ip_id']) {
                 // if this ip already exists, return the ip_id for it.
                 $ip_id = $ip_row['ip_id'];
             } else {
                 //insert ip
-                $ip_id = INDEXES::insert_ip($db, $ip);
+                $ip_id = get_ip_id($ip);
             }
         }
 
@@ -2194,6 +2207,7 @@ class INDEXES
 
     public static function insert_ip($db, $ip = null)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $inet6_ntoa, $inet6_aton;
 
         if (!isset($inet6_ntoa)) {
@@ -2220,7 +2234,7 @@ class INDEXES
 
         $ipType = $ip->type ?? (filter_var($ip->address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ? 'ipv6' : 'ipv4');
 
-        $mysql['ip_address'] = $db->real_escape_string((string) $ip->address);
+        $mysql['ip_address'] = $conn->escape((string) $ip->address);
 
         if ($inet6_ntoa === '' && $ipType === 'ipv6') {
             $mysql['ip_address'] = inet6_aton($mysql['ip_address']); // encode for db check
@@ -2229,18 +2243,18 @@ class INDEXES
         if ($ipType === 'ipv6' && $inet6_aton !== '') {
             // insert the ipv6 ip address and get the ipv6_id
             $ip_sql = 'INSERT INTO ips_v6 SET ip_address=' . $inet6_aton . '("' . $mysql['ip_address'] . '")';
-            $ip_result = _mysqli_query($db, $ip_sql); // ($ip_sql);
-            $ipv6_id = $db->insert_id;
+            $ip_result = $conn->query($ip_sql); // ($ip_sql);
+            $ipv6_id = $conn->writeConnection()->insert_id;
 
             // insert the ipv6_id as the ipv4 address for referencing later on
             $ip_sql = "INSERT INTO ips SET ip_address='" . $ipv6_id . "'";
-            $ip_result = _mysqli_query($db, $ip_sql); // ($ip_sql);
-            $ip_id = $db->insert_id;
+            $ip_result = $conn->query($ip_sql); // ($ip_sql);
+            $ip_id = $conn->writeConnection()->insert_id;
             return $ip_id;
         } else {
             $ip_sql = "INSERT INTO ips SET ip_address='" . $mysql['ip_address'] . "'";
-            $ip_result = _mysqli_query($db, $ip_sql); // ($ip_sql);
-            $ip_id = $db->insert_id;
+            $ip_result = $conn->query($ip_sql); // ($ip_sql);
+            $ip_id = $conn->writeConnection()->insert_id;
             return $ip_id;
         }
     }
@@ -2267,11 +2281,12 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['site_domain_host'] = $db->real_escape_string($site_domain_host);
+                $mysql['site_domain_host'] = $conn->escape($site_domain_host);
 
                 $site_domain_sql = "SELECT site_domain_id FROM site_domains WHERE site_domain_host='" . $mysql['site_domain_host'] . "'";
-                $site_domain_result = _mysqli_query($site_domain_sql);
+                $site_domain_result = $conn->query($site_domain_sql);
                 $site_domain_row = $site_domain_result->fetch_assoc();
                 if ($site_domain_row) {
                     // if this site_domain_id already exists, return the site_domain_id for it.
@@ -2282,8 +2297,8 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $site_domain_sql = "INSERT INTO site_domains SET site_domain_host='" . $mysql['site_domain_host'] . "'";
-                    $site_domain_result = _mysqli_query($site_domain_sql); // ($site_domain_sql);
-                    $site_domain_id = $db->insert_id;
+                    $site_domain_result = $conn->query($site_domain_sql); // ($site_domain_sql);
+                    $site_domain_id = $conn->writeConnection()->insert_id;
                     // add to memcached
                     $setID = setCache(md5("domain-id" . $site_domain_host . systemHash()), $site_domain_id, $time);
                     return $site_domain_id;
@@ -2293,11 +2308,12 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['site_domain_host'] = $db->real_escape_string($site_domain_host);
+            $mysql['site_domain_host'] = $conn->escape($site_domain_host);
 
             $site_domain_sql = "SELECT site_domain_id FROM site_domains WHERE site_domain_host='" . $mysql['site_domain_host'] . "'";
-            $site_domain_result = _mysqli_query($site_domain_sql);
+            $site_domain_result = $conn->query($site_domain_sql);
             $site_domain_row = $site_domain_result->fetch_assoc();
             if ($site_domain_row) {
                 // if this site_domain_id already exists, return the site_domain_id for it.
@@ -2307,8 +2323,8 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                 $site_domain_sql = "INSERT INTO site_domains SET site_domain_host='" . $mysql['site_domain_host'] . "'";
-                $site_domain_result = _mysqli_query($site_domain_sql); // ($site_domain_sql);
-                $site_domain_id = $db->insert_id;
+                $site_domain_result = $conn->query($site_domain_sql); // ($site_domain_sql);
+                $site_domain_id = $conn->writeConnection()->insert_id;
                 return $site_domain_id;
             }
         }
@@ -2319,7 +2335,7 @@ class INDEXES
     {
         global $memcacheWorking, $memcache;
 
-        $site_domain_id = INDEXES::get_site_domain_id($site_url_address);
+        $site_domain_id = get_site_domain_id($site_url_address);
 
         if ($memcacheWorking) {
             $time = 604800; // 7 days in sec
@@ -2331,12 +2347,13 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['site_url_address'] = $db->real_escape_string($site_url_address);
-                $mysql['site_domain_id'] = $db->real_escape_string($site_domain_id);
+                $mysql['site_url_address'] = $conn->escape($site_url_address);
+                $mysql['site_domain_id'] = $conn->escape($site_domain_id);
 
                 $site_url_sql = "SELECT site_url_id FROM site_urls WHERE site_domain_id='" . $mysql['site_domain_id'] . "' and site_url_address='" . $mysql['site_url_address'] . "' limit 1";
-                $site_url_result = _mysqli_query($site_url_sql);
+                $site_url_result = $conn->query($site_url_sql);
                 $site_url_row = $site_url_result->fetch_assoc();
                 if ($site_url_row) {
                     // if this site_url_id already exists, return the site_url_id for it.
@@ -2346,8 +2363,8 @@ class INDEXES
                 } else {
 
                     $site_url_sql = "INSERT INTO site_urls SET site_domain_id='" . $mysql['site_domain_id'] . "', site_url_address='" . $mysql['site_url_address'] . "'";
-                    $site_url_result = _mysqli_query($site_url_sql); // ($site_url_sql);
-                    $site_url_id = $db->insert_id;
+                    $site_url_result = $conn->query($site_url_sql); // ($site_url_sql);
+                    $site_url_id = $conn->writeConnection()->insert_id;
                     $setID = setCache(md5("url-id" . $site_url_address . systemHash()), $site_url_id, $time);
                     return $site_url_id;
                 }
@@ -2356,12 +2373,13 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['site_url_address'] = $db->real_escape_string($site_url_address);
-            $mysql['site_domain_id'] = $db->real_escape_string($site_domain_id);
+            $mysql['site_url_address'] = $conn->escape($site_url_address);
+            $mysql['site_domain_id'] = $conn->escape($site_domain_id);
 
             $site_url_sql = "SELECT site_url_id FROM site_urls WHERE site_domain_id='" . $mysql['site_domain_id'] . "' and site_url_address='" . $mysql['site_url_address'] . "' limit 1";
-            $site_url_result = _mysqli_query($site_url_sql);
+            $site_url_result = $conn->query($site_url_sql);
             $site_url_row = $site_url_result->fetch_assoc();
             if ($site_url_row) {
                 // if this site_url_id already exists, return the site_url_id for it.
@@ -2370,8 +2388,8 @@ class INDEXES
             } else {
 
                 $site_url_sql = "INSERT INTO site_urls SET site_domain_id='" . $mysql['site_domain_id'] . "', site_url_address='" . $mysql['site_url_address'] . "'";
-                $site_url_result = _mysqli_query($site_url_sql); // ($site_url_sql);
-                $site_url_id = $db->insert_id;
+                $site_url_result = $conn->query($site_url_sql); // ($site_url_sql);
+                $site_url_id = $conn->writeConnection()->insert_id;
                 return $site_url_id;
             }
         }
@@ -2394,11 +2412,12 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['keyword'] = $db->real_escape_string($keyword);
+                $mysql['keyword'] = $conn->escape($keyword);
 
                 $keyword_sql = "SELECT keyword_id FROM keywords WHERE keyword='" . $mysql['keyword'] . "'";
-                $keyword_result = _mysqli_query($keyword_sql);
+                $keyword_result = $conn->query($keyword_sql);
                 $keyword_row = $keyword_result->fetch_assoc();
                 if ($keyword_row) {
                     // if this already exists, return the id for it
@@ -2408,8 +2427,8 @@ class INDEXES
                 } else {
 
                     $keyword_sql = "INSERT INTO keywords SET keyword='" . $mysql['keyword'] . "'";
-                    $keyword_result = _mysqli_query($keyword_sql); // ($keyword_sql);
-                    $keyword_id = $db->insert_id;
+                    $keyword_result = $conn->query($keyword_sql); // ($keyword_sql);
+                    $keyword_id = $conn->writeConnection()->insert_id;
                     $setID = setCache(md5("keyword-id" . $keyword . systemHash()), $keyword_id, 0);
                     return $keyword_id;
                 }
@@ -2417,11 +2436,12 @@ class INDEXES
         } else {
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['keyword'] = $db->real_escape_string($keyword);
+            $mysql['keyword'] = $conn->escape($keyword);
 
             $keyword_sql = "SELECT keyword_id FROM keywords WHERE keyword='" . $mysql['keyword'] . "'";
-            $keyword_result = _mysqli_query($keyword_sql);
+            $keyword_result = $conn->query($keyword_sql);
             $keyword_row = $keyword_result->fetch_assoc();
             if ($keyword_row) {
                 // if this already exists, return the id for it
@@ -2430,8 +2450,8 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $keyword_sql = "INSERT INTO keywords SET keyword='" . $mysql['keyword'] . "'";
-                $keyword_result = _mysqli_query($keyword_sql); // ($keyword_sql);
-                $keyword_id = $db->insert_id;
+                $keyword_result = $conn->query($keyword_sql); // ($keyword_sql);
+                $keyword_id = $conn->writeConnection()->insert_id;
                 return $keyword_id;
             }
         }
@@ -2454,11 +2474,12 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['c1'] = $db->real_escape_string($c1);
+                $mysql['c1'] = $conn->escape($c1);
 
                 $c1_sql = "SELECT c1_id FROM tracking_c1 WHERE c1='" . $mysql['c1'] . "'";
-                $c1_result = _mysqli_query($c1_sql);
+                $c1_result = $conn->query($c1_sql);
                 $c1_row = $c1_result->fetch_assoc();
                 if ($c1_row) {
                     // if this already exists, return the id for it
@@ -2468,8 +2489,8 @@ class INDEXES
                 } else {
 
                     $c1_sql = "INSERT INTO tracking_c1 SET c1='" . $mysql['c1'] . "'";
-                    $c1_result = _mysqli_query($c1_sql); // ($c1_sql);
-                    $c1_id = $db->insert_id;
+                    $c1_result = $conn->query($c1_sql); // ($c1_sql);
+                    $c1_id = $conn->writeConnection()->insert_id;
                     $setID = setCache(md5("c1-id" . $c1 . systemHash()), $c1_id, 0);
                     return $c1_id;
                 }
@@ -2478,11 +2499,12 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['c1'] = $db->real_escape_string($c1);
+            $mysql['c1'] = $conn->escape($c1);
 
             $c1_sql = "SELECT c1_id FROM tracking_c1 WHERE c1='" . $mysql['c1'] . "'";
-            $c1_result = _mysqli_query($c1_sql);
+            $c1_result = $conn->query($c1_sql);
             $c1_row = $c1_result->fetch_assoc();
             if ($c1_row) {
                 // if this already exists, return the id for it
@@ -2491,8 +2513,8 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c1_sql = "INSERT INTO tracking_c1 SET c1='" . $mysql['c1'] . "'";
-                $c1_result = _mysqli_query($c1_sql); // ($c1_sql);
-                $c1_id = $db->insert_id;
+                $c1_result = $conn->query($c1_sql); // ($c1_sql);
+                $c1_id = $conn->writeConnection()->insert_id;
                 return $c1_id;
             }
         }
@@ -2515,11 +2537,12 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['c2'] = $db->real_escape_string($c2);
+                $mysql['c2'] = $conn->escape($c2);
 
                 $c2_sql = "SELECT c2_id FROM tracking_c2 WHERE c2='" . $mysql['c2'] . "'";
-                $c2_result = _mysqli_query($c2_sql);
+                $c2_result = $conn->query($c2_sql);
                 $c2_row = $c2_result->fetch_assoc();
                 if ($c2_row) {
                     // if this already exists, return the id for it
@@ -2529,8 +2552,8 @@ class INDEXES
                 } else {
 
                     $c2_sql = "INSERT INTO tracking_c2 SET c2='" . $mysql['c2'] . "'";
-                    $c2_result = _mysqli_query($c2_sql); // ($c2_sql);
-                    $c2_id = $db->insert_id;
+                    $c2_result = $conn->query($c2_sql); // ($c2_sql);
+                    $c2_id = $conn->writeConnection()->insert_id;
                     $setID = setCache(md5("c2-id" . $c2 . systemHash()), $c2_id, 0);
                     return $c2_id;
                 }
@@ -2539,11 +2562,12 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['c2'] = $db->real_escape_string($c2);
+            $mysql['c2'] = $conn->escape($c2);
 
             $c2_sql = "SELECT c2_id FROM tracking_c2 WHERE c2='" . $mysql['c2'] . "'";
-            $c2_result = _mysqli_query($c2_sql);
+            $c2_result = $conn->query($c2_sql);
             $c2_row = $c2_result->fetch_assoc();
             if ($c2_row) {
                 // if this already exists, return the id for it
@@ -2552,8 +2576,8 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c2_sql = "INSERT INTO tracking_c2 SET c2='" . $mysql['c2'] . "'";
-                $c2_result = _mysqli_query($c2_sql); // ($c2_sql);
-                $c2_id = $db->insert_id;
+                $c2_result = $conn->query($c2_sql); // ($c2_sql);
+                $c2_id = $conn->writeConnection()->insert_id;
                 return $c2_id;
             }
         }
@@ -2576,11 +2600,12 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['c3'] = $db->real_escape_string($c3);
+                $mysql['c3'] = $conn->escape($c3);
 
                 $c3_sql = "SELECT c3_id FROM tracking_c3 WHERE c3='" . $mysql['c3'] . "'";
-                $c3_result = _mysqli_query($c3_sql);
+                $c3_result = $conn->query($c3_sql);
                 $c3_row = $c3_result->fetch_assoc();
                 if ($c3_row) {
                     // if this already exists, return the id for it
@@ -2590,8 +2615,8 @@ class INDEXES
                 } else {
 
                     $c3_sql = "INSERT INTO tracking_c3 SET c3='" . $mysql['c3'] . "'";
-                    $c3_result = _mysqli_query($c3_sql); // ($c3_sql);
-                    $c3_id = $db->insert_id;
+                    $c3_result = $conn->query($c3_sql); // ($c3_sql);
+                    $c3_id = $conn->writeConnection()->insert_id;
                     $setID = setCache(md5("c3-id" . $c3 . systemHash()), $c3_id, 0);
                     return $c3_id;
                 }
@@ -2600,11 +2625,12 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['c3'] = $db->real_escape_string($c3);
+            $mysql['c3'] = $conn->escape($c3);
 
             $c3_sql = "SELECT c3_id FROM tracking_c3 WHERE c3='" . $mysql['c3'] . "'";
-            $c3_result = _mysqli_query($c3_sql);
+            $c3_result = $conn->query($c3_sql);
             $c3_row = $c3_result->fetch_assoc();
             if ($c3_row) {
                 // if this already exists, return the id for it
@@ -2613,8 +2639,8 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c3_sql = "INSERT INTO tracking_c3 SET c3='" . $mysql['c3'] . "'";
-                $c3_result = _mysqli_query($c3_sql); // ($c3_sql);
-                $c3_id = $db->insert_id;
+                $c3_result = $conn->query($c3_sql); // ($c3_sql);
+                $c3_id = $conn->writeConnection()->insert_id;
                 return $c3_id;
             }
         }
@@ -2637,11 +2663,12 @@ class INDEXES
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
 
-                $mysql['c4'] = $db->real_escape_string($c4);
+                $mysql['c4'] = $conn->escape($c4);
 
                 $c4_sql = "SELECT c4_id FROM tracking_c4 WHERE c4='" . $mysql['c4'] . "'";
-                $c4_result = _mysqli_query($c4_sql);
+                $c4_result = $conn->query($c4_sql);
                 $c4_row = $c4_result->fetch_assoc();
                 if ($c4_row) {
                     // if this already exists, return the id for it
@@ -2651,8 +2678,8 @@ class INDEXES
                 } else {
 
                     $c4_sql = "INSERT INTO tracking_c4 SET c4='" . $mysql['c4'] . "'";
-                    $c4_result = _mysqli_query($c4_sql); // ($c4_sql);
-                    $c4_id = $db->insert_id;
+                    $c4_result = $conn->query($c4_sql); // ($c4_sql);
+                    $c4_id = $conn->writeConnection()->insert_id;
                     $setID = setCache(md5("c4-id" . $c4 . systemHash()), $c4_id, 0);
                     return $c4_id;
                 }
@@ -2661,11 +2688,12 @@ class INDEXES
 
             $database = DB::getInstance();
             $db = $database->getConnection();
+            $conn = new \OneAIAffiliate\Database\Connection($db);
 
-            $mysql['c4'] = $db->real_escape_string($c4);
+            $mysql['c4'] = $conn->escape($c4);
 
             $c4_sql = "SELECT c4_id FROM tracking_c4 WHERE c4='" . $mysql['c4'] . "'";
-            $c4_result = _mysqli_query($c4_sql);
+            $c4_result = $conn->query($c4_sql);
             $c4_row = $c4_result->fetch_assoc();
             if ($c4_row) {
                 // if this already exists, return the id for it
@@ -2674,8 +2702,8 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c4_sql = "INSERT INTO tracking_c4 SET c4='" . $mysql['c4'] . "'";
-                $c4_result = _mysqli_query($c4_sql); // ($c4_sql);
-                $c4_id = $db->insert_id;
+                $c4_result = $conn->query($c4_sql); // ($c4_sql);
+                $c4_id = $conn->writeConnection()->insert_id;
                 return $c4_id;
             }
         }
@@ -2690,16 +2718,17 @@ function runWeekly($user_pref) {}
 
 function memcache_mysql_fetch_assoc($sql, $allowCaching = 1, $minutes = 5)
 {
-    global $memcacheWorking, $memcache;
+    global $memcacheWorking, $memcache, $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     if ($memcacheWorking == false) {
-        $result = _mysqli_query($sql);
+        $result = $conn->query($sql);
         $row = $result->fetch_assoc();
         return $row;
     } else {
 
         if ($allowCaching == 0) {
-            $result = _mysqli_query($sql);
+            $result = $conn->query($sql);
             $row = $result->fetch_assoc();
             return $row;
         } else {
@@ -2710,7 +2739,7 @@ function memcache_mysql_fetch_assoc($sql, $allowCaching = 1, $minutes = 5)
             if ($getCache === false) {
                 // cache this data
 
-                $result = _mysqli_query($sql);
+                $result = $conn->query($sql);
                 $fetchArray = $result->fetch_assoc();
                 //$setCache = $memcache->set(md5($sql . systemHash()), serialize($fetchArray), false, 60 * $minutes);
                 setCache(md5($sql . systemHash()), serialize($fetchArray),  60 * $minutes);
@@ -2727,11 +2756,12 @@ function memcache_mysql_fetch_assoc($sql, $allowCaching = 1, $minutes = 5)
 
 function foreach_memcache_mysql_fetch_assoc($sql, $allowCaching = 1)
 {
-    global $memcacheWorking, $memcache;
+    global $memcacheWorking, $memcache, $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     if ($memcacheWorking == false) {
         $row = [];
-        $result = _mysqli_query($sql); // ($sql);
+        $result = $conn->query($sql); // ($sql);
         while ($fetch = $result->fetch_assoc()) {
             $row[] = $fetch;
         }
@@ -2740,7 +2770,7 @@ function foreach_memcache_mysql_fetch_assoc($sql, $allowCaching = 1)
 
         if ($allowCaching == 0) {
             $row = [];
-            $result = _mysqli_query($sql); // ($sql);
+            $result = $conn->query($sql); // ($sql);
             while ($fetch = $result->fetch_assoc()) {
                 $row[] = $fetch;
             }
@@ -2751,7 +2781,7 @@ function foreach_memcache_mysql_fetch_assoc($sql, $allowCaching = 1)
             if ($getCache === false) {
                 // if data is NOT cache, cache this data
                 $row = [];
-                $result = _mysqli_query($sql); // ($sql);
+                $result = $conn->query($sql); // ($sql);
                 while ($fetch = $result->fetch_assoc()) {
                     $row[] = $fetch;
                 }
@@ -2769,6 +2799,8 @@ function foreach_memcache_mysql_fetch_assoc($sql, $allowCaching = 1)
 // this function delays an SQL statement, puts iy in a mysql table, to be cronjobed out every 5 minutes
 function delay_sql($delayed_sql)
 {
+    global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     if (is_string($delayed_sql))
         $mysql['delayed_sql'] = str_replace("'", "''", $delayed_sql);
     else
@@ -2788,17 +2820,18 @@ function delay_sql($delayed_sql)
 						'" . $mysql['delayed_time'] . "'
 					);";
 
-    $delayed_result = _mysqli_query($delayed_sql); // ($delayed_sql);
+    $delayed_result = $conn->query($delayed_sql); // ($delayed_sql);
 }
 
 function user_cache_time($user_id)
 {
     $database = DB::getInstance();
     $db = $database->getConnection();
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
-    $mysql['user_id'] = $db->real_escape_string($user_id);
+    $mysql['user_id'] = $conn->escape($user_id);
     $sql = "SELECT cache_time FROM users_pref WHERE user_id='" . $mysql['user_id'] . "'";
-    $result = _mysqli_query($sql);
+    $result = $conn->query($sql);
     $row = $result->fetch_assoc();
     return $row !== null ? $row['cache_time'] : null;
 }
@@ -2807,10 +2840,11 @@ function get_user_data_feedback($user_id)
 {
     $database = DB::getInstance();
     $db = $database->getConnection();
-    $mysql['user_id'] = $db->real_escape_string((string)$user_id);
+    $conn = new \OneAIAffiliate\Database\Connection($db);
+    $mysql['user_id'] = $conn->escape((string)$user_id);
     $sql = "SELECT user_email, user_time_register, pcustomer_api_key, install_hash, user_hash, modal_status, vip_perks_status FROM users WHERE user_id='" . $mysql['user_id'] . "'";
 
-    $result = _mysqli_query($sql);
+    $result = $conn->query($sql);
     $row = $result->fetch_assoc();
 
     if ($row === null) {
@@ -3590,16 +3624,18 @@ function createId($length)
 
 function createPublisherIds(): void
 {
+    global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     if (function_exists('random_bytes')) {
         $sql = "SELECT user_id FROM users WHERE TRIM(COALESCE(`user_public_publisher_id`, '')) = ''";
         $update_query = 'UPDATE';
-        $user_result = _mysqli_query($sql);
+        $user_result = $conn->query($sql);
 
         if ($user_result) { //loop if not empty
             //loop over all empty publisher ids and set them
             while ($user_row = $user_result->fetch_assoc()) {
                 $query = "UPDATE `users` SET `user_public_publisher_id` = '" . createId(5) . "' WHERE `user_id` = '" . $user_row['user_id'] . "'";
-                _mysqli_query($query);
+                $conn->query($query);
             }
         }
     }
@@ -3609,9 +3645,10 @@ function getDashEmail(): string|bool
 {
 
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     //get the main users dash email and api key from the db
     $sql = "SELECT user_dash_email,pcustomer_api_key FROM users WHERE user_id ='" . $_SESSION['user_id'] . "'";
-    $user_result = _mysqli_query($sql);
+    $user_result = $conn->query($sql);
     $user_row = $user_result->fetch_assoc();
 
     if ($user_row === null) {
@@ -3627,9 +3664,9 @@ function getDashEmail(): string|bool
             $dashEmail = getSetDashEmail($user_row['pcustomer_api_key']);
             if ($dashEmail['code'] == 200 && $dashEmail['email'] != '') {
                 //found it save to DB and return
-                $mysql['email'] = $db->real_escape_string($dashEmail['email']);
+                $mysql['email'] = $conn->escape($dashEmail['email']);
                 $sql = "UPDATE `users` SET user_dash_email='" . $mysql['email'] . "' WHERE user_id ='" . $_SESSION['user_id'] . "'";
-                $user_result = _mysqli_query($sql);
+                $user_result = $conn->query($sql);
                 return ($mysql['email']);
             }
         }

@@ -9,6 +9,7 @@ include_once(substr(__DIR__, 0, -19) . '/config/class-dataengine-slim.php');
 
 $locationRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::location($db);
 $trackingRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::tracking($db);
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 $_GET += [
 	'lpip' => '',
@@ -35,7 +36,7 @@ $_GET += [
 ];
 
 $landing_page_id_public = $_GET['lpip'];
-$mysql['landing_page_id_public'] = $db->real_escape_string($landing_page_id_public);
+$mysql['landing_page_id_public'] = $conn->escape($landing_page_id_public);
 $tracker_sql = "SELECT  landing_pages.user_id,
 						  landing_pages.landing_page_id
 				FROM     landing_pages
@@ -47,7 +48,7 @@ if (!$tracker_row) {
 }
 
 //set the timezone to the users timezone
-$mysql['user_id'] = $db->real_escape_string((string) ($tracker_row['user_id'] ?? '0'));
+$mysql['user_id'] = $conn->escape((string) ($tracker_row['user_id'] ?? '0'));
 $user_sql = "SELECT 		user_timezone, 
 							user_keyword_searched_or_bidded,
                             user_pref_referer_data,
@@ -57,14 +58,14 @@ $user_sql = "SELECT 		user_timezone,
 			   LEFT JOIN	users_pref USING (user_id)
 			   WHERE 		users.user_id='" . $mysql['user_id'] . "'";
 $user_row = memcache_mysql_fetch_assoc($db, $user_sql);
-$mysql['user_pref_dynamic_bid'] = $db->real_escape_string((string) ($user_row['user_pref_dynamic_bid'] ?? '0'));
+$mysql['user_pref_dynamic_bid'] = $conn->escape((string) ($user_row['user_pref_dynamic_bid'] ?? '0'));
 
 //now this sets it
 AUTH::set_timezone((string) ($user_row['user_timezone'] ?? 'UTC'));
 
 if ($_GET['t1aiid']) {
 	//grab tracker data if avaliable
-	$mysql['tracker_id_public'] = $db->real_escape_string((string)$_GET['t1aiid']);
+	$mysql['tracker_id_public'] = $conn->escape((string)$_GET['t1aiid']);
 
 		$tracker_sql2 = "
 		SELECT
@@ -93,24 +94,24 @@ if ($_GET['t1aiid']) {
 //INSERT THIS CLICK BELOW, if this click doesn't already exisit
 
 //get mysql variables 
-$mysql['user_id'] = $db->real_escape_string((string) ($tracker_row['user_id'] ?? '0'));
-$mysql['aff_campaign_id'] = $db->real_escape_string((string) ($tracker_row['aff_campaign_id'] ?? '0'));
-$mysql['ppc_account_id'] = $db->real_escape_string((string) ($tracker_row['ppc_account_id'] ?? '0'));
+$mysql['user_id'] = $conn->escape((string) ($tracker_row['user_id'] ?? '0'));
+$mysql['aff_campaign_id'] = $conn->escape((string) ($tracker_row['aff_campaign_id'] ?? '0'));
+$mysql['ppc_account_id'] = $conn->escape((string) ($tracker_row['ppc_account_id'] ?? '0'));
 // set cpc use dynamic variable if set or the default if not
 if (isset($_GET['t1aib']) && $mysql['user_pref_dynamic_bid'] == '1') {
 	$_GET['t1aib'] = ltrim($_GET['t1aib'], '$');
 	if (is_numeric($_GET['t1aib'])) {
 		$bid = number_format($_GET['t1aib'], 5, '.', '');
-		$mysql['click_cpc'] = $db->real_escape_string($bid);
+		$mysql['click_cpc'] = $conn->escape($bid);
 	} else {
-		$mysql['click_cpc'] = $db->real_escape_string((string) ($tracker_row['click_cpc'] ?? '0'));
+		$mysql['click_cpc'] = $conn->escape((string) ($tracker_row['click_cpc'] ?? '0'));
 	}
 } else
-	$mysql['click_cpc'] = $db->real_escape_string((string) ($tracker_row['click_cpc'] ?? '0'));
-$mysql['click_payout'] = $db->real_escape_string((string) ($tracker_row['aff_campaign_payout'] ?? '0'));
+	$mysql['click_cpc'] = $conn->escape((string) ($tracker_row['click_cpc'] ?? '0'));
+$mysql['click_payout'] = $conn->escape((string) ($tracker_row['aff_campaign_payout'] ?? '0'));
 $mysql['click_time'] = time();
-$mysql['landing_page_id'] = $db->real_escape_string((string) ($tracker_row['landing_page_id'] ?? '0'));
-$mysql['text_ad_id'] = $db->real_escape_string((string) ($tracker_row['text_ad_id'] ?? '0'));
+$mysql['landing_page_id'] = $conn->escape((string) ($tracker_row['landing_page_id'] ?? '0'));
+$mysql['text_ad_id'] = $conn->escape((string) ($tracker_row['text_ad_id'] ?? '0'));
 
 /* ok, if $_GET['OVRAW'] that is a yahoo keyword, if on the REFER, there is a $_GET['q], that is a GOOGLE keyword... */
 //so this is going to check the REFERER URL, for a ?q=, which is the ACUTAL KEYWORD searched.
@@ -125,51 +126,51 @@ switch ($user_row['user_keyword_searched_or_bidded'] ?? '') {
 	case "bidded":
 		#try to get the bidded keyword first
 		if ($_GET['OVKEY']) { //if this is a Y! keyword
-			$keyword = $db->real_escape_string((string)$_GET['OVKEY']);
+			$keyword = $conn->escape((string)$_GET['OVKEY']);
 		} elseif ($_GET['t1aikw']) {
-			$keyword = $db->real_escape_string((string)$_GET['t1aikw']);
+			$keyword = $conn->escape((string)$_GET['t1aikw']);
 		} elseif ($_GET['target_passthrough']) { //if this is a mediatraffic! keyword
-			$keyword = $db->real_escape_string((string)$_GET['target_passthrough']);
+			$keyword = $conn->escape((string)$_GET['target_passthrough']);
 		} else { //if this is a zango, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['keyword']);
+			$keyword = $conn->escape((string)$_GET['keyword']);
 		}
 		break;
 	case "searched":
 		#try to get the searched keyword
 		if (!empty($referer_query['q'])) {
-			$keyword = $db->real_escape_string($referer_query['q']);
+			$keyword = $conn->escape($referer_query['q']);
 		} elseif ($_GET['OVRAW']) { //if this is a Y! keyword
-			$keyword = $db->real_escape_string((string)$_GET['OVRAW']);
+			$keyword = $conn->escape((string)$_GET['OVRAW']);
 		} elseif ($_GET['target_passthrough']) { //if this is a mediatraffic! keyword
-			$keyword = $db->real_escape_string((string)$_GET['target_passthrough']);
+			$keyword = $conn->escape((string)$_GET['target_passthrough']);
 		} elseif ($_GET['keyword']) { //if this is a zango, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['keyword']);
+			$keyword = $conn->escape((string)$_GET['keyword']);
 		} elseif ($_GET['search_word']) { //if this is a eniro, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['search_word']);
+			$keyword = $conn->escape((string)$_GET['search_word']);
 		} elseif ($_GET['query']) { //if this is a naver, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['query']);
+			$keyword = $conn->escape((string)$_GET['query']);
 		} elseif ($_GET['encquery']) { //if this is a aol, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['encquery']);
+			$keyword = $conn->escape((string)$_GET['encquery']);
 		} elseif ($_GET['terms']) { //if this is a about.com, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['terms']);
+			$keyword = $conn->escape((string)$_GET['terms']);
 		} elseif ($_GET['rdata']) { //if this is a viola, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['rdata']);
+			$keyword = $conn->escape((string)$_GET['rdata']);
 		} elseif ($_GET['qs']) { //if this is a virgilio, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['qs']);
+			$keyword = $conn->escape((string)$_GET['qs']);
 		} elseif ($_GET['wd']) { //if this is a baidu, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['wd']);
+			$keyword = $conn->escape((string)$_GET['wd']);
 		} elseif ($_GET['text']) { //if this is a yandex, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['text']);
+			$keyword = $conn->escape((string)$_GET['text']);
 		} elseif ($_GET['szukaj']) { //if this is a wp.pl, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['szukaj']);
+			$keyword = $conn->escape((string)$_GET['szukaj']);
 		} elseif ($_GET['qt']) { //if this is a O*net, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['qt']);
+			$keyword = $conn->escape((string)$_GET['qt']);
 		} elseif ($_GET['k']) { //if this is a yam, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['k']);
+			$keyword = $conn->escape((string)$_GET['k']);
 		} elseif ($_GET['words']) { //if this is a Rambler, or more keyword
-			$keyword = $db->real_escape_string((string)$_GET['words']);
+			$keyword = $conn->escape((string)$_GET['words']);
 		} else {
-			$keyword = $db->real_escape_string((string)$_GET['t1aikw']);
+			$keyword = $conn->escape((string)$_GET['t1aikw']);
 		}
 		break;
 }
@@ -178,35 +179,35 @@ if (str_starts_with((string) $keyword, 't1aivar_')) {
 	$t1aivar = substr((string) $keyword, strpos((string) $keyword, "_") + 1);
 
 	if (isset($_GET[$t1aivar])) {
-		$keyword = $db->real_escape_string((string) $_GET[$t1aivar]);
+		$keyword = $conn->escape((string) $_GET[$t1aivar]);
 	}
 }
 
 $keyword = str_replace('%20', ' ', $keyword);
 $keyword_id = $trackingRepo->findOrCreateKeyword($keyword);
-$mysql['keyword_id'] = $db->real_escape_string((string) $keyword_id);
+$mysql['keyword_id'] = $conn->escape((string) $keyword_id);
 
-$c1 = $db->real_escape_string((string)$_GET['c1']);
+$c1 = $conn->escape((string)$_GET['c1']);
 $c1 = str_replace('%20', ' ', $c1);
 $c1_id = $trackingRepo->findOrCreateC1($c1);
-$mysql['c1_id'] = $db->real_escape_string((string) $c1_id);
+$mysql['c1_id'] = $conn->escape((string) $c1_id);
 
-$c2 = $db->real_escape_string((string)$_GET['c2']);
+$c2 = $conn->escape((string)$_GET['c2']);
 $c2 = str_replace('%20', ' ', $c2);
 $c2_id = $trackingRepo->findOrCreateC2($c2);
-$mysql['c2_id'] = $db->real_escape_string((string) $c2_id);
+$mysql['c2_id'] = $conn->escape((string) $c2_id);
 
-$c3 = $db->real_escape_string((string)$_GET['c3']);
+$c3 = $conn->escape((string)$_GET['c3']);
 $c3 = str_replace('%20', ' ', $c3);
 $c3_id = $trackingRepo->findOrCreateC3($c3);
-$mysql['c3_id'] = $db->real_escape_string((string) $c3_id);
+$mysql['c3_id'] = $conn->escape((string) $c3_id);
 
-$c4 = $db->real_escape_string((string)$_GET['c4']);
+$c4 = $conn->escape((string)$_GET['c4']);
 $c4 = str_replace('%20', ' ', $c4);
 $c4_id = $trackingRepo->findOrCreateC4($c4);
-$mysql['c4_id'] = $db->real_escape_string((string) $c4_id);
+$mysql['c4_id'] = $conn->escape((string) $c4_id);
 
-$mysql['gclid'] = $db->real_escape_string((string)$_GET['gclid']);
+$mysql['gclid'] = $conn->escape((string)$_GET['gclid']);
 
 
 $custom_var_ids = [];
@@ -219,7 +220,7 @@ foreach ($parameters as $key => $value) {
 		continue;
 	}
 
-	$variable = $db->real_escape_string((string)$_GET[$value]);
+	$variable = $conn->escape((string)$_GET[$value]);
 
 	if (isset($variable) && $variable != '') {
 		$variable = str_replace('%20', ' ', $variable);
@@ -229,65 +230,65 @@ foreach ($parameters as $key => $value) {
 }
 
 //utm_source
-$utm_source = $db->real_escape_string((string)$_GET['utm_source']);
+$utm_source = $conn->escape((string)$_GET['utm_source']);
 if (isset($utm_source) && $utm_source != '') {
 	$utm_source = str_replace('%20', ' ', $utm_source);
 	$utm_source_id = $trackingRepo->findOrCreateUtm($utm_source, 'utm_source');
 } else {
 	$utm_source_id = 0;
 }
-$mysql['utm_source_id'] = $db->real_escape_string((string) $utm_source_id);
+$mysql['utm_source_id'] = $conn->escape((string) $utm_source_id);
 
 //utm_medium
-$utm_medium = $db->real_escape_string((string)$_GET['utm_medium']);
+$utm_medium = $conn->escape((string)$_GET['utm_medium']);
 if (isset($utm_medium) && $utm_medium != '') {
 	$utm_medium = str_replace('%20', ' ', $utm_medium);
 	$utm_medium_id = $trackingRepo->findOrCreateUtm($utm_medium, 'utm_medium');
 } else {
 	$utm_medium_id = 0;
 }
-$mysql['utm_medium_id'] = $db->real_escape_string((string) $utm_medium_id);
+$mysql['utm_medium_id'] = $conn->escape((string) $utm_medium_id);
 
 //utm_campaign
-$utm_campaign = $db->real_escape_string((string)$_GET['utm_campaign']);
+$utm_campaign = $conn->escape((string)$_GET['utm_campaign']);
 if (isset($utm_campaign) && $utm_campaign != '') {
 	$utm_campaign = str_replace('%20', ' ', $utm_campaign);
 	$utm_campaign_id = $trackingRepo->findOrCreateUtm($utm_campaign, 'utm_campaign');
 } else {
 	$utm_campaign_id = 0;
 }
-$mysql['utm_campaign_id'] = $db->real_escape_string((string) $utm_campaign_id);
+$mysql['utm_campaign_id'] = $conn->escape((string) $utm_campaign_id);
 
 //utm_term
-$utm_term = $db->real_escape_string((string)$_GET['utm_term']);
+$utm_term = $conn->escape((string)$_GET['utm_term']);
 if (isset($utm_term) && $utm_term != '') {
 	$utm_term = str_replace('%20', ' ', $utm_term);
 	$utm_term_id = $trackingRepo->findOrCreateUtm($utm_term, 'utm_term');
 } else {
 	$utm_term_id = 0;
 }
-$mysql['utm_term_id'] = $db->real_escape_string((string) $utm_term_id);
+$mysql['utm_term_id'] = $conn->escape((string) $utm_term_id);
 
 //utm_content
-$utm_content = $db->real_escape_string((string)$_GET['utm_content']);
+$utm_content = $conn->escape((string)$_GET['utm_content']);
 if (isset($utm_content) && $utm_content != '') {
 	$utm_content = str_replace('%20', ' ', $utm_content);
 	$utm_content_id = $trackingRepo->findOrCreateUtm($utm_content, 'utm_content');
 } else {
 	$utm_content_id = 0;
 }
-$mysql['utm_content_id'] = $db->real_escape_string((string) $utm_content_id);
+$mysql['utm_content_id'] = $conn->escape((string) $utm_content_id);
 
 $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
 $ip_id = $locationRepo->findOrCreateIp($ip);
-$mysql['ip_id'] = $db->real_escape_string((string) $ip_id);
+$mysql['ip_id'] = $conn->escape((string) $ip_id);
 
 //$device_id = PLATFORMS::get_device_info($db);
 $detect = new DeviceDetect();
 $device_id = PLATFORMS::get_device_info($db, $detect, $_GET['ua']);
-$mysql['platform_id'] = $db->real_escape_string((string) $device_id['platform']);
-$mysql['browser_id'] = $db->real_escape_string((string) $device_id['browser']);
-$mysql['device_id'] = $db->real_escape_string((string) $device_id['device']);
+$mysql['platform_id'] = $conn->escape((string) $device_id['platform']);
+$mysql['browser_id'] = $conn->escape((string) $device_id['browser']);
+$mysql['device_id'] = $conn->escape((string) $device_id['device']);
 
 $mysql['click_bot'] = '0';
 if ($device_id['type'] == '4') {
@@ -301,7 +302,7 @@ $mysql['click_out'] = 0;
 $_referer_site_url = '';
 if (($user_row['user_pref_referer_data'] ?? '') == 't1airef') {
 	if (isset($_GET['t1airef']) && $_GET['t1airef'] != '') { //check for t1airef value
-		$mysql['t1airef'] = $db->real_escape_string((string)$_GET['t1airef']);
+		$mysql['t1airef'] = $conn->escape((string)$_GET['t1airef']);
 		$_referer_site_url = (string) $_GET['t1airef'];
 	} else { //if not found revert to what we usually do
 		if (!empty($referer_query['url'])) {
@@ -322,7 +323,7 @@ if (($user_row['user_pref_referer_data'] ?? '') == 't1airef') {
 }
 $click_referer_site_url_id = $locationRepo->findOrCreateSiteUrl($_referer_site_url);
 
-$mysql['click_referer_site_url_id'] = $db->real_escape_string((string) $click_referer_site_url_id);
+$mysql['click_referer_site_url_id'] = $conn->escape((string) $click_referer_site_url_id);
 
 
 //see if this click should be filtered
@@ -335,15 +336,15 @@ $GeoData = getGeoData($ip_address);
 $countryName = $GeoData['country'] ?? '';
 $countryCode = $GeoData['country_code'] ?? '';
 $country_id = $locationRepo->findOrCreateCountry($countryName, $countryCode);
-$mysql['country_id'] = $db->real_escape_string((string) $country_id);
+$mysql['country_id'] = $conn->escape((string) $country_id);
 
 $regionName = $GeoData['region'] ?? '';
 $region_id = $locationRepo->findOrCreateRegion($regionName, $country_id);
-$mysql['region_id'] = $db->real_escape_string((string) $region_id);
+$mysql['region_id'] = $conn->escape((string) $region_id);
 
 $cityName = $GeoData['city'] ?? '';
 $city_id = $locationRepo->findOrCreateCity($cityName, $country_id);
-$mysql['city_id'] = $db->real_escape_string((string) $city_id);
+$mysql['city_id'] = $conn->escape((string) $city_id);
 
 
 if ($user_row['maxmind_isp'] == '1') {
@@ -353,7 +354,7 @@ if ($user_row['maxmind_isp'] == '1') {
 		$IspData = $IspDataParts[0];
 	}
 	$isp_id = $locationRepo->findOrCreateIsp($IspData);
-	$mysql['isp_id'] = $db->real_escape_string((string) $isp_id);
+	$mysql['isp_id'] = $conn->escape((string) $isp_id);
 } else {
 	$mysql['isp_id'] = '0';
 }
@@ -362,13 +363,12 @@ if ($device_id['type'] == '4') {
 	$mysql['click_filtered'] = '1';
 } else {
 	$click_filtered = FILTER::startFilter($db, 0, $ip_id, $ip_address, $user_id);
-	$mysql['click_filtered'] = $db->real_escape_string((string) $click_filtered);
+	$mysql['click_filtered'] = $conn->escape((string) $click_filtered);
 }
 
 
 
 // Pre-allocate click_id so we can compute click_id_public and site URLs
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 $clickRepo = new \OneAIAffiliate\Click\MysqlClickRepository($conn);
 $click_id = $clickRepo->allocateClickId();
 $click_id_public = random_int(1, 9) . $click_id . random_int(1, 9);
@@ -419,13 +419,13 @@ $de = new DataEngine();
 $data = ($de->setDirtyHour($mysql['click_id']));
 
 if (isset($_COOKIE['pipx'])) {
-	$mysql['pipx'] = $db->real_escape_string((string) $_COOKIE['pipx']);
+	$mysql['pipx'] = $conn->escape((string) $_COOKIE['pipx']);
 	$ipx_sql = "UPDATE clicks_impressions SET click_id = '" . $mysql['click_id'] . "' WHERE impression_id = '" . $mysql['pipx'] . "'";
-	$ipx_result = $db->query($ipx_sql);
+	$ipx_result = $conn->query($ipx_sql);
 	if (!$ipx_result) { record_mysql_error($db, $ipx_sql); }
 } else {
 	$ipx_sql = "UPDATE clicks_impressions SET click_id = '" . $mysql['click_id'] . "' WHERE click_id IS NULL AND landing_page_id = '" . $mysql['landing_page_id'] . "' ORDER BY impression_id DESC LIMIT 1";
-	$ipx_result = $db->query($ipx_sql);
+	$ipx_result = $conn->query($ipx_sql);
 	if (!$ipx_result) { record_mysql_error($db, $ipx_sql); }
 }
 

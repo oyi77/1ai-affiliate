@@ -218,9 +218,7 @@ function _mysqli_query($dbOrSql, $sql = null)
 
     if (!$db instanceof \mysqli) {
         $database = \DB::getInstance();
-        $db = method_exists($database, 'getConnection')
-            ? $database->getConnection()
-            : null;
+        $db = $database->getConnection();
     }
 
     if (!$db instanceof \mysqli) {
@@ -241,7 +239,8 @@ function _die($message, ...$legacyArgs): never
 // this funciton delays an SQL statement, puts in in a mysql table, to be cron jobbed out every 5 minutes
 function delay_sql($db, $delayed_sql): void
 {
-    $mysql['delayed_sql'] = $db->real_escape_string($delayed_sql);
+    $conn = new \OneAIAffiliate\Database\Connection($db);
+    $mysql['delayed_sql'] = $conn->escape($delayed_sql);
     $mysql['delayed_time'] = time();
 
     $delayed_sql = "INSERT INTO  delayed_sqls 
@@ -257,7 +256,7 @@ function delay_sql($db, $delayed_sql): void
 						'" . $mysql['delayed_time'] . "'
 					);";
 
-    $delayed_result = _mysqli_query($db, $delayed_sql); // ($delayed_sql);
+    $delayed_result = $conn->query($delayed_sql); // ($delayed_sql);
 }
 
 class FILTER
@@ -265,6 +264,7 @@ class FILTER
 
     public static function startFilter($db, $click_id, $ip_id, $ip_address, $user_id)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
         // we only do the other checks, if the first ones have failed.
         // we will return the variable filter, if the $filter returns TRUE, when the click is inserted and recorded we will insert the new click already inserted,
@@ -291,15 +291,16 @@ class FILTER
 
     public static function checkUserIP($db, $click_id, $ip_id, $user_id)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         // $user_id no longer needed
 
-        $mysql['ip_id'] = $db->real_escape_string($ip_id);
-        $mysql['user_id'] = $db->real_escape_string($user_id);
+        $mysql['ip_id'] = $conn->escape($ip_id);
+        $mysql['user_id'] = $conn->escape($user_id);
 
         $count_sql = "SELECT    user_id
 					  FROM      users 
 					  WHERE     user_last_login_ip_id='" . $mysql['ip_id'] . "'";
-        $count_result = _mysqli_query($db, $count_sql); // ($count_sql);
+        $count_result = $conn->query($count_sql); // ($count_sql);
 
         // if the click_id's ip address, is the same ip adddress of the click_id's owner's last logged in ip, filter this. 
         if ($count_result->num_rows > 0) {
@@ -381,13 +382,14 @@ class FILTER
     // this will filter out a click if it the IP WAS RECORDED, for a particular user within the last 24 hours, if it existed before, filter out this click.
     public static function checkLastIps($db, $user_id, $ip_id)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
 
-        $mysql['user_id'] = $db->real_escape_string($user_id);
-        $mysql['ip_id'] = $db->real_escape_string($ip_id);
+        $mysql['user_id'] = $conn->escape($user_id);
+        $mysql['ip_id'] = $conn->escape($ip_id);
 
         $check_sql = "SELECT * FROM last_ips WHERE user_id='" . $mysql['user_id'] . "' AND ip_id='" . $mysql['ip_id'] . "'";
-        $check_result = _mysqli_query($db, $check_sql); // ($check_sql);
+        $check_result = $conn->query($check_sql); // ($check_sql);
         $check_row = $check_result->fetch_assoc();
         $count = $check_result->num_rows;
 
@@ -399,7 +401,7 @@ class FILTER
             // else if this ip has not been recorded, record it now
             $mysql['time'] = time();
             $insert_sql = "INSERT INTO last_ips SET user_id='" . $mysql['user_id'] . "', ip_id='" . $mysql['ip_id'] . "', time='" . $mysql['time'] . "'";
-            $insert_result = _mysqli_query($db, $insert_sql); // ($insert_sql);
+            $insert_result = $conn->query($insert_sql); // ($insert_sql);
             return false;
         }
     }
@@ -407,12 +409,13 @@ class FILTER
 
 function rotateTrackerUrl($db, $tracker_row)
 {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
 
     if (! $tracker_row['aff_campaign_rotate'])
         return $tracker_row['aff_campaign_url'];
 
-    $mysql['aff_campaign_id'] = $db->real_escape_string($tracker_row['aff_campaign_id']);
+    $mysql['aff_campaign_id'] = $conn->escape($tracker_row['aff_campaign_id']);
     $urls = [];
     array_push($urls, $tracker_row['aff_campaign_url']);
 
@@ -428,13 +431,13 @@ function rotateTrackerUrl($db, $tracker_row)
     $count = count($urls);
 
     // Atomic upsert to avoid TOCTOU race condition on concurrent requests
-    $mysql['count'] = $db->real_escape_string((string) $count);
+    $mysql['count'] = $conn->escape((string) $count);
     $sql5 = "INSERT INTO rotations SET aff_campaign_id='" . $mysql['aff_campaign_id'] . "', rotation_num=0
              ON DUPLICATE KEY UPDATE rotation_num = IF(rotation_num >= " . ((int)$count - 1) . ", 0, rotation_num + 1)";
-    _mysqli_query($db, $sql5);
+    $conn->query($sql5);
     // Read back the current value
     $sql5 = "SELECT rotation_num FROM rotations WHERE aff_campaign_id='" . $mysql['aff_campaign_id'] . "'";
-    $result5 = _mysqli_query($db, $sql5);
+    $result5 = $conn->query($sql5);
     $row5 = $result5->fetch_assoc();
     $num = $row5 ? (int) $row5['rotation_num'] : 0;
 
@@ -444,9 +447,10 @@ function rotateTrackerUrl($db, $tracker_row)
 
 function replaceTrackerPlaceholdersOpt($db, $url, $click_id, $mysql = [])
 {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     // get the tracker placeholder values
-    $mysql['click_id'] = $db->real_escape_string($click_id);
+    $mysql['click_id'] = $conn->escape($click_id);
     //$url = preg_replace('/\[\[subid\]\]/i', $mysql['click_id'], $url);
     $tokens = [
         "subid" => $mysql['click_id'],
@@ -485,13 +489,14 @@ function replaceTrackerPlaceholdersOpt($db, $url, $click_id, $mysql = [])
 
 function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
 {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     // get the tracker placeholder values
 
     //$url = preg_replace('/\[\[subid\]\]/i', $mysql['click_id'], $url);
 
     if (isset($mysql) && $mysql != '') {
-        $mysql['click_id'] = $db->real_escape_string((string)$click_id);
+        $mysql['click_id'] = $conn->escape((string)$click_id);
         $tokens = @[
             "subid" => $mysql['click_id'],
             "t1aikw" => $mysql['keyword'],
@@ -575,33 +580,33 @@ function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
 				2c.click_id='" . $mysql['click_id'] . "'
 		";
 
-        $click_result = _mysqli_query($db, $click_sql);
+        $click_result = $conn->query($click_sql);
         $click_row = $click_result->fetch_assoc();
 
         // Check if click_row exists before processing
         if ($click_row) {
-            $mysql['t1aikw'] = $db->real_escape_string((string)($click_row['keyword'] ?? ''));
-            $mysql['t1aipubid'] = $db->real_escape_string((string)($click_row['user_public_publisher_id'] ?? ''));
-            $mysql['c1'] = $db->real_escape_string((string)($click_row['c1'] ?? ''));
-            $mysql['c2'] = $db->real_escape_string((string)($click_row['c2'] ?? ''));
-            $mysql['c3'] = $db->real_escape_string((string)($click_row['c3'] ?? ''));
-            $mysql['c4'] = $db->real_escape_string((string)($click_row['c4'] ?? ''));
-            $mysql['gclid'] = $db->real_escape_string((string)($click_row['gclid'] ?? ''));
-            $mysql['msclkid'] = $db->real_escape_string((string)($click_row['msclkid'] ?? ''));
-            $mysql['fbclid'] = $db->real_escape_string((string)($click_row['fbclid'] ?? ''));
-            $mysql['utm_source'] = $db->real_escape_string((string)($click_row['utm_source'] ?? ''));
-            $mysql['utm_medium'] = $db->real_escape_string((string)($click_row['utm_medium'] ?? ''));
-            $mysql['utm_campaign'] = $db->real_escape_string((string)($click_row['utm_campaign'] ?? ''));
-            $mysql['utm_term'] = $db->real_escape_string((string)($click_row['utm_term'] ?? ''));
-            $mysql['utm_content'] = $db->real_escape_string((string)($click_row['utm_content'] ?? ''));
-            $mysql['payout'] = $db->real_escape_string((string)($click_row['click_payout'] ?? ''));
-            $mysql['cpc'] = $db->real_escape_string((string)($click_row['click_cpc'] ?? ''));
-            $mysql['cpa'] = $db->real_escape_string((string)($click_row['click_cpa'] ?? ''));
-            $mysql['click_cpc'] = $db->real_escape_string((string)($click_row['click_cpc'] ?? ''));
-            $mysql['country'] = $db->real_escape_string((string)($click_row['country_name'] ?? ''));
-            $mysql['country_code'] = $db->real_escape_string((string)($click_row['country_code'] ?? ''));
-            $mysql['region'] = $db->real_escape_string((string)($click_row['region_name'] ?? ''));
-            $mysql['city'] = $db->real_escape_string((string)($click_row['city_name'] ?? ''));
+            $mysql['t1aikw'] = $conn->escape((string)($click_row['keyword'] ?? ''));
+            $mysql['t1aipubid'] = $conn->escape((string)($click_row['user_public_publisher_id'] ?? ''));
+            $mysql['c1'] = $conn->escape((string)($click_row['c1'] ?? ''));
+            $mysql['c2'] = $conn->escape((string)($click_row['c2'] ?? ''));
+            $mysql['c3'] = $conn->escape((string)($click_row['c3'] ?? ''));
+            $mysql['c4'] = $conn->escape((string)($click_row['c4'] ?? ''));
+            $mysql['gclid'] = $conn->escape((string)($click_row['gclid'] ?? ''));
+            $mysql['msclkid'] = $conn->escape((string)($click_row['msclkid'] ?? ''));
+            $mysql['fbclid'] = $conn->escape((string)($click_row['fbclid'] ?? ''));
+            $mysql['utm_source'] = $conn->escape((string)($click_row['utm_source'] ?? ''));
+            $mysql['utm_medium'] = $conn->escape((string)($click_row['utm_medium'] ?? ''));
+            $mysql['utm_campaign'] = $conn->escape((string)($click_row['utm_campaign'] ?? ''));
+            $mysql['utm_term'] = $conn->escape((string)($click_row['utm_term'] ?? ''));
+            $mysql['utm_content'] = $conn->escape((string)($click_row['utm_content'] ?? ''));
+            $mysql['payout'] = $conn->escape((string)($click_row['click_payout'] ?? ''));
+            $mysql['cpc'] = $conn->escape((string)($click_row['click_cpc'] ?? ''));
+            $mysql['cpa'] = $conn->escape((string)($click_row['click_cpa'] ?? ''));
+            $mysql['click_cpc'] = $conn->escape((string)($click_row['click_cpc'] ?? ''));
+            $mysql['country'] = $conn->escape((string)($click_row['country_name'] ?? ''));
+            $mysql['country_code'] = $conn->escape((string)($click_row['country_code'] ?? ''));
+            $mysql['region'] = $conn->escape((string)($click_row['region_name'] ?? ''));
+            $mysql['city'] = $conn->escape((string)($click_row['city_name'] ?? ''));
         } else {
             // Initialize all fields with empty strings if no click data found
             $mysql['t1aikw'] = '';
@@ -627,11 +632,11 @@ function replaceTrackerPlaceholders($db, $url, $click_id = '', $mysql = [])
             $mysql['region'] = '';
             $mysql['city'] = '';
         }
-        $mysql['referer'] = urlencode((string) $db->real_escape_string($_SERVER['HTTP_REFERER'] ?? ''));
-        if ($db->real_escape_string($click_row['ppc_account_id']) == '0') {
+        $mysql['referer'] = urlencode((string) $conn->escape($_SERVER['HTTP_REFERER'] ?? ''));
+        if ($conn->escape($click_row['ppc_account_id']) == '0') {
             $mysql['ppc_account'] = '';
         } else {
-            $mysql['ppc_account'] = $db->real_escape_string($click_row['ppc_account_id']);
+            $mysql['ppc_account'] = $conn->escape($click_row['ppc_account_id']);
         }
 
         //prepare $mysql to make sure none of the keys are unset
@@ -724,6 +729,7 @@ class PLATFORMS
 
     public static function get_device_info($db, $detect, $ua_string = '')
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
         if (!$detect instanceof DeviceDetect) {
             $detect = new DeviceDetect();
@@ -758,6 +764,7 @@ class PLATFORMS
 
     public static function parseUserAgentInfo($db, $detect)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $ip_address;
 
         // Ensure ip_address is available for botCheck
@@ -812,47 +819,47 @@ class PLATFORMS
         }
 
         // Select from DB and return ID's
-        $mysql['browser'] = $db->real_escape_string((string)$result->ua->family);
-        $mysql['platform'] = $db->real_escape_string((string)$result->os->family);
-        $mysql['device'] = $db->real_escape_string((string)$result->device->family);
-        $mysql['device_type'] = $db->real_escape_string((string)$type);
+        $mysql['browser'] = $conn->escape((string)$result->ua->family);
+        $mysql['platform'] = $conn->escape((string)$result->os->family);
+        $mysql['device'] = $conn->escape((string)$result->device->family);
+        $mysql['device_type'] = $conn->escape((string)$type);
 
 
 
         // Get browser ID
         $browser_sql = "SELECT browser_id FROM browsers WHERE browser_name='" . $mysql['browser'] . "'";
-        $browser_result = _mysqli_query($db, $browser_sql);
+        $browser_result = $conn->query($browser_sql);
         $browser_row = $browser_result->fetch_assoc();
         if ($browser_row) {
             $browser_id = $browser_row['browser_id'];
         } else {
             $browser_sql = "INSERT INTO browsers SET browser_name='" . $mysql['browser'] . "'";
-            $browser_result = _mysqli_query($db, $browser_sql);
+            $browser_result = $conn->query($browser_sql);
             $browser_id = $db->insert_id;
         }
 
         // Get platform ID
         $platform_sql = "SELECT platform_id FROM platforms WHERE platform_name='" . $mysql['platform'] . "'";
-        $platform_result = _mysqli_query($db, $platform_sql);
+        $platform_result = $conn->query($platform_sql);
         $platform_row = $platform_result->fetch_assoc();
         if ($platform_row) {
             $platform_id = $platform_row['platform_id'];
         } else {
             $platform_sql = "INSERT INTO platforms SET platform_name='" . $mysql['platform'] . "'";
-            $platform_result = _mysqli_query($db, $platform_sql);
+            $platform_result = $conn->query($platform_sql);
             $platform_id = $db->insert_id;
         }
 
         // Get device model ID
         $device_sql = "SELECT device_id, device_type FROM device_models WHERE device_name='" . $mysql['device'] . "'";
-        $device_result = _mysqli_query($db, $device_sql);
+        $device_result = $conn->query($device_sql);
         $device_row = $device_result->fetch_assoc();
         if ($device_row) {
             $device_id = $device_row['device_id'];
             $device_type = $device_row['device_type'];
         } else {
             $device_sql = "INSERT INTO device_models SET device_name='" . $mysql['device'] . "', device_type='" . $mysql['device_type'] . "'";
-            $device_result = _mysqli_query($db, $device_sql);
+            $device_result = $conn->query($device_sql);
             $device_id = $db->insert_id;
             $device_type = $type;
         }
@@ -963,10 +970,11 @@ class INDEXES
     // this returns the location_country_id, when a Country Code is given
     public static function get_country_id($db, $country_name, $country_code)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
-        $mysql['country_name'] = $db->real_escape_string($country_name);
-        $mysql['country_code'] = $db->real_escape_string($country_code);
+        $mysql['country_name'] = $conn->escape($country_name);
+        $mysql['country_code'] = $conn->escape($country_code);
 
         if ($memcacheWorking) {
             $time = 2592000; // 30 days in sec
@@ -979,7 +987,7 @@ class INDEXES
             } else {
 
                 $country_sql = "SELECT country_id FROM locations_country WHERE country_code='" . $mysql['country_code'] . "'";
-                $country_result = _mysqli_query($db, $country_sql);
+                $country_result = $conn->query($country_sql);
                 $country_row = $country_result->fetch_assoc();
                 if ($country_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -990,7 +998,7 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $country_sql = "INSERT INTO locations_country SET country_code='" . $mysql['country_code'] . "', country_name='" . $mysql['country_name'] . "'";
-                    $country_result = _mysqli_query($db, $country_sql); // ($ip_sql);
+                    $country_result = $conn->query($country_sql); // ($ip_sql);
                     $country_id = $db->insert_id;
                     // add to memcached
                     $setID = setCache(md5("country-id" . $country_name . systemHash()), $country_id, $time);
@@ -1001,7 +1009,7 @@ class INDEXES
 
             $country_sql = "SELECT country_id FROM locations_country WHERE country_code='" . $mysql['country_code'] . "'";
 
-            $country_result = _mysqli_query($db, $country_sql);
+            $country_result = $conn->query($country_sql);
             $country_row = $country_result->fetch_assoc();
             if ($country_row) {
                 // if this country already exists, return the location_country_id for it.
@@ -1011,7 +1019,7 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new countryrow, and return the_id for this new row we found
                 $country_sql = "INSERT INTO locations_country SET country_code='" . $mysql['country_code'] . "', country_name='" . $mysql['country_name'] . "'";
-                $country_result = _mysqli_query($db, $country_sql); // ($ip_sql);
+                $country_result = $conn->query($country_sql); // ($ip_sql);
                 $country_id = $db->insert_id;
 
                 return $country_id;
@@ -1022,10 +1030,11 @@ class INDEXES
     // this returns the location_city_id, when a City name is given
     public static function get_city_id($db, $city_name, $country_id)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
-        $mysql['city_name'] = $db->real_escape_string($city_name);
-        $mysql['country_id'] = $db->real_escape_string($country_id);
+        $mysql['city_name'] = $conn->escape($city_name);
+        $mysql['country_id'] = $conn->escape($country_id);
 
         if ($memcacheWorking) {
             $time = 2592000; // 30 days in sec
@@ -1038,7 +1047,7 @@ class INDEXES
             } else {
 
                 $city_sql = "SELECT city_id FROM locations_city WHERE city_name='" . $mysql['city_name'] . "' AND main_country_id='" . $mysql['country_id'] . "'";
-                $city_result = _mysqli_query($db, $city_sql);
+                $city_result = $conn->query($city_sql);
                 $city_row = $city_result->fetch_assoc();
                 if ($city_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -1049,7 +1058,7 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $city_sql = "INSERT INTO locations_city SET city_name='" . $mysql['city_name'] . "', main_country_id='" . $mysql['country_id'] . "'";
-                    $city_result = _mysqli_query($db, $city_sql); // ($ip_sql);
+                    $city_result = $conn->query($city_sql); // ($ip_sql);
                     $city_id = $db->insert_id;
                     // add to memcached
                     $setID = setCache(md5("city-id" . $city_name . $country_id . systemHash()), $city_id, $time);
@@ -1059,7 +1068,7 @@ class INDEXES
         } else {
 
             $city_sql = "SELECT city_id FROM locations_city WHERE city_name='" . $mysql['city_name'] . "' AND main_country_id='" . $mysql['country_id'] . "'";
-            $city_result = _mysqli_query($db, $city_sql);
+            $city_result = $conn->query($city_sql);
             $city_row = $city_result->fetch_assoc();
             if ($city_row) {
                 // if this country already exists, return the location_country_id for it.
@@ -1069,7 +1078,7 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new cityrow, and return the_id for this new row we found
                 $city_sql = "INSERT INTO locations_city SET city_name='" . $mysql['city_name'] . "', main_country_id='" . $mysql['country_id'] . "'";
-                $city_result = _mysqli_query($db, $city_sql); // ($ip_sql);
+                $city_result = $conn->query($city_sql); // ($ip_sql);
                 $city_id = $db->insert_id;
 
                 return $city_id;
@@ -1080,10 +1089,11 @@ class INDEXES
     // this returns the location_region_id, when a Region name is given
     public static function get_region_id($db, $region_name, $country_id)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
-        $mysql['region_name'] = $db->real_escape_string($region_name);
-        $mysql['country_id'] = $db->real_escape_string($country_id);
+        $mysql['region_name'] = $conn->escape($region_name);
+        $mysql['country_id'] = $conn->escape($country_id);
 
         if ($memcacheWorking) {
             $time = 2592000; // 30 days in sec
@@ -1096,7 +1106,7 @@ class INDEXES
             } else {
 
                 $region_sql = "SELECT region_id FROM locations_region WHERE region_name='" . $mysql['region_name'] . "' AND main_country_id='" . $mysql['country_id'] . "'";
-                $region_result = _mysqli_query($db, $region_sql);
+                $region_result = $conn->query($region_sql);
                 $region_row = $region_result->fetch_assoc();
                 if ($region_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -1107,7 +1117,7 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $region_sql = "INSERT INTO locations_region SET region_name='" . $mysql['region_name'] . "', main_country_id='" . $mysql['country_id'] . "'";
-                    $region_result = _mysqli_query($db, $region_sql); // ($ip_sql);
+                    $region_result = $conn->query($region_sql); // ($ip_sql);
                     $region_id = $db->insert_id;
                     // add to memcached
                     $setID = setCache(md5("region-id" . $region_name . $country_id . systemHash()), $region_id, $time);
@@ -1117,7 +1127,7 @@ class INDEXES
         } else {
 
             $region_sql = "SELECT region_id FROM locations_region WHERE region_name='" . $mysql['region_name'] . "' AND main_country_id='" . $mysql['country_id'] . "'";
-            $region_result = _mysqli_query($db, $region_sql);
+            $region_result = $conn->query($region_sql);
             $region_row = $region_result->fetch_assoc();
             if ($region_row) {
                 // if this country already exists, return the location_country_id for it.
@@ -1127,7 +1137,7 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new cityrow, and return the_id for this new row we found
                 $region_sql = "INSERT INTO locations_region SET region_name='" . $mysql['region_name'] . "', main_country_id='" . $mysql['country_id'] . "'";
-                $region_result = _mysqli_query($db, $region_sql); // ($ip_sql);
+                $region_result = $conn->query($region_sql); // ($ip_sql);
                 $region_id = $db->insert_id;
 
                 return $region_id;
@@ -1138,9 +1148,10 @@ class INDEXES
     // this returns the isp_id, when a isp name is given
     public static function get_isp_id($db, $isp)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
-        $mysql['isp'] = $db->real_escape_string($isp);
+        $mysql['isp'] = $conn->escape($isp);
 
         if ($memcacheWorking) {
             $time = 2592000; // 30 days in sec
@@ -1153,7 +1164,7 @@ class INDEXES
             } else {
 
                 $isp_sql = "SELECT isp_id FROM locations_isp WHERE isp_name='" . $mysql['isp'] . "'";
-                $isp_result = _mysqli_query($db, $isp_sql);
+                $isp_result = $conn->query($isp_sql);
                 $isp_row = $isp_result->fetch_assoc();
                 if ($isp_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -1164,7 +1175,7 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $isp_sql = "INSERT INTO locations_isp SET isp_name='" . $mysql['isp'] . "'";
-                    $isp_result = _mysqli_query($db, $isp_sql); // ($isp_sql);
+                    $isp_result = $conn->query($isp_sql); // ($isp_sql);
                     $isp_id = $db->insert_id;
                     // add to memcached
                     $setID = setCache(md5("isp-id" . $isp . systemHash()), $isp_id, $time);
@@ -1174,7 +1185,7 @@ class INDEXES
         } else {
 
             $isp_sql = "SELECT isp_id FROM locations_isp WHERE isp_name='" . $mysql['isp'] . "'";
-            $isp_result = _mysqli_query($db, $isp_sql);
+            $isp_result = $conn->query($isp_sql);
             $isp_row = $isp_result->fetch_assoc();
             if ($isp_row) {
                 // if this isp already exists, return the isp_id for it.
@@ -1184,7 +1195,7 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new isp row, and return the_id for this new row we found
                 $isp_sql = "INSERT INTO locations_isp SET isp_name='" . $mysql['isp'] . "'";
-                $isp_result = _mysqli_query($db, $isp_sql); // ($isp_sql);
+                $isp_result = $conn->query($isp_sql); // ($isp_sql);
                 $isp_id = $db->insert_id;
 
                 return $isp_id;
@@ -1209,6 +1220,8 @@ class INDEXES
             return null;
         }
 
+        $conn = new \OneAIAffiliate\Database\Connection($db);
+
         // Handle both string and object input
         if (is_string($ip)) {
             $ip_address = $ip;
@@ -1222,10 +1235,10 @@ class INDEXES
             $ip_object = $ip;
         }
 
-        $mysql['ip_address'] = $db->real_escape_string($ip_address);
+        $mysql['ip_address'] = $conn->escape($ip_address);
 
         if ($ip_type == 'ipv6') {
-            $mysql['ip_address'] = $db->real_escape_string(inet6_aton($mysql['ip_address'])); //encode ipv6 for db insert
+            $mysql['ip_address'] = $conn->escape(inet6_aton($mysql['ip_address'])); //encode ipv6 for db insert
         }
 
         if ($ip_type === 'ipv6') {
@@ -1243,7 +1256,7 @@ class INDEXES
                 $ip_id = $getID;
             } else {
 
-                $ip_result = _mysqli_query($db, $ip_sql);
+                $ip_result = $conn->query($ip_sql);
                 $ip_row = $ip_result->fetch_assoc();
                 if ($ip_row) {
                     // if this ip_id already exists, return the ip_id for it.
@@ -1252,19 +1265,19 @@ class INDEXES
                     $setID = setCache(md5("ip-id" . $mysql['ip_address'] . systemHash()), $ip_id, $time);
                 } else {
                     //insert ip
-                    $ip_id = INDEXES::insert_ip($db, $ip_object);
+                    $ip_id = get_ip_id($ip_object);
                     // add to memcached
                     $setID = setCache(md5("ip-id" . $mysql['ip_address'] . systemHash()), $ip_id, $time);
                 }
             }
         } else {
-            $ip_result = _mysqli_query($db, $ip_sql);
+            $ip_result = $conn->query($ip_sql);
             $ip_row = $ip_result->fetch_assoc();
             if ($ip_row !== null && $ip_row['ip_id']) {
                 // if this ip already exists, return the ip_id for it.
                 $ip_id = $ip_row['ip_id'];
             } else {
-                $ip_id = INDEXES::insert_ip($db, $ip_object);
+                $ip_id = get_ip_id($ip_object);
             }
         }
 
@@ -1274,8 +1287,9 @@ class INDEXES
 
     public static function insert_ip($db, $ip)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
-        $mysql['ip_address'] = $db->real_escape_string($ip->address);
+        $mysql['ip_address'] = $conn->escape($ip->address);
 
         //e
         if ($ip->type == 'ipv6') {
@@ -1286,17 +1300,17 @@ class INDEXES
             //insert the ipv6 ip address and get the ipv6_id
             $ip_sql = 'INSERT INTO ips_v6 SET ip_address=("' . $mysql['ip_address'] . '")';
             // $ip_sql = 'INSERT INTO ips_v6 SET ip_address='.$inet6_aton.'("'.$mysql['ip_address'].'")';
-            $ip_result = _mysqli_query($db, $ip_sql); // ($ip_sql);
+            $ip_result = $conn->query($ip_sql); // ($ip_sql);
             $ipv6_id = $db->insert_id;
 
             //insert the ipv6_id as the ipv4 address for referencing later on
             $ip_sql = "INSERT INTO ips SET ip_address='" . $ipv6_id . "', location_id='0'";
-            $ip_result = _mysqli_query($db, $ip_sql); // ($ip_sql);
+            $ip_result = $conn->query($ip_sql); // ($ip_sql);
             $ip_id = $db->insert_id;
             return $ip_id;
         } else {
             $ip_sql = "INSERT INTO ips SET ip_address='" . $mysql['ip_address'] . "', location_id='0'";
-            $ip_result = _mysqli_query($db, $ip_sql); // ($ip_sql);
+            $ip_result = $conn->query($ip_sql); // ($ip_sql);
             $ip_id = $db->insert_id;
             return $ip_id;
         }
@@ -1304,6 +1318,7 @@ class INDEXES
     // this returns the site_domain_id, when a site_url_address is given
     public static function get_site_domain_id($db, $site_url_address)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
         // Handle null or empty site_url_address
@@ -1311,7 +1326,7 @@ class INDEXES
             $site_url_address = '';
         }
 
-        $parsed_url = @parse_url(trim((string) $db->real_escape_string((string)$site_url_address)));
+        $parsed_url = @parse_url(trim((string) $conn->escape((string)$site_url_address)));
 
         if (isset($parsed_url)) {
             if (isset($parsed_url['host'])) {
@@ -1327,7 +1342,7 @@ class INDEXES
             $site_domain_host = '';
         }
 
-        $mysql['site_domain_host'] = $db->real_escape_string($site_domain_host);
+        $mysql['site_domain_host'] = $conn->escape($site_domain_host);
 
         // if a cached key is found for this lpip, redirect to that url
         if ($memcacheWorking) {
@@ -1341,7 +1356,7 @@ class INDEXES
             } else {
 
                 $site_domain_sql = "SELECT site_domain_id FROM site_domains WHERE site_domain_host='" . $mysql['site_domain_host'] . "'";
-                $site_domain_result = _mysqli_query($db, $site_domain_sql);
+                $site_domain_result = $conn->query($site_domain_sql);
                 $site_domain_row = $site_domain_result->fetch_assoc();
                 if ($site_domain_row) {
                     // if this site_domain_id already exists, return the site_domain_id for it.
@@ -1352,7 +1367,7 @@ class INDEXES
                 } else {
                     // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                     $site_domain_sql = "INSERT INTO site_domains SET site_domain_host='" . $mysql['site_domain_host'] . "'";
-                    $site_domain_result = _mysqli_query($db, $site_domain_sql); // ($site_domain_sql);
+                    $site_domain_result = $conn->query($site_domain_sql); // ($site_domain_sql);
                     $site_domain_id = $db->insert_id;
                     // add to memcached
                     $setID = setCache(md5("domain-id" . $site_domain_host . systemHash()), $site_domain_id, $time);
@@ -1362,7 +1377,7 @@ class INDEXES
         } else {
 
             $site_domain_sql = "SELECT site_domain_id FROM site_domains WHERE site_domain_host='" . $mysql['site_domain_host'] . "'";
-            $site_domain_result = _mysqli_query($db, $site_domain_sql);
+            $site_domain_result = $conn->query($site_domain_sql);
             $site_domain_row = $site_domain_result->fetch_assoc();
             if ($site_domain_row) {
                 // if this site_domain_id already exists, return the site_domain_id for it.
@@ -1372,7 +1387,7 @@ class INDEXES
             } else {
                 // else if this doesn't exist, insert the new iprow, and return the_id for this new row we found
                 $site_domain_sql = "INSERT INTO site_domains SET site_domain_host='" . $mysql['site_domain_host'] . "'";
-                $site_domain_result = _mysqli_query($db, $site_domain_sql); // ($site_domain_sql);
+                $site_domain_result = $conn->query($site_domain_sql); // ($site_domain_sql);
                 $site_domain_id = $db->insert_id;
                 return $site_domain_id;
             }
@@ -1388,9 +1403,7 @@ class INDEXES
         if ($site_url_address === null) {
             $site_url_address = $dbOrSiteUrl;
             $database = DB::getInstance();
-            $db = method_exists($database, 'getConnection')
-                ? $database->getConnection()
-                : null;
+            $db = $database->getConnection();
         } else {
             $db = $dbOrSiteUrl;
         }
@@ -1398,16 +1411,17 @@ class INDEXES
         if (!$db instanceof \mysqli) {
             return 0;
         }
+        $conn = new \OneAIAffiliate\Database\Connection($db);
         
         // Handle null or empty site_url_address
         if ($site_url_address === null || $site_url_address === '') {
             $site_url_address = '';
         }
         
-        $site_domain_id = INDEXES::get_site_domain_id($db, $site_url_address);
+        $site_domain_id = get_site_domain_id($site_url_address);
 
-        $mysql['site_url_address'] = $db->real_escape_string((string)$site_url_address);
-        $mysql['site_domain_id'] = $db->real_escape_string((string)$site_domain_id);
+        $mysql['site_url_address'] = $conn->escape((string)$site_url_address);
+        $mysql['site_domain_id'] = $conn->escape((string)$site_domain_id);
 
         if ($memcacheWorking) {
             $time = 604800; // 7 days in sec
@@ -1418,7 +1432,7 @@ class INDEXES
             } else {
 
                 $site_url_sql = "SELECT site_url_id FROM site_urls WHERE site_domain_id='" . $mysql['site_domain_id'] . "' and site_url_address='" . $mysql['site_url_address'] . "' limit 1";
-                $site_url_result = _mysqli_query($db, $site_url_sql);
+                $site_url_result = $conn->query($site_url_sql);
                 $site_url_row = $site_url_result->fetch_assoc();
                 if ($site_url_row) {
                     // if this site_url_id already exists, return the site_url_id for it.
@@ -1428,7 +1442,7 @@ class INDEXES
                 } else {
 
                     $site_url_sql = "INSERT INTO site_urls SET site_domain_id='" . $mysql['site_domain_id'] . "', site_url_address='" . $mysql['site_url_address'] . "'";
-                    $site_url_result = _mysqli_query($db, $site_url_sql); // ($site_url_sql);
+                    $site_url_result = $conn->query($site_url_sql); // ($site_url_sql);
                     $site_url_id = $db->insert_id;
                     $setID = setCache(md5("url-id" . $site_url_address . systemHash()), $site_url_id, $time);
                     return $site_url_id;
@@ -1437,7 +1451,7 @@ class INDEXES
         } else {
 
             $site_url_sql = "SELECT site_url_id FROM site_urls WHERE site_domain_id='" . $mysql['site_domain_id'] . "' and site_url_address='" . $mysql['site_url_address'] . "' limit 1";
-            $site_url_result = _mysqli_query($db, $site_url_sql);
+            $site_url_result = $conn->query($site_url_sql);
             $site_url_row = $site_url_result->fetch_assoc();
 
             if ($site_url_row) {
@@ -1447,7 +1461,7 @@ class INDEXES
             } else {
 
                 $site_url_sql = "INSERT INTO site_urls SET site_domain_id='" . $mysql['site_domain_id'] . "', site_url_address='" . $mysql['site_url_address'] . "'";
-                $site_url_result = _mysqli_query($db, $site_url_sql); // ($site_url_sql);
+                $site_url_result = $conn->query($site_url_sql); // ($site_url_sql);
                 $site_url_id = $db->insert_id;
                 return $site_url_id;
             }
@@ -1464,9 +1478,7 @@ class INDEXES
             $utm_var = $dbOrUtmVar;
             $utm_type = $utm_var_or_type;
             $database = DB::getInstance();
-            $db = method_exists($database, 'getConnection')
-                ? $database->getConnection()
-                : null;
+            $db = $database->getConnection();
         } else {
             $db = $dbOrUtmVar;
             $utm_var = $utm_var_or_type;
@@ -1475,12 +1487,13 @@ class INDEXES
         if (!$db instanceof \mysqli) {
             return 0;
         }
+        $conn = new \OneAIAffiliate\Database\Connection($db);
 
         // only grab the first 350 characters of the utm variable
         $utm_var = substr((string) $utm_var, 0, 350);
 
-        $mysql['utm_var'] = $db->real_escape_string($utm_var);
-        $mysql['utm_type'] = $db->real_escape_string($utm_type);
+        $mysql['utm_var'] = $conn->escape($utm_var);
+        $mysql['utm_type'] = $conn->escape($utm_type);
 
         if ($memcacheWorking) {
             $time = 2592000; // 30 days in sec
@@ -1491,7 +1504,7 @@ class INDEXES
             } else {
 
                 $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 1ai_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
-                $utm_result = _mysqli_query($db, $utm_sql);
+                $utm_result = $conn->query($utm_sql);
                 $utm_row = $utm_result->fetch_assoc();
                 if ($utm_row) {
                     // if this already exists, return the id for it
@@ -1502,7 +1515,7 @@ class INDEXES
                 } else {
 
                     $utm_sql = "INSERT INTO 1ai_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
-                    $utm_result = _mysqli_query($db, $utm_sql);
+                    $utm_result = $conn->query($utm_sql);
                     $utm_id = $db->insert_id;
                     $setID = setCache(md5($mysql['utm_type'] . "_id" . $utm_var . systemHash()), $utm_id, $time);
                     return $utm_id;
@@ -1511,7 +1524,7 @@ class INDEXES
         } else {
 
             $utm_sql = "SELECT " . $mysql['utm_type'] . "_id FROM 1ai_" . $mysql['utm_type'] . " WHERE " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
-            $utm_result = _mysqli_query($db, $utm_sql);
+            $utm_result = $conn->query($utm_sql);
             $utm_row = $utm_result->fetch_assoc();
             if ($utm_row) {
                 // if this already exists, return the id for it
@@ -1521,7 +1534,7 @@ class INDEXES
             } else {
 
                 $utm_sql = "INSERT INTO 1ai_" . $mysql['utm_type'] . " SET " . $mysql['utm_type'] . "='" . $mysql['utm_var'] . "'";
-                $utm_result = _mysqli_query($db, $utm_sql);
+                $utm_result = $conn->query($utm_sql);
                 $utm_id = $db->insert_id;
                 return $utm_id;
             }
@@ -1537,9 +1550,7 @@ class INDEXES
             $variable = $dbOrVariable;
             $ppc_variable_id = $variableOrPpcVariableId;
             $database = DB::getInstance();
-            $db = method_exists($database, 'getConnection')
-                ? $database->getConnection()
-                : null;
+            $db = $database->getConnection();
         } else {
             $db = $dbOrVariable;
             $variable = $variableOrPpcVariableId;
@@ -1548,12 +1559,13 @@ class INDEXES
         if (!$db instanceof \mysqli) {
             return 0;
         }
+        $conn = new \OneAIAffiliate\Database\Connection($db);
 
         // only grab the first 350 characters of the variable
         $variable = substr((string) $variable, 0, 350);
 
-        $mysql['var'] = $db->real_escape_string($variable);
-        $mysql['ppc_variable_id'] = $db->real_escape_string($ppc_variable_id);
+        $mysql['var'] = $conn->escape($variable);
+        $mysql['ppc_variable_id'] = $conn->escape($ppc_variable_id);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1561,7 +1573,7 @@ class INDEXES
             if (!$var_id) {
 
                 $var_sql = "SELECT custom_variable_id FROM custom_variables WHERE ppc_variable_id = '" . $mysql['ppc_variable_id'] . "' AND variable = '" . $mysql['var'] . "'";
-                $var_result = _mysqli_query($db, $var_sql);
+                $var_result = $conn->query($var_sql);
                 $var_row = $var_result->fetch_assoc();
                 if ($var_row) {
                     // if this already exists, return the id for it
@@ -1570,7 +1582,7 @@ class INDEXES
                 } else {
 
                     $var_sql = "INSERT INTO custom_variables SET ppc_variable_id = '" . $mysql['ppc_variable_id'] . "', variable = '" . $mysql['var'] . "'";
-                    $var_result = _mysqli_query($db, $var_sql);
+                    $var_result = $conn->query($var_sql);
                     $var_id = $db->insert_id;
                     $setID = setCache(md5($ppc_variable_id . $variable . systemHash()), $var_id, $time);
                 }
@@ -1578,7 +1590,7 @@ class INDEXES
         } else {
 
             $var_sql = "SELECT custom_variable_id FROM custom_variables WHERE ppc_variable_id = '" . $mysql['ppc_variable_id'] . "' AND variable = '" . $mysql['var'] . "'";
-            $var_result = _mysqli_query($db, $var_sql);
+            $var_result = $conn->query($var_sql);
             $var_row = $var_result->fetch_assoc();
 
             if ($var_row) {
@@ -1587,7 +1599,7 @@ class INDEXES
             } else {
 
                 $var_sql = "INSERT INTO custom_variables SET ppc_variable_id = '" . $mysql['ppc_variable_id'] . "', variable = '" . $mysql['var'] . "'";
-                $var_result = _mysqli_query($db, $var_sql);
+                $var_result = $conn->query($var_sql);
                 $var_id = $db->insert_id;
             }
         }
@@ -1603,9 +1615,7 @@ class INDEXES
         if ($variables === null) {
             $variables = $dbOrVariables;
             $database = DB::getInstance();
-            $db = method_exists($database, 'getConnection')
-                ? $database->getConnection()
-                : null;
+            $db = $database->getConnection();
         } else {
             $db = $dbOrVariables;
         }
@@ -1613,8 +1623,9 @@ class INDEXES
         if (!$db instanceof \mysqli) {
             return 0;
         }
+        $conn = new \OneAIAffiliate\Database\Connection($db);
 
-        $mysql['variables'] = $db->real_escape_string($variables);
+        $mysql['variables'] = $conn->escape($variables);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1623,7 +1634,7 @@ class INDEXES
                 return $getSet;
             } else {
                 $var_sql = "SELECT variable_set_id FROM variable_sets WHERE variables = '" . $mysql['variables'] . "'";
-                $var_result = _mysqli_query($db, $var_sql);
+                $var_result = $conn->query($var_sql);
                 $var_row = $var_result->fetch_assoc();
                 if ($var_row) {
                     // if this already exists, return the id for it
@@ -1633,7 +1644,7 @@ class INDEXES
                 } else {
 
                     $var_sql = "INSERT INTO variable_sets SET variables = '" . $mysql['variables'] . "'";
-                    $var_result = _mysqli_query($db, $var_sql);
+                    $var_result = $conn->query($var_sql);
                     $var_id = $db->insert_id;
                     $setID = setCache(md5('variable_set' . $variables . systemHash()), $var_id, $time);
 
@@ -1644,13 +1655,13 @@ class INDEXES
                     }
                     $row = "insert into `variable_sets2` (`variable_set_id`, `variables`) values " . rtrim($row, ',') . ";";
 
-                    _mysqli_query($db, $row);
+                    $conn->query($row);
                     return $var_id;
                 }
             }
         } else {
             $var_sql = "SELECT variable_set_id FROM variable_sets WHERE variables = '" . $mysql['variables'] . "'";
-            $var_result = _mysqli_query($db, $var_sql);
+            $var_result = $conn->query($var_sql);
             $var_row = $var_result->fetch_assoc();
 
             if ($var_row) {
@@ -1660,7 +1671,7 @@ class INDEXES
                 return $var_id;
             } else {
                 $var_sql = "INSERT INTO variable_sets SET variables = '" . $mysql['variables'] . "'";
-                $var_result = _mysqli_query($db, $var_sql);
+                $var_result = $conn->query($var_sql);
                 $var_id = $db->insert_id;
                 $var_sets = explode(",", (string) $mysql['variables']);
                 $row = ''; // Initialize $row
@@ -1670,7 +1681,7 @@ class INDEXES
 
                 $row = "insert into `variable_sets2` (`variable_set_id`, `variables`) values " . rtrim($row, ',') . ";";
 
-                _mysqli_query($db, $row);
+                $conn->query($row);
                 return $var_id;
             }
         }
@@ -1685,9 +1696,7 @@ class INDEXES
         if ($keyword === null) {
             $keyword = $dbOrKeyword;
             $database = DB::getInstance();
-            $db = method_exists($database, 'getConnection')
-                ? $database->getConnection()
-                : null;
+            $db = $database->getConnection();
         } else {
             $db = $dbOrKeyword;
         }
@@ -1695,10 +1704,11 @@ class INDEXES
         if (!$db instanceof \mysqli) {
             return 0;
         }
+        $conn = new \OneAIAffiliate\Database\Connection($db);
         // only grab the first 255 characters of keyword
         // $keyword = substr($keyword, 0, 255);
 
-        $mysql['keyword'] = $db->real_escape_string($keyword);
+        $mysql['keyword'] = $conn->escape($keyword);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1708,7 +1718,7 @@ class INDEXES
             } else {
 
                 $keyword_sql = "SELECT keyword_id FROM keywords WHERE keyword='" . $mysql['keyword'] . "'";
-                $keyword_result = _mysqli_query($db, $keyword_sql);
+                $keyword_result = $conn->query($keyword_sql);
                 $keyword_row = $keyword_result->fetch_assoc();
                 if ($keyword_row) {
                     // if this already exists, return the id for it
@@ -1718,7 +1728,7 @@ class INDEXES
                 } else {
 
                     $keyword_sql = "INSERT INTO keywords SET keyword='" . $mysql['keyword'] . "'";
-                    $keyword_result = _mysqli_query($db, $keyword_sql); // ($keyword_sql);
+                    $keyword_result = $conn->query($keyword_sql); // ($keyword_sql);
                     $keyword_id = $db->insert_id;
                     $setID = setCache(md5("keyword-id" . $keyword . systemHash()), $keyword_id, $time);
                     return $keyword_id;
@@ -1727,7 +1737,7 @@ class INDEXES
         } else {
 
             $keyword_sql = "SELECT keyword_id FROM keywords WHERE keyword='" . $mysql['keyword'] . "'";
-            $keyword_result = _mysqli_query($db, $keyword_sql);
+            $keyword_result = $conn->query($keyword_sql);
             $keyword_row = $keyword_result->fetch_assoc();
             if ($keyword_row) {
                 // if this already exists, return the id for it
@@ -1736,7 +1746,7 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $keyword_sql = "INSERT INTO keywords SET keyword='" . $mysql['keyword'] . "'";
-                $keyword_result = _mysqli_query($db, $keyword_sql); // ($keyword_sql);
+                $keyword_result = $conn->query($keyword_sql); // ($keyword_sql);
                 $keyword_id = $db->insert_id;
                 return $keyword_id;
             }
@@ -1752,9 +1762,7 @@ class INDEXES
             $custom_var_name = $dbOrCustomVarName;
             $custom_var_data = $custom_var_name_or_data;
             $database = DB::getInstance();
-            $db = method_exists($database, 'getConnection')
-                ? $database->getConnection()
-                : null;
+            $db = $database->getConnection();
         } else {
             $db = $dbOrCustomVarName;
             $custom_var_name = $custom_var_name_or_data;
@@ -1763,10 +1771,11 @@ class INDEXES
         if (!$db instanceof \mysqli) {
             return 0;
         }
+        $conn = new \OneAIAffiliate\Database\Connection($db);
 
         // only grab the first 350 charactesr of custom_var
         $custom_var_data = substr((string) $custom_var_data, 0, 350);
-        $mysql[$custom_var_name] = $db->real_escape_string($custom_var_data);
+        $mysql[$custom_var_name] = $conn->escape($custom_var_data);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1776,7 +1785,7 @@ class INDEXES
             } else {
 
                 $custom_sql = "SELECT " . $custom_var_name . "_id FROM tracking_" . $custom_var_name . " WHERE " . $custom_var_name . "='" . $mysql[$custom_var_name] . "'";
-                $custom_result = _mysqli_query($db, $custom_sql);
+                $custom_result = $conn->query($custom_sql);
                 $custom_row = $custom_result->fetch_assoc();
                 if ($custom_row) {
                     // if this already exists, return the id for it
@@ -1786,7 +1795,7 @@ class INDEXES
                 } else {
 
                     $custom_sql = "INSERT INTO tracking_" . $custom_var_name . " SET " . $custom_var_name . "='" . $mysql[$custom_var_name] . "'";
-                    $custom_result = _mysqli_query($db, $custom_sql); // ($c1_sql);
+                    $custom_result = $conn->query($custom_sql); // ($c1_sql);
                     $custom_id = $db->insert_id;
                     $setID = setCache(md5($custom_var_name . "-id" . $custom_var_data . systemHash()), $custom_id);
                     return $custom_id;
@@ -1796,7 +1805,7 @@ class INDEXES
 
             $custom_sql = "SELECT " . $custom_var_name . "_id FROM tracking_" . $custom_var_name . " WHERE " . $custom_var_name . "='" . $mysql[$custom_var_name] . "'";
 
-            $custom_result = _mysqli_query($db, $custom_sql);
+            $custom_result = $conn->query($custom_sql);
             $custom_row = $custom_result->fetch_assoc();
 
             if ($custom_row) {
@@ -1806,7 +1815,7 @@ class INDEXES
             } else {
                 // else if this id doesn't exist, insert the row and grab the id for it
                 $custom_sql = "INSERT INTO tracking_" . $custom_var_name . " SET " . $custom_var_name . "='" . $mysql[$custom_var_name] . "'";
-                $custom_result = _mysqli_query($db, $custom_sql);
+                $custom_result = $conn->query($custom_sql);
                 $custom_id = $db->insert_id;
                 return $custom_id;
             }
@@ -1816,12 +1825,13 @@ class INDEXES
     // this returns the c1 id
     public static function get_c1_id($db, $c1)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
         // only grab the first 350 charactesr of c1
         $c1 = substr((string) $c1, 0, 350);
 
-        $mysql['c1'] = $db->real_escape_string($c1);
+        $mysql['c1'] = $conn->escape($c1);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1831,7 +1841,7 @@ class INDEXES
             } else {
 
                 $c1_sql = "SELECT c1_id FROM tracking_c1 WHERE c1='" . $mysql['c1'] . "'";
-                $c1_result = _mysqli_query($db, $c1_sql);
+                $c1_result = $conn->query($c1_sql);
                 $c1_row = $c1_result->fetch_assoc();
                 if ($c1_row) {
                     // if this already exists, return the id for it
@@ -1841,7 +1851,7 @@ class INDEXES
                 } else {
 
                     $c1_sql = "INSERT INTO tracking_c1 SET c1='" . $mysql['c1'] . "'";
-                    $c1_result = _mysqli_query($db, $c1_sql); // ($c1_sql);
+                    $c1_result = $conn->query($c1_sql); // ($c1_sql);
                     $c1_id = $db->insert_id;
                     $setID = setCache(md5("c1-id" . $c1 . systemHash()), $c1_id);
                     return $c1_id;
@@ -1850,7 +1860,7 @@ class INDEXES
         } else {
 
             $c1_sql = "SELECT c1_id FROM tracking_c1 WHERE c1='" . $mysql['c1'] . "'";
-            $c1_result = _mysqli_query($db, $c1_sql);
+            $c1_result = $conn->query($c1_sql);
             $c1_row = $c1_result->fetch_assoc();
             if ($c1_row) {
                 // if this already exists, return the id for it
@@ -1859,7 +1869,7 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c1_sql = "INSERT INTO tracking_c1 SET c1='" . $mysql['c1'] . "'";
-                $c1_result = _mysqli_query($db, $c1_sql); // ($c1_sql);
+                $c1_result = $conn->query($c1_sql); // ($c1_sql);
                 $c1_id = $db->insert_id;
                 return $c1_id;
             }
@@ -1869,12 +1879,13 @@ class INDEXES
     // this returns the c2 id
     public static function get_c2_id($db, $c2)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
         // only grab the first 350 charactesr of c2
         $c2 = substr((string) $c2, 0, 350);
 
-        $mysql['c2'] = $db->real_escape_string($c2);
+        $mysql['c2'] = $conn->escape($c2);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1884,7 +1895,7 @@ class INDEXES
             } else {
 
                 $c2_sql = "SELECT c2_id FROM tracking_c2 WHERE c2='" . $mysql['c2'] . "'";
-                $c2_result = _mysqli_query($db, $c2_sql);
+                $c2_result = $conn->query($c2_sql);
                 $c2_row = $c2_result->fetch_assoc();
                 if ($c2_row) {
                     // if this already exists, return the id for it
@@ -1894,7 +1905,7 @@ class INDEXES
                 } else {
 
                     $c2_sql = "INSERT INTO tracking_c2 SET c2='" . $mysql['c2'] . "'";
-                    $c2_result = _mysqli_query($db, $c2_sql); // ($c2_sql);
+                    $c2_result = $conn->query($c2_sql); // ($c2_sql);
                     $c2_id = $db->insert_id;
                     $setID = setCache(md5("c2-id" . $c2 . systemHash()), $c2_id);
                     return $c2_id;
@@ -1903,7 +1914,7 @@ class INDEXES
         } else {
 
             $c2_sql = "SELECT c2_id FROM tracking_c2 WHERE c2='" . $mysql['c2'] . "'";
-            $c2_result = _mysqli_query($db, $c2_sql);
+            $c2_result = $conn->query($c2_sql);
             $c2_row = $c2_result->fetch_assoc();
             if ($c2_row) {
                 // if this already exists, return the id for it
@@ -1912,7 +1923,7 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c2_sql = "INSERT INTO tracking_c2 SET c2='" . $mysql['c2'] . "'";
-                $c2_result = _mysqli_query($db, $c2_sql); // ($c2_sql);
+                $c2_result = $conn->query($c2_sql); // ($c2_sql);
                 $c2_id = $db->insert_id;
                 return $c2_id;
             }
@@ -1922,12 +1933,13 @@ class INDEXES
     // this returns the c3 id
     public static function get_c3_id($db, $c3)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
         // only grab the first 350 charactesr of c3
         $c3 = substr((string) $c3, 0, 350);
 
-        $mysql['c3'] = $db->real_escape_string($c3);
+        $mysql['c3'] = $conn->escape($c3);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1937,7 +1949,7 @@ class INDEXES
             } else {
 
                 $c3_sql = "SELECT c3_id FROM tracking_c3 WHERE c3='" . $mysql['c3'] . "'";
-                $c3_result = _mysqli_query($db, $c3_sql);
+                $c3_result = $conn->query($c3_sql);
                 $c3_row = $c3_result->fetch_assoc();
                 if ($c3_row) {
                     // if this already exists, return the id for it
@@ -1947,7 +1959,7 @@ class INDEXES
                 } else {
 
                     $c3_sql = "INSERT INTO tracking_c3 SET c3='" . $mysql['c3'] . "'";
-                    $c3_result = _mysqli_query($db, $c3_sql); // ($c3_sql);
+                    $c3_result = $conn->query($c3_sql); // ($c3_sql);
                     $c3_id = $db->insert_id;
                     $setID = setCache(md5("c3-id" . $c3 . systemHash()), $c3_id);
                     return $c3_id;
@@ -1956,7 +1968,7 @@ class INDEXES
         } else {
 
             $c3_sql = "SELECT c3_id FROM tracking_c3 WHERE c3='" . $mysql['c3'] . "'";
-            $c3_result = _mysqli_query($db, $c3_sql);
+            $c3_result = $conn->query($c3_sql);
             $c3_row = $c3_result->fetch_assoc();
             if ($c3_row) {
                 // if this already exists, return the id for it
@@ -1965,7 +1977,7 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c3_sql = "INSERT INTO tracking_c3 SET c3='" . $mysql['c3'] . "'";
-                $c3_result = _mysqli_query($db, $c3_sql); // ($c3_sql);
+                $c3_result = $conn->query($c3_sql); // ($c3_sql);
                 $c3_id = $db->insert_id;
                 return $c3_id;
             }
@@ -1975,12 +1987,13 @@ class INDEXES
     // this returns the c4 id
     public static function get_c4_id($db, $c4)
     {
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         global $memcacheWorking, $memcache;
 
         // only grab the first 350 charactesr of c4
         $c4 = substr((string) $c4, 0, 350);
 
-        $mysql['c4'] = $db->real_escape_string($c4);
+        $mysql['c4'] = $conn->escape($c4);
 
         if ($memcacheWorking) {
             // get from memcached
@@ -1990,7 +2003,7 @@ class INDEXES
             } else {
 
                 $c4_sql = "SELECT c4_id FROM tracking_c4 WHERE c4='" . $mysql['c4'] . "'";
-                $c4_result = _mysqli_query($db, $c4_sql);
+                $c4_result = $conn->query($c4_sql);
                 $c4_row = $c4_result->fetch_assoc();
                 if ($c4_row) {
                     // if this already exists, return the id for it
@@ -2000,7 +2013,7 @@ class INDEXES
                 } else {
 
                     $c4_sql = "INSERT INTO tracking_c4 SET c4='" . $mysql['c4'] . "'";
-                    $c4_result = _mysqli_query($db, $c4_sql); // ($c4_sql);
+                    $c4_result = $conn->query($c4_sql); // ($c4_sql);
                     $c4_id = $db->insert_id;
                     $setID = setCache(md5("c4-id" . $c4 . systemHash()), $c4_id);
                     return $c4_id;
@@ -2009,7 +2022,7 @@ class INDEXES
         } else {
 
             $c4_sql = "SELECT c4_id FROM tracking_c4 WHERE c4='" . $mysql['c4'] . "'";
-            $c4_result = _mysqli_query($db, $c4_sql);
+            $c4_result = $conn->query($c4_sql);
             $c4_row = $c4_result->fetch_assoc();
             if ($c4_row) {
                 // if this already exists, return the id for it
@@ -2018,7 +2031,7 @@ class INDEXES
             } else {
                 // else if this ip doesn't exist, insert the row and grab the id for it
                 $c4_sql = "INSERT INTO tracking_c4 SET c4='" . $mysql['c4'] . "'";
-                $c4_result = _mysqli_query($db, $c4_sql); // ($c4_sql);
+                $c4_result = $conn->query($c4_sql); // ($c4_sql);
                 $c4_id = $db->insert_id;
                 return $c4_id;
             }
@@ -2327,19 +2340,16 @@ function getGeoData($ip)
         }
     }
 
-    if ($country_code == null || $country_code == '') {
+    if ($country_code === null || $country_code === '') {
         $country = 'Unknown country';
         $country_code = 'non';
     }
 
-    if ($is_european_union == null || $is_european_union === '') {
+    if (!$is_european_union) {
         $is_european_union = false;
-        if ($continent != null && $continent != 'Europe') {
-            $is_european_union = false;
-        }
     }
 
-    if ($continent == null || $continent == '') {
+    if ($continent === null || $continent === '') {
         $continent = 'Unknown continent';
     }
 
@@ -2510,9 +2520,7 @@ function record_mysql_error($dbOrSql, $sql = null): never
 
     if (!$db instanceof \mysqli) {
         $database = \DB::getInstance();
-        $db = method_exists($database, 'getConnection')
-            ? $database->getConnection()
-            : null;
+        $db = $database->getConnection();
     }
 
     if (!$db instanceof \mysqli) {
@@ -2520,6 +2528,7 @@ function record_mysql_error($dbOrSql, $sql = null): never
         echo 'Database error. The webmaster has been notified.';
         die();
     }
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     // record the mysql error
     $clean['mysql_error_text'] = mysqli_error($db);
@@ -2529,18 +2538,18 @@ function record_mysql_error($dbOrSql, $sql = null): never
 
 
     $ipForError = $ip_address ?? ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? ($_SERVER['REMOTE_ADDR'] ?? ''));
-    $ip_id = INDEXES::get_ip_id($ipForError);
-    $mysql['ip_id'] = $db->real_escape_string($ip_id);
+    $ip_id = get_ip_id($ipForError);
+    $mysql['ip_id'] = $conn->escape($ip_id);
 
     $site_url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-    $site_id = INDEXES::get_site_url_id($site_url);
-    $mysql['site_id'] = $db->real_escape_string($site_id);
+    $site_id = get_site_url_id($site_url);
+    $mysql['site_id'] = $conn->escape($site_id);
 
-    $mysql['user_id'] = $db->real_escape_string(strip_tags((string) $_SESSION['user_id']));
-    $mysql['mysql_error_text'] = $db->real_escape_string($clean['mysql_error_text']);
-    $mysql['mysql_error_sql'] = $db->real_escape_string($sql);
-    $mysql['script_url'] = $db->real_escape_string(strip_tags((string) $_SERVER['SCRIPT_URL']));
-    $mysql['server_name'] = $db->real_escape_string(strip_tags((string) $_SERVER['SERVER_NAME']));
+    $mysql['user_id'] = $conn->escape(strip_tags((string) $_SESSION['user_id']));
+    $mysql['mysql_error_text'] = $conn->escape($clean['mysql_error_text']);
+    $mysql['mysql_error_sql'] = $conn->escape($sql);
+    $mysql['script_url'] = $conn->escape(strip_tags((string) $_SERVER['SCRIPT_URL']));
+    $mysql['server_name'] = $conn->escape(strip_tags((string) $_SERVER['SERVER_NAME']));
     $mysql['mysql_error_time'] = time();
 
     $report_sql = "INSERT     INTO  mysql_errors
@@ -2550,7 +2559,7 @@ function record_mysql_error($dbOrSql, $sql = null): never
 										ip_id='" . $mysql['ip_id'] . "',
 										site_id='" . $mysql['site_id'] . "',
 										mysql_error_time='" . $mysql['mysql_error_time'] . "'";
-    $report_query = _mysqli_query($db, $report_sql);
+    $report_query = $conn->query($report_sql);
 
     // email administration of the error
     $to = $_SERVER['SERVER_ADMIN'];
@@ -2620,6 +2629,7 @@ function get_absolute_url(): string
 function getTrackingDomain(): string
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     $raw_server_name = $_SERVER['SERVER_NAME'] ?? '';
     // Sanitize to prevent host header injection — allow only valid hostname characters
@@ -2639,7 +2649,7 @@ function getTrackingDomain(): string
 		WHERE
 			`user_id`='1'
 	";
-    $tracking_domain_result = _mysqli_query($db, $tracking_domain_sql); //($user_sql);
+    $tracking_domain_result = $conn->query($tracking_domain_sql); //($user_sql);
     $tracking_domain_row = $tracking_domain_result->fetch_assoc();
     if (isset($tracking_domain_row['user_tracking_domain']) && strlen((string) $tracking_domain_row['user_tracking_domain']) > 0) {
         $tracking_domain = $tracking_domain_row['user_tracking_domain'];
@@ -2650,6 +2660,7 @@ function getTrackingDomain(): string
 function updateLpClickDataForRotator($redirect_id, $click_id, $rotator_id, $rule_id)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $stmt = $db->prepare("REPLACE INTO clicks_rotator SET click_id=?, rotator_id=?, rule_id=?, rule_redirect_id=?");
     $stmt->bind_param('iiii', $click_id, $rotator_id, $rule_id, $redirect_id);
     if (!$stmt->execute()) {
@@ -2748,6 +2759,7 @@ function getData($url)
 function getPublisher($pubid)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     $publisher_id_sql = "
 		SELECT
@@ -2760,7 +2772,7 @@ function getPublisher($pubid)
     // @phpstan-ignore-next-line -- $db+sql overload defined in connect2.php
     $pubid_row = memcache_mysql_fetch_assoc($db, $publisher_id_sql);
     if ($pubid_row) {
-        return $db->real_escape_string($pubid_row['user_id']);
+        return $conn->escape($pubid_row['user_id']);
     } else {
         return 1;
     }
@@ -2853,15 +2865,17 @@ function inet6_aton($ip)
 
 function sanitizeIn($data) {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     if (!is_string($data)) {
         return '';
     }
-    return $db->real_escape_string($data);
+    return $conn->escape($data);
 }
 
 function getTrackerDetail(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $tracker_sql = "SELECT trackers.user_id,
 						trackers.aff_campaign_id,
 						text_ad_id,
@@ -2897,33 +2911,33 @@ function getTrackerDetail(&$mysql)
     $tracker_row = memcache_mysql_fetch_assoc($db, $tracker_sql);
 
     //set all mysql vars
-    $mysql['aff_campaign_id'] = $db->real_escape_string($tracker_row['aff_campaign_id']);
-    $mysql['ppc_account_id'] = $db->real_escape_string($tracker_row['ppc_account_id']);
-    $mysql['user_pref_dynamic_bid'] = $db->real_escape_string($tracker_row['user_pref_dynamic_bid']);
-    $mysql['user_pref_referer_data'] = $db->real_escape_string($tracker_row['user_pref_referer_data']);
+    $mysql['aff_campaign_id'] = $conn->escape($tracker_row['aff_campaign_id']);
+    $mysql['ppc_account_id'] = $conn->escape($tracker_row['ppc_account_id']);
+    $mysql['user_pref_dynamic_bid'] = $conn->escape($tracker_row['user_pref_dynamic_bid']);
+    $mysql['user_pref_referer_data'] = $conn->escape($tracker_row['user_pref_referer_data']);
     // set cpc use dynamic variable if set or the default if not
     if (isset($_GET['t1aib']) && $mysql['user_pref_dynamic_bid'] == '1') {
         $_GET['t1aib'] = ltrim((string) $_GET['t1aib'], '$');
         if (is_numeric($_GET['t1aib'])) {
             $bid = number_format((float) $_GET['t1aib'], 5, '.', '');
-            $mysql['click_cpc'] = $db->real_escape_string($bid);
+            $mysql['click_cpc'] = $conn->escape($bid);
         } else {
-            $mysql['click_cpc'] = $db->real_escape_string($tracker_row['click_cpc']);
+            $mysql['click_cpc'] = $conn->escape($tracker_row['click_cpc']);
         }
     } else
-        $mysql['click_cpc'] = $db->real_escape_string($tracker_row['click_cpc']);
+        $mysql['click_cpc'] = $conn->escape($tracker_row['click_cpc']);
 
-    $mysql['click_cpa'] = $db->real_escape_string($tracker_row['click_cpa']);
-    $mysql['click_payout'] = $db->real_escape_string($tracker_row['aff_campaign_payout']);
+    $mysql['click_cpa'] = $conn->escape($tracker_row['click_cpa']);
+    $mysql['click_payout'] = $conn->escape($tracker_row['aff_campaign_payout']);
 
-    $mysql['text_ad_id'] = $db->real_escape_string($tracker_row['text_ad_id']);
+    $mysql['text_ad_id'] = $conn->escape($tracker_row['text_ad_id']);
 
-    $mysql['user_keyword_searched_or_bidded'] = $db->real_escape_string($tracker_row['user_keyword_searched_or_bidded']);
+    $mysql['user_keyword_searched_or_bidded'] = $conn->escape($tracker_row['user_keyword_searched_or_bidded']);
 
-    $mysql['user_id'] = $db->real_escape_string($tracker_row['user_id']);
-    $mysql['user_timezone'] = $db->real_escape_string($tracker_row['user_timezone']);
+    $mysql['user_id'] = $conn->escape($tracker_row['user_id']);
+    $mysql['user_timezone'] = $conn->escape($tracker_row['user_timezone']);
 
-    $mysql['aff_campaign_url'] = $db->real_escape_string($tracker_row['aff_campaign_url']);
+    $mysql['aff_campaign_url'] = $conn->escape($tracker_row['aff_campaign_url']);
 
     return $tracker_row;
 }
@@ -2931,6 +2945,7 @@ function getTrackerDetail(&$mysql)
 function getTrackerDetailPT(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $tracker_sql = "SELECT trackers.user_id,
 						trackers.aff_campaign_id,
 						text_ad_id,
@@ -2968,33 +2983,33 @@ function getTrackerDetailPT(&$mysql)
     $tracker_row = memcache_mysql_fetch_assoc($db, $tracker_sql);
 
     //set all mysql vars
-    $mysql['aff_campaign_id'] = $db->real_escape_string($tracker_row['aff_campaign_id']);
-    $mysql['ppc_account_id'] = $db->real_escape_string($tracker_row['ppc_account_id']);
-    $mysql['user_pref_dynamic_bid'] = $db->real_escape_string($tracker_row['user_pref_dynamic_bid']);
-    $mysql['user_pref_referer_data'] = $db->real_escape_string($tracker_row['user_pref_referer_data']);
+    $mysql['aff_campaign_id'] = $conn->escape($tracker_row['aff_campaign_id']);
+    $mysql['ppc_account_id'] = $conn->escape($tracker_row['ppc_account_id']);
+    $mysql['user_pref_dynamic_bid'] = $conn->escape($tracker_row['user_pref_dynamic_bid']);
+    $mysql['user_pref_referer_data'] = $conn->escape($tracker_row['user_pref_referer_data']);
     // set cpc use dynamic variable if set or the default if not
     if (isset($_GET['t1aib']) && $mysql['user_pref_dynamic_bid'] == '1') {
         $_GET['t1aib'] = ltrim((string) $_GET['t1aib'], '$');
         if (is_numeric($_GET['t1aib'])) {
             $bid = number_format((float) $_GET['t1aib'], 5, '.', '');
-            $mysql['click_cpc'] = $db->real_escape_string($bid);
+            $mysql['click_cpc'] = $conn->escape($bid);
         } else {
-            $mysql['click_cpc'] = $db->real_escape_string($tracker_row['click_cpc']);
+            $mysql['click_cpc'] = $conn->escape($tracker_row['click_cpc']);
         }
     } else
-        $mysql['click_cpc'] = $db->real_escape_string($tracker_row['click_cpc']);
+        $mysql['click_cpc'] = $conn->escape($tracker_row['click_cpc']);
 
-    $mysql['click_cpa'] = $db->real_escape_string($tracker_row['click_cpa']);
-    $mysql['click_payout'] = $db->real_escape_string($tracker_row['aff_campaign_payout']);
+    $mysql['click_cpa'] = $conn->escape($tracker_row['click_cpa']);
+    $mysql['click_payout'] = $conn->escape($tracker_row['aff_campaign_payout']);
 
-    $mysql['text_ad_id'] = $db->real_escape_string($tracker_row['text_ad_id']);
+    $mysql['text_ad_id'] = $conn->escape($tracker_row['text_ad_id']);
 
-    $mysql['user_keyword_searched_or_bidded'] = $db->real_escape_string($tracker_row['user_keyword_searched_or_bidded']);
+    $mysql['user_keyword_searched_or_bidded'] = $conn->escape($tracker_row['user_keyword_searched_or_bidded']);
 
-    $mysql['user_id'] = $db->real_escape_string($tracker_row['user_id']);
-    $mysql['user_timezone'] = $db->real_escape_string($tracker_row['user_timezone']);
+    $mysql['user_id'] = $conn->escape($tracker_row['user_id']);
+    $mysql['user_timezone'] = $conn->escape($tracker_row['user_timezone']);
 
-    $mysql['aff_campaign_url'] = $db->real_escape_string($tracker_row['aff_campaign_url']);
+    $mysql['aff_campaign_url'] = $conn->escape($tracker_row['aff_campaign_url']);
 
     return $tracker_row;
 }
@@ -3002,25 +3017,28 @@ function getTrackerDetailPT(&$mysql)
 function getClickId(): string
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     $click_sql = "INSERT INTO  clicks_counter SET click_id=DEFAULT";
     $click_result = $db->query($click_sql) or record_mysql_error($db);
 
     //now gather the info for the advance click insert
     $click_id = $db->insert_id;
-    return $db->real_escape_string($click_id);
+    return $conn->escape($click_id);
 }
 
 function getClickIdPublic($click_id)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
-    return $db->real_escape_string(random_int(1, 9) . $click_id . random_int(1, 9));
+    return $conn->escape(random_int(1, 9) . $click_id . random_int(1, 9));
 }
 
 function insertClicks($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $click_sql = '';
 
     if (!$mysql['ppc_account_id']) {
@@ -3084,6 +3102,7 @@ function insertClicks($mysql)
 function insertGclid($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     // insert gclid and utm vars
     if ($mysql['gclid'] || $mysql['utm_source_id'] || $mysql['utm_medium_id'] || $mysql['utm_campaign_id'] || $mysql['utm_term_id'] || $mysql['utm_content_id']) {
         $click_sql = "REPLACE INTO google
@@ -3101,6 +3120,7 @@ function insertGclid($mysql)
 function getGclid($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     // get click id
     if (isset($mysql['gclid'])) {
 
@@ -3132,6 +3152,7 @@ function getGclid($mysql)
 function getClickData($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     // get click id
     if (isset($mysql['click_id'])) {
 
@@ -3166,6 +3187,7 @@ function getClickData($mysql)
 function insertMsclkid($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     // insert msclkid and utm vars
     if ($mysql['msclkid'] || $mysql['utm_source_id'] || $mysql['utm_medium_id'] || $mysql['utm_campaign_id'] || $mysql['utm_term_id'] || $mysql['utm_content_id']) {
         $click_sql = "REPLACE INTO   bing
@@ -3183,6 +3205,7 @@ function insertMsclkid($mysql)
 function insertFbclid($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     // insert fbclid and utm vars
     if ($mysql['fbclid'] || $mysql['utm_source_id'] || $mysql['utm_medium_id'] || $mysql['utm_campaign_id'] || $mysql['utm_term_id'] || $mysql['utm_content_id']) {
         $click_sql = "REPLACE INTO facebook
@@ -3200,6 +3223,7 @@ function insertFbclid($mysql)
 function insertClicksVariable($mysql, $tracker_row)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $custom_var_ids = [];
 
     $ppc_variable_ids = explode(',', (string) $tracker_row['ppc_variable_ids']);
@@ -3207,10 +3231,10 @@ function insertClicksVariable($mysql, $tracker_row)
 
     foreach ($parameters as $key => $value) {
         if (isset($_GET[$value])) {
-            $variable = $db->real_escape_string($_GET[$value]);
-            if (isset($variable) && $variable != '') {
+            $variable = $conn->escape($_GET[$value]);
+            if ($variable != '') {
                 $variable = str_replace('%20', ' ', $variable);
-                $variable_id = INDEXES::get_variable_id($variable, $ppc_variable_ids[$key]);
+                $variable_id = get_variable_id($variable, $ppc_variable_ids[$key]);
                 $custom_var_ids[] = $variable_id;
             }
         }
@@ -3225,9 +3249,9 @@ function insertClicksVariable($mysql, $tracker_row)
     if ($total_vars > 0) {
 
         $variables = implode(",", $custom_var_ids);
-        $variable_set_id = INDEXES::get_variable_set_id($variables);
+        $variable_set_id = get_variable_set_id($variables);
 
-        $mysql['variable_set_id'] = $db->real_escape_string($variable_set_id);
+        $mysql['variable_set_id'] = $conn->escape($variable_set_id);
 
         $var_sql = "INSERT IGNORE INTO clicks_variable (click_id, variable_set_id) VALUES ('" . $mysql['click_id'] . "', '" . $mysql['variable_set_id'] . "')";
         return $var_result = $db->query($var_sql) or record_mysql_error($db);
@@ -3237,6 +3261,7 @@ function insertClicksVariable($mysql, $tracker_row)
 function insertClicksSite($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $click_sql = '';
 
     switch ($mysql['lp_type']) {
@@ -3278,6 +3303,7 @@ function insertClicksSite($mysql)
 function insertClicksRecord($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $click_sql = "INSERT IGNORE INTO   clicks_record
 			  SET           click_id='" . $mysql['click_id'] . "',
 							click_id_public='" . $mysql['click_id_public'] . "',
@@ -3290,6 +3316,7 @@ function insertClicksRecord($mysql)
 function insertClicksAdvance($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $click_sql = "INSERT IGNORE INTO  clicks_advance
 			  SET           	click_id='" . $mysql['click_id'] . "',
 							text_ad_id='" . $mysql['text_ad_id'] . "',
@@ -3308,6 +3335,7 @@ function insertClicksAdvance($mysql)
 function insertClicksTracking($mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $click_sql = "INSERT IGNORE INTO
 		clicks_tracking
 	SET
@@ -3324,6 +3352,7 @@ function insertClicksTracking($mysql)
 function processCacheRedirect(): void
 {
     global $db, $memcacheWorking, $memcache;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $usedCachedRedirect = false;
     if (!$db) $usedCachedRedirect = true;
 
@@ -3484,67 +3513,69 @@ function is_prefetch(): bool
 function getUTMParams(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     //utm_source
-    $utm_source = $db->real_escape_string($_GET['utm_source']);
-    if (isset($utm_source) && $utm_source != '') {
+    $utm_source = $conn->escape($_GET['utm_source']);
+    if ($utm_source != '') {
         $utm_source = str_replace('%20', ' ', $utm_source);
-        $utm_source_id = INDEXES::get_utm_id($utm_source, 'utm_source');
+        $utm_source_id = get_utm_id($utm_source, 'utm_source');
     } else {
         $utm_source_id = 0;
     }
-    $mysql['utm_source_id'] = $db->real_escape_string($utm_source_id);
-    $mysql['utm_source'] = $db->real_escape_string($utm_source);
+    $mysql['utm_source_id'] = $conn->escape($utm_source_id);
+    $mysql['utm_source'] = $conn->escape($utm_source);
 
     //utm_medium
-    $utm_medium = $db->real_escape_string($_GET['utm_medium']);
-    if (isset($utm_medium) && $utm_medium != '') {
+    $utm_medium = $conn->escape($_GET['utm_medium']);
+    if ($utm_medium != '') {
         $utm_medium = str_replace('%20', ' ', $utm_medium);
-        $utm_medium_id = INDEXES::get_utm_id($utm_medium, 'utm_medium');
+        $utm_medium_id = get_utm_id($utm_medium, 'utm_medium');
     } else {
         $utm_medium_id = 0;
     }
-    $mysql['utm_medium_id'] = $db->real_escape_string($utm_medium_id);
-    $mysql['utm_medium'] = $db->real_escape_string($utm_medium);
+    $mysql['utm_medium_id'] = $conn->escape($utm_medium_id);
+    $mysql['utm_medium'] = $conn->escape($utm_medium);
 
     //utm_campaign
-    $utm_campaign = $db->real_escape_string($_GET['utm_campaign']);
-    if (isset($utm_campaign) && $utm_campaign != '') {
+    $utm_campaign = $conn->escape($_GET['utm_campaign']);
+    if ($utm_campaign != '') {
         $utm_campaign = str_replace('%20', ' ', $utm_campaign);
-        $utm_campaign_id = INDEXES::get_utm_id($utm_campaign, 'utm_campaign');
+        $utm_campaign_id = get_utm_id($utm_campaign, 'utm_campaign');
     } else {
         $utm_campaign_id = 0;
     }
-    $mysql['utm_campaign_id'] = $db->real_escape_string($utm_campaign_id);
-    $mysql['utm_campaign'] = $db->real_escape_string($utm_campaign);
+    $mysql['utm_campaign_id'] = $conn->escape($utm_campaign_id);
+    $mysql['utm_campaign'] = $conn->escape($utm_campaign);
 
     //utm_term
-    $utm_term = $db->real_escape_string($_GET['utm_term']);
-    if (isset($utm_term) && $utm_term != '') {
+    $utm_term = $conn->escape($_GET['utm_term']);
+    if ($utm_term != '') {
         $utm_term = str_replace('%20', ' ', $utm_term);
-        $utm_term_id = INDEXES::get_utm_id($utm_term, 'utm_term');
+        $utm_term_id = get_utm_id($utm_term, 'utm_term');
     } else {
         $utm_term_id = 0;
     }
-    $mysql['utm_term_id'] = $db->real_escape_string($utm_term_id);
-    $mysql['utm_term'] = $db->real_escape_string($utm_term);
+    $mysql['utm_term_id'] = $conn->escape($utm_term_id);
+    $mysql['utm_term'] = $conn->escape($utm_term);
 
     //utm_content
-    $utm_content = $db->real_escape_string($_GET['utm_content']);
-    if (isset($utm_content) && $utm_content != '') {
+    $utm_content = $conn->escape($_GET['utm_content']);
+    if ($utm_content != '') {
         $utm_content = str_replace('%20', ' ', $utm_content);
-        $utm_content_id = INDEXES::get_utm_id($utm_content, 'utm_content');
+        $utm_content_id = get_utm_id($utm_content, 'utm_content');
     } else {
         $utm_content_id = 0;
     }
-    $mysql['utm_content_id'] = $db->real_escape_string($utm_content_id);
-    $mysql['utm_content'] = $db->real_escape_string($utm_content);
+    $mysql['utm_content_id'] = $conn->escape($utm_content_id);
+    $mysql['utm_content'] = $conn->escape($utm_content);
 }
 
 function updateImpressionPixel(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     if (null !== (getCookie202('pipx'))) {
-        $mysql['pipx'] = $db->real_escape_string(getCookie202('pipx'));
+        $mysql['pipx'] = $conn->escape(getCookie202('pipx'));
         $db->query("UPDATE clicks_impressions SET click_id = '" . $mysql['click_id'] . "' WHERE impression_id = '" . $mysql['pipx'] . "'");
     }
 }
@@ -3553,19 +3584,20 @@ function getCVars(&$mysql)
 {
 
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     $_lGET = array_change_key_case($_GET, CASE_LOWER); //make lowercase copy of get 
 
     //Get C1-C4 IDs
     for ($i = 1; $i <= 4; $i++) {
         $custom = "c" . $i; //create dynamic variable
-        $custom_val = $db->real_escape_string($_lGET[$custom]); // get the value
+        $custom_val = $conn->escape($_lGET[$custom]); // get the value
 
-        if (isset($custom_val) && $custom_val != '') { //if there's a value get an id
+        if ($custom_val != '') { //if there's a value get an id
             $custom_val = str_replace(' ', '+', $custom_val);
-            $custom_id = INDEXES::get_custom_var_id($custom, $custom_val); //get the id
-            $mysql[$custom . '_id'] = $db->real_escape_string($custom_id); //save it
-            $mysql[$custom] = $db->real_escape_string($custom_val); //save it
+            $custom_id = get_custom_var_id($custom, $custom_val); //get the id
+            $mysql[$custom . '_id'] = $conn->escape($custom_id); //save it
+            $mysql[$custom] = $conn->escape($custom_val); //save it
         } else {
             $mysql[$custom . '_id'] = '0';
         }
@@ -3575,6 +3607,7 @@ function getCVars(&$mysql)
 function getKeyword(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     $keyword = '';
     /* ok, if $_GET['OVRAW'] that is a yahoo keyword, if on the REFER, there is a $_GET['q], that is a GOOGLE keyword... */
     //so this is going to check the REFERER URL, for a ?q=, which is the ACUTAL KEYWORD searched.
@@ -3589,51 +3622,51 @@ function getKeyword(&$mysql)
         case "bidded":
             #try to get the bidded keyword first
             if ($_GET['OVKEY']) { //if this is a Y! keyword
-                $keyword = $db->real_escape_string($_GET['OVKEY']);
+                $keyword = $conn->escape($_GET['OVKEY']);
             } elseif ($_GET['t1aikw']) {
-                $keyword = $db->real_escape_string($_GET['t1aikw']);
+                $keyword = $conn->escape($_GET['t1aikw']);
             } elseif ($_GET['target_passthrough']) { //if this is a mediatraffic! keyword
-                $keyword = $db->real_escape_string($_GET['target_passthrough']);
+                $keyword = $conn->escape($_GET['target_passthrough']);
             } else { //if this is a zango, or more keyword
-                $keyword = $db->real_escape_string($_GET['keyword']);
+                $keyword = $conn->escape($_GET['keyword']);
             }
             break;
         case "searched":
             #try to get the searched keyword
             if ($referer_query['q']) {
-                $keyword = $db->real_escape_string($referer_query['q']);
+                $keyword = $conn->escape($referer_query['q']);
             } elseif ($_GET['OVRAW']) { //if this is a Y! keyword
-                $keyword = $db->real_escape_string($_GET['OVRAW']);
+                $keyword = $conn->escape($_GET['OVRAW']);
             } elseif ($_GET['target_passthrough']) { //if this is a mediatraffic! keyword
-                $keyword = $db->real_escape_string($_GET['target_passthrough']);
+                $keyword = $conn->escape($_GET['target_passthrough']);
             } elseif ($_GET['keyword']) { //if this is a zango, or more keyword
-                $keyword = $db->real_escape_string($_GET['keyword']);
+                $keyword = $conn->escape($_GET['keyword']);
             } elseif ($_GET['search_word']) { //if this is a eniro, or more keyword
-                $keyword = $db->real_escape_string($_GET['search_word']);
+                $keyword = $conn->escape($_GET['search_word']);
             } elseif ($_GET['query']) { //if this is a naver, or more keyword
-                $keyword = $db->real_escape_string($_GET['query']);
+                $keyword = $conn->escape($_GET['query']);
             } elseif ($_GET['encquery']) { //if this is a aol, or more keyword
-                $keyword = $db->real_escape_string($_GET['encquery']);
+                $keyword = $conn->escape($_GET['encquery']);
             } elseif ($_GET['terms']) { //if this is a about.com, or more keyword
-                $keyword = $db->real_escape_string($_GET['terms']);
+                $keyword = $conn->escape($_GET['terms']);
             } elseif ($_GET['rdata']) { //if this is a viola, or more keyword
-                $keyword = $db->real_escape_string($_GET['rdata']);
+                $keyword = $conn->escape($_GET['rdata']);
             } elseif ($_GET['qs']) { //if this is a virgilio, or more keyword
-                $keyword = $db->real_escape_string($_GET['qs']);
+                $keyword = $conn->escape($_GET['qs']);
             } elseif ($_GET['wd']) { //if this is a baidu, or more keyword
-                $keyword = $db->real_escape_string($_GET['wd']);
+                $keyword = $conn->escape($_GET['wd']);
             } elseif ($_GET['text']) { //if this is a yandex, or more keyword
-                $keyword = $db->real_escape_string($_GET['text']);
+                $keyword = $conn->escape($_GET['text']);
             } elseif ($_GET['szukaj']) { //if this is a wp.pl, or more keyword
-                $keyword = $db->real_escape_string($_GET['szukaj']);
+                $keyword = $conn->escape($_GET['szukaj']);
             } elseif ($_GET['qt']) { //if this is a O*net, or more keyword
-                $keyword = $db->real_escape_string($_GET['qt']);
+                $keyword = $conn->escape($_GET['qt']);
             } elseif ($_GET['k']) { //if this is a yam, or more keyword
-                $keyword = $db->real_escape_string($_GET['k']);
+                $keyword = $conn->escape($_GET['k']);
             } elseif ($_GET['words']) { //if this is a Rambler, or more keyword
-                $keyword = $db->real_escape_string($_GET['words']);
+                $keyword = $conn->escape($_GET['words']);
             } else {
-                $keyword = $db->real_escape_string($_GET['t1aikw']);
+                $keyword = $conn->escape($_GET['t1aikw']);
             }
             break;
     }
@@ -3647,14 +3680,15 @@ function getKeyword(&$mysql)
     }
 
     $keyword = str_replace('%20', ' ', $keyword);
-    $keyword_id = INDEXES::get_keyword_id($keyword);
-    $mysql['keyword_id'] = $db->real_escape_string($keyword_id);
-    $mysql['keyword'] = $db->real_escape_string($keyword);
+    $keyword_id = get_keyword_id($keyword);
+    $mysql['keyword_id'] = $conn->escape($keyword_id);
+    $mysql['keyword'] = $conn->escape($keyword);
 }
 
 function getReferer(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     // Parse the referer URL query string
     $referer_url_parsed = @parse_url((string) $_SERVER['HTTP_REFERER']);
@@ -3665,13 +3699,13 @@ function getReferer(&$mysql)
     // if user wants to use t1airef from url variable use that first if it's not set try and get it from the ref url
     if ($mysql['user_pref_referer_data'] == 't1airef') {
         if (isset($_GET['t1airef']) && $_GET['t1airef'] != '') { //check for t1airef value
-            $mysql['t1airef'] = $db->real_escape_string($_GET['t1airef']);
-            $click_referer_site_url_id = INDEXES::get_site_url_id($_GET['t1airef']);
+            $mysql['t1airef'] = $conn->escape($_GET['t1airef']);
+            $click_referer_site_url_id = get_site_url_id($_GET['t1airef']);
         } else { //if not found revert to what we usually do
             if (isset($referer_query['url'])) {
-                $click_referer_site_url_id = INDEXES::get_site_url_id($referer_query['url']);
+                $click_referer_site_url_id = get_site_url_id($referer_query['url']);
             } else {
-                $click_referer_site_url_id = INDEXES::get_site_url_id($_SERVER['HTTP_REFERER'] ?? '');
+                $click_referer_site_url_id = get_site_url_id($_SERVER['HTTP_REFERER'] ?? '');
             }
         }
     } else { //user wants the real referer first
@@ -3679,13 +3713,13 @@ function getReferer(&$mysql)
         // now lets get variables for clicks site
         // so this is going to check the REFERER URL, for a ?url=, which is the ACUTAL URL, instead of the google content, pagead2.google....
         if (isset($referer_query['url'])) {
-            $click_referer_site_url_id = INDEXES::get_site_url_id($referer_query['url']);
+            $click_referer_site_url_id = get_site_url_id($referer_query['url']);
         } else {
-            $click_referer_site_url_id = INDEXES::get_site_url_id($_SERVER['HTTP_REFERER'] ?? '');
+            $click_referer_site_url_id = get_site_url_id($_SERVER['HTTP_REFERER'] ?? '');
         }
     }
 
-    $mysql['click_referer_site_url_id'] = $db->real_escape_string($click_referer_site_url_id);
+    $mysql['click_referer_site_url_id'] = $conn->escape($click_referer_site_url_id);
 }
 
 function getForeignPayout($currency, $payout_currency, $payout)
@@ -3718,6 +3752,7 @@ function getForeignPayout($currency, $payout_currency, $payout)
 function updateForeignPayout(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
     // update currency value
     if (isset($_GET['amount']) && is_numeric($_GET['amount'])) {
         $mysql['fpa']  = $_GET['amount'];
@@ -3728,7 +3763,7 @@ function updateForeignPayout(&$mysql)
 
         $exchangePayout = getForeignPayout($mysql['user_account_currency'], $mysql['aff_campaign_currency'], $mysql['fpa']);
 
-        $mysql['aff_campaign_payout'] = $db->real_escape_string($exchangePayout['exchange_payout']);
+        $mysql['aff_campaign_payout'] = $conn->escape($exchangePayout['exchange_payout']);
 
         //if a payout was set in the postback or pixel then use that but don't update the default campaign info
         if (isset($_GET['amount']) && is_numeric($_GET['amount'])) {
@@ -3736,7 +3771,7 @@ function updateForeignPayout(&$mysql)
             $mysql['payout'] = $mysql['click_payout'] * $mysql['aff_campaign_payout'] / $mysql['fpa']; // calculate the value without doing a second api call for exchange rate
             $mysql['aff_campaign_payout'] = $mysql['payout'];
         } else { //
-            $mysql['payout'] = $db->real_escape_string($exchangePayout['exchange_payout']);
+            $mysql['payout'] = $conn->escape($exchangePayout['exchange_payout']);
 
             $aff_campaign_sql = "UPDATE `aff_campaigns` SET";
             $aff_campaign_sql .= " `aff_campaign_payout`='" . $mysql['aff_campaign_payout'] . "' ";
@@ -3754,6 +3789,7 @@ function updateForeignPayout(&$mysql)
 function getDynamicEPVPixelId(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     if (isset($mysql['ppc_account_id']) && isset($mysql['bfbpa_dynamic_epv']) && $mysql['ppc_account_id'] != '' && $mysql['bfbpa_dynamic_epv'] != '') {
         $dynamic_epv_sql = "SELECT SUM(`income`)/SUM(`click_out`) as dynamic_epv_value, pixel_code AS pixel_id 
@@ -3783,6 +3819,7 @@ function getDynamicEPVPixelId(&$mysql)
 function getPayout(&$mysql)
 {
     global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
     $sql = "
     SELECT 
@@ -3794,7 +3831,7 @@ function getPayout(&$mysql)
     $sql_result = $db->query($sql);
     $sql_row = $sql_result->fetch_assoc();
 
-    $mysql['click_payout'] = $sql_row !== null ? $db->real_escape_string($sql_row['click_payout']) : '0';
+    $mysql['click_payout'] = $sql_row !== null ? $conn->escape($sql_row['click_payout']) : '0';
 }
 
 function getUrlVars202(): array

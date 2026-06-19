@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OneAIAffiliate\Repository\Mysql;
 
 use OneAIAffiliate\Database\Connection;
+use OneAIAffiliate\Repository\IpLookupInput;
 use OneAIAffiliate\Repository\LocationRepositoryInterface;
 
 final class MysqlLocationRepository implements LocationRepositoryInterface
@@ -93,7 +94,7 @@ final class MysqlLocationRepository implements LocationRepositoryInterface
         return $this->conn->executeInsert($stmt);
     }
 
-    public function findOrCreateIp(string $address): int
+    public function findOrCreateIp(string $address, ?IpLookupInput $geo = null): int
     {
         if ($address === '') {
             return 0;

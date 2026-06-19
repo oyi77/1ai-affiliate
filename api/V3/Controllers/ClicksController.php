@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Api\V3\Controllers;
 
-use Api\V3\Exception\DatabaseException;
 use Api\V3\Exception\NotFoundException;
+use OneAIAffiliate\Database\Connection;
 
 class ClicksController
 {
-    public function __construct(private readonly \mysqli $db, private readonly int $userId)
+    private readonly Connection $conn;
+
+    public function __construct(\mysqli $db, private readonly int $userId)
     {
+        $this->conn = new Connection($db);
     }
 
     public function list(array $params): array
@@ -54,13 +57,13 @@ class ClicksController
 
         $whereClause = 'WHERE ' . implode(' AND ', $where);
 
-        $countSql = "SELECT COUNT(*) as total FROM clicks c $whereClause";
-        $stmt = $this->prepare($countSql);
-        $this->bind($stmt, $types, ...$binds);
-        $this->execute($stmt, 'Count query failed');
-        $total = (int)$stmt->get_result()->fetch_assoc()['total'];
-        $stmt->close();
+        // Count total
+        $countStmt = $this->conn->prepareRead("SELECT COUNT(*) as total FROM clicks c $whereClause");
+        $this->conn->bind($countStmt, $types, $binds);
+        $countRow = $this->conn->fetchOne($countStmt);
+        $total = (int)($countRow['total'] ?? 0);
 
+        // Fetch rows
         $sql = "SELECT
                 c.click_id, c.aff_campaign_id, c.ppc_account_id, c.landing_page_id,
                 c.click_cpc, c.click_payout, c.click_lead, c.click_filtered,
@@ -84,16 +87,9 @@ class ClicksController
         $binds[] = $offset;
         $types .= 'i';
 
-        $stmt = $this->prepare($sql);
-        $this->bind($stmt, $types, ...$binds);
-        $this->execute($stmt, 'List query failed');
-        $result = $stmt->get_result();
-
-        $rows = [];
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        $stmt->close();
+        $stmt = $this->conn->prepareRead($sql);
+        $this->conn->bind($stmt, $types, $binds);
+        $rows = $this->conn->fetchAll($stmt);
 
         return [
             'data' => $rows,
@@ -127,43 +123,14 @@ class ClicksController
             WHERE c.click_id = ? AND c.user_id = ?
             LIMIT 1";
 
-        $stmt = $this->prepare($sql);
-        $this->bind($stmt, 'ii', $id, $this->userId);
-        $this->execute($stmt, 'Query failed');
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+        $stmt = $this->conn->prepareRead($sql);
+        $this->conn->bind($stmt, 'ii', [$id, $this->userId]);
+        $row = $this->conn->fetchOne($stmt);
 
         if (!$row) {
             throw new NotFoundException('Click not found');
         }
 
         return ['data' => $row];
-    }
-
-    private function prepare(string $sql): \mysqli_stmt
-    {
-        $stmt = $this->db->prepare($sql);
-        if (!$stmt) {
-            throw new DatabaseException('Prepare failed');
-        }
-        return $stmt;
-    }
-
-    private function bind(\mysqli_stmt $stmt, string $types, mixed ...$values): void
-    {
-        // @phpstan-ignore-next-line oneai_affiliate.directStmtCall — this IS the centralized ref-safe bind wrapper (no Connection instance in scope; routing through $this->conn would self-recurse)
-        if (!$stmt->bind_param($types, ...$values)) {
-            $stmt->close();
-            throw new DatabaseException('Bind failed');
-        }
-    }
-
-    private function execute(\mysqli_stmt $stmt, string $message): void
-    {
-        // @phpstan-ignore-next-line oneai_affiliate.directStmtCall — this IS the centralized checked-execute wrapper (no Connection instance; routing through $this->conn would self-recurse)
-        if (!$stmt->execute()) {
-            $stmt->close();
-            throw new DatabaseException($message);
-        }
     }
 }

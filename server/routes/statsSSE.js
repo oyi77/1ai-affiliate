@@ -13,7 +13,54 @@ const router = express.Router();
 const pool = require('../db/mysql');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
-router.use(authenticate, requireAdmin);
+router.use(authenticate);
+
+router.get('/daily', requireAdmin, async (req, res) => {
+  try {
+    const range = req.query.range || '30d';
+    const days = range === '7d' ? 7 : range === '90d' ? 90 : 30;
+
+    const [rows] = await pool.query(
+      `SELECT DATE(FROM_UNIXTIME(click_time)) AS date,
+              COUNT(*) AS clicks,
+              COALESCE(SUM(click_payout), 0) AS revenue
+       FROM 1ai_clicks
+       WHERE click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL ? DAY))
+       GROUP BY DATE(FROM_UNIXTIME(click_time))
+       ORDER BY date ASC`,
+      [days]
+    );
+
+    const [convRows] = await pool.query(
+      `SELECT DATE(FROM_UNIXTIME(conversion_time)) AS date,
+              COUNT(*) AS conversions
+       FROM 1ai_conversion_logs
+       WHERE conversion_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL ? DAY))
+       GROUP BY DATE(FROM_UNIXTIME(conversion_time))
+       ORDER BY date ASC`,
+      [days]
+    );
+
+    const convMap = {};
+    for (const r of convRows) {
+      convMap[r.date] = Number(r.conversions);
+    }
+
+    const result = rows.map(r => ({
+      date: r.date,
+      clicks: Number(r.clicks),
+      conversions: convMap[r.date] || 0,
+      revenue: Number(r.revenue),
+      spend: 0,
+    }));
+
+    res.json({ data: result });
+  } catch (err) {
+    console.error('getDailyStats error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 router.get('/stream', async (req, res) => {
   res.writeHead(200, {

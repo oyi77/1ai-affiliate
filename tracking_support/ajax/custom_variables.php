@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -35,16 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['post_vars']) && $_POST['post_vars'] == true && isset($_POST['vars']) && isset($_POST['ppc_network_id'])) {
         $vars = [];
 
-        $mysql['ppc_network_id'] = $db->real_escape_string((string)$_POST['ppc_network_id']);
+        $mysql['ppc_network_id'] = $conn->escape((string)$_POST['ppc_network_id']);
         foreach ($_POST['vars'] as $var) {
             $var_empty = count($var) != count(array_filter($var));
 
             if ($var_empty) die("VALIDATION FAILD!");
 
-            $mysql['id'] = $db->real_escape_string($var['id']);
-            $mysql['name'] = $db->real_escape_string($var['name']);
-            $mysql['parameter'] = $db->real_escape_string($var['parameter']);  
-            $mysql['placeholder'] = $db->real_escape_string($var['placeholder']);
+            $mysql['id'] = $conn->escape($var['id']);
+            $mysql['name'] = $conn->escape($var['name']);
+            $mysql['parameter'] = $conn->escape($var['parameter']);  
+            $mysql['placeholder'] = $conn->escape($var['placeholder']);
 
             if ($var['id'] != 'false') {
                 $sql = "UPDATE ppc_network_variables ";
@@ -62,27 +63,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $sql .= " WHERE ppc_variable_id = '".$mysql['id']."'";
             }
 
-            $result = $db->query($sql) or record_mysql_error($sql);
+            $result = $conn->query($sql) or record_mysql_error($sql);
 
             if ($var['id'] != 'false') {
                 $vars[] = $var['id'];
             } else if ($var['id'] == 'false') {
-                $vars[] = $db->insert_id;
+                $vars[] = $conn->writeConnection()->insert_id;
             }
         }
 
         $var_ids = implode(', ', $vars);
         $sql = "UPDATE ppc_network_variables SET deleted = '1' WHERE ppc_variable_id NOT IN (".$var_ids.") AND ppc_network_id = '".$mysql['ppc_network_id']."'";
-        $result = $db->query($sql) or record_mysql_error($sql);
+        $result = $conn->query($sql) or record_mysql_error($sql);
 
         echo 'DONE!';
     }
 
     if (isset($_POST['get_vars']) && $_POST['get_vars'] == true && isset($_POST['ppc_network_id'])) {
 
-        $mysql['ppc_network_id'] = $db->real_escape_string((string)$_POST['ppc_network_id']);
+        $mysql['ppc_network_id'] = $conn->escape((string)$_POST['ppc_network_id']);
         $sql = "SELECT * FROM ppc_network_variables WHERE ppc_network_id = '".$mysql['ppc_network_id']."' AND deleted = '0'";
-        $result = $db->query($sql) or record_mysql_error($sql);
+        $result = $conn->query($sql) or record_mysql_error($sql);
 
         if ($result->num_rows > 0) {
            $count = 0; 
@@ -137,9 +138,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (isset($_POST['delete_vars']) && $_POST['delete_vars'] == true && isset($_POST['ppc_network_id'])) {
-        $mysql['ppc_network_id'] = $db->real_escape_string((string)$_POST['ppc_network_id']);
+        $mysql['ppc_network_id'] = $conn->escape((string)$_POST['ppc_network_id']);
         $sql = "DELETE FROM ppc_network_variables WHERE ppc_network_id = '".$mysql['ppc_network_id']."' AND deleted = '0'";
-        $result = $db->query($sql) or record_mysql_error($sql);
+        $result = $conn->query($sql) or record_mysql_error($sql);
     }
 }
 ?>

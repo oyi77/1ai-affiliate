@@ -4,6 +4,7 @@ declare(strict_types=1);
 use OneAIAffiliate\Redirect\RedirectHelper;
 
 require_once substr(__DIR__, 0, -21) . '/config/connect2.php';
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 // Validate required parameter
 $clickIdPublic = RedirectHelper::getIntParam('pci');
@@ -11,11 +12,11 @@ if ($clickIdPublic === null) {
     RedirectHelper::redirect('/404.php');
 }
 
-$mysql['click_id_public'] = $db->real_escape_string((string)$clickIdPublic);
+$mysql['click_id_public'] = $conn->escape((string)$clickIdPublic);
 
 $varsParam = RedirectHelper::getStringParam('202vars');
 if ($varsParam !== null) {
-    $mysql['202vars'] = base64_decode((string) $db->real_escape_string($varsParam));
+    $mysql['202vars'] = base64_decode((string) $conn->escape($varsParam));
 }
 $tracker_sql = "
 	SELECT

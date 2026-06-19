@@ -1,6 +1,5 @@
 const pool = require('../db/mysql');
 const crypto = require('crypto');
-const { shortenUrl } = require('../controllers/smartlinkController');
 
 /**
  * Internal helper to mint a tracked smartlink without an HTTP request context.

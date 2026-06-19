@@ -56,8 +56,8 @@ function _die($message): never
  * Execute a MySQL query.
  *
  * Supports two calling conventions:
- * - _mysqli_query($sql) - uses global $db
- * - _mysqli_query($db, $sql) - uses provided $db
+ * - $conn->query($sql) - uses global $db
+ * - $conn->query($sql) - uses provided $db
  *
  * @param \mysqli|string $db_or_sql Database connection or SQL query
  * @param string|null $sql SQL query (if first param is db connection)
@@ -66,8 +66,8 @@ function _die($message): never
 function _mysqli_query($db_or_sql, $sql = null): \mysqli_result|bool
 {
 	// Support both calling conventions:
-	//   _mysqli_query($sql)         — 1 arg, uses global $db
-	//   _mysqli_query($db, $sql)    — 2 args, uses provided $db
+	//   $conn->query($sql)         — 1 arg, uses global $db
+	//   $conn->query($sql)    — 2 args, uses provided $db
 	if ($sql === null) {
 		$sql = $db_or_sql;
 		global $db;
@@ -75,8 +75,10 @@ function _mysqli_query($db_or_sql, $sql = null): \mysqli_result|bool
 		$db = $db_or_sql;
 	}
 
+	$conn = new \OneAIAffiliate\Database\Connection($db);
+
 	if ($db instanceof \mysqli) {
-		$result = @$db->query($sql);
+		$result = @$conn->query($sql);
 	} else {
 		$connection = $db->getConnection();
 		$result = @$connection->query($sql);
@@ -129,11 +131,12 @@ function is_installed(): bool
 
 	$database = DB::getInstance();
 	$db = $database->getConnection();
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 
 	//if a user account already exists, this application is installed
 	try {
 		$user_sql = "SELECT COUNT(*) AS cnt FROM users";
-		$user_result = $db->query($user_sql);
+		$user_result = $conn->query($user_sql);
 		if ($user_result) {
 			$row = $user_result->fetch_assoc();
 			$user_result->free();
@@ -150,8 +153,8 @@ function upgrade_needed(): bool
 {
 
 	// Call static methods
-	$mysql_version = OneAIAffiliate::oneai_affiliate_version();
-	$php_version = OneAIAffiliate::php_version();
+	$mysql_version = \OneAIAffiliate\OneAIAffiliate::oneai_affiliate_version();
+	$php_version = \OneAIAffiliate\OneAIAffiliate::php_version();
 	if ($mysql_version != $php_version) {
 		return true;
 	} else {
@@ -486,7 +489,7 @@ function info_top(): void
 								clear_php_caches();
 								include_once(__DIR__ . '/functions-upgrade.php');
 
-								if (UPGRADE::upgrade_databases(null) == true) {
+								if (UPGRADE::upgrade_databases() == true) {
 									$version = $latest_version;
 									$upgrade_done = true;
 								} else {

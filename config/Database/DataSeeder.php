@@ -41,7 +41,7 @@ final readonly class DataSeeder
             ('Postback'),
             ('Raw'),
             ('Bot1ai Facebook Pixel Assistant')";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -54,7 +54,7 @@ final readonly class DataSeeder
             (2, 'Mobile'),
             (3, 'Tablet'),
             (4, 'Bot')";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -69,7 +69,7 @@ final readonly class DataSeeder
             (4, 'Campaign optimizer'),
             (5, 'Campaign viewer'),
             (6, 'Publisher')";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -101,7 +101,7 @@ final readonly class DataSeeder
             (21, 'remove_tracker'),
             (22, 'view_attribution_reports'),
             (23, 'manage_attribution_models')";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -118,7 +118,7 @@ final readonly class DataSeeder
             (2, 22), (2, 23),
             (3, 12), (3, 14), (3, 15), (3, 22),
             (4, 12)";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -128,7 +128,7 @@ final readonly class DataSeeder
     {
         $sql = "INSERT INTO `" . TableRegistry::CHARTS . "` (`user_id`, `data`, `chart_time_range`) VALUES
             (1, 'a:3:{i:0;a:2:{s:11:\"campaign_id\";s:1:\"0\";s:10:\"value_type\";s:6:\"clicks\";}i:1;a:2:{s:11:\"campaign_id\";s:1:\"0\";s:10:\"value_type\";s:9:\"click_out\";}i:2;a:2:{s:11:\"campaign_id\";s:1:\"0\";s:10:\"value_type\";s:5:\"leads\";}}', 'days')";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -137,7 +137,7 @@ final readonly class DataSeeder
     public function seedClicksTotal(): void
     {
         $sql = "INSERT IGNORE INTO `" . TableRegistry::CLICKS_TOTAL . "` (`click_count`) VALUES (0)";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -147,6 +147,6 @@ final readonly class DataSeeder
     {
         $escapedVersion = $this->connection->real_escape_string($version);
         $sql = "INSERT INTO " . TableRegistry::VERSION . " SET version='{$escapedVersion}'";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 }

@@ -53,7 +53,12 @@ func (p *Producer) collectErrors() {
 }
 
 // SendClick publishes a click event to Kafka asynchronously.
+// SendClick publishes a click event to Kafka asynchronously.
+// Returns nil if the producer is not initialized (Kafka unavailable).
 func (p *Producer) SendClick(ctx context.Context, key string, value []byte) error {
+	if p == nil {
+		return nil
+	}
 	msg := &sarama.ProducerMessage{
 		Topic: p.topic,
 		Key:   sarama.StringEncoder(key),
@@ -69,7 +74,12 @@ func (p *Producer) SendClick(ctx context.Context, key string, value []byte) erro
 }
 
 // SendConversion publishes a conversion event to Kafka.
+// Returns nil if the producer is not initialized (Kafka unavailable).
+// SendConversion publishes a conversion event to Kafka.
 func (p *Producer) SendConversion(ctx context.Context, key string, value []byte) error {
+	if p == nil {
+		return nil
+	}
 	msg := &sarama.ProducerMessage{
 		Topic: "1ai-conversions",
 		Key:   sarama.StringEncoder(key),

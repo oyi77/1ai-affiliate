@@ -1,11 +1,12 @@
 <?php
 declare(strict_types=1);
 function getStats($db, $variables): mixed {
-	$mysql['api_key'] = $db->real_escape_string($variables['apikey']);
+	$conn = new \OneAIAffiliate\Database\Connection($db);
+	$mysql['api_key'] = $conn->escape($variables['apikey']);
 	$key_sql = "SELECT 	*
 				FROM   	`api_keys` 
 				WHERE  	`api_key`='".$mysql['api_key']."'";
-	$key_result = _mysqli_query($db, $key_sql);
+	$key_result = $conn->query($key_sql);
 	if ($key_result === false) {
 		return ['msg' => 'Database error', 'error' => true, 'status' => 500];
 	}
@@ -13,11 +14,11 @@ function getStats($db, $variables): mixed {
 
 	if($key_result->num_rows > 0) {
 
-		$mysql['user_id'] = $db->real_escape_string($key_row['user_id']);
+		$mysql['user_id'] = $conn->escape($key_row['user_id']);
 		$user_sql = "SELECT 	`user_timezone`
 					FROM   	`users`
 					WHERE  	`user_id`='".$mysql['user_id']."'";
-		$user_result = _mysqli_query($db, $user_sql);
+		$user_result = $conn->query($user_sql);
 		if ($user_result === false) {
 			return ['msg' => 'Database error', 'error' => true, 'status' => 500];
 		}
@@ -30,6 +31,7 @@ function getStats($db, $variables): mixed {
 }
 
 function runReports($db, $vars, $user, $timezone): array {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 
 	date_default_timezone_set($timezone);
 	$c1 = null;
@@ -122,14 +124,15 @@ function runReports($db, $vars, $user, $timezone): array {
 }
 
 function getDataForWP($db, $user): array {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 	$data = [];
 	$slp = [];
 	$alp = [];
 	$campaigns = [];
-	$mysql['user_id'] = $db->real_escape_string($user);
+	$mysql['user_id'] = $conn->escape($user);
 	
 	$sql = "SELECT landing_page_id_public, landing_page_nickname, landing_page_type, aff_campaign_id_public, aff_campaign_name FROM landing_pages LEFT JOIN aff_campaigns USING (aff_campaign_id) WHERE landing_pages.user_id='".$mysql['user_id']."' AND landing_page_deleted='0'";
-	$result = $db->query($sql);
+	$result = $conn->query($sql);
 
 	while ($row = $result->fetch_assoc()) {
 		if ($row['landing_page_type'] == 0) {
@@ -140,7 +143,7 @@ function getDataForWP($db, $user): array {
 	}
 
 	$sql = "SELECT aff_campaign_id_public, aff_campaign_name FROM `aff_campaigns` WHERE `user_id`='" . $mysql ['user_id'] . "' AND `aff_campaign_deleted`='0' ORDER BY `aff_campaign_name` ASC";
-	$result = $db->query($sql);
+	$result = $conn->query($sql);
 	while ($row = $result->fetch_assoc()) {
 		$campaigns[] = $row;
 	}
@@ -151,6 +154,7 @@ function getDataForWP($db, $user): array {
 }
 
 function wpCreateLp($db, $user): array {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 	if (isset($_GET['page_type']) && isset($_GET['page_title']) && isset($_GET['page_url'])) {
 		$insert_id = 0;
 		$title = $_GET['page_title'];
@@ -159,9 +163,9 @@ function wpCreateLp($db, $user): array {
 			$title = substr($title, 0, strrpos($title, ' ')) . " ...";
 		}
 		$title = '[WP] '.$title;
-		$mysql['landing_page_nickname'] = $db->real_escape_string($title);
-		$mysql['landing_page_url'] = $db->real_escape_string((string)$_GET['page_url']);
-		$mysql['user_id'] = $db->real_escape_string($user);
+		$mysql['landing_page_nickname'] = $conn->escape($title);
+		$mysql['landing_page_url'] = $conn->escape((string)$_GET['page_url']);
+		$mysql['user_id'] = $conn->escape($user);
 		$mysql['landing_page_time'] = time();
 
 		if ($_GET['page_type'] == 'alp') {
@@ -173,13 +177,13 @@ function wpCreateLp($db, $user): array {
 					landing_page_type = '1',
 					user_id = '".$mysql['user_id']."',
 					landing_page_time = '".$mysql['landing_page_time']."'";
-			$result = $db->query($sql);
-			$insert_id = $db->insert_id;
+			$result = $conn->query($sql);
+			$insert_id = $conn->writeConnection()->insert_id;
 		} else if ($_GET['page_type'] == 'slp' && isset($_GET['slp_page_campaign'])) {
-			$mysql['aff_campaign_id_public'] = $db->real_escape_string((string)$_GET['slp_page_campaign']);
+			$mysql['aff_campaign_id_public'] = $conn->escape((string)$_GET['slp_page_campaign']);
 
 			$sql = "SELECT aff_campaign_id FROM aff_campaigns WHERE aff_campaign_id_public = '".$mysql['aff_campaign_id_public']."' AND user_id = '".$mysql['user_id']."'";
-			$result = $db->query($sql);
+			$result = $conn->query($sql);
 			
 			if ($result->num_rows > 0) {
 				$aff_campaign_id = $result->fetch_assoc();
@@ -191,8 +195,8 @@ function wpCreateLp($db, $user): array {
 						landing_page_type = '0',
 						user_id = '".$mysql['user_id']."',
 						landing_page_time = '".$mysql['landing_page_time']."'";
-				$result = $db->query($sql);
-				$insert_id = $db->insert_id;
+				$result = $conn->query($sql);
+				$insert_id = $conn->writeConnection()->insert_id;
 			}
 		}
 
@@ -202,7 +206,7 @@ function wpCreateLp($db, $user): array {
 
 		$landing_page_id_public = random_int(1,9) . $insert_id . random_int(1,9);
 		$landing_page_sql = "UPDATE `landing_pages` SET `landing_page_id_public`='".$landing_page_id_public."' WHERE `landing_page_id`='".$insert_id."'";
-		$landing_page_result = $db->query($landing_page_sql);
+		$landing_page_result = $conn->query($landing_page_sql);
 
 		if ($landing_page_result) {
 			return ['error' => '0', 'lp_pid' => $landing_page_id_public];
@@ -215,6 +219,7 @@ function wpCreateLp($db, $user): array {
 }
 
 function wpUpdateLp($db, $user): array {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 	if (isset($_GET['page_type']) && isset($_GET['page_title']) && isset($_GET['page_url']) && isset($_GET['lp_pid'])) {
 		$title = $_GET['page_title'];
 		if (strlen((string) $title) > 45) {
@@ -222,10 +227,10 @@ function wpUpdateLp($db, $user): array {
 			$title = substr($title, 0, strrpos($title, ' ')) . " ...";
 		}
 		$title = '[WP] '.$title;
-		$mysql['landing_page_nickname'] = $db->real_escape_string($title);
-		$mysql['landing_page_url'] = $db->real_escape_string((string)$_GET['page_url']);
-		$mysql['landing_page_id_public'] = $db->real_escape_string((string)$_GET['lp_pid']);
-		$mysql['user_id'] = $db->real_escape_string($user);
+		$mysql['landing_page_nickname'] = $conn->escape($title);
+		$mysql['landing_page_url'] = $conn->escape((string)$_GET['page_url']);
+		$mysql['landing_page_id_public'] = $conn->escape((string)$_GET['lp_pid']);
+		$mysql['user_id'] = $conn->escape($user);
 
 		if ($_GET['page_type'] == 'alp') {
 			$sql = "UPDATE `landing_pages` 
@@ -236,13 +241,13 @@ function wpUpdateLp($db, $user): array {
 					landing_page_type = '1',
 					user_id = '".$mysql['user_id']."'
 					WHERE landing_page_id_public = '".$mysql['landing_page_id_public']."'";
-			$result = $db->query($sql);
+			$result = $conn->query($sql);
 			return ['error' => '0'];
 		} else if ($_GET['page_type'] == 'slp' && isset($_GET['slp_page_campaign'])) {
-			$mysql['aff_campaign_id_public'] = $db->real_escape_string((string)$_GET['slp_page_campaign']);
+			$mysql['aff_campaign_id_public'] = $conn->escape((string)$_GET['slp_page_campaign']);
 
 			$sql = "SELECT aff_campaign_id FROM aff_campaigns WHERE aff_campaign_id_public = '".$mysql['aff_campaign_id_public']."' AND user_id = '".$mysql['user_id']."'";
-			$result = $db->query($sql);
+			$result = $conn->query($sql);
 			if ($result->num_rows > 0) {
 				$aff_campaign_id = $result->fetch_assoc();
 				$sql = "UPDATE `landing_pages` 
@@ -253,7 +258,7 @@ function wpUpdateLp($db, $user): array {
 					landing_page_type = '0',
 					user_id = '".$mysql['user_id']."'
 					WHERE landing_page_id_public = '".$mysql['landing_page_id_public']."'";
-				$result = $db->query($sql);
+				$result = $conn->query($sql);
 				return ['error' => '0'];
 			}
 		}
@@ -263,6 +268,7 @@ function wpUpdateLp($db, $user): array {
 
 
 function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid = null, $c1 = null, $c2 = null, $c3 = null, $c4 = null): array {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 
 	$date = [
 			'date_from' => date('m/d/Y', $date_from),
@@ -284,15 +290,15 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 	$total_net = 0.0;
 	$total_roi = 0.0;
 
-	$mysql['user_id'] = $db->real_escape_string($user);
-	$select_id = $db->real_escape_string($id);
-	$mysql['date_from'] = $db->real_escape_string($date_from);
-	$mysql['date_to'] = $db->real_escape_string($date_to);
-	$mysql['aff_campaign_id'] = $db->real_escape_string($cid);
-	$mysql['c1'] = $db->real_escape_string($c1);
-	$mysql['c2'] = $db->real_escape_string($c2);
-	$mysql['c3'] = $db->real_escape_string($c3);
-	$mysql['c4'] = $db->real_escape_string($c4);
+	$mysql['user_id'] = $conn->escape($user);
+	$select_id = $conn->escape($id);
+	$mysql['date_from'] = $conn->escape($date_from);
+	$mysql['date_to'] = $conn->escape($date_to);
+	$mysql['aff_campaign_id'] = $conn->escape($cid);
+	$mysql['c1'] = $conn->escape($c1);
+	$mysql['c2'] = $conn->escape($c2);
+	$mysql['c3'] = $conn->escape($c3);
+	$mysql['c4'] = $conn->escape($c4);
 
 	$report_sql = "SELECT *
 				FROM   	clicks AS 2c
@@ -349,7 +355,7 @@ else
 				//If landing pages report type
 				if($type == "landing_pages"){ $report_sql .= " GROUP BY 2c.landing_page_id"; } else { $report_sql .= " GROUP BY 2l.$select_id"; }
 
-	$report_result = $db->query($report_sql);
+	$report_result = $conn->query($report_sql);
 	if ($report_result === false) {
 		return ['msg' => 'Database error', 'error' => true, 'status' => 500];
 	}
@@ -417,7 +423,7 @@ $click_sql .= " LEFT OUTER JOIN 1ai_".$type." AS 2l ON (2l.".$select_id." = 2ca.
 					   		$click_sql .= "AND 2ca.".$select_id."='".$report_row[$select_id]."'";
 					   }		
 
-			$click_result = $db->query($click_sql);
+			$click_result = $conn->query($click_sql);
 			if ($click_result === false) {
 				return ['msg' => 'Database error', 'error' => true, 'status' => 500];
 			}
@@ -563,12 +569,13 @@ $type='keywords';
 }
 
 function getCampaignID($db, $campaign, $user): bool {
-	$mysql['user_id'] = $db->real_escape_string($user);
-	$mysql['campaign_id'] = $db->real_escape_string($campaign);
+	$conn = new \OneAIAffiliate\Database\Connection($db);
+	$mysql['user_id'] = $conn->escape($user);
+	$mysql['campaign_id'] = $conn->escape($campaign);
 	$key_sql = "SELECT 	*
 				FROM   	`aff_campaigns` 
 				WHERE  	`user_id`='".$mysql['user_id']."' AND `aff_campaign_id`='".$mysql['campaign_id']."'";
-	$key_result = _mysqli_query($db, $key_sql);
+	$key_result = $conn->query($key_sql);
 	$key_row = $key_result->fetch_assoc();
 
 	if($key_result->num_rows > 0) {

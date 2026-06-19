@@ -118,3 +118,8 @@ func (c *Client) IncrementDailyCount(ctx context.Context, campaignID int64) (int
 	_ = c.rdb.Expire(ctx, key, ttl).Err()
 	return count, nil
 }
+
+// GetProxyIPs fetches the known proxy/VPN IP set from Redis.
+func (c *Client) GetProxyIPs(ctx context.Context) ([]string, error) {
+	return c.rdb.SMembers(ctx, c.prefix+"fraud:proxy_ips").Result()
+}

@@ -62,26 +62,27 @@ if (!function_exists('p1aiApplyConversionUpdate')) {
         string $clickPayout = '',
         ?string $affCampaignId = null
     ): void {
-        $escapedCpa = $db->real_escape_string($clickCpa);
+        $conn = new \OneAIAffiliate\Database\Connection($db);
+        $escapedCpa = $conn->escape($clickCpa);
         $sqlSet = $escapedCpa !== ''
             ? "click_cpc='" . $escapedCpa . "', click_lead='1', click_filtered='0'"
             : "click_lead='1', click_filtered='0'";
 
-        $where = "click_id='" . $db->real_escape_string($clickId) . "'";
+        $where = "click_id='" . $conn->escape($clickId) . "'";
         if ($affCampaignId !== null) {
-            $where .= " AND aff_campaign_id='" . $db->real_escape_string($affCampaignId) . "'";
+            $where .= " AND aff_campaign_id='" . $conn->escape($affCampaignId) . "'";
         }
 
-        $escapedPayout = $db->real_escape_string($clickPayout);
+        $escapedPayout = $conn->escape($clickPayout);
 
         $updateClicksSql = "\n\t\tUPDATE\n\t\t\tclicks\n\t\tSET\n\t\t\t" . $sqlSet;
         if ($usePixelPayout) {
             $updateClicksSql .= "\n\t\t\t, click_payout='" . $escapedPayout . "'";
         }
         $updateClicksSql .= "\n\t\tWHERE\n\t\t\t" . $where;
-        if (!$db->query($updateClicksSql)) {
+        if (!$conn->query($updateClicksSql)) {
             try {
-                error_log('p1aiApplyConversionUpdate: failed to update clicks: ' . $db->error);
+                error_log('p1aiApplyConversionUpdate: failed to update clicks: ' . $conn->writeConnection()->error);
             } catch (\Error $e) {
                 error_log('p1aiApplyConversionUpdate: failed to update clicks (error inaccessible)');
             }
@@ -92,9 +93,9 @@ if (!function_exists('p1aiApplyConversionUpdate')) {
             $updateSpySql .= "\n\t\t\t, click_payout='" . $escapedPayout . "'";
         }
         $updateSpySql .= "\n\t\tWHERE\n\t\t\t" . $where;
-        if (!$db->query($updateSpySql)) {
+        if (!$conn->query($updateSpySql)) {
             try {
-                error_log('p1aiApplyConversionUpdate: failed to update clicks_spy: ' . $db->error);
+                error_log('p1aiApplyConversionUpdate: failed to update clicks_spy: ' . $conn->writeConnection()->error);
             } catch (\Error $e) {
                 error_log('p1aiApplyConversionUpdate: failed to update clicks_spy (error inaccessible)');
             }

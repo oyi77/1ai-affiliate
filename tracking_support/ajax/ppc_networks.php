@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user(); ?>
 
@@ -8,9 +9,9 @@ AUTH::require_user(); ?>
     <option value=""> -- </option>
     <?php $posted_network_id = $_POST['ppc_network_id'] ?? ''; ?>
     <option value="16777215" <?php if ($posted_network_id == '16777215') echo 'selected=""'; ?>>[No PPC Network]</option>
-	<?php  $mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	<?php  $mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$ppc_network_sql = "SELECT * FROM `ppc_networks` WHERE `user_id`='".$mysql['user_id']."' AND `ppc_network_deleted`='0' ORDER BY `ppc_network_name` ASC";
-        $ppc_network_result = $db->query($ppc_network_sql) or record_mysql_error($ppc_network_sql);
+        $ppc_network_result = $conn->query($ppc_network_sql) or record_mysql_error($ppc_network_sql);
 
         while ($ppc_network_row = $ppc_network_result->fetch_array(MYSQLI_ASSOC)) {
             

@@ -102,7 +102,7 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
         $code = $data['affiliate_code'] ?? substr(bin2hex(random_bytes(8)), 0, 16);
         $now = time();
 
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO 1ai_affiliates (user_id, affiliate_code, status, tier,
              company_name, contact_email, payment_method, payment_details,
              minimum_payout, created_at, updated_at)
@@ -148,31 +148,25 @@ final class MysqlAffiliateRepository implements AffiliateRepositoryInterface
             }
         }
 
-        if (array_key_exists('updated_at', $data)) {
-            $sets[] = 'updated_at = ?';
-            $binds[] = $data['updated_at'];
-            $types .= 'i';
-        }
-
-        if (!$sets) {
-            return;
-        }
+        $sets[] = 'updated_at = ?';
+        $binds[] = $data['updated_at'];
+        $types .= 'i';
 
         $binds[] = $id;
         $types .= 'i';
         $sql = 'UPDATE 1ai_affiliates SET ' . implode(', ', $sets) . ' WHERE id = ?';
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepareWrite($sql);
         $this->conn->bind($stmt, $types, $binds);
-        $this->conn->executeChecked($stmt, 'Affiliate update failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     public function changeStatus(int $id, string $status): void
     {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'UPDATE 1ai_affiliates SET status = ?, updated_at = ? WHERE id = ?'
         );
         $this->conn->bind($stmt, 'sii', [$status, time(), $id]);
-        $this->conn->executeChecked($stmt, 'Affiliate status change failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     public function getEarningsSummary(int $affiliateId): array

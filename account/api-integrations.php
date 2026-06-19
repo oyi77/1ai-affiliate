@@ -6,6 +6,7 @@
 
 declare(strict_types=1);
 include_once(str_repeat("../", 1) . 'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(str_repeat("../", 1) . 'config/clickserver_api_management.php');
 
 AUTH::require_user();
@@ -46,11 +47,11 @@ function validateRequired($field_value, $error_key, $error_message, &$error)
  */
 function updateUserPreference($field_name, $value, $user_id, $db)
 {
-	$escaped_value = $db->real_escape_string((string)$value);
-	$escaped_user_id = $db->real_escape_string((string)$user_id);
+	$escaped_value = $conn->escape((string)$value);
+	$escaped_user_id = $conn->escape((string)$user_id);
 
 	$sql = "UPDATE `users_pref` SET `{$field_name}` = '{$escaped_value}' WHERE `user_id` = '{$escaped_user_id}'";
-	return $db->query($sql);
+	return $conn->query($sql);
 }
 
 /**
@@ -121,11 +122,11 @@ function showErrorMessage($errors, $key)
 }
 
 $strProtocol = stripos((string) $_SERVER['SERVER_PROTOCOL'], 'https') === true ? 'https://' : 'http://';
-$mysql['add_dni'] = $db->real_escape_string((string)($_GET['add_dni_network'] ?? ''));
+$mysql['add_dni'] = $conn->escape((string)($_GET['add_dni_network'] ?? ''));
 $slack = false;
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url, 2u.install_hash, 2u.pcustomer_api_key FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '" . $mysql['user_own_id'] . "'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 $username = $user_row['username'];
 $editing_dni_network = false;
@@ -136,11 +137,11 @@ if (!empty($user_row['url']))
 	$slack = new Slack($user_row['url']);
 
 if (isset($_GET['cb_status']) && $_GET['cb_status'] == 1) {
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 	$user_sql = "SELECT cb_verified
              FROM users_pref
              WHERE user_id='" . $mysql['user_id'] . "'";
-	$user_results = $db->query($user_sql);
+	$user_results = $conn->query($user_sql);
 	$user_row = $user_results->fetch_assoc();
 	if ($user_row['cb_verified']) {
 		echo '<span class="label label-primary">Verified</span>';
@@ -151,12 +152,12 @@ if (isset($_GET['cb_status']) && $_GET['cb_status'] == 1) {
 }
 
 //get all of the user data
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 $user_sql = "	SELECT 	*
 				 FROM   	`users` 
 				 LEFT JOIN	`users_pref` USING (user_id)
 				 WHERE  	`users`.`user_id`='" . $mysql['user_id'] . "'";
-$user_result = $db->query($user_sql);
+$user_result = $conn->query($user_sql);
 $user_row = $user_result->fetch_assoc();
 $html = array_map('htmlentities', $user_row);
 
@@ -233,12 +234,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		if (array_search('', $_POST) !== false) {
 			$error['dni_network'] = 'Make sure all fields are selected and filled out!';
 		} else {
-			$mysql['dniNetworkId'] = $db->real_escape_string((string)$_POST['dni_network']);
-			$mysql['dniNetworkType'] = $db->real_escape_string((string)$_POST['dni_network_type']);
+			$mysql['dniNetworkId'] = $conn->escape((string)$_POST['dni_network']);
+			$mysql['dniNetworkType'] = $conn->escape((string)$_POST['dni_network_type']);
 			$dniNetworkName = explode(" (", (string) $_POST['dni_network_name'], 2);
-			$mysql['dniNetworkName'] = $db->real_escape_string($dniNetworkName[0]);
-			$mysql['dniAffiliateId'] = $db->real_escape_string((string)$_POST['dni_network_affiliate_id']);
-			$mysql['dniApikey'] = $db->real_escape_string((string)$_POST['dni_network_api_key']);
+			$mysql['dniNetworkName'] = $conn->escape($dniNetworkName[0]);
+			$mysql['dniAffiliateId'] = $conn->escape((string)$_POST['dni_network_affiliate_id']);
+			$mysql['dniApikey'] = $conn->escape((string)$_POST['dni_network_api_key']);
 			$dniAuth = authDniNetworks($user_row['install_hash'], $_POST['dni_network'], $_POST['dni_network_api_key'], $_POST['dni_network_affiliate_id']);
 
 			if ($dniAuth['auth'] == false) {
@@ -254,11 +255,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						}
 					}
 
-					$mysql['dniShortDescription'] = $db->real_escape_string($dniShortDescription);
-					$mysql['dniFavIcon'] = $db->real_escape_string($dniFavIcon);
-					$mysql['dniFavIcon'] = $db->real_escape_string($dniFavIcon);
+					$mysql['dniShortDescription'] = $conn->escape($dniShortDescription);
+					$mysql['dniFavIcon'] = $conn->escape($dniFavIcon);
+					$mysql['dniFavIcon'] = $conn->escape($dniFavIcon);
 
-					$dniProcessed = $db->real_escape_string($dniAuth['processed']);
+					$dniProcessed = $conn->escape($dniAuth['processed']);
 
 					$sql = "INSERT INTO dni_networks SET user_id = '" . $mysql['user_id'] . "', networkId = '" . $mysql['dniNetworkId'] . "', name = '" . $mysql['dniNetworkName'] . "', type = '" . $mysql['dniNetworkType'] . "', apiKey = '" . $mysql['dniApikey'] . "', time = '" . time() . "', processed = '" . $dniProcessed . "', shortDescription = '" . $mysql['dniShortDescription'] . "', favIcon = '" . $mysql['dniFavIcon'] . "'";
 
@@ -266,13 +267,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						$sql .= ", affiliateId = '" . $mysql['dniAffiliateId'] . "'";
 					}
 
-					if ($db->query($sql)) {
+					if ($conn->query($sql)) {
 						$success['dni_network_added'] = $mysql['dniNetworkName'] . " network configured. API processing can take up to 5 minutes.";
-						$sql = "INSERT INTO aff_networks SET dni_network_id = '" . $db->insert_id . "', user_id = '" . $mysql['user_id'] . "', aff_network_name = '" . $mysql['dniNetworkName'] . " (DNI)" . "', aff_network_time = '" . time() . "'";
-						$db->query($sql);
+						$sql = "INSERT INTO aff_networks SET dni_network_id = '" . $conn->writeConnection()->insert_id . "', user_id = '" . $mysql['user_id'] . "', aff_network_name = '" . $mysql['dniNetworkName'] . " (DNI)" . "', aff_network_time = '" . time() . "'";
+						$conn->query($sql);
 					}
 				} else if (isset($_POST['editing_dni_network_id']) && !empty($_POST['editing_dni_network_id'])) {
-					$mysql['editing_dni_network_id'] = $db->real_escape_string((string)$_POST['editing_dni_network_id']);
+					$mysql['editing_dni_network_id'] = $conn->escape((string)$_POST['editing_dni_network_id']);
 					$sql = "UPDATE dni_networks SET networkId = '" . $mysql['dniNetworkId'] . "', name = '" . $mysql['dniNetworkName'] . "', type = '" . $mysql['dniNetworkType'] . "', apiKey = '" . $mysql['dniApikey'] . "', time = '" . time() . "'";
 
 					if ($_POST['dni_network_type'] == 'Cake') {
@@ -281,9 +282,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 					$sql .= " WHERE id = '" . $mysql['editing_dni_network_id'] . "'";
 
-					if ($db->query($sql)) {
+					if ($conn->query($sql)) {
 						$sql = "UPDATE aff_networks SET aff_network_name = '" . $mysql['dniNetworkName'] . " (DNI)" . "', aff_network_time = '" . time() . "' WHERE dni_network_id = '" . $mysql['editing_dni_network_id'] . "'";
-						$db->query($sql);
+						$conn->query($sql);
 						header('Location: ' . get_absolute_url() . 'account/api-integrations.php?dni_network_updated=1');
 						die();
 					}
@@ -299,18 +300,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
 if (isset($_GET['delete_dni_network']) && !empty($_GET['delete_dni_network'])) {
-	$mysql['deleteDniNetworkId'] = $db->real_escape_string((string)$_GET['delete_dni_network']);
-	$db->query("DELETE FROM dni_networks WHERE id = '" . $mysql['deleteDniNetworkId'] . "' AND user_id = '" . $mysql['user_id'] . "'");
+	$mysql['deleteDniNetworkId'] = $conn->escape((string)$_GET['delete_dni_network']);
+	$conn->query("DELETE FROM dni_networks WHERE id = '" . $mysql['deleteDniNetworkId'] . "' AND user_id = '" . $mysql['user_id'] . "'");
 	$sql = "UPDATE aff_networks SET aff_network_deleted = '1', aff_network_time = '" . time() . "' WHERE dni_network_id = '" . $mysql['deleteDniNetworkId'] . "'";
-	$db->query($sql);
+	$conn->query($sql);
 	header('Location: ' . get_absolute_url() . 'account/api-integrations.php');
 	die();
 }
 
 if (isset($_GET['edit_dni_network']) && !empty($_GET['edit_dni_network'])) {
-	$mysql['editDniNetworkId'] = $db->real_escape_string((string)$_GET['edit_dni_network']);
+	$mysql['editDniNetworkId'] = $conn->escape((string)$_GET['edit_dni_network']);
 	$sql_edit_dni = "SELECT * FROM dni_networks WHERE id = '" . $mysql['editDniNetworkId'] . "' AND user_id = '" . $mysql['user_id'] . "'";
-	$edit_dni_result = $db->query($sql_edit_dni);
+	$edit_dni_result = $conn->query($sql_edit_dni);
 	if ($edit_dni_result->num_rows > 0) {
 		$edit_dni_row = $edit_dni_result->fetch_assoc();
 		$editing_dni_network = true;
@@ -318,7 +319,7 @@ if (isset($_GET['edit_dni_network']) && !empty($_GET['edit_dni_network'])) {
 }
 
 $dni_sql = "SELECT * FROM dni_networks WHERE user_id = '1'";
-$dni_result = $db->query($dni_sql);
+$dni_result = $conn->query($dni_sql);
 
 template_top('API Integrations');
 

@@ -1,5 +1,6 @@
 <?php
 include_once(str_repeat("../", 1) . 'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(str_repeat("../", 1) . 'config/functions-timeframe.php');
 include_once(str_repeat("../", 1) . 'config/functions-db.php');
 include_once(str_repeat("../", 1) . 'config/functions-indexes.php');
@@ -11,9 +12,9 @@ include_once(str_repeat("../", 1) . 'config/functions-empty.php');
 AUTH::require_user();
 
 $slack = false;
-$mysql['user_own_id'] = $db->real_escape_string((string) $_SESSION['user_own_id']);
+$mysql['user_own_id'] = $conn->escape((string) $_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url, maxmind_isp, user_time_register, 2up.user_auto_database_optimization_days FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '" . $mysql['user_own_id'] . "'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 $username = $user_row['username'];
 $user_time_register = $user_row['user_time_register'];
@@ -22,7 +23,7 @@ if (!empty($user_row['url']))
 	$slack = new Slack($user_row['url']);
 
 $cron_log_query = "SELECT last_execution_time FROM cronjob_logs";
-$cron_log_result = $db->query($cron_log_query);
+$cron_log_result = $conn->query($cron_log_query);
 
 if ($cron_log_result->num_rows > 0) {
 	$cron_log_row = $cron_log_result->fetch_assoc();
@@ -33,7 +34,7 @@ if ($cron_log_result->num_rows > 0) {
 
 
 $de_query = "SELECT count(*) as total, sum(processed) as done FROM dataengine_job";
-$de_result = $db->query($de_query);
+$de_result = $conn->query($de_query);
 $de_row = $de_result->fetch_assoc();
 
 if ($de_result->num_rows && $de_row['total'] != 0) {
@@ -63,7 +64,7 @@ if (isset($_POST['autocron'])) {
 	if ($_POST['autocron'] == true) {
 		$endpoint = 'register';
 		$sql = "SELECT * FROM cronjob_logs";
-		$result = _mysqli_query($sql);
+		$result = $conn->query($sql);
 		if ($result->num_rows > 0) {
 			$row = $result->fetch_assoc();
 
@@ -84,10 +85,10 @@ if (isset($_POST['autocron'])) {
 		$cron = callAutoCron($endpoint);
 
 		if (is_array($cron) && ($cron['status'] ?? null) === 'success') {
-			$mysql['auto_cron'] = $db->real_escape_string($_POST['autocron']);
-			$mysql['user_id'] = $db->real_escape_string((string) $_SESSION['user_id']);
+			$mysql['auto_cron'] = $conn->escape($_POST['autocron']);
+			$mysql['user_id'] = $conn->escape((string) $_SESSION['user_id']);
 			$sql = "UPDATE users_pref SET auto_cron = '" . $mysql['auto_cron'] . "' WHERE user_id = '" . $mysql['user_id'] . "'";
-			$result = _mysqli_query($sql);
+			$result = $conn->query($sql);
 		}
 	}
 
@@ -103,9 +104,9 @@ if (isset($_POST['maxmind'])) {
 
 	if ($_POST['maxmind'] == "true") {
 		if (file_exists(substr(__DIR__, 0, -12) . '/config/geo/GeoLite2-ASN.mmdb')) {
-			$mysql['user_id'] = $db->real_escape_string((string) $_SESSION['user_id']);
+			$mysql['user_id'] = $conn->escape((string) $_SESSION['user_id']);
 			$sql = "UPDATE users_pref SET maxmind_isp='1' WHERE user_id='" . $mysql['user_id'] . "'";
-			$result = _mysqli_query($sql);
+			$result = $conn->query($sql);
 			if ($slack)
 				$slack->push('maxmind_isp_changed', ['user' => $username, 'type' => 'Activated']);
 		} else {
@@ -114,9 +115,9 @@ if (isset($_POST['maxmind'])) {
 	}
 
 	if ($_POST['maxmind'] == "false") {
-		$mysql['user_id'] = $db->real_escape_string((string) $_SESSION['user_id']);
+		$mysql['user_id'] = $conn->escape((string) $_SESSION['user_id']);
 		$sql = "UPDATE users_pref SET maxmind_isp='0' WHERE user_id='" . $mysql['user_id'] . "'";
-		$result = _mysqli_query($sql);
+		$result = $conn->query($sql);
 
 		if ($slack)
 			$slack->push('maxmind_isp_changed', ['user' => $username, 'type' => 'Deactivated']);
@@ -144,16 +145,16 @@ if (isset($_POST['database_management'])) {
 	$click_timestamp = strtotime($_POST['database_management'] . "00:00:00 " . date('T'));
 	$clickid_sql = "SELECT click_id AS click_id FROM clicks WHERE click_time <=" . $click_timestamp . " ORDER BY click_id DESC LIMIT 1";
 
-	$clickid_result = _mysqli_query($clickid_sql);
+	$clickid_result = $conn->query($clickid_sql);
 	$clickid_row = $clickid_result->fetch_assoc();
 
 	// Make sure we have a valid click_id before continuing
 	if (isset($clickid_row['click_id'])) {
 		global $db;
-		$mysql['user_delete_data_clickid'] = $db->real_escape_string((string) $clickid_row['click_id']);
+		$mysql['user_delete_data_clickid'] = $conn->escape((string) $clickid_row['click_id']);
 
 		$sql = "UPDATE users_pref SET user_delete_data_clickid = '" . $mysql['user_delete_data_clickid'] . "' WHERE user_id = '" . $mysql['user_own_id'] . "'";
-		$db->query($sql);
+		$conn->query($sql);
 
 		if ($slack)
 			$slack->push('click_data_deleted', ['user' => $username, 'date' => $_POST['database_management']]);
@@ -169,9 +170,9 @@ if (isset($_POST['auto_database_management'])) {
 	}
 
 	global $db;
-	$mysql['auto_database_management'] = $db->real_escape_string((string)$_POST['auto_database_management']);
+	$mysql['auto_database_management'] = $conn->escape((string)$_POST['auto_database_management']);
 	$sql = "UPDATE users_pref SET user_auto_database_optimization_days = '" . $mysql['auto_database_management'] . "' WHERE user_id = '" . $mysql['user_own_id'] . "'";
-	$db->query($sql);
+	$conn->query($sql);
 }
 
 function getClicksEraseDate()
@@ -180,7 +181,7 @@ function getClicksEraseDate()
 
 	$sql = "SELECT click_time FROM `clicks` WHERE click_id <= (SELECT user_delete_data_clickid FROM `users_pref` WHERE user_id='" . $mysql['user_own_id'] . "') ORDER BY click_id DESC LIMIT 1";
 
-	$result = $db->query($sql);
+	$result = $conn->query($sql);
 	$row = $result->fetch_array(MYSQLI_ASSOC);
 	if ($row) {
 		return date('d-m-Y', $row['click_time']);
@@ -199,7 +200,7 @@ function database_size()
 	$decimals = 2;
 
 
-	$sql = $db->query("SHOW TABLE STATUS");
+	$sql = $conn->query("SHOW TABLE STATUS");
 
 	$size = 0;
 	while ($row = $sql->fetch_array(MYSQLI_ASSOC)) {
@@ -298,9 +299,9 @@ function CronJobLastExecution($datetime, $full = false)
 						<p>
 							Default Keyword Preference <span class="pull-right"
 								style="font-size: 10px; line-height: 2.5;">
-								<?php $mysql['user_id'] = $db->real_escape_string((string) $_SESSION['user_id']);
+								<?php $mysql['user_id'] = $conn->escape((string) $_SESSION['user_id']);
 								$user_sql = "SELECT * FROM users_pref WHERE user_id='" . $mysql['user_id'] . "'";
-								$user_result = _mysqli_query($user_sql);
+								$user_result = $conn->query($user_sql);
 								$user_row = $user_result->fetch_assoc();
 								$html['keyword_pref'] = htmlentities(strtoupper((string) $user_row['user_keyword_searched_or_bidded']));
 								echo 'Pick up the ' . $html['keyword_pref'] . ' keyword - <a href="' . get_absolute_url() . 'account/account.php">[change]</a>'; ?></span>
@@ -523,7 +524,7 @@ function CronJobLastExecution($datetime, $full = false)
 		<?php
 		//show the last 20 logins failed or pass
 		$user_log_sql = "SELECT * FROM users_log ORDER BY login_id DESC LIMIT 50";
-		$user_log_result = _mysqli_query($user_log_sql);
+		$user_log_result = $conn->query($user_log_sql);
 		?>
 
 		<table class="table table-bordered">

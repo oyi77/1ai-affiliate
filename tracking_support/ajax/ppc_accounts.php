@@ -1,13 +1,14 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
-$mysql['ppc_network_id'] = isset($_POST['ppc_network_id']) ? $db->real_escape_string((string)$_POST['ppc_network_id']) : '0';      
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['ppc_network_id'] = isset($_POST['ppc_network_id']) ? $conn->escape((string)$_POST['ppc_network_id']) : '0';      
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$ppc_account_sql = "SELECT * FROM `ppc_accounts` WHERE `user_id`='".$mysql['user_id']."' AND `ppc_network_id`='".$mysql['ppc_network_id']."' AND `ppc_account_deleted`='0' ORDER BY `ppc_account_name` ASC";
-		$ppc_account_result = $db->query($ppc_account_sql) or record_mysql_error($ppc_account_sql);
+		$ppc_account_result = $conn->query($ppc_account_sql) or record_mysql_error($ppc_account_sql);
 
 		if ($ppc_account_result->num_rows == 0) {
 		

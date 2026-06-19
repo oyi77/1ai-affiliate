@@ -192,3 +192,85 @@
 - 5 Velocity fraud attempts
 - 10 Valid conversions
 - 5 Duplicate conversion attempts
+
+## Advanced Fraud Scenarios (Industry-Standard)
+
+| Test Case ID | Component | Scenario Description | Expected Result | Risk Level |
+|--------------|-----------|---------------------|-----------------|------------|
+| **FRAUD-C03** | Conversion | Postback with nonexistent click_id | 404 or rejected | High |
+| **FRAUD-C04** | Conversion | Conversion outside attribution window | Rejected, attribution window enforced | High |
+| **FRAUD-C08** | Conversion | Stale click (>72h) conversion attempt | Rejected, click_expired reason | High |
+| **FRAUD-C09** | Conversion | Click injection (conversion timestamp < click) | Flagged, fraud_score elevated | High |
+| **FRAUD-D01** | Pixel Stuffing | 1x1 iframe impression fraud | Detected, blocked, publisher flagged | High |
+| **FRAUD-D02** | Ad Stacking | Multiple ads layered on single placement | Detected, fraud_score elevated | High |
+| **FRAUD-D03** | Domain Spoofing | Fake Referer header mismatch | Referer validation fails, fraud_score +0.3 | High |
+| **FRAUD-D04** | Impression Fraud | Auto-refresh CPM pages | Rate limited, CPM not counted | High |
+| **FRAUD-D05** | Incentivized Traffic | CR > 80% anomaly | Fraud flag raised, manual review | High |
+| **FRAUD-D06** | Device ID Rotation | Rapid device fingerprint changes | Collision detected, fraud_score elevated | Medium |
+| **FRAUD-A07** | Conversion Timing | Click-to-conversion < 1 second | Flagged as anomalous | High |
+| **FRAUD-A08** | Geo-Spoofing | VPN IP + mismatched GeoIP | Multi-signal detection, fraud_score +0.5 | High |
+| **FRAUD-A09** | SDK Spoofing | Fake app events without SDK | HMAC validation fails, rejected | High |
+| **FRAUD-A10** | Attribution Hijack | Last-click steal attempt | Attribution model preserves original source | High |
+| **FRAUD-I05** | Datacenter IP | AWS/GCP/Azure IP ranges | Fraud score elevated, logged | Medium |
+| **FRAUD-I06** | Tor Exit Node | Known Tor exit relay IP | Flagged for review, blocked if confirmed | Medium |
+| **FRAUD-I09** | Country Blacklist | Sanctioned country traffic | Blocked at edge, 403 | Medium |
+| **FRAUD-I10** | Manual Blacklist | Admin-added IP to blacklist | Subsequent clicks blocked | Medium |
+
+## Role-Based Scenarios (Production Parity)
+
+### Admin (Super Admin)
+
+| Test Case ID | Scenario Description | Expected Result | Status |
+|--------------|---------------------|-----------------|--------|
+| ADMIN-001 | Login valid credentials | JWT, role=admin | — |
+| ADMIN-002 | View all offers across advertisers | All offers returned | — |
+| ADMIN-005 | View all affiliate earnings | All earnings returned | — |
+| ADMIN-006 | Approve payout batch | Batch status = approved | — |
+| ADMIN-009 | View system stats | Visits, conversions, revenue | — |
+| ADMIN-010 | Create user | 201, user created | — |
+| ADMIN-010b | Disable user | User status = inactive | — |
+| ADMIN-013 | Add IP to blacklist | IP blacklisted, clicks blocked | — |
+
+### Advertiser
+
+| ADV-001 | Create CPA offer | status=pending | — |
+| ADV-003 | Create CPS offer with rev share | revenue_share_pct stored | — |
+| ADV-004 | Create CPV offer | view_duration stored | — |
+| ADV-005 | Create offer with daily cap | cap fields stored | — |
+| ADV-011 | Cannot see other advertisers' offers | Own offers only | — |
+| ADV-012 | Cannot approve own offer | 403 Forbidden | — |
+| ADV-006 | Configure postback URL | Postback URL stored | — |
+
+### Publisher
+
+| PUB-001 | View assigned offers only | Only assigned visible | — |
+| PUB-002 | Generate smartlink | Smartlink + slug returned | — |
+| PUB-003 | Generate smartlink with subid | subid in URL preserved | — |
+| PUB-005 | View own earnings | Only own earnings | — |
+| PUB-009 | Generate link for unassigned offer | 403 Forbidden | — |
+| PUB-011 | Cannot modify offer | 403 Forbidden | — |
+
+## Industry Comparison Matrix
+
+| Feature | BeMob | Offer18 | Voluum | RedTrack | 1AI Target |
+|---------|-------|---------|--------|----------|------------|
+| S2S Postback | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Multi-Touch Attribution | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Smart Traffic Routing | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Real-time Reporting | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Click Fraud Detection | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Conversion Fraud | ✓ | ✓ | ✓ | ✓ | ✓ |
+| IP Velocity Check | ✓ | — | ✓ | ✓ | ✓ |
+| Bot UA Database | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Proxy/VPN Detection | ✓ | — | ✓ | ✓ | ✓ |
+| Custom Domains | ✓ | ✓ | ✓ | ✓ | ✓ |
+| URL Shortener Integr. | — | — | — | ✓ | ✓ |
+| AI Content Tools | — | — | — | — | ✓ |
+| Telegram/FB Pipeline | — | — | — | — | ✓ |
+| RBAC (5 roles) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| API Rate Limiting | ✓ | ✓ | ✓ | ✓ | In Plan |
+| Audit Log | ✓ | — | ✓ | ✓ | ✓ |
+| Pixel Stuffing Detect | ✓ | — | ✓ | ✓ | In Plan |
+| Domain Spoofing | ✓ | — | — | ✓ | In Plan |
+| Incentivized Traffic | ✓ | ✓ | ✓ | ✓ | In Plan |
+| Load Testing | ✓ | ✓ | ✓ | ✓ | In Plan |

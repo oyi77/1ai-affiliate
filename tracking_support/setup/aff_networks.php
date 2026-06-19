@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 include_once(substr(__DIR__, 0, -18) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -11,10 +12,10 @@ if (!$userObj->hasPermission("access_to_setup_section")) {
 }
 
 $slack = false;
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2u.install_hash, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '" . $mysql['user_own_id'] . "'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 if (!empty($user_row['url']))
@@ -45,10 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 	//if editing, check to make sure the own the network they are editing
 	if ($editing == true) {
-		$mysql['aff_network_id'] = $db->real_escape_string((string)$_GET['edit_aff_network_id']);
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['aff_network_id'] = $conn->escape((string)$_GET['edit_aff_network_id']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$aff_network_sql = "SELECT * FROM `aff_networks` WHERE `user_id`='" . $mysql['user_id'] . "' AND `aff_network_id`='" . $mysql['aff_network_id'] . "'";
-		$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+		$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 		if ($aff_network_result->num_rows == 0) {
 			$error['wrong_user'] = '<div class="error">You are not authorized to edit another users network</div>';
 		} else {
@@ -58,8 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 	if (! $error) {
 
-		$mysql['aff_network_name'] = $db->real_escape_string((string)$_POST['aff_network_name']);
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['aff_network_name'] = $conn->escape((string)$_POST['aff_network_name']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$mysql['aff_network_time'] = time();
 
 		if ($editing == true) {
@@ -74,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		if ($editing == true) {
 			$aff_network_sql .= "WHERE `aff_network_id`='" . $mysql['aff_network_id'] . "'";
 		}
-		$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+		$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 
 		$add_success = true;
 
@@ -93,14 +94,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 if (!empty($_GET['edit_aff_network_id'])) {
 
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-	$mysql['aff_network_id'] = $db->real_escape_string((string)$_GET['edit_aff_network_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['aff_network_id'] = $conn->escape((string)$_GET['edit_aff_network_id']);
 
 	$aff_network_sql = "SELECT 	* 
 						 FROM   	`aff_networks`
 						 WHERE  	`aff_network_id`='" . $mysql['aff_network_id'] . "'
 						 AND    		`user_id`='" . $mysql['user_id'] . "'";
-	$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+	$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 	$aff_network_row = $aff_network_result->fetch_assoc();
 
 	$html = array_map(htmlentities(...), $aff_network_row);
@@ -124,8 +125,8 @@ if (isset($_GET['delete_aff_network_id'])) {
 	}
 
 	if ($userObj->hasPermission("remove_campaign_category")) {
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-		$mysql['aff_network_id'] = $db->real_escape_string((string)$_GET['delete_aff_network_id']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+		$mysql['aff_network_id'] = $conn->escape((string)$_GET['delete_aff_network_id']);
 		$mysql['aff_network_time'] = time();
 
 		$delete_sql = " UPDATE  `aff_networks`
@@ -133,7 +134,7 @@ if (isset($_GET['delete_aff_network_id'])) {
 								`aff_network_time`='" . $mysql['aff_network_time'] . "'
 						WHERE   `user_id`='" . $mysql['user_id'] . "'
 						AND     `aff_network_id`='" . $mysql['aff_network_id'] . "'";
-		if ($delete_result = $db->query($delete_sql) or record_mysql_error($delete_result)) {
+		if ($delete_result = $conn->query($delete_sql) or record_mysql_error($delete_result)) {
 			$delete_success = true;
 
 			if ($slack)
@@ -233,10 +234,10 @@ template_top('Campaign Category Setup');
 					<input class="form-control fuzzy-search" placeholder="Filter categories...">
 					<ul class="list">
 						<?php
-						$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+						$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 						$aff_network_sql = "SELECT * FROM `aff_networks` WHERE `user_id`='" . $mysql['user_id'] . "' AND `aff_network_deleted`='0' ORDER BY `aff_network_name` ASC";
 
-						$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+						$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 						if ($aff_network_result->num_rows == 0) {
 						?>
 						<li class="empty-state">No categories added yet</li>

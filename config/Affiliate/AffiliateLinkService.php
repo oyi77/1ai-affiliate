@@ -28,7 +28,7 @@ final class AffiliateLinkService
         $token = $this->generateToken();
         $now = time();
 
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO 1ai_affiliate_links
              (affiliate_id, campaign_id, link_token, status, click_limit, created_at, updated_at)
              VALUES (?, ?, ?, \'active\', ?, ?, ?)'
@@ -66,11 +66,11 @@ final class AffiliateLinkService
 
     public function revokeLink(int $linkId): void
     {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'UPDATE 1ai_affiliate_links SET status = \'revoked\', updated_at = ? WHERE id = ?'
         );
         $this->conn->bind($stmt, 'ii', [time(), $linkId]);
-        $this->conn->executeChecked($stmt, 'Link revoke failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     public function findByToken(string $token): ?array
@@ -94,13 +94,13 @@ final class AffiliateLinkService
             return;
         }
 
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO 1ai_affiliate_sessions (link_token, click_id, affiliate_payout, tracked_at)
              VALUES (?, ?, ?, ?)'
         );
         $payout = isset($link['affiliate_payout']) ? (float) $link['affiliate_payout'] : null;
         $this->conn->bind($stmt, 'sidi', [$token, $clickId, $payout, time()]);
-        $this->conn->executeChecked($stmt, 'Click recording failed');
+        $this->conn->executeInsert($stmt);
     }
 
     public function findSessionByClickId(int $clickId): ?array

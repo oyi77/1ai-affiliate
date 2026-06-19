@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 include_once(str_repeat("../", 1) . 'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(str_repeat("../", 1) . 'config/functions-upgrade.php');
 include_once(str_repeat("../", 1) . 'config/class-dataengine.php');
 
 AUTH::require_user();
 
 ini_set('memory_limit', '-1');
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT install_hash, pcustomer_api_key FROM users WHERE user_id = '" . $mysql['user_own_id'] . "'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 $missing_api_key = true;

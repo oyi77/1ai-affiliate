@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 include_once(str_repeat("../", 1) . 'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -21,9 +22,9 @@ $editing = false;
 $deleting = false;
 
 $slack = false;
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '" . $mysql['user_own_id'] . "'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 $username = $user_row['username'];
 
@@ -41,14 +42,14 @@ if (!empty($_GET['delete_user_id'])) {
 	$deleting = true;
 }
 
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 
 $user_sql = "SELECT user_fname,user_lname,user_name,user_id,user_email,user_time_register,user_timezone,install_hash,user_hash,role_name FROM users LEFT JOIN user_role USING (user_id) LEFT JOIN roles USING (role_id) WHERE user_id!=1 and user_deleted!=1";
-$user_result = _mysqli_query($user_sql);
+$user_result = $conn->query($user_sql);
 //$user_row = $user_result->fetch_assoc();
 
 $user_sql = "SELECT user_id,user_email,user_time_register,user_timezone,install_hash,user_hash,modal_status,vip_perks_status FROM users WHERE user_id=1";
-$user_result2 = _mysqli_query($user_sql);
+$user_result2 = $conn->query($user_sql);
 $user_row2 = $user_result2->fetch_assoc();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -58,23 +59,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		exit;
 	}
 
-	$mysql['form_user_id'] = $db->real_escape_string(trim($_POST['user_id'] ?? ''));
-	$mysql['user_fname'] = $db->real_escape_string(trim($_POST['user_fname'] ?? ''));
+	$mysql['form_user_id'] = $conn->escape(trim($_POST['user_id'] ?? ''));
+	$mysql['user_fname'] = $conn->escape(trim($_POST['user_fname'] ?? ''));
 	if (empty($mysql['user_fname'])) {
 		$error['user_fname'] = '<div class="error help-block">Enter a first name.</div>';
 	}
 
-	$mysql['user_lname'] = $db->real_escape_string(trim($_POST['user_lname'] ?? ''));
+	$mysql['user_lname'] = $conn->escape(trim($_POST['user_lname'] ?? ''));
 	if (empty($mysql['user_lname'])) {
 		$error['user_lname'] = '<div class="error help-block">Enter a last name.</div>';
 	}
 
-	$mysql['user_email'] = $db->real_escape_string(trim($_POST['user_email'] ?? ''));
+	$mysql['user_email'] = $conn->escape(trim($_POST['user_email'] ?? ''));
 	if (empty($mysql['user_email'])) {
 		$error['user_email'] = '<div class="error help-block">Enter an email address.</div>';
 	} else {
 		$check_user_email = "select user_name,user_id from users where user_email='" . $mysql['user_email'] . "'";
-		$check_user_email_result = _mysqli_query($check_user_email);
+		$check_user_email_result = $conn->query($check_user_email);
 		$user_email_row = $check_user_email_result->fetch_array(MYSQLI_ASSOC);
 
 		if ($check_user_email_result->num_rows != 0) {
@@ -83,14 +84,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 
 
-	$mysql['user_name'] = $db->real_escape_string(trim($_POST['user_name'] ?? ''));
+	$mysql['user_name'] = $conn->escape(trim($_POST['user_name'] ?? ''));
 	if (empty($mysql['user_name'])) {
 		$error['user_name'] = '<div class="error help-block">Enter a username.</div>';
 	}
 
 	if (!empty($mysql['user_name']) && !$editing) {
 		$check_user = "select user_name,user_id from users where user_name='" . $mysql['user_name'] . "'";
-		$check_user_result = _mysqli_query($check_user);
+		$check_user_result = $conn->query($check_user);
 		$user_name_row = $check_user_result->fetch_array(MYSQLI_ASSOC);
 		if ($check_user_result->num_rows != 0 && $user_name_row['user_id'] != $mysql['form_user_id']) {
 			$error['user_name'] = '<div class="error help-block">The username you entered already exists.</div>';
@@ -98,17 +99,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 
 	if ($editing !== true) {
-		$mysql['user_password'] = $db->real_escape_string(trim($_POST['user_password'] ?? ''));
+		$mysql['user_password'] = $conn->escape(trim($_POST['user_password'] ?? ''));
 		if (empty($mysql['user_password'])) {
 			$error['user_password'] = '<div class="error help-block">Enter a password.</div>';
 		}
 	} elseif ($editing === true && isset($_POST['user_password']) && $_POST['user_password'] != '') {
 		// When editing, only set password if a new one is provided
-		$mysql['user_password'] = $db->real_escape_string(trim((string) $_POST['user_password']));
+		$mysql['user_password'] = $conn->escape(trim((string) $_POST['user_password']));
 	}
 
 	if ($editing !== true || (isset($_POST['user_password']) && $_POST['user_password'] != '' && $editing === true)) {
-		$mysql['user_password2'] = $db->real_escape_string(trim($_POST['user_password2'] ?? ''));
+		$mysql['user_password2'] = $conn->escape(trim($_POST['user_password2'] ?? ''));
 		if (empty($mysql['user_password2'])) {
 			$error['user_password2'] = '<div class="error help-block">Retype the users password.</div>';
 		}
@@ -121,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		}
 	}
 
-	$mysql['user_role'] = $db->real_escape_string(trim($_POST['user_role'] ?? ''));
+	$mysql['user_role'] = $conn->escape(trim($_POST['user_role'] ?? ''));
 	if (empty($mysql['user_role'])) {
 		$error['user_role'] = '<div class="error help-block">Please select user role</div>';
 	}
@@ -136,13 +137,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		// Only hash password if it's set (for new users or when changing password)
 		if (isset($mysql['user_password'])) {
 			$hasher = function_exists('hash_user_pass') ? 'hash_user_pass' : 'salt_user_pass';
-			$mysql['user_pass'] = $db->real_escape_string($hasher($mysql['user_password']));
+			$mysql['user_pass'] = $conn->escape($hasher($mysql['user_password']));
 		}
 		$hash = md5(uniqid((string)random_int(0, mt_getrandmax()), TRUE));
 		// $user_hash = intercomHash($hash); // Removed intercomHash call
 		$user_hash = ''; // Default empty value
 
-		$mysql['user_time_register'] = $db->real_escape_string((string)time());
+		$mysql['user_time_register'] = $conn->escape((string)time());
 
 		if ($editing === true) {
 			$user_sql  = " UPDATE users SET";
@@ -176,22 +177,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		if ($editing == true) {
 			$user_sql  .= "WHERE user_id='" . $mysql['form_user_id'] . "'";
-			$user_result = _mysqli_query($user_sql);
+			$user_result = $conn->query($user_sql);
 
 			$role_sql = "UPDATE user_role SET role_id = '" . $mysql['user_role'] . "' WHERE user_id = '" . $mysql['form_user_id'] . "'";
 		} else {
-			$user_result = _mysqli_query($user_sql);
-			$user_id = $db->insert_id;
+			$user_result = $conn->query($user_sql);
+			$user_id = $conn->writeConnection()->insert_id;
 
 			$role_sql = "INSERT INTO user_role SET user_id = '" . $user_id . "', role_id = '" . $mysql['user_role'] . "'";
 			$pref_sql = "INSERT INTO users_pref SET user_id = '" . $user_id . "'";
 		}
 
-		$role_result = _mysqli_query($role_sql);
+		$role_result = $conn->query($role_sql);
 		
 		// Only run pref_sql when creating a new user (not editing)
 		if (!$editing) {
-			$pref_result = _mysqli_query($pref_sql);
+			$pref_result = $conn->query($pref_sql);
 		}
 
 		$add_success = true;
@@ -231,10 +232,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 if ($editing == true) {
-	$mysql['user_id'] = $db->real_escape_string(trim(filter_input(INPUT_GET, 'edit_user_id', FILTER_SANITIZE_NUMBER_INT)));
+	$mysql['user_id'] = $conn->escape(trim(filter_input(INPUT_GET, 'edit_user_id', FILTER_SANITIZE_NUMBER_INT)));
 	$user_sql_edit = "SELECT user_fname,user_lname,user_name,user_id,user_email,user_time_register,user_active,role_id FROM users LEFT JOIN user_role USING (user_id) WHERE user_id=" . $mysql['user_id'];
 
-$user_result_edit = _mysqli_query($user_sql_edit);
+$user_result_edit = $conn->query($user_sql_edit);
 	$user_row_edit = $user_result_edit->fetch_assoc();
 
 	if ($user_row_edit['role_id'] == '2') {
@@ -249,7 +250,7 @@ $user_result_edit = _mysqli_query($user_sql_edit);
 
 if ($deleting == true) {
 
-	$mysql['user_id'] = $db->real_escape_string(trim(filter_input(INPUT_GET, 'delete_user_id', FILTER_SANITIZE_NUMBER_INT)));
+	$mysql['user_id'] = $conn->escape(trim(filter_input(INPUT_GET, 'delete_user_id', FILTER_SANITIZE_NUMBER_INT)));
 
 	if (!$userObj->hasPermission("add_edit_delete_admin")) {
 		header('location: ' . get_absolute_url() . 'account/user-management.php');
@@ -257,7 +258,7 @@ if ($deleting == true) {
 	}
 
 	$user_sql_delete = "UPDATE users SET user_deleted = '1' WHERE user_id = " . $mysql['user_id'];
-$user_result_delete = _mysqli_query($user_sql_delete);
+$user_result_delete = $conn->query($user_sql_delete);
 
 	// Purge attribution data for the deleted user
 	$attributionCleanupQueries = [
@@ -270,7 +271,7 @@ $user_result_delete = _mysqli_query($user_sql_delete);
 
 	foreach ($attributionCleanupQueries as $cleanupQuery) {
 		try {
-			$db->query($cleanupQuery);
+			$conn->query($cleanupQuery);
 		} catch (mysqli_sql_exception $exception) {
 		if (function_exists('affiliate_log')) {
 			affiliate_log('attribution_cleanup', $exception->getMessage());
@@ -280,7 +281,7 @@ $user_result_delete = _mysqli_query($user_sql_delete);
 
 	if ($slack) {
 		$sql = "SELECT user_name, role_id FROM users LEFT JOIN user_role USING (user_id) WHERE user_id = " . $mysql['user_id'];
-		$result = _mysqli_query($sql);
+		$result = $conn->query($sql);
 		$row = $result->fetch_assoc();
 
 		switch ($row['role_id']) {
@@ -445,7 +446,7 @@ template_top('User Management'); ?>
 			<div class="panel-body">
 
 				<ul>
-					<?php $mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+					<?php $mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 
 					if ($user_result->num_rows == 0) {
 					?>

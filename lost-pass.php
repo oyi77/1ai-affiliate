@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 include_once(__DIR__ . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 $error = [];
 $html = [];
@@ -9,11 +10,11 @@ $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-	$mysql['user_name'] = $db->real_escape_string((string)$_POST['user_name']);
-	$mysql['user_email'] = $db->real_escape_string((string)$_POST['user_email']);
+	$mysql['user_name'] = $conn->escape((string)$_POST['user_name']);
+	$mysql['user_email'] = $conn->escape((string)$_POST['user_email']);
 
 	$user_sql = "SELECT user_id FROM users WHERE user_name='" . $mysql['user_name'] . "' AND user_email='" . $mysql['user_email'] . "'";
-	$user_result = _mysqli_query($user_sql, $db);
+	$user_result = $conn->query($user_sql, $db);
 	$user_row = $user_result->fetch_assoc();
 
 	if (!$user_row) {
@@ -23,11 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	//i there isn't any error, give this user, a new password, and email it to them!
 	if (!$error) {
 
-		$mysql['user_id'] = $db->real_escape_string((string) $user_row['user_id']);
+		$mysql['user_id'] = $conn->escape((string) $user_row['user_id']);
 
 		//generate random key (CSPRNG; expiry tracked separately via user_pass_time)
 		$user_pass_key = bin2hex(random_bytes(32));
-		$mysql['user_pass_key'] = $db->real_escape_string($user_pass_key);
+		$mysql['user_pass_key'] = $conn->escape($user_pass_key);
 
 		//set the user pass time
 		$mysql['user_pass_time'] = time();
@@ -37,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 							SET 		user_pass_key='" . $mysql['user_pass_key'] . "',
 										user_pass_time='" . $mysql['user_pass_time'] . "'
 							WHERE		user_id='" . $mysql['user_id'] . "'";
-		$update_result = _mysqli_query($update_sql, $db);
+		$update_result = $conn->query($update_sql, $db);
 
 
 		//now email the user the script to reset their email

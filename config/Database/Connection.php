@@ -232,6 +232,74 @@ final class Connection
     }
 
     /**
+     * Escape a string value for safe interpolation in SQL strings.
+     *
+     * Delegates to mysqli::real_escape_string on the write connection.
+     * Prefer prepared statements via bind() for new code — this exists
+     * to migrate legacy string-interpolated SQL through Connection.
+     *
+     * @param string $value raw string to escape
+     * @return string escaped string (safe for single-quoted SQL context)
+     */
+    public function escape(string $value): string
+    {
+        return $this->write->real_escape_string($value);
+    }
+
+    /**
+     * Execute a raw SQL query on the write connection.
+     *
+     * Exists to migrate legacy $db->query($sql) call sites through Connection.
+     * Prefer prepared statements via prepareWrite()/bind()/execute() for new code.
+     *
+     * @param string $sql raw SQL to execute
+     * @return bool|\mysqli_result false on failure, result object for SELECT, true for others
+     */
+    public function query(string $sql): bool|\mysqli_result
+    {
+        return $this->write->query($sql);
+    }
+
+    /**
+     * Execute a raw query and return a guaranteed mysqli_result.
+     *
+     * Use instead of query() when the caller needs to iterate rows or read
+     * num_rows — avoids bool|mysqli_result union that PHPStan would flag.
+     *
+     * @throws RuntimeException if the query fails
+     */
+    public function queryResult(string $sql): \mysqli_result
+    {
+        $result = $this->write->query($sql);
+        if ($result === false || $result === true) {
+            throw new RuntimeException(
+                'Query failed or returned no result set: ' . $this->write->error . ' — ' . $sql
+            );
+        }
+        return $result;
+    }
+
+    /**
+     * Execute a raw SELECT query on the read connection and fetch the first row.
+     *
+     * Provides a migration path from legacy memcache_mysql_fetch_assoc($db, $sql)
+     * without memcache caching. Add cache layer when profiler shows need.
+     *
+     * @param string $sql raw SELECT query
+     * @return array<string, mixed>|null associative array or null if no rows
+     */
+    public function fetchAssoc(string $sql): ?array
+    {
+        $result = $this->read->query($sql);
+        if ($result === false) {
+            return null;
+        }
+        $row = $result->fetch_assoc();
+        $result->free();
+        return $row ?: null;
+    }
+
+    /**
      * Run a callback inside a transaction with automatic rollback on exception.
      *
      * @template T

@@ -1,16 +1,17 @@
 <?php
 declare(strict_types=1);
 include_once(str_repeat("../", 1).'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(str_repeat("../", 1).'config/clickserver_api_management.php');
 
 AUTH::require_user();
 
 //get all of the user data
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 $user_sql = "	SELECT 	`clickserver_api_key`
 				 FROM   	`users` 
 				 WHERE  	`users`.`user_id`='".$mysql['user_id']."'";
-$user_result = $db->query($user_sql);
+$user_result = $conn->query($user_sql);
 $user_row = $user_result->fetch_assoc();
 if ($user_row['clickserver_api_key']) {
 	$clickservers = clickserver_api_domain_list($user_row['clickserver_api_key']);

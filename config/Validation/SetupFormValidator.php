@@ -27,9 +27,12 @@ class SetupFormValidator
         'conversion_touchpoints',
     ];
 
+    private readonly \OneAIAffiliate\Database\Connection $conn;
+
     public function __construct(
         private readonly mysqli $db
     ) {
+        $this->conn = new \OneAIAffiliate\Database\Connection($db);
     }
 
     /**
@@ -196,11 +199,11 @@ class SetupFormValidator
             return ValidationResult::failure("You are not authorized to modify this $recordName");
         }
 
-        $userIdEscaped = $this->db->real_escape_string((string)$userId);
-        $recordIdEscaped = $this->db->real_escape_string((string)$recordId);
+        $userIdEscaped = $this->conn->escape((string)$userId);
+        $recordIdEscaped = $this->conn->escape((string)$recordId);
 
         $sql = "SELECT 1 FROM `$table` WHERE `user_id` = '$userIdEscaped' AND `$idColumn` = '$recordIdEscaped' LIMIT 1";
-        $result = $this->db->query($sql);
+        $result = $this->conn->query($sql);
         
         if (!$result || $result->num_rows === 0) {
             return ValidationResult::failure("You are not authorized to modify this $recordName");
@@ -219,10 +222,10 @@ class SetupFormValidator
             return ValidationResult::failure("$recordName not found");
         }
 
-        $recordIdEscaped = $this->db->real_escape_string((string)$recordId);
+        $recordIdEscaped = $this->conn->escape((string)$recordId);
 
         $sql = "SELECT 1 FROM `$table` WHERE `$idColumn` = '$recordIdEscaped' LIMIT 1";
-        $result = $this->db->query($sql);
+        $result = $this->conn->query($sql);
         
         if (!$result || $result->num_rows === 0) {
             return ValidationResult::failure("$recordName not found");
@@ -241,19 +244,19 @@ class SetupFormValidator
             return ValidationResult::failure("$fieldName could not be validated");
         }
 
-        $userIdEscaped = $this->db->real_escape_string((string)$userId);
-        $slugEscaped = $this->db->real_escape_string($slug);
+        $userIdEscaped = $this->conn->escape((string)$userId);
+        $slugEscaped = $this->conn->escape($slug);
 
         $sql = "SELECT 1 FROM `$table` WHERE `user_id` = '$userIdEscaped' AND `model_slug` = '$slugEscaped'";
         
         if ($excludeId !== null) {
-            $excludeIdEscaped = $this->db->real_escape_string((string)$excludeId);
+            $excludeIdEscaped = $this->conn->escape((string)$excludeId);
             $sql .= " AND `model_id` != '$excludeIdEscaped'";
         }
         
         $sql .= " LIMIT 1";
         
-        $result = $this->db->query($sql);
+        $result = $this->conn->query($sql);
         
         if ($result && $result->num_rows > 0) {
             return ValidationResult::failure("$fieldName must be unique");
@@ -297,7 +300,7 @@ class SetupFormValidator
      */
     public function sanitizeForDatabase(mixed $value): string
     {
-        return $this->db->real_escape_string((string)$value);
+        return $this->conn->escape((string)$value);
     }
     
     /**

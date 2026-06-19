@@ -176,7 +176,7 @@ final class SchemaInstaller
     private function executeStatement(string $sql, ?string $tableName = null): bool
     {
         try {
-            $result = _mysqli_query($this->connection, $sql);
+            $result = $this->connection->query($sql);
         } catch (\mysqli_sql_exception $e) {
             $this->errors[] = 'Failed to create table ' . ($tableName ?? '?') . ': ' . $e->getMessage();
             return false;
@@ -200,7 +200,7 @@ final class SchemaInstaller
     private function disableStrictMode(): void
     {
         $sql = "SET session sql_mode= ''";
-        _mysqli_query($this->connection, $sql);
+        $this->connection->query($sql);
     }
 
     /**
@@ -210,7 +210,7 @@ final class SchemaInstaller
     {
         // Set collation for IPv6 table
         $sql = "ALTER TABLE `ips_v6` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-        _mysqli_query($this->connection, $sql);
+        $this->connection->query($sql);
     }
 
     /**

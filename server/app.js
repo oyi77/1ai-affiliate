@@ -10,6 +10,9 @@ const logger = require('./logger');
 const metrics = require('./metrics');
 const { idempotency } = require('./middleware/idempotency');
 const { auditLog } = require('./middleware/auditLog');
+const postbackQueue = require('./services/postbackQueue');
+const posterWorker = require('./services/posterWorker');
+const pipelineWorker = require('./services/pipelineWorker');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,10 +22,16 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://static.cloudflareinsights.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https:", "data:"],
       connectSrc: ["'self'", "https:"],
+      frameSrc: ["'self'"],
+      mediaSrc: ["'self'"],
+      frameAncestors: ["'self'"],
+      formAction: ["'self'"],
+      objectSrc: ["'none'"],
     },
   },
 }));
@@ -57,6 +66,9 @@ app.use((req, res, next) => {
 // Static files — shared with PHP public dir
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// React SPA assets (built by Vite to public/dist/)
+app.use(express.static(path.join(__dirname, 'public', 'dist')));
 // API documentation
 app.get('/api-docs', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
@@ -65,6 +77,12 @@ app.get('/api-docs', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/admin/advertisers', require('./routes/advertisers'));
+app.use('/api/admin/traffic-sources', require('./routes/trafficSources'));
+app.use('/api/admin/offers', require('./routes/offers'));
+app.use('/api/admin/campaigns', require('./routes/campaigns'));
+app.use('/api/admin/reports', require('./routes/reports'));
+app.use('/api/admin/affiliates', require('./routes/affiliates'));
 app.use('/api/om', require('./routes/om'));
 app.use('/api/am', require('./routes/am'));
 app.use('/api/payment', require('./routes/payment'));
@@ -78,6 +96,10 @@ app.use('/api/ai', require('./routes/ai'));
 app.use('/api/admin/stats', require('./routes/statsSSE'));
 app.use('/api/poster', require('./routes/poster'));
 app.use('/api/pipeline', require('./routes/pipeline'));
+app.use('/api/affiliate', require('./routes/affiliate'));
+app.use('/api/settings/telegram', require('./routes/telegram'));
+app.use('/api/settings/payouts', require('./routes/payouts'));
+app.use('/api/admin/notifications', require('./routes/notifications'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
@@ -102,17 +124,23 @@ app.get('/health', async (req, res) => {
   res.status(httpStatus).json(checks);
 });
 
-// SPA fallback — / serves admin SPA, /admin and /client alias
-app.get('/admin', (req, res) => res.redirect('/admin/'));
-app.get('/client', (req, res) => res.redirect('/client/'));
-app.get('/admin/*', (req, res) => {
+// Legacy admin SPA (preserved for reference; React SPA serves root /)
+app.get('/legacy/admin', (req, res) => res.redirect('/legacy/admin/'));
+app.get('/legacy/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/index.html'));
 });
-app.get('/client/*', (req, res) => {
+app.get('/legacy/client', (req, res) => res.redirect('/legacy/client/'));
+app.get('/legacy/client/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/admin/index.html'));
+
+// React frontend SPA — catch-all for client-side routing (must be last)
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api') || req.path.startsWith('/go/') || req.path === '/health') {
+    return next();
+  }
+  res.sendFile(path.join(__dirname, 'public', 'dist', 'index.html'));
 });
 
 // Error handler — log via pino, return request_id for 500s

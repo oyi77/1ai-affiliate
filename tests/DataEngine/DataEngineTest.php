@@ -175,7 +175,7 @@ final class DataEngineTest extends TestCase
         );
 
         self::assertStringContainsString(
-            'real_escape_string',
+            '->escape(',
             $this->source,
             'Click ID from DB lookup must be escaped'
         );

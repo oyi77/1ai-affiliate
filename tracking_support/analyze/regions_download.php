@@ -8,18 +8,19 @@ header("Pragma: no-cache");
 header("Expires: -1");
 
 include_once(substr(__DIR__, 0,-20) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(substr(__DIR__, 0,-20) . '/config/class-dataengine.php'); 
 
 AUTH::require_user();
 
 $time = grab_timeframe();
-$mysql['to'] = $db->real_escape_string($time['to']);
-$mysql['from'] = $db->real_escape_string($time['from']);
+$mysql['to'] = $conn->escape($time['to']);
+$mysql['from'] = $conn->escape($time['from']);
 
 
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 $user_sql = "SELECT user_pref_breakdown, user_pref_show, user_cpc_or_cpv FROM users_pref WHERE user_id=".$mysql['user_id'];
-$user_result = _mysqli_query($user_sql);
+$user_result = $conn->query($user_sql);
 if (!$user_result) { record_mysql_error($user_sql); }
 $user_row = $user_result->fetch_assoc();
 $breakdown = $user_row['user_pref_breakdown'];

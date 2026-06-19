@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 include_once(substr(__DIR__, 0, -17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -11,14 +12,14 @@ AUTH::set_timezone($_SESSION['user_timezone']);
 
 //grab user time range preference
 $time = grab_timeframe();
-$mysql['to'] = $db->real_escape_string((string)$time['to']);
-$mysql['from'] = $db->real_escape_string((string)$time['from']);
+$mysql['to'] = $conn->escape((string)$time['to']);
+$mysql['from'] = $conn->escape((string)$time['from']);
 
 
 //show real or filtered clicks
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 $user_sql = "SELECT user_pref_breakdown, user_pref_show, user_cpc_or_cpv FROM users_pref WHERE user_id=" . $mysql['user_id'];
-$user_result = _mysqli_query($user_sql); //($user_sql);
+$user_result = $conn->query($user_sql); //($user_sql);
 $user_row = $user_result->fetch_assoc();
 $breakdown = $user_row['user_pref_breakdown'];
 
@@ -42,7 +43,7 @@ if ($user_row['user_cpc_or_cpv'] == 'cpv')  $cpv = true;
 else 										$cpv = false;
 
 $info_sql = "SELECT * FROM rotators WHERE user_id='" . $mysql['user_id'] . "'";
-$info_result = $db->query($info_sql) or record_mysql_error($info_sql);
+$info_result = $conn->query($info_sql) or record_mysql_error($info_sql);
 ?>
 
 <div class="row">
@@ -90,7 +91,7 @@ $info_result = $db->query($info_sql) or record_mysql_error($info_sql);
 									   WHERE rotator_id='" . $rotator_row['id'] . "'";
 					$rotator_totals_sql .= $click_filtered;
 					$rotator_totals_sql .= " AND click_time >= '" . $mysql['from'] . "' AND click_time <= '" . $mysql['to'] . "'";
-					$rotator_totals_result = $db->query($rotator_totals_sql) or record_mysql_error($rotator_totals_sql);
+					$rotator_totals_result = $conn->query($rotator_totals_sql) or record_mysql_error($rotator_totals_sql);
 					$rotator_totals_row = $rotator_totals_result->fetch_array(MYSQLI_ASSOC);
 
 					//clicks
@@ -212,7 +213,7 @@ $info_result = $db->query($info_sql) or record_mysql_error($info_sql);
 
 						<?php
 						$rule_sql = "SELECT * FROM rotator_rules WHERE rotator_id='" . $rotator_row['id'] . "'";
-						$rule_result = $db->query($rule_sql) or record_mysql_error($rule_sql);
+						$rule_result = $conn->query($rule_sql) or record_mysql_error($rule_sql);
 						$rows = $rule_result->num_rows;
 
 						while ($rule_row = $rule_result->fetch_assoc()) {
@@ -229,7 +230,7 @@ $info_result = $db->query($info_sql) or record_mysql_error($info_sql);
 									   WHERE rule_id='" . $rule_row['id'] . "'";
 							$rule_stats_sql .= $click_filtered;
 							$rule_stats_sql .= " AND click_time >= '" . $mysql['from'] . "' AND click_time <= '" . $mysql['to'] . "'";
-							$rule_stats_result = $db->query($rule_stats_sql) or record_mysql_error($rule_stats_sql);
+							$rule_stats_result = $conn->query($rule_stats_sql) or record_mysql_error($rule_stats_sql);
 							$rule_stats_row = $rule_stats_result->fetch_assoc();
 
 							$rule_su_ratio = 0;
@@ -308,7 +309,7 @@ $info_result = $db->query($info_sql) or record_mysql_error($info_sql);
 											   WHERE rotator_id='" . $rotator_row['id'] . "'";
 						$default_stats_sql .= $click_filtered;
 						$default_stats_sql .= " AND rule_id='0' AND click_time >= '" . $mysql['from'] . "' AND click_time <= '" . $mysql['to'] . "'";
-						$default_stats_result = $db->query($default_stats_sql) or record_mysql_error($default_stats_sql);
+						$default_stats_result = $conn->query($default_stats_sql) or record_mysql_error($default_stats_sql);
 						$default_stats_row = $default_stats_result->fetch_assoc();
 
 						$default_su_ratio = 0;

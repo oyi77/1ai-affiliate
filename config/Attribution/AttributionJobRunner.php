@@ -7,6 +7,8 @@ namespace OneAIAffiliate\Attribution;
 use OneAIAffiliate\Attribution\Calculation\AttributionStrategyInterface;
 use OneAIAffiliate\Attribution\Calculation\ConversionBatch;
 use OneAIAffiliate\Attribution\Calculation\LastTouchStrategy;
+use OneAIAffiliate\Attribution\Calculation\FirstTouchStrategy;
+use OneAIAffiliate\Attribution\Calculation\LinearStrategy;
 use OneAIAffiliate\Attribution\Calculation\TimeDecayStrategy;
 use OneAIAffiliate\Attribution\Calculation\PositionBasedStrategy;
 use OneAIAffiliate\Attribution\Calculation\AssistedStrategy;
@@ -122,11 +124,16 @@ final readonly class AttributionJobRunner
     private function resolveStrategy(ModelDefinition $model): AttributionStrategyInterface
     {
         return match ($model->type) {
-            ModelType::LAST_TOUCH => new LastTouchStrategy(),
-            ModelType::TIME_DECAY => new TimeDecayStrategy(),
+            ModelType::LAST_TOUCH     => new LastTouchStrategy(),
+            ModelType::FIRST_TOUCH    => new FirstTouchStrategy(),
+            ModelType::LINEAR         => new LinearStrategy(),
+            ModelType::TIME_DECAY     => new TimeDecayStrategy(),
             ModelType::POSITION_BASED => new PositionBasedStrategy(),
-            ModelType::ASSISTED => new AssistedStrategy(),
-            default => new LastTouchStrategy(),
+            ModelType::ASSISTED       => new AssistedStrategy(),
+            ModelType::ALGORITHMIC    => throw new \LogicException(
+                'ALGORITHMIC attribution requires a trained model — not yet implemented. '
+                . 'Configure a different model type or implement AlgorithmicStrategy.'
+            ),
         };
     }
 

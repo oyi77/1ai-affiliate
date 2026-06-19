@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(str_repeat("../", 2).'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(str_repeat("../", 2).'config/DashboardDataManager.class.php');
 
 AUTH::require_user();
@@ -22,9 +23,9 @@ if (empty($alerts)) {
 foreach ($alerts as $alert) {
     $external_id = $alert['external_id'];
     if ($external_id) {
-        $mysql['alert_id'] = $db->real_escape_string($external_id);
+        $mysql['alert_id'] = $conn->escape($external_id);
         $sql = "SELECT COUNT(*) AS count FROM alerts WHERE alert_id='{$mysql['alert_id']}' AND alert_seen='1'";
-        $result = _mysqli_query($sql, $db);
+        $result = $conn->query($sql, $db);
         $row = $result->fetch_assoc();
         if ($row['count']) {
             $dontShow[$external_id] = true;

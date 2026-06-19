@@ -55,7 +55,7 @@ final class MarginConfig
 
         $now = time();
         if ($existing) {
-            $stmt = $this->conn->prepare(
+            $stmt = $this->conn->prepareWrite(
                 'UPDATE margin_config SET default_margin_percent = ?, minimum_payout = ?,
                  auto_approve_threshold = ?, updated_at = ? WHERE user_id = ?'
             );
@@ -66,7 +66,7 @@ final class MarginConfig
                 $now, $userId,
             ]);
         } else {
-            $stmt = $this->conn->prepare(
+            $stmt = $this->conn->prepareWrite(
                 'INSERT INTO margin_config
                  (user_id, default_margin_percent, minimum_payout, auto_approve_threshold, created_at, updated_at)
                  VALUES (?, ?, ?, ?, ?, ?)'
@@ -79,7 +79,7 @@ final class MarginConfig
                 $now, $now,
             ]);
         }
-        $this->conn->executeChecked($stmt, 'Margin config upsert failed');
+        $this->conn->execute($stmt);
         $this->cached = null;
     }
 

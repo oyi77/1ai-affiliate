@@ -5,11 +5,12 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 try {
 	include_once(str_repeat("../", 1) . 'config/connect.php');
+	$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 	if (isset($_GET['hash']) && isset($_GET['dni'])) {
-		$mysql['networkId'] = $db->real_escape_string((string)$_GET['dni']);
+		$mysql['networkId'] = $conn->escape((string)$_GET['dni']);
 		$sql = "SELECT apiKey, install_hash, type FROM dni_networks JOIN users USING (user_id) WHERE networkId = '" . $mysql['networkId'] . "'";
-		$results = $db->query($sql);
+		$results = $conn->query($sql);
 		if ($results && $results->num_rows > 0) {
 			$row = $results->fetch_assoc();
 
@@ -37,8 +38,10 @@ try {
 				curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data, JSON_NUMERIC_CHECK));
 				$response = curl_exec($curl);
 			} else if ($_GET['processed'] == 'true') {
-				$sql = "UPDATE dni_networks SET processed = '1' WHERE networkId = '" . $mysql['networkId'] . "' AND apiKey = '" . $row['apiKey'] . "'";
-				$results = $db->query($sql);
+			$stmt = $conn->prepareWrite("UPDATE dni_networks SET processed = '1' WHERE networkId = ? AND apiKey = ?");
+			$stmt->bind_param('ss', $mysql['networkId'], $row['apiKey']);
+			$stmt->execute();
+			$stmt->close();
 			}
 		} else {
 			die("Unauthorized!");

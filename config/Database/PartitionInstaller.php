@@ -102,6 +102,6 @@ final readonly class PartitionInstaller
     private function disableStrictMode(): void
     {
         $sql = "SET session sql_mode= ''";
-        _mysqli_query($sql);
+        $this->connection->query($sql);
     }
 }

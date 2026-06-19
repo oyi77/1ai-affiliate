@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 include_once(__DIR__ . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 $error = [];
 $html = [];
 $success = false;
 
 //take password retireveal and see if it is legitimate
-$mysql['user_pass_key'] = $db->real_escape_string((string)($_GET['key'] ?? ''));
+$mysql['user_pass_key'] = $conn->escape((string)($_GET['key'] ?? ''));
 
 $user_sql = "SELECT * FROM users WHERE user_pass_key='" . $mysql['user_pass_key'] . "'";
-$user_result = _mysqli_query($user_sql, $db);
+$user_result = $conn->query($user_sql, $db);
 $user_row = ($user_result instanceof mysqli_result) ? $user_result->fetch_assoc() : null;
 
 if (!$user_row) {
@@ -54,15 +55,15 @@ if (!$error and ($_SERVER['REQUEST_METHOD'] == "POST")) {
 
 		$hasher = function_exists('hash_user_pass') ? 'hash_user_pass' : 'salt_user_pass';
 		$user_pass = $hasher($_POST['user_pass']);
-		$mysql['user_pass'] = $db->real_escape_string($user_pass);
+		$mysql['user_pass'] = $conn->escape($user_pass);
 
-		$mysql['user_id'] = $db->real_escape_string($user_row['user_id']);
+		$mysql['user_id'] = $conn->escape($user_row['user_id']);
 
 		$user_sql = "UPDATE 	users
 						  SET		user_pass='" . $mysql['user_pass'] . "',
 									user_pass_time='0'
 						  WHERE	user_id='" . $mysql['user_id'] . "'";
-		$user_result = _mysqli_query($user_sql, $db);
+		$user_result = $conn->query($user_sql, $db);
 
 		if ($user_result === false) {
 			$error['user_pass'] = '<div class="error">Could not save your new password, please try again.</div>';

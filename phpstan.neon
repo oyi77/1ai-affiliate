@@ -1,8 +1,6 @@
-includes:
-    - phpstan-baseline.neon
 parameters:
-    # 1ai-Affiliate PHPStan config — level 5 with a baseline of pre-existing issues.
-    # New code MUST be clean (no baseline additions allowed for new files).
+    # 1ai-Affiliate PHPStan config — level 5 with baseline of remaining legacy issues.
+    # New code MUST be clean (no baseline additions).
     level: 5
     paths:
         - config
@@ -12,11 +10,10 @@ parameters:
         - config/install.php
         - config/upgrade.php
         - config/setup-config.php
-        - config/temp
+        - config/temp (?)
         - config/data
         - config/geo
         - config/functions-upgrade.php
-        - config/class-dataengine.php
         - config/class-dataengine-slim.php
         - config/class-filterengine.php
         - config/ReportBasicForm.class.php

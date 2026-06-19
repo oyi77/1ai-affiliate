@@ -276,23 +276,10 @@ function authorize_attribution_request(array $params, string $permission): array
         ];
     }
 
-    $stmt = $connection->prepare('SELECT user_id FROM api_keys WHERE api_key = ? LIMIT 1');
-    if ($stmt === false) {
-        return [
-            'status' => 500,
-            'payload' => [
-                'error' => true,
-                'message' => 'Unable to validate API key.',
-            ],
-        ];
-    }
-
-    // @phpstan-ignore-next-line oneai_affiliate.directStmtCall -- raw mysqli in free function; no Connection wrapper class exists in this codebase
-    $stmt->bind_param('s', $apiKey);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result ? $result->fetch_assoc() : null;
-    $stmt->close();
+    $conn = new \OneAIAffiliate\Database\Connection($connection);
+    $stmt = $conn->prepareRead('SELECT user_id FROM api_keys WHERE api_key = ? LIMIT 1');
+    $conn->bind($stmt, 's', [$apiKey]);
+    $row = $conn->fetchOne($stmt);
 
     if (!$row || !isset($row['user_id'])) {
         return [

@@ -96,6 +96,7 @@ class AUTH
 
     public static function authenticate(string $username, string $password, \mysqli $db): array
     {
+        $conn = new \OneAIAffiliate\Database\Connection($db);
         $username = trim($username);
         if ($username === '' || $password === '') {
             return ['success' => false, 'error' => 'missing_credentials'];
@@ -104,7 +105,7 @@ class AUTH
         $stmt = $db->prepare(self::LOGIN_SELECT);
        // die('prepared statement...');
         if (!$stmt) {
-            throw new \RuntimeException('Unable to prepare login query: ' . $db->error);
+            throw new \RuntimeException('Unable to prepare login query: ' . $conn->writeConnection()->error);
         }
        // die('prepared statement...');
         self::bind($stmt, 's', $username);
@@ -136,11 +137,12 @@ class AUTH
 
     private static function upgrade_user_password(\mysqli $db, int $user_id, string $password): void
     {
+        $conn = new \OneAIAffiliate\Database\Connection($db);
         self::ensure_password_column_capacity($db);
         $new_hash = hash_user_pass($password);
         $stmt = $db->prepare('UPDATE users SET user_pass = ? WHERE user_id = ?');
         if (!$stmt) {
-            throw new \RuntimeException('Unable to prepare password upgrade query: ' . $db->error);
+            throw new \RuntimeException('Unable to prepare password upgrade query: ' . $conn->writeConnection()->error);
         }
         self::bind($stmt, 'si', $new_hash, $user_id);
         self::execute($stmt, 'Unable to execute password upgrade query');
@@ -149,11 +151,12 @@ class AUTH
 
     private static function ensure_password_column_capacity(\mysqli $db): void
     {
+        $conn = new \OneAIAffiliate\Database\Connection($db);
         if (self::$passwordColumnChecked) {
             return;
         }
 
-        $result = $db->query("SHOW COLUMNS FROM users LIKE 'user_pass'");
+        $result = $conn->query("SHOW COLUMNS FROM users LIKE 'user_pass'");
         if ($result) {
             $column = $result->fetch_assoc();
             $result->close();
@@ -162,9 +165,9 @@ class AUTH
                 if (preg_match('/\\((\\d+)\\)/', $type, $matches)) {
                     $length = (int) $matches[1];
                     if ($length < 60) {
-                        $alter = $db->query('ALTER TABLE users MODIFY user_pass VARCHAR(255) NOT NULL');
+                        $alter = $conn->query('ALTER TABLE users MODIFY user_pass VARCHAR(255) NOT NULL');
                         if ($alter === false && function_exists('affiliate_log')) {
-                            affiliate_log('login', 'Failed to expand user_pass column: ' . $db->error);
+                            affiliate_log('login', 'Failed to expand user_pass column: ' . $conn->writeConnection()->error);
                         }
                     }
                 }
@@ -186,6 +189,7 @@ class AUTH
 
         $database = DB::getInstance();
         $db = $database->getConnection();
+        $conn = new \OneAIAffiliate\Database\Connection($db);
         $stmt = $db->prepare('SELECT user_id FROM users WHERE install_hash = ? AND user_deleted != 1 AND user_active = 1 AND pcustomer_api_key IS NOT NULL AND pcustomer_api_key != "" ORDER BY user_id ASC LIMIT 1');
         if (!$stmt) {
             return $userId;
@@ -206,12 +210,14 @@ class AUTH
 
     private static function lookupApiKeyForUser(int $userId): string
     {
+    global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         if ($userId <= 0) {
             return '';
         }
 
         $user_sql = "SELECT user_pref_ad_settings, pcustomer_api_key FROM users_pref LEFT JOIN users ON (users_pref.user_id = users.user_id) WHERE users_pref.user_id='" . $userId . "'";
-        $user_result = _mysqli_query($user_sql);
+        $user_result = $conn->query($user_sql);
         if ($user_result) {
             $user_row = $user_result->fetch_assoc();
             return trim((string) ($user_row['pcustomer_api_key'] ?? ''));
@@ -294,6 +300,8 @@ class AUTH
     //this checks if this api key is valid
     public static function is_valid_api_key($user_api_key)
     {
+    global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
 
         //only check once per session speed up ui
         if (isset($_SESSION['valid_key']) && $_SESSION['valid_key'] == true) {
@@ -336,7 +344,7 @@ class AUTH
             $user_sql = "	UPDATE 	users
 							SET		pcustomer_api_key='" . $user_api_key . "'
 							WHERE 	user_id='" . $_SESSION['user_id'] . "'";
-            _mysqli_query($user_sql);
+            $conn->query($user_sql);
             self::writeSessionValue('valid_key', true);
             return true;
         } else {
@@ -365,9 +373,10 @@ class AUTH
 
                 $database = DB::getInstance();
                 $db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection($db);
                 $mysql = [
-                    'user_id' => $db->real_escape_string($user_id),
-                    'auth_key' => $db->real_escape_string($auth_key)
+                    'user_id' => $conn->escape($user_id),
+                    'auth_key' => $conn->escape($auth_key)
                 ];
                 $sql = '
 					SELECT
@@ -387,7 +396,7 @@ class AUTH
 					AND
 						2u.user_active = 1
                 	LIMIT 1';
-                $user_result = _mysqli_query($sql);
+                $user_result = $conn->query($sql);
                 $user_row = $user_result->fetch_assoc();
                 if ($user_row) {
                     self::begin_user_session($user_row);
@@ -416,6 +425,7 @@ class AUTH
     {
         $database = DB::getInstance();
         $db = $database->getConnection();
+        $conn = new \OneAIAffiliate\Database\Connection($db);
         $mysql['user_id'] = $db->escape_string((string) $user_id);
         $sql = '
 			SELECT
@@ -425,7 +435,7 @@ class AUTH
 			WHERE
 				user_id = "' . $mysql['user_id'] . '"
 		';
-        $user_result = _mysqli_query($sql);
+        $user_result = $conn->query($sql);
         $user_row = $user_result->fetch_assoc();
         if (empty($user_row['secret_key'])) {
             $mysql['secret_key'] = self::generate_random_string(48);
@@ -437,7 +447,7 @@ class AUTH
 				WHERE
 					user_id = "' . $mysql['user_id'] . '"
 			';
-            _mysqli_query($sql);
+            $conn->query($sql);
             return $mysql['secret_key'];
         } else {
             return $user_row['secret_key'];
@@ -449,12 +459,13 @@ class AUTH
         $auth_key = self::generate_random_string(48);
         $database = DB::getInstance();
         $db = $database->getConnection();
+        $conn = new \OneAIAffiliate\Database\Connection($db);
 // Clean up expired auth keys
         $cleanup_sql = 'DELETE FROM auth_keys WHERE expires < UNIX_TIMESTAMP()';
-        _mysqli_query($cleanup_sql);
+        $conn->query($cleanup_sql);
         $mysql = [
-            'user_id' => $db->real_escape_string((string)$_SESSION['user_own_id']),
-            'auth_key' => $db->real_escape_string($auth_key)
+            'user_id' => $conn->escape((string)$_SESSION['user_own_id']),
+            'auth_key' => $conn->escape($auth_key)
         ];
         $sql = 'INSERT INTO
 					auth_keys
@@ -463,7 +474,7 @@ class AUTH
 					user_id = "' . $mysql['user_id'] . '",
 					expires = "' . (time() + (self::LOGOUT_DAYS * 24 * 60 * 60)) . '"
 				';
-        _mysqli_query($sql);
+        $conn->query($sql);
         $hash = hash_hmac('sha256', $_SESSION['user_own_id'] . '-' . $auth_key, (string) self::get_user_secret_key($_SESSION['user_own_id']));
         $expire = strtotime('+' . self::LOGOUT_DAYS . ' days');
         $secure = !empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off';
@@ -491,8 +502,10 @@ class AUTH
 
     public static function delete_old_auth_hash()
     {
+    global $db;
+    $conn = new \OneAIAffiliate\Database\Connection($db);
         $sql = 'DELETE FROM auth_keys WHERE expires < UNIX_TIMESTAMP()';
-        _mysqli_query($sql);
+        $conn->query($sql);
     }
 
     public static function dev_urand($min = 0, $max = 0x7FFFFFFF)

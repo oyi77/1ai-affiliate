@@ -1,20 +1,21 @@
 <?php
 declare(strict_types=1);
 function getAuth($db, $variables): mixed {
-	$mysql['api_key'] = $db->real_escape_string((string) ($variables['apikey'] ?? ''));
+	$conn = new \OneAIAffiliate\Database\Connection($db);
+	$mysql['api_key'] = $conn->escape((string) ($variables['apikey'] ?? ''));
 	$key_sql = "SELECT 	*
 				FROM   	`api_keys` 
 				WHERE  	`api_key`='".$mysql['api_key']."'";
-	$key_result = _mysqli_query($db, $key_sql);
+	$key_result = $conn->query($key_sql);
 	$key_row = $key_result->fetch_assoc();
 
 	if($key_result->num_rows > 0) {
 
-		$mysql['user_id'] = $db->real_escape_string($key_row['user_id']);
+		$mysql['user_id'] = $conn->escape($key_row['user_id']);
 		$user_sql = "SELECT 	`user_timezone`
 					FROM   	`users` 
 					WHERE  	`user_id`='".$mysql['user_id']."'";
-		$user_result = _mysqli_query($db, $user_sql);
+		$user_result = $conn->query($user_sql);
 		$user_row = $user_result->fetch_assoc();
 		return [
 			'msg' => 'Authorized',
@@ -30,9 +31,10 @@ function getAuth($db, $variables): mixed {
 }
 
 function showCategories($db, $vars, $user = null): void {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
     foreach ($vars as $key=>$var)
-        $vars[$key]=$db->real_escape_string($var);
-    //$vars = $db->real_escape_string($vars);
+        $vars[$key]=$conn->escape($var);
+    //$vars = $conn->escape($vars);
   //  print_r($vars);
 
     if($vars['action']=="list")
@@ -43,10 +45,11 @@ function showCategories($db, $vars, $user = null): void {
 }
 
 function listCategories($db,$user): void {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
     $cat = ['categories' => []];
-    $mysql['user_id'] = $db->real_escape_string($user);
+    $mysql['user_id'] = $conn->escape($user);
     $aff_network_sql = "SELECT * FROM `aff_networks` WHERE `user_id`='".$mysql['user_id']."' AND `aff_network_deleted`='0' ORDER BY `aff_network_name` ASC";
-    $aff_network_result = $db->query($aff_network_sql) or die();
+    $aff_network_result = $conn->query($aff_network_sql) or die();
   //  echo $aff_network_sql;
     while ($aff_network_row = $aff_network_result->fetch_array(MYSQLI_ASSOC)) {
     
@@ -61,6 +64,7 @@ print_r(pretty_json($json));
 
 }
 function runReports($db, $vars, $user, $timezone): array {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 
 	date_default_timezone_set($timezone);
 	$c1 = null;
@@ -142,6 +146,7 @@ function runReports($db, $vars, $user, $timezone): array {
 }
 
 function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid = null, $c1 = null, $c2 = null, $c3 = null, $c4 = null): array {
+	$conn = new \OneAIAffiliate\Database\Connection($db);
 
 	$date = [
 			'date_from' => date('m/d/Y', $date_from),
@@ -163,15 +168,15 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 	$total_net = 0.0;
 	$total_roi = 0.0;
 
-	$mysql['user_id'] = $db->real_escape_string($user);
-	$select_id = $db->real_escape_string($id);
-	$mysql['date_from'] = $db->real_escape_string($date_from);
-	$mysql['date_to'] = $db->real_escape_string($date_to);
-	$mysql['aff_campaign_id'] = $db->real_escape_string($cid);
-	$mysql['c1'] = $db->real_escape_string($c1);
-	$mysql['c2'] = $db->real_escape_string($c2);
-	$mysql['c3'] = $db->real_escape_string($c3);
-	$mysql['c4'] = $db->real_escape_string($c4);
+	$mysql['user_id'] = $conn->escape($user);
+	$select_id = $conn->escape($id);
+	$mysql['date_from'] = $conn->escape($date_from);
+	$mysql['date_to'] = $conn->escape($date_to);
+	$mysql['aff_campaign_id'] = $conn->escape($cid);
+	$mysql['c1'] = $conn->escape($c1);
+	$mysql['c2'] = $conn->escape($c2);
+	$mysql['c3'] = $conn->escape($c3);
+	$mysql['c4'] = $conn->escape($c4);
 
 	$report_sql = "SELECT *
 				FROM   	clicks AS 2c
@@ -221,7 +226,7 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 				
 				//If landing pages report type
 				if($type == "landing_pages"){ $report_sql .= " GROUP BY 2c.landing_page_id"; } else { $report_sql .= " GROUP BY 2l.$select_id"; }
-	$report_result = _mysqli_query($db, $report_sql);
+	$report_result = $conn->query($report_sql);
 	$rows = $report_result->num_rows;
 	if ($rows > 0) {
 
@@ -283,7 +288,7 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 					   		$click_sql .= "AND 2ca.".$select_id."='".$report_row[$select_id]."'";
 					   }		
 
-			$click_result = _mysqli_query($db, $click_sql);
+			$click_result = $conn->query($click_sql);
 			$click_row = $click_result->fetch_assoc();
 				$country_code = '';
 
@@ -425,12 +430,13 @@ function reportQuery($db, $type, $id, $name, $user, $date_from, $date_to, $cid =
 }
 
 function getCampaignID($db, $campaign, $user): bool {
-	$mysql['user_id'] = $db->real_escape_string($user);
-	$mysql['campaign_id'] = $db->real_escape_string($campaign);
+	$conn = new \OneAIAffiliate\Database\Connection($db);
+	$mysql['user_id'] = $conn->escape($user);
+	$mysql['campaign_id'] = $conn->escape($campaign);
 	$key_sql = "SELECT 	*
 				FROM   	`aff_campaigns` 
 				WHERE  	`user_id`='".$mysql['user_id']."' AND `aff_campaign_id`='".$mysql['campaign_id']."'";
-	$key_result = _mysqli_query($db, $key_sql);
+	$key_result = $conn->query($key_sql);
 	$key_row = $key_result->fetch_assoc();
 
 	if($key_result->num_rows > 0) {

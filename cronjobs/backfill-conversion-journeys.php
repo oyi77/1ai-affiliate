@@ -81,14 +81,17 @@ $afterConvId = 0;
 $totalProcessed = 0;
 $errors = [];
 
-$sqlBase = 'SELECT conv_id, click_id, user_id, campaign_id, conv_time, click_time FROM conversion_logs ' .
-    'WHERE conv_id > ? AND conv_time BETWEEN ? AND ? AND deleted = 0';
+$sqlBase = 'SELECT cl.conversion_id AS conv_id, cl.click_id, c.user_id, cl.aff_campaign_id AS campaign_id, ' .
+    'cl.conversion_time AS conv_time, c.click_time ' .
+    'FROM conversion_logs cl ' .
+    'INNER JOIN clicks c ON c.click_id = cl.click_id ' .
+    'WHERE cl.conversion_id > ? AND cl.conversion_time BETWEEN ? AND ? AND cl.status != 0';
 
 if ($userIdFilter !== null) {
-    $sqlBase .= ' AND user_id = ?';
+    $sqlBase .= ' AND c.user_id = ?';
 }
 
-$sqlBase .= ' ORDER BY conv_id ASC LIMIT ?';
+$sqlBase .= ' ORDER BY cl.conversion_id ASC LIMIT ?';
 
 while (true) {
     $stmt = $connection->prepare($sqlBase);

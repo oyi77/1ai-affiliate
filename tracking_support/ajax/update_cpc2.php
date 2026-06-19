@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 include_once(substr(__DIR__, 0, -17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -38,15 +39,15 @@ $html['to'] = date('m/d/y g:ia', $clean['to']);
 //set mysql variables
 // Initialize mysql array
 $mysql = [];
-$mysql['from'] = $db->real_escape_string((string)$clean['from']);
-$mysql['to'] = $db->real_escape_string((string)$clean['to']);
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['from'] = $conn->escape((string)$clean['from']);
+$mysql['to'] = $conn->escape((string)$clean['to']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 
 //check affiliate network id, that you own
 if (isset($_POST['aff_network_id']) && $_POST['aff_network_id']) {
-	$mysql['aff_network_id'] = $db->real_escape_string((string)$_POST['aff_network_id']);
+	$mysql['aff_network_id'] = $conn->escape((string)$_POST['aff_network_id']);
 	$aff_network_sql = "SELECT * FROM aff_networks WHERE aff_network_id='" . $mysql['aff_network_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
-	$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+	$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 	$aff_network_row = $aff_network_result->fetch_assoc();
 	if (!$aff_network_row) {
 		$error['user'] = '<div class="error">You can not modify other peoples cpc history.</div>';
@@ -59,9 +60,9 @@ if (isset($_POST['aff_network_id']) && $_POST['aff_network_id']) {
 
 //check aff_campaign id, that you own
 if (isset($_POST['aff_campaign_id']) && $_POST['aff_campaign_id']) {
-	$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
+	$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
 	$aff_campaign_sql = "SELECT * FROM aff_campaigns WHERE aff_campaign_id='" . $mysql['aff_campaign_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
-	$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+	$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 	$aff_campaign_row = $aff_campaign_result->fetch_assoc();
 	if (!$aff_campaign_row) {
 		$error['user'] = '<div class="error">You can not modify other peoples cpc history.</div>';
@@ -74,9 +75,9 @@ if (isset($_POST['aff_campaign_id']) && $_POST['aff_campaign_id']) {
 
 //check text_ad id, that you own
 if (isset($_POST['text_ad_id']) && $_POST['text_ad_id']) {
-	$mysql['text_ad_id'] = $db->real_escape_string((string)$_POST['text_ad_id']);
+	$mysql['text_ad_id'] = $conn->escape((string)$_POST['text_ad_id']);
 	$text_ad_sql = "SELECT * FROM text_ads WHERE text_ad_id='" . $mysql['text_ad_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
-	$text_ad_result = $db->query($text_ad_sql) or record_mysql_error($text_ad_sql);
+	$text_ad_result = $conn->query($text_ad_sql) or record_mysql_error($text_ad_sql);
 	$text_ad_row = $text_ad_result->fetch_assoc();
 	if (!$text_ad_row) {
 		$error['user'] = '<div class="error">You can not modify other peoples cpc history.</div>';
@@ -103,9 +104,9 @@ if (isset($_POST['method_of_promotion']) && $_POST['method_of_promotion']) {
 //check landing_page id, that you own
 if ((isset($_POST['method_of_promotion']) && $_POST['method_of_promotion'] == 'landingpage') or (isset($_POST['tracker_type']) && $_POST['tracker_type'] == 1)) {
 	if (isset($_POST['landing_page_id']) && $_POST['landing_page_id']) {
-		$mysql['landing_page_id'] = $db->real_escape_string((string)$_POST['landing_page_id']);
+		$mysql['landing_page_id'] = $conn->escape((string)$_POST['landing_page_id']);
 		$landing_page_sql = "SELECT * FROM landing_pages WHERE landing_page_id='" . $mysql['landing_page_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
-		$landing_page_result = $db->query($landing_page_sql) or record_mysql_error($landing_page_sql);
+		$landing_page_result = $conn->query($landing_page_sql) or record_mysql_error($landing_page_sql);
 		$landing_page_row = $landing_page_result->fetch_assoc();
 		if (!$landing_page_row) {
 			$error['user'] = '<div class="error">You can not modify other peoples cpc history.</div>';
@@ -121,9 +122,9 @@ if ((isset($_POST['method_of_promotion']) && $_POST['method_of_promotion'] == 'l
 
 //check affiliate network id, that you own
 if (isset($_POST['ppc_network_id']) && $_POST['ppc_network_id']) {
-	$mysql['ppc_network_id'] = $db->real_escape_string((string)$_POST['ppc_network_id']);
+	$mysql['ppc_network_id'] = $conn->escape((string)$_POST['ppc_network_id']);
 	$ppc_network_sql = "SELECT * FROM ppc_networks WHERE ppc_network_id='" . $mysql['ppc_network_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
-	$ppc_network_result = $db->query($ppc_network_sql) or record_mysql_error($ppc_network_sql);
+	$ppc_network_result = $conn->query($ppc_network_sql) or record_mysql_error($ppc_network_sql);
 	$ppc_network_row = $ppc_network_result->fetch_assoc();
 	if (!$ppc_network_row) {
 		$error['user'] = '<div class="error">You can not modify other peoples cpc history.</div>';
@@ -136,9 +137,9 @@ if (isset($_POST['ppc_network_id']) && $_POST['ppc_network_id']) {
 
 //check ppc_account id, that you own
 if (isset($_POST['ppc_account_id']) && $_POST['ppc_account_id']) {
-	$mysql['ppc_account_id'] = $db->real_escape_string((string)$_POST['ppc_account_id']);
+	$mysql['ppc_account_id'] = $conn->escape((string)$_POST['ppc_account_id']);
 	$ppc_account_sql = "SELECT * FROM ppc_accounts WHERE ppc_account_id='" . $mysql['ppc_account_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
-	$ppc_account_result = $db->query($ppc_account_sql) or record_mysql_error($ppc_account_sql);
+	$ppc_account_result = $conn->query($ppc_account_sql) or record_mysql_error($ppc_account_sql);
 	$ppc_account_row = $ppc_account_result->fetch_assoc();
 	if (!$ppc_account_row) {
 		$error['user'] = '<div class="error">You can not modify other peoples cpc history.</div>';
@@ -154,7 +155,7 @@ if ((!isset($_POST['cpc_dollars']) || !is_numeric($_POST['cpc_dollars'])) or (!i
 } else {
 	$click_cpc = $_POST['cpc_dollars'] . '.' . $_POST['cpc_cents'];
 	$html['click_cpc'] = htmlentities((string) dollar_format($click_cpc), ENT_QUOTES, 'UTF-8');
-	$mysql['click_cpc'] = $db->real_escape_string($click_cpc);
+	$mysql['click_cpc'] = $conn->escape($click_cpc);
 }
 
 
@@ -198,8 +199,8 @@ if (isset($mysql['ppc_account_id']) && $mysql['ppc_account_id']) {
 
 $sql .= $mysql['method_of_promotion'] ?? '';
 $sql .= " AND click_time >= '" . $mysql['from'] . "' AND click_time <= '" . $mysql['to'] . "'";
-$result = $db->query($sql) or record_mysql_error($sql);
-$clicks_updated = $db->affected_rows;
+$result = $conn->query($sql) or record_mysql_error($sql);
+$clicks_updated = $conn->writeConnection()->affected_rows;
 
 if (isset($mysql['aff_campaign_id']) && $mysql['aff_campaign_id']) {
 	$de['aff_campaign_id'] = $mysql['aff_campaign_id'];
@@ -238,6 +239,6 @@ if (isset($mysql['ppc_network_id']) && $mysql['ppc_network_id']) {
 	$dirty_hours_sql .= ", ppc_network_id = '" . $mysql['ppc_network_id'] . "'";
 }
 
-$db->query($dirty_hours_sql) or record_mysql_error($dirty_hours_sql);
+$conn->query($dirty_hours_sql) or record_mysql_error($dirty_hours_sql);
 
 echo '<p style="text-align: center; font-weight: bold;">' . $clicks_updated . ' clicks updated.</p>';

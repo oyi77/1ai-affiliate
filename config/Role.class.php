@@ -3,6 +3,7 @@ declare(strict_types=1);
 class Role
 {
     private static $db;
+    private static \OneAIAffiliate\Database\Connection $conn;
     protected array $permissionList = [];
     
     protected function __construct()
@@ -10,6 +11,7 @@ class Role
         try {
             $database = DB::getInstance();
             self::$db = $database->getConnection();
+            self::$conn = new \OneAIAffiliate\Database\Connection(self::$db);
         } catch (Exception) {
             self::$db = false;
         }
@@ -21,9 +23,9 @@ class Role
     {
         $role = new Role();
         
-        $mysql['role_id'] = self::$db->real_escape_string((string) $role_id);
+        $mysql['role_id'] = self::$conn->escape((string) $role_id);
         $sql = "SELECT 2p.permission_description FROM role_permission AS 2rp INNER JOIN permissions AS 2p ON 2rp.permission_id = 2p.permission_id WHERE 2rp.role_id = '".$mysql['role_id']."'";
-        $results = self::$db->query($sql);
+        $results = self::$conn->query($sql);
         
         while($row = $results->fetch_assoc())
         {

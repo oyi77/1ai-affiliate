@@ -254,7 +254,7 @@ async function listAssignments(req, res) {
     try {
         const { offer_id, affiliate_id, type } = req.query;
         let sql = `
-            SELECT a.*, o.name AS offer_name, o.payout_model, o.payout AS base_payout,
+            SELECT a.*, o.name AS offer_name, o.type AS payout_model, o.payout AS base_payout,
                    aff.id AS aff_id, u.user_name AS assigned_by_name
             FROM 1ai_offer_affiliate_access a
             JOIN 1ai_offers o ON o.id = a.offer_id

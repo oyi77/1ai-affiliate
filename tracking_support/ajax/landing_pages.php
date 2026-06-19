@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 if (!isset($_POST['type']) || (($_POST['type'] != 'landingpage' && $_POST['type'] != 'landingpages') && $_POST['type'] != 'advlandingpage')) { ?>
@@ -16,26 +17,26 @@ if(!isset($_POST['aff_campaign_id']) || $_POST['aff_campaign_id']==0)
 else 
     $eq='=';
 
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 
 
 if ($_POST['type'] == 'landingpage') {
-	$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);      
+	$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);      
 	$landing_page_sql = "SELECT * FROM `landing_pages` AS 2lp JOIN aff_campaigns using(aff_campaign_id) JOIN aff_networks using(aff_network_id) WHERE 2lp.user_id='".$mysql['user_id']."' AND 2lp.aff_campaign_id".$eq."'".$mysql['aff_campaign_id']."' AND `landing_page_deleted`='0' AND aff_campaign_deleted='0' AND `aff_network_deleted`='0' ORDER BY `aff_campaign_id`, `landing_page_nickname` ASC";
 }
 
 if ($_POST['type'] == 'advlandingpage') {
-	$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);      
+	$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);      
 	$landing_page_sql = "SELECT * FROM `landing_pages` WHERE `user_id`='".$mysql['user_id']."' AND `landing_page_type`='1' AND `landing_page_deleted`='0' ORDER BY `landing_page_nickname` ASC";
 }
 //if on a refine page, we want to list both SLP and ALP use a UNION to get them both
 if ($_POST['type'] == 'landingpages') {
-    $mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
+    $mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
     $landing_page_sql = "(SELECT landing_page_id,landing_page_nickname FROM `landing_pages` AS 2lp JOIN aff_campaigns using(aff_campaign_id) JOIN aff_networks using(aff_network_id) WHERE 2lp.user_id='".$mysql['user_id']."' AND 2lp.aff_campaign_id".$eq."'".$mysql['aff_campaign_id']."' AND `landing_page_deleted`='0' AND aff_campaign_deleted='0' AND `aff_network_deleted`='0' ORDER BY `aff_campaign_id`, `landing_page_nickname` ASC) UNION (SELECT landing_page_id,landing_page_nickname FROM `landing_pages` WHERE `user_id`='".$mysql['user_id']."' AND `landing_page_type`='1' AND `landing_page_deleted`='0' ORDER BY `landing_page_nickname` ASC)";
 }
 
 ?><input id="landing_page_style_type" type="hidden" name="landing_page_style_type" value="<?php echo htmlentities((string) $_POST['type']); ?>"/><?php 
-$landing_page_result = $db->query($landing_page_sql) or record_mysql_error($landing_page_sql);
+$landing_page_result = $conn->query($landing_page_sql) or record_mysql_error($landing_page_sql);
 
 if ($landing_page_result->num_rows == 0) { ?>
 

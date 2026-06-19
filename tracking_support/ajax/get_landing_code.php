@@ -1,14 +1,15 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
 $slack = false;
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '".$mysql['user_own_id']."'";
-$user_results = $db->query($user_sql) or record_mysql_error($user_sql);
+$user_results = $conn->query($user_sql) or record_mysql_error($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 if (!empty($user_row['url'])) 
@@ -49,9 +50,9 @@ $error = [];
 
 //show tracking code
 
-	$mysql['landing_page_id'] = $db->real_escape_string((string)$_POST['landing_page_id']);
+	$mysql['landing_page_id'] = $conn->escape((string)$_POST['landing_page_id']);
 	$landing_page_sql = "SELECT * FROM landing_pages LEFT JOIN aff_campaigns USING (aff_campaign_id) LEFT JOIN aff_networks USING (aff_network_id) WHERE landing_page_id='".$mysql['landing_page_id']."'";
-	$landing_page_result = $db->query($landing_page_sql) or record_mysql_error($landing_page_sql);
+	$landing_page_result = $conn->query($landing_page_sql) or record_mysql_error($landing_page_sql);
 	$landing_page_row = $landing_page_result->fetch_assoc();
 	
 	if ($slack)

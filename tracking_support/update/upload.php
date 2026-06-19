@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-19) . '/config/connect.php'); 
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(substr(__DIR__, 0,-19) . '/config/class-dataengine-slim.php');
 
 AUTH::require_user();
@@ -144,14 +145,14 @@ switch ($case) {
 				else 							$click_payouts[$click_id] = $click_payout + $click_payouts[$click_id];
 				
 				#now upload each row into oneai_affiliate and update the subids accordingly
-				$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-				$mysql['click_id'] = $db->real_escape_string($click_id);
-				$mysql['click_payout'] = $db->real_escape_string($click_payouts[$click_id]);
+				$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+				$mysql['click_id'] = $conn->escape($click_id);
+				$mysql['click_payout'] = $conn->escape($click_payouts[$click_id]);
 				$mysql['click_update_time'] = time();
 				$mysql['click_update_type'] = 'upload';
 				
 				$update_sql = "UPDATE clicks SET click_lead='1', `click_filtered`='0', `click_payout`='".$mysql['click_payout']."' WHERE click_id='" . $mysql['click_id'] ."' AND user_id='".$mysql['user_id']."'";
-				$update_result = _mysqli_query($update_sql);
+				$update_result = $conn->query($update_sql);
 		
 				$update_sql = "
 					UPDATE clicks_spy
@@ -165,7 +166,7 @@ switch ($case) {
 				";
 				
 				$de->setDirtyHour($mysql['click_id']);
-				$update_result = _mysqli_query($update_sql);
+				$update_result = $conn->query($update_sql);
 			}
 		}
 		

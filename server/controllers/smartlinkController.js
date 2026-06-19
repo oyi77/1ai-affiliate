@@ -1,42 +1,53 @@
 const pool = require('../db/mysql');
 const { mintSmartlink, shortenUrl } = require('../services/smartlinkService');
+const fraudDetectionService = require('../services/fraudDetectionService');
 
 async function routeTrafficByHash(req, res) {
   const slug = req.params.hash;
-  const subid = req.query.subid || '';
   if (!slug) return res.status(400).send('Invalid link');
 
   try {
     const [links] = await pool.query(
-      'SELECT id, affiliate_id, offer_id, slug, clicks FROM 1ai_affiliate_links WHERE slug = ?',
+      'SELECT l.id, l.affiliate_id, l.offer_id, l.campaign_id FROM 1ai_affiliate_links l WHERE l.slug = ? AND l.status = "active" LIMIT 1',
       [slug]
     );
     if (!links.length) return res.status(404).send('Link not found');
     const link = links[0];
 
-    const [offers] = await pool.query(
-      'SELECT id, name, payout, network_id, advertiser_id FROM 1ai_offers WHERE id = ? AND status = ?',
-      [link.offer_id, 'active']
-    );
-    if (!offers.length) return res.status(404).send('Offer not available');
-    const offer = offers[0];
+    // Fraud check
+    const fraud = await fraudDetectionService.evaluate({
+      ip: req.ip || req.connection?.remoteAddress || '',
+      userAgent: req.get('User-Agent') || '',
+      referer: req.get('Referer') || '',
+    });
+    if (fraud.block) return res.status(403).send('Blocked');
 
-    const [campaigns] = await pool.query(
-      'SELECT oc.aff_campaign_id FROM 1ai_offer_campaigns oc WHERE oc.offer_id = ? LIMIT 1',
-      [offer.id]
-    );
-    const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : offer.id;
-    const clickId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    // Determine target URL
+    let targetUrl = 'https://example.com/fallback';
+    if (link.offer_id) {
+      const [offers] = await pool.query('SELECT postback_url FROM 1ai_offers WHERE id = ?', [link.offer_id]);
+      if (offers.length && offers[0].postback_url) targetUrl = offers[0].postback_url;
+    }
 
-    await pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]);
+    // Campaign override
+    if (link.campaign_id) {
+      const [campaigns] = await pool.query('SELECT default_url FROM 1ai_aff_campaigns WHERE aff_campaign_id = ?', [link.campaign_id]);
+      if (campaigns.length && campaigns[0].default_url) targetUrl = campaigns[0].default_url;
+    }
 
-    const offerBase = process.env.OFFER_BASE_URL || 'https://example.com/affiliate';
-    const redirectUrl = `${offerBase}/offer/${offer.id}?aid=${link.affiliate_id}&cid=${campaignId}&click=${clickId}&subid=${subid}`;
+    // Record click (async, fire-and-forget — don't block redirect)
+    pool.query(
+      'INSERT INTO 1ai_clicks (affiliate_id, offer_id, campaign_id, click_ip, user_agent, referer, country, device_type, created_at) VALUES (?,?,?,?,?,?,?,?,NOW())',
+      [link.affiliate_id, link.offer_id, link.campaign_id, req.ip || '', req.get('User-Agent') || '', req.get('Referer') || '', fraud.country || '', fraud.device || '']
+    ).catch(err => console.error('Click insert error:', err));
 
-    res.redirect(redirectUrl);
+    // Increment link click counter
+    pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]).catch(() => {});
+
+    return res.redirect(302, targetUrl);
   } catch (err) {
-    console.error('Smartlink route error:', err);
-    res.status(500).send('Routing error');
+    console.error('routeTrafficByHash error:', err);
+    return res.redirect(302, '/');
   }
 }
 

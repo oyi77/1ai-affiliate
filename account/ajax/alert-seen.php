@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(str_repeat("../", 2).'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -9,6 +10,6 @@ if (!hash_equals((string) ($_SESSION['token'] ?? ''), (string) ($_POST['token'] 
     die();
 }
 
-$mysql['alert_id'] = $db->real_escape_string((string)$_POST['alert_id']);
+$mysql['alert_id'] = $conn->escape((string)$_POST['alert_id']);
 $alert_sql = "INSERT INTO alerts SET alert_seen='1', alert_id='{$mysql['alert_id']}'";
-$alert_result = _mysqli_query($alert_sql, $db);
+$alert_result = $conn->query($alert_sql, $db);

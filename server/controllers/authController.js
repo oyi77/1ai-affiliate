@@ -54,7 +54,7 @@ async function login(req, res) {
     if (!apiKey) {
       apiKey = crypto.randomBytes(32).toString('hex');
       await pool.query(
-        "INSERT INTO 1ai_api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
+        "INSERT INTO 1ai_api_keys (api_key, user_id, scope, created_at) VALUES (?, ?, '[*]', UNIX_TIMESTAMP())",
         [apiKey, user.user_id]
       );
     }
@@ -143,14 +143,10 @@ async function forgotPassword(req, res) {
       [resetKey, resetTime, user.user_id]
     );
 
-    // In production: send email with reset link containing the key
-    // For now: return the key directly for testing
-    res.json({
-      message: 'Reset key generated.',
-      key: resetKey,
-      // Remove in production:
-      user_id: user.user_id
-    });
+    // TODO: In production, send an email to user_email containing a reset link with the key.
+    // e.g. https://yourdomain.com/reset-password?key=<resetKey>&uid=<user_id>
+    // Never return the key or userId in the response (prevents token harvesting).
+    res.json({ message: 'If that email exists, a reset link has been sent.' });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -279,4 +275,59 @@ async function regenerateApiKey(req, res) {
   }
 }
 
-module.exports = { login, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey };
+/**
+ * Register a new affiliate (public, no auth required).
+ * Creates a user row + affiliate profile, returns JWT.
+ */
+async function registerAffiliate(req, res) {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email, and password are required' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+
+  // Check duplicate email
+  const [existing] = await pool.query('SELECT user_id FROM 1ai_users WHERE user_email = ?', [email]);
+  if (existing.length > 0) {
+    return res.status(409).json({ error: 'Email already registered' });
+  }
+
+  const hashed = await bcrypt.hash(password, 12);
+  const now = Math.floor(Date.now() / 1000);
+
+  const [result] = await pool.query(
+    `INSERT INTO 1ai_users (user_name, user_email, user_pass, user_role, user_registered, user_active, user_date_added)
+     VALUES (?, ?, ?, 'affiliate', ?, 1, ?)`,
+    [name, email, hashed, now, now]
+  );
+  const userId = result.insertId;
+
+  // Generate unique affiliate code
+  const affiliateCode = `AFF${userId}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+  await pool.query(
+    `INSERT INTO 1ai_affiliates (user_id, affiliate_code, tier, balance, created_at, updated_at)
+     VALUES (?, ?, 'starter', 0, ?, ?)`,
+    [userId, affiliateCode, now, now]
+  );
+
+  const userRow = { user_id: userId, user_email: email, user_role: 'affiliate' };
+  const token = await generateToken(userRow);
+
+  res.status(201).json({
+    token,
+    user: {
+      id: userId,
+      email,
+      role: 'affiliate',
+      affiliate_code: affiliateCode,
+    },
+  });
+}
+
+module.exports = { login, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey, registerAffiliate };

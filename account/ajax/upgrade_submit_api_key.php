@@ -1,19 +1,20 @@
 <?php
 declare(strict_types=1);
 include_once(str_repeat("../", 2).'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user(); 
 
 if (isset($_POST['api_key'])) {
 	if ($_POST['token'] != $_SESSION['token']) { $error['token'] = 'You must use our forms to submit data.';  }
-	$mysql['pcustomer_api_key'] = $db->real_escape_string((string)$_POST['api_key']);
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+	$mysql['pcustomer_api_key'] = $conn->escape((string)$_POST['api_key']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 	$validate = validateCustomersApiKey($mysql['pcustomer_api_key']);
 	if ($validate['code'] != 200) {
 		$error['pcustomer_api_key_invalid'] = "API key is not valid. Check your key and try again!";
 	}
 	if (!$error) {
-		$db->query("UPDATE users SET pcustomer_api_key = '".$mysql['pcustomer_api_key']."' WHERE user_id = '".$mysql['user_id']."'");
+		$conn->query("UPDATE users SET pcustomer_api_key = '".$mysql['pcustomer_api_key']."' WHERE user_id = '".$mysql['user_id']."'");
 		$msg = ['error' => false, 'msg' => 'Valid'];
 	} else {
 		$msg = ['error' => true, 'msg' => $error['token'] . $error['pcustomer_api_key_invalid']];

@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 
 include_once(substr(__DIR__, 0, -21) . '/config/connect2.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 AUTH::require_user();
 
 $user_id = $_SESSION['user_id'] ?? 0;
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Offer URL is required';
         } else {
             // Check slug uniqueness
-            $check = $db->query("SELECT id FROM deep_link_pages WHERE slug = '" . $db->real_escape_string($slug) . "'");
+            $check = $conn->query("SELECT id FROM deep_link_pages WHERE slug = '" . $conn->escape($slug) . "'");
             if ($check && $check->num_rows > 0) {
                 $error = 'Slug already exists';
             } else {
@@ -48,37 +49,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     button_text, accent_color, background_color, image_url, logo_url,
                     created_at, updated_at
                 ) VALUES (
-                    '" . $db->real_escape_string($slug) . "',
+                    '" . $conn->escape($slug) . "',
                     " . (int)$user_id . ",
-                    '" . $db->real_escape_string($offer_url) . "',
-                    '" . $db->real_escape_string($app_store_url) . "',
-                    '" . $db->real_escape_string($title) . "',
-                    '" . $db->real_escape_string($description) . "',
-                    '" . $db->real_escape_string($button_text) . "',
-                    '" . $db->real_escape_string($accent_color) . "',
-                    '" . $db->real_escape_string($background_color) . "',
-                    '" . $db->real_escape_string($image_url) . "',
-                    '" . $db->real_escape_string($logo_url) . "',
+                    '" . $conn->escape($offer_url) . "',
+                    '" . $conn->escape($app_store_url) . "',
+                    '" . $conn->escape($title) . "',
+                    '" . $conn->escape($description) . "',
+                    '" . $conn->escape($button_text) . "',
+                    '" . $conn->escape($accent_color) . "',
+                    '" . $conn->escape($background_color) . "',
+                    '" . $conn->escape($image_url) . "',
+                    '" . $conn->escape($logo_url) . "',
                     {$now}, {$now}
                 )";
                 
-                if ($db->query($sql)) {
+                if ($conn->query($sql)) {
                     $success = "Landing page created! URL: https://l.berkahkarya.org/{$slug}";
                 } else {
-                    $error = 'Database error: ' . $db->error;
+                    $error = 'Database error: ' . $conn->writeConnection()->error;
                 }
             }
         }
     } elseif ($action === 'delete') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
-            $db->query("DELETE FROM deep_link_pages WHERE id = {$id} AND user_id = " . (int)$user_id);
+            $conn->query("DELETE FROM deep_link_pages WHERE id = {$id} AND user_id = " . (int)$user_id);
             $success = 'Landing page deleted';
         }
     } elseif ($action === 'toggle') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
-            $db->query("UPDATE deep_link_pages SET is_active = NOT is_active WHERE id = {$id} AND user_id = " . (int)$user_id);
+            $conn->query("UPDATE deep_link_pages SET is_active = NOT is_active WHERE id = {$id} AND user_id = " . (int)$user_id);
             $success = 'Status updated';
         }
     }
@@ -86,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Fetch all landing pages for this user
 $pages = [];
-$result = $db->query("SELECT * FROM deep_link_pages WHERE user_id = " . (int)$user_id . " ORDER BY created_at DESC");
+$result = $conn->query("SELECT * FROM deep_link_pages WHERE user_id = " . (int)$user_id . " ORDER BY created_at DESC");
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $pages[] = $row;

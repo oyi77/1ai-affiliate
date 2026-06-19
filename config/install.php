@@ -2,6 +2,7 @@
 declare(strict_types=1);
 //include mysql settings
 include_once(__DIR__ . '/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(__DIR__ . '/functions-install.php');
 if (!isset($db) || !($db instanceof mysqli)) {
 	_die('Database connection unavailable.');
@@ -84,16 +85,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$installer = new INSTALL();
 		$installer->install_databases();
 
-		$mysql['user_email'] = $db->real_escape_string($_POST['user_email'] ?? '');
-		$mysql['user_name'] = $db->real_escape_string($_POST['user_name'] ?? '');
-		$mysql['user_timezone'] = $db->real_escape_string($_POST['user_timezone'] ?? '');
-		$mysql['pcustomer_api_key'] = $db->real_escape_string($_POST['user_api'] ?? '');
-		$mysql['user_time_register'] = $db->real_escape_string((string) time());
+		$mysql['user_email'] = $conn->escape($_POST['user_email'] ?? '');
+		$mysql['user_name'] = $conn->escape($_POST['user_name'] ?? '');
+		$mysql['user_timezone'] = $conn->escape($_POST['user_timezone'] ?? '');
+		$mysql['pcustomer_api_key'] = $conn->escape($_POST['user_api'] ?? '');
+		$mysql['user_time_register'] = $conn->escape((string) time());
 
 		//md5 the user pass with salt
 	 	$hasher = function_exists('hash_user_pass') ? 'hash_user_pass' : 'salt_user_pass';
 	 	$user_pass = $hasher($_POST['user_pass']);
-		$mysql['user_pass'] = $db->real_escape_string($user_pass);      
+		$mysql['user_pass'] = $conn->escape($user_pass);      
 
  		$hash = md5(uniqid((string) random_int(0, mt_getrandmax()), TRUE));
 		// $user_hash = intercomHash($hash); // Removed intercomHash call
@@ -109,15 +110,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						install_hash='" . $hash . "',
 						user_hash='" . $user_hash . "',
 						pcustomer_api_key='" . $mysql['pcustomer_api_key'] . "'";
-		$user_result = _mysqli_query($user_sql);
+		$user_result = $conn->query($user_sql);
 
 		// Get the user_id of the newly inserted user or the existing user with the same username
-		$user_id = $db->insert_id;
+		$user_id = $conn->writeConnection()->insert_id;
 
 		// If insert_id is 0 (because the user already existed due to INSERT IGNORE), get the user_id manually
 		if ($user_id == 0) {
 			$check_sql = "SELECT user_id FROM users WHERE user_name='" . $mysql['user_name'] . "'";
-			$check_result = _mysqli_query($check_sql);
+			$check_result = $conn->query($check_sql);
 			if ($check_result && $check_result->num_rows > 0) {
 				$check_row = $check_result->fetch_assoc();
 				$user_id = $check_row['user_id'];
@@ -126,21 +127,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		// Only proceed if we have a valid user_id
 		if ($user_id > 0) {
-			$mysql['user_id'] = $db->real_escape_string((string) $user_id);
+			$mysql['user_id'] = $conn->escape((string) $user_id);
 
 			// Update user preference table - use INSERT IGNORE to handle duplicates
 			$user_sql = "INSERT IGNORE INTO users_pref SET user_id='" . $mysql['user_id'] . "'";
-			$user_result = _mysqli_query($user_sql);
+			$user_result = $conn->query($user_sql);
 
 			// Insert user role - use the actual user_id, not a hardcoded value
 			$role_sql = "INSERT IGNORE INTO `user_role` (`user_id`, `role_id`) VALUES ('" . $mysql['user_id'] . "', 1)";
-			$role_result = _mysqli_query($role_sql);
+			$role_result = $conn->query($role_sql);
 
 			$cron = callAutoCron('register');
 
 			if (is_array($cron) && ($cron['status'] ?? null) === 'success') {
 				$sql = "UPDATE users_pref SET auto_cron = '1' WHERE user_id = '" . $mysql['user_id'] . "'";
-				$result = _mysqli_query($sql);
+				$result = $conn->query($sql);
 			}
 
 			// Add null check before accessing array offset on line 120

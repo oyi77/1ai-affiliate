@@ -26,6 +26,7 @@ try {
     touch($lockFile);
 
 	include_once(__DIR__ . '/../config/connect.php');
+	$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 	include_once(__DIR__ . '/../config/class-dataengine.php');
 
     // Cron does not need to hold the user's session lock while it runs.
@@ -112,16 +113,16 @@ function RunDailyCronjob()
 
         //the click_time is recorded in the middle of the day
         $cronjob_time = mktime(12, 0, 0, (int)$today_month, (int)$today_day, (int)$today_year);
-        $mysql['cronjob_time'] = $db->real_escape_string((string)$cronjob_time);
-        $mysql['cronjob_type'] = $db->real_escape_string('daily');
+        $mysql['cronjob_time'] = $conn->escape((string)$cronjob_time);
+        $mysql['cronjob_type'] = $conn->escape('daily');
 
         //check to make sure this cronjob doesn't already exist
         $check_sql = "SELECT  *  FROM cronjobs WHERE cronjob_type='" . $mysql['cronjob_type'] . "' AND cronjob_time='" . $mysql['cronjob_time'] . "'";
-        $check_result = $db->query($check_sql);
+        $check_result = $conn->query($check_sql);
 
         if ($check_result === false) {
             try {
-                error_log("RunDailyCronjob: Query failed - " . $db->error);
+                error_log("RunDailyCronjob: Query failed - " . $conn->writeConnection()->error);
             } catch (\Error $e) {
                 error_log("RunDailyCronjob: Query failed (error inaccessible)");
             }
@@ -136,7 +137,7 @@ function RunDailyCronjob()
 
             //if a cronjob hasn't run today, record it now.
             $insert_sql = "INSERT INTO cronjobs SET cronjob_type='" . $mysql['cronjob_type'] . "', cronjob_time='" . $mysql['cronjob_time'] . "'";
-            $insert_result = $db->query($insert_sql);
+            $insert_result = $conn->query($insert_sql);
 
             /* -------- THIS CLEARS OUT THE CLICK SPY MEMORY TABLE --------- */
             //this function runs everyday at midnight to clear out the temp clicks_memory table
@@ -145,21 +146,21 @@ function RunDailyCronjob()
             //this makes it so we only have the most recent last 24 hour stuff, anything older, kill it.
             //we want to keep our SPY TABLE, low
             $click_sql = "DELETE FROM clicks_spy WHERE click_time < $from";
-            $click_result = $db->query($click_sql);
+            $click_result = $conn->query($click_sql);
 
             //clear the last 24 hour ip addresses
             $last_ip_sql = "DELETE FROM last_ips WHERE time < $from";
-            $last_ip_result = $db->query($last_ip_sql);
-            $last_ip_affected_rows = $db->affected_rows;
+            $last_ip_result = $conn->query($last_ip_sql);
+            $last_ip_affected_rows = $conn->writeConnection()->affected_rows;
 
             /* -------- NOW DELETE ALL THE OLD CRONJOB ENTRIES STUFF --------- */
             $mysql['cronjob_time'] = (int)$mysql['cronjob_time'] - 86400;
             $delete_sql = "DELETE FROM cronjobs WHERE cronjob_time < " . $mysql['cronjob_time'] . "";
-            $delete_result = $db->query($delete_sql);
+            $delete_result = $conn->query($delete_sql);
 
             // Log the execution
             $log_sql = "REPLACE INTO cronjob_logs (id, last_execution_time) VALUES (1, " . $now . ")";
-            $log_result = $db->query($log_sql);
+            $log_result = $conn->query($log_sql);
 
             echo 'Done';
             flush();
@@ -193,16 +194,16 @@ function RunHourlyCronJob()
 
         //the click_time is recorded at the start of the hour
         $cronjob_time = mktime((int)$today_hour, 0, 0, (int)$today_month, (int)$today_day, (int)$today_year);
-        $mysql['cronjob_time'] = $db->real_escape_string((string)$cronjob_time);
-        $mysql['cronjob_type'] = $db->real_escape_string('hourly');
+        $mysql['cronjob_time'] = $conn->escape((string)$cronjob_time);
+        $mysql['cronjob_type'] = $conn->escape('hourly');
 
         //check to make sure this cronjob doesn't already exist (support both 'hour' and 'hourly' for backwards compatibility)
         $check_sql = "SELECT  *  FROM cronjobs WHERE (cronjob_type='hour' OR cronjob_type='" . $mysql['cronjob_type'] . "') AND cronjob_time='" . $mysql['cronjob_time'] . "'";
-        $check_result = $db->query($check_sql);
+        $check_result = $conn->query($check_sql);
 
         if ($check_result === false) {
             try {
-                error_log("RunHourlyCronJob: Query failed - " . $db->error);
+                error_log("RunHourlyCronJob: Query failed - " . $conn->writeConnection()->error);
             } catch (\Error $e) {
                 error_log("RunHourlyCronJob: Query failed (error inaccessible)");
             }
@@ -217,11 +218,11 @@ function RunHourlyCronJob()
 
             //if a cronjob hasn't run this hour, record it now.
             $insert_sql = "INSERT INTO cronjobs SET cronjob_type='" . $mysql['cronjob_type'] . "', cronjob_time='" . $mysql['cronjob_time'] . "'";
-            $insert_result = $db->query($insert_sql);
+            $insert_result = $conn->query($insert_sql);
 
             // Log the execution
             $log_sql = "REPLACE INTO cronjob_logs (id, last_execution_time) VALUES (1, " . $now . ")";
-            $log_result = $db->query($log_sql);
+            $log_result = $conn->query($log_sql);
 
             echo 'Done<br>';
             ob_flush();
@@ -264,16 +265,16 @@ function RunSecondsCronjob()
         //record cronjob time
         $cronjob_time = mktime((int)$today_hour, (int)$today_minute, (int)$today_second, (int)$today_month, (int)$today_day, (int)$today_year);
 
-        $mysql['cronjob_time'] = $db->real_escape_string((string)$cronjob_time);
-        $mysql['cronjob_type'] = $db->real_escape_string('second');
+        $mysql['cronjob_time'] = $conn->escape((string)$cronjob_time);
+        $mysql['cronjob_type'] = $conn->escape('second');
 
         //check to make sure this cronjob doesn't already exist
         $check_sql = "SELECT  *  FROM cronjobs WHERE cronjob_type='" . $mysql['cronjob_type'] . "' AND cronjob_time='" . $mysql['cronjob_time'] . "'";
-        $check_result = $db->query($check_sql);
+        $check_result = $conn->query($check_sql);
 
         if ($check_result === false) {
             try {
-                error_log("RunSecondsCronjob: Query failed - " . $db->error);
+                error_log("RunSecondsCronjob: Query failed - " . $conn->writeConnection()->error);
             } catch (\Error $e) {
                 error_log("RunSecondsCronjob: Query failed (error inaccessible)");
             }
@@ -288,7 +289,7 @@ function RunSecondsCronjob()
 
             //if a cronjob hasn't run, record it now.
             $insert_sql = "INSERT INTO cronjobs SET cronjob_type='" . $mysql['cronjob_type'] . "', cronjob_time='" . $mysql['cronjob_time'] . "'";
-            $insert_result = $db->query($insert_sql);
+            $insert_result = $conn->query($insert_sql);
 
             /* -------- THIS RUNS THE DELAYED QUERIES --------- */
             $delayed_sql = "
@@ -296,17 +297,17 @@ function RunSecondsCronjob()
                 FROM delayed_sqls
                 WHERE delayed_time <=" . $now . "
             ";
-            $delayed_result = $db->query($delayed_sql);
+            $delayed_result = $conn->query($delayed_sql);
 
             if ($delayed_result !== false) {
                 while ($delayed_row = $delayed_result->fetch_assoc()) {
                     //run each sql
                     $update_sql = $delayed_row['delayed_sql'];
-                    $update_result = $db->query($update_sql);
+                    $update_result = $conn->query($update_sql);
 
                     if ($update_result === false) {
                         try {
-                            error_log("Delayed SQL failed: " . $update_sql . " - Error: " . $db->error);
+                            error_log("Delayed SQL failed: " . $update_sql . " - Error: " . $conn->writeConnection()->error);
                         } catch (\Error $e) {
                             error_log("Delayed SQL failed: " . $update_sql . " (error inaccessible)");
                         }
@@ -316,11 +317,11 @@ function RunSecondsCronjob()
 
             //delete all old delayed sqls
             $delayed_sql = "DELETE FROM delayed_sqls WHERE delayed_time <=" . $now;
-            $delayed_result = $db->query($delayed_sql);
+            $delayed_result = $conn->query($delayed_sql);
 
             // Log the execution
             $log_sql = "REPLACE INTO cronjob_logs (id, last_execution_time) VALUES (1, " . $now . ")";
-            $log_result = $db->query($log_sql);
+            $log_result = $conn->query($log_sql);
 
             // Process DataEngine tasks
             try {
@@ -357,12 +358,12 @@ function AutoOptimizeDatabase()
         }
 
         $sql = "SELECT user_auto_database_optimization_days FROM users_pref where user_id = 1";
-        $result = $db->query($sql);
+        $result = $conn->query($sql);
 
         if (!$result) {
             echo "Error querying user preferences for auto optimization<br>";
             try {
-                error_log("AutoOptimizeDatabase: Query failed - " . $db->error);
+                error_log("AutoOptimizeDatabase: Query failed - " . $conn->writeConnection()->error);
             } catch (\Error $e) {
                 error_log("AutoOptimizeDatabase: Query failed (error inaccessible)");
             }
@@ -385,7 +386,7 @@ function AutoOptimizeDatabase()
 
             // Get the oldest click_id based on the date range
             $click_sql = "SELECT MIN(click_id) as min_click_id FROM clicks WHERE click_time < " . $to;
-            $click_result = $db->query($click_sql);
+            $click_result = $conn->query($click_sql);
 
             if ($click_result && $click_result->num_rows > 0) {
                 $click_row = $click_result->fetch_assoc();
@@ -397,11 +398,11 @@ function AutoOptimizeDatabase()
                     foreach ($tables as $table) {
                         $table = trim($table);
                         $delete_sql = "DELETE FROM `$table` WHERE click_id < " . (int)$min_click_id . " LIMIT 10000";
-                        $result = $db->query($delete_sql);
+                        $result = $conn->query($delete_sql);
 
                         if ($result === false) {
                             try {
-                                error_log("AutoOptimizeDatabase: Failed to delete from $table - " . $db->error);
+                                error_log("AutoOptimizeDatabase: Failed to delete from $table - " . $conn->writeConnection()->error);
                             } catch (\Error $e) {
                                 error_log("AutoOptimizeDatabase: Failed to delete from $table (error inaccessible)");
                             }
@@ -431,15 +432,15 @@ function ClearOldClicks()
 
         // For cron job, we don't have session, so use user_id = 1 (admin)
         $user_id = 1;
-        $mysql['user_own_id'] = $db->real_escape_string((string)$user_id);
+        $mysql['user_own_id'] = $conn->escape((string)$user_id);
 
         $sql = "SELECT user_delete_data_clickid from users_pref WHERE user_id = '" . $mysql['user_own_id'] . "'";
-        $result = $db->query($sql);
+        $result = $conn->query($sql);
 
         if (!$result) {
             echo "Error querying user preferences<br>";
             try {
-                error_log("ClearOldClicks: Query failed - " . $db->error);
+                error_log("ClearOldClicks: Query failed - " . $conn->writeConnection()->error);
             } catch (\Error $e) {
                 error_log("ClearOldClicks: Query failed (error inaccessible)");
             }
@@ -450,18 +451,18 @@ function ClearOldClicks()
 
         if ($result->num_rows > 0 && !empty($row['user_delete_data_clickid'])) {
             echo " Processing Clear Old Clicks...";
-            $mysql['click_id'] = $db->real_escape_string((string)$row['user_delete_data_clickid']);
+            $mysql['click_id'] = $conn->escape((string)$row['user_delete_data_clickid']);
 
             $tables = explode(',', 'clicks,clicks_advance,clicks_record,clicks_site,clicks_spy,clicks_tracking,dataengine,google,bing,clicks_variable');
             if (!empty($mysql['click_id']) && is_numeric($mysql['click_id'])) {
                 foreach ($tables as $table) {
                     $table = trim($table);
                     $click_sql = "DELETE FROM `$table` WHERE click_id < " . (int)$mysql['click_id'] . " LIMIT 5000";
-                    $result = $db->query($click_sql);
+                    $result = $conn->query($click_sql);
 
                     if ($result === false) {
                         try {
-                            error_log("ClearOldClicks: Failed to delete from $table - " . $db->error);
+                            error_log("ClearOldClicks: Failed to delete from $table - " . $conn->writeConnection()->error);
                         } catch (\Error $e) {
                             error_log("ClearOldClicks: Failed to delete from $table (error inaccessible)");
                         }
@@ -472,7 +473,7 @@ function ClearOldClicks()
             // Initialize Slack notification if configured
             try {
                 $slack_sql = "SELECT user_slack_incoming_webhook FROM users_pref WHERE user_id = 1 AND user_slack_incoming_webhook != ''";
-                $slack_result = $db->query($slack_sql);
+                $slack_result = $conn->query($slack_sql);
 
                 if ($slack_result && $slack_result->num_rows > 0) {
                     $slack_row = $slack_result->fetch_assoc();

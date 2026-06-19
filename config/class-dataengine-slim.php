@@ -17,10 +17,11 @@ if (!class_exists('DataEngine')) {
             try {
                 $database = DB::getInstance();
                 self::$db = $database->getConnection();
+                $conn = new \OneAIAffiliate\Database\Connection(self::$db);
             } catch (Exception) {
                 self::$db = false;
             }
-            // $this->mysql['user_id'] = self::$db->real_escape_string((string)$_SESSION['user_id']);
+            // $this->mysql['user_id'] = self::$conn->escape((string)$_SESSION['user_id']);
             //make sure mysql uses the timezone chosen by the user
 
             $timezone = new DateTimeZone(date_default_timezone_get()); // Get default system timezone to create a new DateTimeZone object
@@ -29,7 +30,7 @@ if (!class_exists('DataEngine')) {
 
             $tzSql = "SET time_zone = '" . $offsetHours . ":00'";
             if ($offsetHours != 0 && self::$db !== false) {
-                $click_result = self::$db->query($tzSql);
+                $click_result = self::$conn->query($tzSql);
             }
         }
 
@@ -49,10 +50,10 @@ if (!class_exists('DataEngine')) {
                 //if there is no native ipv6 support use php version
                 if ($inet6_ntoa == '' && isset($ip_address) && $ip_address->type == 'ipv6') {
                     //encode ip address
-                    $mysql['ip_address'] = inet6_aton($db->real_escape_string($ip_address->address)); //use encoded var to compare
+                    $mysql['ip_address'] = inet6_aton($conn->escape($ip_address->address)); //use encoded var to compare
                 } else {
                     //do nothing. The built in mysql function will be used
-                    $mysql['ip_address'] = $db->real_escape_string($ip_address->address);
+                    $mysql['ip_address'] = $conn->escape($ip_address->address);
                 }
 
                 $daysago = time() - 86400; // 24 hours
@@ -69,7 +70,7 @@ if (!class_exists('DataEngine')) {
                            ORDER BY        c.click_id DESC
                            LIMIT           1';
 
-                $click_result1 = $db->query($click_sql1) or record_mysql_error($db);
+                $click_result1 = $conn->query($click_sql1) or record_mysql_error($db);
                 $click_row1 = $click_result1->fetch_assoc();
                 //empy  $mysql array
 
@@ -77,12 +78,12 @@ if (!class_exists('DataEngine')) {
 
                 // Check if click_row1 exists and click_id is not null before processing
                 if ($click_row1 && isset($click_row1['click_id'])) {
-                    $mysql['click_id'] = $db->real_escape_string((string)$click_row1['click_id']);
+                    $mysql['click_id'] = $conn->escape((string)$click_row1['click_id']);
                     $click_id = $mysql['click_id'];
                 } else {
                     $click_id = '';
                 }
-                // $mysql['ppc_account_id'] = $db->real_escape_string($click_row1['ppc_account_id']);
+                // $mysql['ppc_account_id'] = $conn->escape($click_row1['ppc_account_id']);
             }
 
             if (!isset($click_id) || $click_id == '') {
@@ -218,7 +219,7 @@ rule_id=values(rule_id),
 rule_redirect_id=values(rule_redirect_id),
             aff_campaign_id=values(aff_campaign_id),
 aff_network_id=values(aff_network_id)";
-            $result = $db->query($dsql);
+            $result = $conn->query($dsql);
         }
 
         /**

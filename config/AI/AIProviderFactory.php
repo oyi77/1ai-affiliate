@@ -41,6 +41,14 @@ final class AIProviderFactory
             );
         }
 
+        // Warn loudly when falling back to mock — canned responses in production are a data quality bug
+        if (getenv('APP_ENV') !== 'test' && PHP_SAPI !== 'cli') {
+            trigger_error(
+                '[AIProviderFactory] No AI_PROVIDER or OPENAI_API_KEY configured — '
+                . 'falling back to MockAIProvider. Set AI_PROVIDER and the matching API key.',
+                E_USER_WARNING
+            );
+        }
         return new MockAIProvider();
     }
 }

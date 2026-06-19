@@ -44,9 +44,10 @@ class SessionManager
 	{
 		$data = '';
 		$db = DB::getInstance()->getConnection();
-		$id = $db->real_escape_string($id);
+		$conn = new \OneAIAffiliate\Database\Connection($db);
+		$id = $conn->escape($id);
 		$sql = "SELECT session_data FROM sessions WHERE session_id = '$id' AND expires > UNIX_TIMESTAMP()";
-		$rs = $db->query($sql);
+		$rs = $conn->query($sql);
 		if ($rs && $rs->num_rows > 0) {
 			$row = $rs->fetch_assoc();
 			$data = $row['session_data'];
@@ -57,28 +58,31 @@ class SessionManager
 	function write($id, $data)
 	{
 		$db = DB::getInstance()->getConnection();
+		$conn = new \OneAIAffiliate\Database\Connection($db);
 		$time = time() + $this->life_time;
-		$id = $db->real_escape_string($id);
-		$data = $db->real_escape_string($data);
+		$id = $conn->escape($id);
+		$data = $conn->escape($data);
 		$sql = "REPLACE INTO sessions (session_id, session_data, expires) VALUES('$id', '$data', $time)";
-		$db->query($sql);
+		$conn->query($sql);
 		return true;
 	}
 
 	function destroy($id)
 	{
 		$db = DB::getInstance()->getConnection();
-		$id = $db->real_escape_string($id);
+		$conn = new \OneAIAffiliate\Database\Connection($db);
+		$id = $conn->escape($id);
 		$sql = "DELETE FROM sessions WHERE session_id = '$id'";
-		$db->query($sql);
+		$conn->query($sql);
 		return true;
 	}
 
 	function gc()
 	{
 		$db = DB::getInstance()->getConnection();
+		$conn = new \OneAIAffiliate\Database\Connection($db);
 		$sql = 'DELETE FROM sessions WHERE expires < UNIX_TIMESTAMP()';
-		$db->query($sql);
+		$conn->query($sql);
 		return true;
 	}
 }

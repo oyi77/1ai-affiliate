@@ -4,8 +4,8 @@ const { authenticate } = require('../middleware/auth');
 const {
   getProfile, updateProfile, generateApiKey, removeApiKey,
   getIntegrations, updateIntegration, getPostback, updatePostback,
+  getWhiteLabel, saveWhiteLabel,
 } = require('../controllers/settingsController');
-
 router.use(authenticate);
 
 // Profile
@@ -23,5 +23,9 @@ router.put('/integrations', updateIntegration);
 // Postback Configuration
 router.get('/postback', getPostback);
 router.put('/postback', updatePostback);
+
+// White-label config
+router.get('/white-label', getWhiteLabel);
+router.post('/white-label', saveWhiteLabel);
 
 module.exports = router;

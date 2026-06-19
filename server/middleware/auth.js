@@ -2,7 +2,14 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db/mysql');
 const logger = require('../logger');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET === 'dev-secret-change-me') {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL: JWT_SECRET must be set to a secure random value');
+  }
+  console.warn('WARNING: JWT_SECRET is not set. Using insecure default. DO NOT use in production.');
+}
+const JWT_SECRET_VALUE = JWT_SECRET || 'dev-secret-change-me';
 
 /**
  * Authenticate via JWT (issued by Node login endpoint).
@@ -44,7 +51,7 @@ async function authenticate(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET_VALUE);
     if (!decoded || !decoded.role) {
       logger.warn({ user: decoded?.id }, 'JWT missing role claim');
       return res.status(401).json({ error: 'Invalid token payload' });
@@ -105,7 +112,7 @@ async function generateToken(userRow) {
     if (affRows.length) payload.affiliateId = affRows[0].id;
   }
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+  return jwt.sign(payload, JWT_SECRET_VALUE, { expiresIn: '24h' });
 }
 
-module.exports = { authenticate, requireAdmin, requireRole, generateToken, JWT_SECRET };
+module.exports = { authenticate, requireAdmin, requireRole, generateToken, JWT_SECRET: JWT_SECRET_VALUE };

@@ -1,12 +1,13 @@
 <?php
 declare(strict_types=1);
 include_once(str_repeat("../", 2).'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 if (isset($_GET['getProgress'])) {
-	$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+	$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 	$user_sql = "SELECT install_hash FROM users WHERE user_id = '".$mysql['user_own_id']."'";
-	$user_results = $db->query($user_sql);
+	$user_results = $conn->query($user_sql);
 	$user_row = $user_results->fetch_assoc();
 
 	$postData = file_get_contents('php://input');
@@ -15,7 +16,7 @@ if (isset($_GET['getProgress'])) {
 }
 
 if (isset($_GET['updateStatus'])) {
-	$mysql['dni'] = $db->real_escape_string((string)$_GET['dni']);
+	$mysql['dni'] = $conn->escape((string)$_GET['dni']);
 	$sql = "UPDATE dni_networks SET processed = '1' WHERE id = '".$mysql['dni']."'";
-	$db->query($sql);
+	$conn->query($sql);
 }

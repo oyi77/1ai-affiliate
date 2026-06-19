@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(__DIR__ . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 include_once(__DIR__ . '/config/functions-tracking1ai.php');
 
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
@@ -10,7 +11,7 @@ if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
 }
 
 // Check if API key already exists in database
-$existing_key_check = $db->query("SELECT pcustomer_api_key FROM users WHERE user_id='1' AND pcustomer_api_key IS NOT NULL AND pcustomer_api_key != ''");
+$existing_key_check = $conn->query("SELECT pcustomer_api_key FROM users WHERE user_id='1' AND pcustomer_api_key IS NOT NULL AND pcustomer_api_key != ''");
 $has_existing_key = false;
 $existing_api_key = '';
 if ($existing_key_check && $existing_key_check->num_rows > 0) {
@@ -34,15 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['api_key'])) {
 		
 		if (isset($validation_data['msg']) && $validation_data['msg'] === 'Key valid') {
 			// Save the API key
-			$mysql['pcustomer_api_key'] = $db->real_escape_string($api_key);
+			$mysql['pcustomer_api_key'] = $conn->escape($api_key);
 			
 			// Always update user_id=1 as that's what AUTH checks
 			$mysql['user_id'] = '1';
 			
 			// Check if user exists
-			$user_check = $db->query("SELECT user_id FROM users WHERE user_id='1'");
+			$user_check = $conn->query("SELECT user_id FROM users WHERE user_id='1'");
 			if ($user_check && $user_check->num_rows > 0) {
-				$db->query("UPDATE users SET pcustomer_api_key = '".$mysql['pcustomer_api_key']."' WHERE user_id = '".$mysql['user_id']."'");
+				$conn->query("UPDATE users SET pcustomer_api_key = '".$mysql['pcustomer_api_key']."' WHERE user_id = '".$mysql['user_id']."'");
 				$success = true;
 				// Set session variable to indicate valid key
 				$_SESSION['valid_key'] = true;

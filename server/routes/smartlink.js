@@ -7,6 +7,6 @@ router.post('/generate', authenticate, generateSmartlink);
 router.get('/list', authenticate, listSmartlinks);
 router.post('/convert', authenticate, recordConversion);
 router.get('/stats', authenticate, getSmartlinkStats);
-router.get('/:slug', routeTrafficByHash);
+router.get('/:hash', routeTrafficByHash);
 
 module.exports = router;

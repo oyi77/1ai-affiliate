@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-18) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -20,10 +21,10 @@ $editing = false;
 $copying = false;
 
 $slack = false;
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '".$mysql['user_own_id']."'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 if (!empty($user_row['url'])) 
@@ -43,10 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	
 	
 		//check to see if they are the owners of this affiliate network
-		$mysql['aff_campaign_id'] = $db->real_escape_string((string)($_POST['aff_campaign_id'] ?? ''));
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['aff_campaign_id'] = $conn->escape((string)($_POST['aff_campaign_id'] ?? ''));
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$aff_campaign_sql = "SELECT * FROM `aff_campaigns` WHERE `user_id`='".$mysql['user_id']."' AND `aff_campaign_id`='".$mysql['aff_campaign_id']."'";
-		$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+		$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 		if ($aff_campaign_result->num_rows == 0 ) {
 			$error['wrong_user'] = '<div class="error">You are not authorized to add an campaign to another users network</div>';    
 		} else {
@@ -59,10 +60,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$landing_page_id = trim((string) $_POST['landing_page_id']);
 		if (empty($landing_page_id)) { $error['landing_page_id'] = '<div class="error">Please select a landing page.</div>'; }
 
-		$mysql['landing_page_id'] = $db->real_escape_string((string)$_POST['landing_page_id']);
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['landing_page_id'] = $conn->escape((string)$_POST['landing_page_id']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$landing_page_sql = "SELECT * FROM `landing_pages` WHERE `user_id`='".$mysql['user_id']."' AND `landing_page_id`='".$mysql['landing_page_id']."'";
-		$landing_page_result = $db->query($landing_page_sql) or record_mysql_error($landing_page_sql);
+		$landing_page_result = $conn->query($landing_page_sql) or record_mysql_error($landing_page_sql);
 		if ($landing_page_result->num_rows == 0 ) {
 			$error['wrong_user'] = '<div class="error">You are not authorized to add an text add to another users landing page</div>';    
 		} else {
@@ -87,8 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	
 	//if editing, check to make sure the own the campaign they are editing
 	if ($editing == true) {
-		$mysql['text_ad_id'] = $db->real_escape_string((string)$_POST['text_ad_id']);
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['text_ad_id'] = $conn->escape((string)$_POST['text_ad_id']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$ad_varation_sql = "SELECT 
 							text_ads.aff_campaign_id AS text_add_aff_campaign_id,
 							text_ads.landing_page_id AS text_add_landing_page_id,
@@ -99,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 							aff_campaigns.aff_campaign_name AS text_add_aff_campaign_name,
 							landing_pages.landing_page_nickname AS text_add_landing_page_nickname  
 							FROM text_ads LEFT JOIN aff_campaigns USING (aff_campaign_id) LEFT JOIN landing_pages USING (landing_page_id) WHERE text_ads.user_id='".$mysql['user_id']."' AND text_ad_id='".$mysql['text_ad_id']."'";
-		$text_ad_result = $db->query($ad_varation_sql) or record_mysql_error($ad_varation_sql);
+		$text_ad_result = $conn->query($ad_varation_sql) or record_mysql_error($ad_varation_sql);
 		if ($text_ad_result->num_rows == 0 ) {
 			$error['wrong_user'] .= '<div class="error">You are not authorized to modify another users campaign</div>';    
 		} else {
@@ -108,16 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 
 	if (!$error) { 
-		$mysql['text_ad_id'] = $db->real_escape_string((string)$_POST['text_ad_id']);
-		$mysql['text_ad_type'] = $db->real_escape_string((string)$_POST['text_ad_type']);
-		$mysql['landing_page_id'] = $db->real_escape_string((string)$_POST['landing_page_id']);
-		$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
-		$mysql['text_ad_name'] = $db->real_escape_string((string)$_POST['text_ad_name']);
-		$mysql['text_ad_headline'] = $db->real_escape_string((string)$_POST['text_ad_headline']);
-		$mysql['text_ad_description'] = $db->real_escape_string((string)$_POST['text_ad_description']);
-		$mysql['text_ad_display_url'] = $db->real_escape_string((string)$_POST['text_ad_display_url']);
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-		$mysql['text_ad_time'] = $db->real_escape_string((string)time());
+		$mysql['text_ad_id'] = $conn->escape((string)$_POST['text_ad_id']);
+		$mysql['text_ad_type'] = $conn->escape((string)$_POST['text_ad_type']);
+		$mysql['landing_page_id'] = $conn->escape((string)$_POST['landing_page_id']);
+		$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
+		$mysql['text_ad_name'] = $conn->escape((string)$_POST['text_ad_name']);
+		$mysql['text_ad_headline'] = $conn->escape((string)$_POST['text_ad_headline']);
+		$mysql['text_ad_description'] = $conn->escape((string)$_POST['text_ad_description']);
+		$mysql['text_ad_display_url'] = $conn->escape((string)$_POST['text_ad_display_url']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+		$mysql['text_ad_time'] = $conn->escape((string)time());
 		
 		if ($editing == true) { $text_ad_sql  = "UPDATE `text_ads` SET"; } 
 		else {                  $text_ad_sql  = "INSERT INTO `text_ads` SET"; }
@@ -133,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 													  `text_ad_time`='".$mysql['text_ad_time']."'";
 													  
 		if ($editing == true) { $text_ad_sql  .= "WHERE `text_ad_id`='".$mysql['text_ad_id']."'"; } 
-		$text_ad_result = $db->query($text_ad_sql) or record_mysql_error($text_ad_sql);
+		$text_ad_result = $conn->query($text_ad_sql) or record_mysql_error($text_ad_sql);
 		$add_success = true;
 
 		//if the edit worked ok redirec them
@@ -183,8 +184,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 if (isset($_GET['delete_text_ad_id'])) { 
 
 	if ($userObj->hasPermission("remove_text_ad")) {
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-		$mysql['text_ad_id'] = $db->real_escape_string((string)$_GET['delete_text_ad_id']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+		$mysql['text_ad_id'] = $conn->escape((string)$_GET['delete_text_ad_id']);
 		$mysql['text_ad_time'] = time();
 		
 		$delete_sql = " UPDATE  `text_ads`
@@ -192,7 +193,7 @@ if (isset($_GET['delete_text_ad_id'])) {
 								`text_ad_time`='".$mysql['text_ad_time']."'
 						WHERE   `user_id`='".$mysql['user_id']."'
 						AND     `text_ad_id`='".$mysql['text_ad_id']."'";
-		if ($delete_result = $db->query($delete_sql) or record_mysql_error($delete_sql)) {
+		if ($delete_result = $conn->query($delete_sql) or record_mysql_error($delete_sql)) {
 			$delete_success = true;
 			if($slack)
 				$slack->push('ad_copy_deleted', ['name' => $_GET['delete_text_ad_name'], 'user' => $user_row['username']]);
@@ -204,18 +205,18 @@ if (isset($_GET['delete_text_ad_id'])) {
 
 if (!empty($_GET['edit_text_ad_id'])) { 
 	
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-	$mysql['text_ad_id'] = $db->real_escape_string((string)$_GET['edit_text_ad_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['text_ad_id'] = $conn->escape((string)$_GET['edit_text_ad_id']);
 	
 	$text_ad_sql = "SELECT * 
 						 FROM   `text_ads`
 						 WHERE  `text_ad_id`='".$mysql['text_ad_id']."'
 						 AND    `user_id`='".$mysql['user_id']."'";
-	$text_ad_result = $db->query($text_ad_sql) or record_mysql_error($text_ad_sql);
+	$text_ad_result = $conn->query($text_ad_sql) or record_mysql_error($text_ad_sql);
 	$text_ad_row = $text_ad_result->fetch_assoc();
 	
 
-	$mysql['aff_campaign_id'] = $db->real_escape_string($text_ad_row['aff_campaign_id']);
+	$mysql['aff_campaign_id'] = $conn->escape($text_ad_row['aff_campaign_id']);
 	$html['landing_page_id'] = htmlentities((string)($text_ad_row['landing_page_id'] ?? ''), ENT_QUOTES, 'UTF-8');    
 	$html['text_ad_type'] = htmlentities((string)($text_ad_row['text_ad_type'] ?? ''), ENT_QUOTES, 'UTF-8');    
 	$html['aff_campaign_id'] = htmlentities((string)($text_ad_row['aff_campaign_id'] ?? ''), ENT_QUOTES, 'UTF-8');    
@@ -228,14 +229,14 @@ if (!empty($_GET['edit_text_ad_id'])) {
 
 } elseif (!empty($_GET['copy_text_ad_id'])) { 
 	
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-	$mysql['text_ad_id'] = $db->real_escape_string((string)$_GET['copy_text_ad_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['text_ad_id'] = $conn->escape((string)$_GET['copy_text_ad_id']);
 	
 	$text_ad_sql = "SELECT * 
 						 FROM   `text_ads`
 						 WHERE  `text_ad_id`='".$mysql['text_ad_id']."'
 						 AND    `user_id`='".$mysql['user_id']."'";
-	$text_ad_result = $db->query($text_ad_sql) or record_mysql_error($text_ad_sql);
+	$text_ad_result = $conn->query($text_ad_sql) or record_mysql_error($text_ad_sql);
 	$text_ad_row = $text_ad_result->fetch_assoc();
 	
 	$html['text_ad_type'] = htmlentities((string)($text_ad_row['text_ad_type'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -248,7 +249,7 @@ if (!empty($_GET['edit_text_ad_id'])) {
 
 } elseif (($_SERVER['REQUEST_METHOD'] == 'POST') and ($add_success != true)) {
 	
-	$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
+	$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
    	$html['aff_campaign_id'] = htmlentities((string)($_POST['aff_campaign_id'] ?? ''), ENT_QUOTES, 'UTF-8');
     
     	$html['text_ad_type'] = htmlentities((string)($_POST['text_ad_type'] ?? ''), ENT_QUOTES, 'UTF-8');   
@@ -265,12 +266,12 @@ if (!empty($_GET['edit_text_ad_id'])) {
 if ((($editing === true) || ($add_success !== true)) && !empty($mysql['aff_campaign_id'])) {
     //now grab the affiliate network id, per that aff campaign id
     $aff_campaign_sql = "SELECT * FROM `aff_campaigns` WHERE `aff_campaign_id`='".$mysql['aff_campaign_id']."'";
-    $aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+    $aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
     $aff_campaign_row = $aff_campaign_result->fetch_assoc();
 
-    $mysql['aff_network_id'] = $db->real_escape_string($aff_campaign_row['aff_network_id']);
+    $mysql['aff_network_id'] = $conn->escape($aff_campaign_row['aff_network_id']);
     $aff_network_sql = "SELECT * FROM `aff_networks` WHERE `aff_network_id`='".$mysql['aff_network_id']."'";
-    $aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+    $aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
     $aff_network_row = $aff_network_result->fetch_assoc();
 
     $html['aff_network_id'] = htmlentities((string)($aff_network_row['aff_network_id'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -449,9 +450,9 @@ template_top('Text Ads Setup');  ?>
 			<div class="panel-heading">Advanced Landing Page Text Ads</div>
 			<div class="panel-body">
 				<ul>        
-					<?php $mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+					<?php $mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 					$landing_page_sql = "SELECT * FROM `landing_pages` WHERE `user_id`='".$mysql['user_id']."' AND landing_page_type='1' AND landing_page_deleted='0'";
-					$landing_page_result = $db->query($landing_page_sql) or record_mysql_error($landing_page_sql);
+					$landing_page_result = $conn->query($landing_page_sql) or record_mysql_error($landing_page_sql);
 					
 					while ($landing_page_row = $landing_page_result->fetch_array(MYSQLI_ASSOC)) {
 						$html['landing_page_nickname'] = htmlentities((string)($landing_page_row['landing_page_nickname'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -460,9 +461,9 @@ template_top('Text Ads Setup');  ?>
 							
 						?><ul style="margin-top: 0px;"><?php 
 								
-							$mysql['landing_page_id'] = $db->real_escape_string($landing_page_row['landing_page_id']);
+							$mysql['landing_page_id'] = $conn->escape($landing_page_row['landing_page_id']);
 							$text_ad_sql = "SELECT * FROM `text_ads` WHERE `landing_page_id`='".$mysql['landing_page_id']."' AND `text_ad_deleted`='0' ORDER BY `text_ad_name` ASC";
-							$text_ad_result = $db->query($text_ad_sql) or record_mysql_error($text_ad_sql);
+							$text_ad_result = $conn->query($text_ad_sql) or record_mysql_error($text_ad_sql);
 								
 							while ($text_ad_row = $text_ad_result->fetch_array(MYSQLI_ASSOC)) {
 										
@@ -488,9 +489,9 @@ template_top('Text Ads Setup');  ?>
 			<div class="panel-heading">Direct Link/Simple Landing Page Text Ads</div>
 			<div class="panel-body">
 				<ul>        
-				<?php  $mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+				<?php  $mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 					$aff_network_sql = "SELECT * FROM `aff_networks` WHERE `user_id`='".$mysql['user_id']."' AND `aff_network_deleted`='0' ORDER BY `aff_network_name` ASC";
-					$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+					$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 					if ($aff_network_result->num_rows == 0 ) { 
 						?><li class="empty-state">No categories added yet. Add a category first to organize your text ads.</li><?php
 					}
@@ -504,9 +505,9 @@ template_top('Text Ads Setup');  ?>
 						?><ul style="margin-top: 0px;"><?php
 											
 							//print out the individual accounts per each PPC network
-							$mysql['aff_network_id'] = $db->real_escape_string($aff_network_row['aff_network_id']);
+							$mysql['aff_network_id'] = $conn->escape($aff_network_row['aff_network_id']);
 							$aff_campaign_sql = "SELECT * FROM `aff_campaigns` WHERE `aff_network_id`='".$mysql['aff_network_id']."' AND `aff_campaign_deleted`='0' ORDER BY `aff_campaign_name` ASC";
-							$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+							$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 							 
 							while ($aff_campaign_row = $aff_campaign_result->fetch_array(MYSQLI_ASSOC)) {
 								
@@ -517,9 +518,9 @@ template_top('Text Ads Setup');  ?>
 							
 								?><ul style="margin-top: 0px;"><?php 
 								
-									$mysql['aff_campaign_id'] = $db->real_escape_string($aff_campaign_row['aff_campaign_id']);
+									$mysql['aff_campaign_id'] = $conn->escape($aff_campaign_row['aff_campaign_id']);
 									$text_ad_sql = "SELECT * FROM `text_ads` WHERE `aff_campaign_id`='".$mysql['aff_campaign_id']."' AND `text_ad_deleted`='0' ORDER BY `text_ad_name` ASC";
-									$text_ad_result = $db->query($text_ad_sql) or record_mysql_error($text_ad_sql);
+									$text_ad_result = $conn->query($text_ad_sql) or record_mysql_error($text_ad_sql);
 									
 									while ($text_ad_row = $text_ad_result->fetch_array(MYSQLI_ASSOC)) {
 										

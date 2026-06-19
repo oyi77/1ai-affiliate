@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OneAIAffiliate\Repository\Cached;
 
 use Closure;
+use OneAIAffiliate\Repository\IpLookupInput;
 use OneAIAffiliate\Repository\LocationRepositoryInterface;
 use OneAIAffiliate\Repository\Mysql\MysqlLocationRepository;
 
@@ -84,7 +85,7 @@ final class CachedLocationRepository implements LocationRepositoryInterface
         return $id;
     }
 
-    public function findOrCreateIp(string $address): int
+    public function findOrCreateIp(string $address, ?IpLookupInput $geo = null): int
     {
         if ($address === '') {
             return 0;
@@ -97,7 +98,7 @@ final class CachedLocationRepository implements LocationRepositoryInterface
             return (int) $cached;
         }
 
-        $id = $this->inner->findOrCreateIp($address);
+        $id = $this->inner->findOrCreateIp($address, $geo);
         ($this->cacheSet)($key, $id, self::TTL);
 
         return $id;

@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(str_repeat("../", 2) . 'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -95,9 +96,9 @@ if (isset($_SESSION['auto_upgraded_not_possible']) && $_SESSION['auto_upgraded_n
 		</div>
 	</div>
 	<?php } else if (isset($_SESSION['premium_update_available']) && $_SESSION['premium_update_available'] == true) {
-	$mysql['user_own_id'] = $db->real_escape_string((string) $_SESSION['user_own_id']);
+	$mysql['user_own_id'] = $conn->escape((string) $_SESSION['user_own_id']);
 	$user_sql = "SELECT pcustomer_api_key FROM users WHERE user_id = '" . $mysql['user_own_id'] . "'";
-	$user_results = $db->query($user_sql);
+	$user_results = $conn->query($user_sql);
 	$user_row = $user_results->fetch_assoc();
 	if (empty($user_row['pcustomer_api_key'])) { ?>
 		<div class="panel-group alertaccordion" id="accordion" role="tablist" aria-multiselectable="true">

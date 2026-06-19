@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -11,10 +12,10 @@ if (!hash_equals((string)($_SESSION['token'] ?? ''), (string)($_POST['token'] ??
 }
 
 $slack = false;
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '".$mysql['user_own_id']."'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 if (!empty($user_row['url'])) 
@@ -76,34 +77,34 @@ $html = [];
 
 //show tracking code
 
-	$input_landing_page_id = $db->real_escape_string((string)($_POST['landing_page_id'] ?? '0'));
+	$input_landing_page_id = $conn->escape((string)($_POST['landing_page_id'] ?? '0'));
 	$landing_page_sql = "SELECT * FROM `landing_pages` WHERE `landing_page_id`='".$input_landing_page_id."'";
-	$landing_page_result = $db->query($landing_page_sql) or record_mysql_error($landing_page_sql);
+	$landing_page_result = $conn->query($landing_page_sql) or record_mysql_error($landing_page_sql);
 	$landing_page_row = $landing_page_result->fetch_assoc();
 	
 	if (isset($_POST['cost_type']) && $_POST['cost_type'] == 'cpc') {
 		$click_cpc = ($_POST['cpc_dollars'] ?? '0') . '.' . ($_POST['cpc_cents'] ?? '00');
-		$mysql['click_cpc'] = $db->real_escape_string($click_cpc);
+		$mysql['click_cpc'] = $conn->escape($click_cpc);
 		$cost_sql = "`click_cpc`='".$mysql['click_cpc']."',";
 	} else if (isset($_POST['cost_type']) && $_POST['cost_type'] == 'cpa') {
 		$click_cpa = ($_POST['cpa_dollars'] ?? '0') . '.' . ($_POST['cpa_cents'] ?? '00');
-		$mysql['click_cpa'] = $db->real_escape_string($click_cpa);
+		$mysql['click_cpa'] = $conn->escape($click_cpa);
 		$cost_sql = "`click_cpa`='".$mysql['click_cpa']."',";
 	}
 
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-	$mysql['aff_campaign_id'] = $db->real_escape_string((string)($_POST['aff_campaign_id'] ?? '0'));
-	$mysql['text_ad_id'] = $db->real_escape_string((string)($_POST['text_ad_id'] ?? '0'));
-	$mysql['ppc_network_id'] = $db->real_escape_string((string)($_POST['ppc_network_id'] ?? '0')); 
-	$mysql['ppc_account_id'] = $db->real_escape_string((string)($_POST['ppc_account_id'] ?? '0')); 
-	$mysql['click_cloaking'] = $db->real_escape_string((string)($_POST['click_cloaking'] ?? '0')); 
-	$mysql['landing_page_id'] = $db->real_escape_string((string)($landing_page_row['landing_page_id'] ?? '0'));
-	$mysql['rotator_id'] = $db->real_escape_string((string)($_POST['tracker_rotator'] ?? '0'));
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['aff_campaign_id'] = $conn->escape((string)($_POST['aff_campaign_id'] ?? '0'));
+	$mysql['text_ad_id'] = $conn->escape((string)($_POST['text_ad_id'] ?? '0'));
+	$mysql['ppc_network_id'] = $conn->escape((string)($_POST['ppc_network_id'] ?? '0')); 
+	$mysql['ppc_account_id'] = $conn->escape((string)($_POST['ppc_account_id'] ?? '0')); 
+	$mysql['click_cloaking'] = $conn->escape((string)($_POST['click_cloaking'] ?? '0')); 
+	$mysql['landing_page_id'] = $conn->escape((string)($landing_page_row['landing_page_id'] ?? '0'));
+	$mysql['rotator_id'] = $conn->escape((string)($_POST['tracker_rotator'] ?? '0'));
 	$mysql['tracker_time'] = time();
 	
 
 	if (isset($_POST['edit_tracker']) && $_POST['edit_tracker'] && isset($_POST['tracker_id']) && $_POST['tracker_id']) {
-		$mysql['tracker_id_public'] = $db->real_escape_string((string)$_POST['tracker_id']);
+		$mysql['tracker_id_public'] = $conn->escape((string)$_POST['tracker_id']);
 		$get_tracker_sql = "SELECT 
 							tracker_id, 
 							tracker_id_public,
@@ -132,12 +133,12 @@ $html = [];
 							LEFT JOIN rotators ON (trackers.rotator_id = rotators.id)
 							WHERE trackers.tracker_id_public = '".$mysql['tracker_id_public']."' AND trackers.user_id = '".$mysql['user_id']."'";
 		
-		$get_tracker_result = $db->query($get_tracker_sql);
+		$get_tracker_result = $conn->query($get_tracker_sql);
 		$get_tracker_row = $get_tracker_result->fetch_assoc();		
 
 		if ($get_tracker_result->num_rows > 0) {
 			$drop_tracker = "DELETE FROM trackers WHERE tracker_id = '".$get_tracker_row['tracker_id']."'";
-			$drop_tracker_result = $db->query($drop_tracker);
+			$drop_tracker_result = $conn->query($drop_tracker);
 		}
 	}
 
@@ -154,21 +155,21 @@ $html = [];
 								`rotator_id`='".$mysql['rotator_id']."',
 								`click_cloaking`='".$mysql['click_cloaking']."',
 								`tracker_time`='".$mysql['tracker_time']."'";
-	$tracker_result = $db->query($tracker_sql);
+	$tracker_result = $conn->query($tracker_sql);
 	if (!$tracker_result) {
 		$db->rollback();
 		record_mysql_error($tracker_sql);
 		die('Error creating tracker');
 	}
 
-	$tracker_row['tracker_id'] = $db->insert_id;
-	$mysql['tracker_id'] = $db->real_escape_string((string)$tracker_row['tracker_id']);
+	$tracker_row['tracker_id'] = $conn->writeConnection()->insert_id;
+	$mysql['tracker_id'] = $conn->escape((string)$tracker_row['tracker_id']);
 
 	if (isset($_POST['edit_tracker']) && $_POST['edit_tracker'] && isset($_POST['tracker_id']) && $_POST['tracker_id'] && $get_tracker_result->num_rows > 0) {
-		$mysql['tracker_id_public'] = $db->real_escape_string((string)$get_tracker_row['tracker_id_public']);
+		$mysql['tracker_id_public'] = $conn->escape((string)$get_tracker_row['tracker_id_public']);
 	} else {
 		$tracker_id_public = random_int(1,9) . $tracker_row['tracker_id'] . random_int(1,9);
-		$mysql['tracker_id_public'] = $db->real_escape_string((string)$tracker_id_public);
+		$mysql['tracker_id_public'] = $conn->escape((string)$tracker_id_public);
 	}
 
 	$tracker_id_public = $mysql['tracker_id_public'];
@@ -176,7 +177,7 @@ $html = [];
 	$tracker_sql = "UPDATE 		`trackers`
 					SET			`tracker_id_public`='".$mysql['tracker_id_public']."'
 					WHERE		`tracker_id`='".$mysql['tracker_id']."'";
-	$tracker_result = $db->query($tracker_sql);
+	$tracker_result = $conn->query($tracker_sql);
 	if (!$tracker_result) {
 		$db->rollback();
 		record_mysql_error($tracker_sql);
@@ -209,7 +210,7 @@ $html = [];
 	$tracking_variable_string = '&';
 	
 	$get_variables = "SELECT * FROM ppc_network_variables WHERE ppc_network_id = '".$mysql['ppc_network_id']."' AND deleted = 0";
-	$get_variables_result = $db->query($get_variables);
+	$get_variables_result = $conn->query($get_variables);
 	
 	// Initialize html array
 	$html = [];
@@ -235,7 +236,7 @@ $html = [];
     foreach ($t1aivariables as $key) {
 
         if (isset($_POST[$key]) && trim((string) $_POST[$key]) != '') { //if there is a non empty value posted, then overwrite current value in html array with it 
-            $html[$key] = $db->real_escape_string(trim((string) $_POST[$key]));
+            $html[$key] = $conn->escape(trim((string) $_POST[$key]));
         }
         if (isset($html[$key]) || $key=='t1aikw')
             $tracking_variable_string .= $key . '=' . ($html[$key] ?? '') . '&'; //now write out the values/ but only if they are not empty with the exception of t1aikw with we will write out no matter what
@@ -276,9 +277,9 @@ $html = [];
 			if ($_POST['tracker_type'] == '0') {
 				if ($_POST['aff_campaign_id'] != $get_tracker_row['aff_campaign_id']) {
 					
-					$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
+					$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
 					$sql = "SELECT aff_network_name, aff_campaign_name FROM aff_campaigns LEFT JOIN aff_networks USING (aff_network_id) WHERE aff_campaign_id = '".$mysql['aff_campaign_id']."'";
-					$result = $db->query($sql);
+					$result = $conn->query($sql);
 					$row = $result->fetch_assoc();
 
 					$slack->push('tracking_link_category_changed', ['type' => $tracker_type, 'id' => $tracker_row['tracker_id'], 'old_category' => $get_tracker_row['aff_network_name'], 'new_category' => $row['aff_network_name'], 'user' => $user_row['username']]);
@@ -301,9 +302,9 @@ $html = [];
 			if ($_POST['method_of_promotion'] == 'landingpage' || $_POST['tracker_type'] == '1') {
 				if (($get_tracker_row['landing_page_id']) && $_POST['landing_page_id'] != $get_tracker_row['landing_page_id']) {
 					
-					$mysql['landing_page_id'] = $db->real_escape_string((string)($_POST['landing_page_id'] ?? '0'));
+					$mysql['landing_page_id'] = $conn->escape((string)($_POST['landing_page_id'] ?? '0'));
 					$sql = "SELECT landing_page_nickname FROM landing_pages WHERE landing_page_id = '".$mysql['landing_page_id']."'";
-					$result = $db->query($sql);
+					$result = $conn->query($sql);
 					$row = $result->fetch_assoc();
 
 					$slack->push('tracking_link_landing_page_changed', ['type' => $tracker_type, 'id' => $tracker_row['tracker_id'], 'old_lp' => $get_tracker_row['landing_page_nickname'], 'new_lp' => $row['landing_page_nickname'], 'user' => $user_row['username']]);
@@ -313,18 +314,18 @@ $html = [];
 			if (isset($_POST['tracker_type']) && ($_POST['tracker_type'] == '0' || $_POST['tracker_type'] == '1')) {
 
 				if (isset($_POST['text_ad_id']) && $get_tracker_row['text_ad_id']) {
-					$mysql['text_ad_id'] = $db->real_escape_string((string)($_POST['text_ad_id'] ?? '0'));
+					$mysql['text_ad_id'] = $conn->escape((string)($_POST['text_ad_id'] ?? '0'));
 					$sql = "SELECT text_ad_name FROM text_ads WHERE text_ad_id = '".$mysql['text_ad_id']."'";
-					$result = $db->query($sql);
+					$result = $conn->query($sql);
 					$row = $result->fetch_assoc();
 
 					$slack->push('tracking_link_text_ad_changed', ['type' => $tracker_type, 'id' => $tracker_row['tracker_id'], 'old_ad' => $get_tracker_row['text_ad_name'], 'new_ad' => $row['text_ad_name'], 'user' => $user_row['username']]);
 				}
 
 				if (isset($_POST['text_ad_id']) && !$get_tracker_row['text_ad_id']) {
-					$mysql['text_ad_id'] = $db->real_escape_string((string)($_POST['text_ad_id'] ?? '0'));
+					$mysql['text_ad_id'] = $conn->escape((string)($_POST['text_ad_id'] ?? '0'));
 					$sql = "SELECT text_ad_name FROM text_ads WHERE text_ad_id = '".$mysql['text_ad_id']."'";
-					$result = $db->query($sql);
+					$result = $conn->query($sql);
 					$row = $result->fetch_assoc();
 
 					$slack->push('tracking_link_text_ad_added', ['type' => $tracker_type, 'id' => $tracker_row['tracker_id'], 'ad' => $row['text_ad_name'], 'user' => $user_row['username']]);
@@ -358,9 +359,9 @@ $html = [];
 			}
 
 			if ($_POST['ppc_account_id'] != $get_tracker_row['ppc_account_id']) {
-				$mysql['ppc_account_id'] = $db->real_escape_string((string)$_POST['ppc_account_id']);
+				$mysql['ppc_account_id'] = $conn->escape((string)$_POST['ppc_account_id']);
 				$sql = "SELECT ppc_account_name, ppc_network_name FROM ppc_accounts LEFT JOIN ppc_networks USING (ppc_network_id) WHERE ppc_account_id = '".$mysql['ppc_account_id']."'";
-				$result = $db->query($sql);
+				$result = $conn->query($sql);
 				$row = $result->fetch_assoc();
 
 				$slack->push('tracking_link_pcc_network_changed', ['type' => $tracker_type, 'id' => $tracker_row['tracker_id'], 'old_source' => $get_tracker_row['ppc_network_name'], 'new_source' => $row['ppc_network_name'], 'user' => $user_row['username']]);
@@ -386,9 +387,9 @@ $html = [];
 
 			if ($_POST['tracker_type'] == '2') {
 				if ($_POST['tracker_rotator'] != $get_tracker_row['rotator_id']) {
-					$mysql['rotator_id'] = $db->real_escape_string((string)$_POST['tracker_rotator']);
+					$mysql['rotator_id'] = $conn->escape((string)$_POST['tracker_rotator']);
 					$sql = "SELECT name FROM rotators WHERE id = '".$mysql['rotator_id']."'";
-					$result = $db->query($sql);
+					$result = $conn->query($sql);
 					$row = $result->fetch_assoc();
 
 					$slack->push('tracking_link_rotator_changed', ['type' => $tracker_type, 'id' => $tracker_row['tracker_id'], 'old_rotator' => $get_tracker_row['name'], 'new_rotator' => $row['name'], 'user' => $user_row['username']]);

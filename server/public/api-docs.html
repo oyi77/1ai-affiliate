@@ -237,6 +237,23 @@
               revenue: { type: 'number', example: 750000 },
             },
           },
+          ClickServer: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', example: 1 },
+              domain: { type: 'string', example: 'track.yourdomain.com' },
+              status: { type: 'string', enum: ['active', 'inactive'], example: 'active' },
+              clicks: { type: 'integer', example: 12450 },
+              created_at: { type: 'integer', description: 'Unix timestamp', example: 1717200000 },
+            },
+          },
+          ClickServerCreateRequest: {
+            type: 'object',
+            required: ['domain'],
+            properties: {
+              domain: { type: 'string', description: 'Domain name to register', example: 'track.berkahkarya.org' },
+            },
+          },
           BannerRequest: {
             type: 'object',
             required: ['product'],
@@ -1215,6 +1232,46 @@
               },
               '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
               '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/clickservers': {
+          get: {
+            tags: ['Admin'],
+            summary: 'List click servers',
+            description: 'Returns configured tracking domains for the edge redirect server. Requires a clickserver_api_key configured in Settings.',
+            operationId: 'adminClickServers',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            responses: {
+              '200': {
+                description: 'List of click server domains',
+                content: {
+                  'application/json': {
+                    schema: { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/ClickServer' } } } },
+                  },
+                },
+              },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+          post: {
+            tags: ['Admin'],
+            summary: 'Register a click server domain',
+            description: 'Add a domain to the edge redirect server. The domain must point to your edge server IP. Auto-creates the tracking domain table on first use.',
+            operationId: 'adminClickServersCreate',
+            security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/ClickServerCreateRequest' } } },
+            },
+            responses: {
+              '200': { description: 'Domain registered', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true }, domain: { type: 'string', example: 'track.berkahkarya.org' } } } } } },
+              '400': { description: 'Domain is required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '403': { description: 'Admin access required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '500': { description: 'Server error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
             },
           },
         },

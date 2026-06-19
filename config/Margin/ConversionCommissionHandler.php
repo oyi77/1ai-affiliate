@@ -85,7 +85,7 @@ final class ConversionCommissionHandler
         $now = time();
 
         // Record the earning
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO affiliate_earnings
              (affiliate_id, conversion_id, payout_amount, admin_amount, status, created_at)
              VALUES (?, ?, ?, ?, ?, ?)'
@@ -101,7 +101,7 @@ final class ConversionCommissionHandler
         $earningId = $this->conn->executeInsert($stmt);
 
         // Update conversion log with affiliate info
-        $updateStmt = $this->conn->prepare(
+        $updateStmt = $this->conn->prepareWrite(
             'UPDATE conversion_logs
              SET affiliate_payout_snapshot = ?, margin_amount = ?, affiliate_id = ?, affiliate_status = ?
              WHERE conv_id = ?'
@@ -113,7 +113,7 @@ final class ConversionCommissionHandler
             $status,
             $conversionId,
         ]);
-        $this->conn->executeChecked($updateStmt, 'Conversion affiliate update failed');
+        $this->conn->executeUpdate($updateStmt);
 
         // Record ledger entry
         $balance = $this->getBalance($affiliateId);
@@ -159,7 +159,7 @@ final class ConversionCommissionHandler
         string $referenceType,
         int $referenceId,
     ): void {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO commission_entries
              (affiliate_id, entry_type, amount, balance_before, balance_after,
               reference_type, reference_id, created_at)
@@ -170,7 +170,7 @@ final class ConversionCommissionHandler
             $balanceBefore, $balanceAfter,
             $referenceType, $referenceId, time(),
         ]);
-        $this->conn->executeChecked($stmt, 'Ledger entry failed');
+        $this->conn->execute($stmt);
     }
 
     private function getAffiliateCustomPayout(int $affiliateId, int $campaignId): ?float

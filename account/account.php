@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 include_once(str_repeat("../", 1) . 'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
@@ -23,9 +24,9 @@ $utc = new DateTimeZone('UTC');
 $dt = new DateTime('now', $utc);
 
 $slack = false;
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '" . $mysql['user_own_id'] . "'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 $username = $user_row['username'];
 
@@ -62,10 +63,10 @@ if (isset($_POST['add_rest_api_key'])) {
 	if (!hash_equals((string)($_SESSION['token'] ?? ''), (string)($_POST['token'] ?? ''))) {
 		die();
 	}
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-	$mysql['rest_api_key'] = $db->real_escape_string((string)$_POST['rest_api_key']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['rest_api_key'] = $conn->escape((string)$_POST['rest_api_key']);
 	$key_sql = "INSERT INTO api_keys SET user_id='" . $mysql['user_id'] . "', api_key = '" . $mysql['rest_api_key'] . "', created_at='" . time() . "'";
-	$key_result = $db->query($key_sql);
+	$key_result = $conn->query($key_sql);
 
 	if ($slack)
 		$slack->push('user_added_app_api_key', ['user' => $username]);
@@ -77,11 +78,11 @@ if (isset($_POST['remove_rest_api_key'])) {
 	if (!hash_equals((string)($_SESSION['token'] ?? ''), (string)($_POST['token'] ?? ''))) {
 		die();
 	}
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-	$mysql['rest_api_key'] = $db->real_escape_string((string)$_POST['rest_api_key']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['rest_api_key'] = $conn->escape((string)$_POST['rest_api_key']);
 	// scope to owner
 	$key_sql = "DELETE FROM api_keys WHERE api_key='" . $mysql['rest_api_key'] . "' AND user_id='" . $mysql['user_id'] . "'";
-	$key_result = $db->query($key_sql);
+	$key_result = $conn->query($key_sql);
 
 	if ($slack)
 		$slack->push('user_removed_app_api_key', ['user' => $username]);
@@ -90,14 +91,14 @@ if (isset($_POST['remove_rest_api_key'])) {
 }
 
 if (!empty($_GET['customers_api_key'])) {
-	$mysql['pcustomer_api_key'] = $db->real_escape_string(base64_decode((string) $_GET['customers_api_key']));
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+	$mysql['pcustomer_api_key'] = $conn->escape(base64_decode((string) $_GET['customers_api_key']));
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 	$validate = validateCustomersApiKey($mysql['pcustomer_api_key']);
 	if ($validate['code'] != 200) {
 		$error['pcustomer_api_key_invalid'] = "API key is not valid. Check your key and try again!";
 	}
 	if (!$error) {
-		$db->query("UPDATE users SET pcustomer_api_key = '" . $mysql['pcustomer_api_key'] . "' WHERE user_id = '" . $mysql['user_id'] . "'");
+		$conn->query("UPDATE users SET pcustomer_api_key = '" . $mysql['pcustomer_api_key'] . "' WHERE user_id = '" . $mysql['user_id'] . "'");
 		$change_pcustomer_api_key = true;
 	}
 }
@@ -108,9 +109,9 @@ if (!empty($_GET['remove_user_statsapp_key'])) {
 		http_response_code(403);
 		die('Invalid token.');
 	}
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 	$sql = "UPDATE users SET user_statsapp_key='' WHERE user_id='" . $mysql['user_id'] . "'";
-	$result = $db->query($sql);
+	$result = $conn->query($sql);
 	$_SESSION['user_statsapp_key'] = '';
 	header('location: ' . get_absolute_url() . 'account/account.php');
 	die();
@@ -122,9 +123,9 @@ if (!empty($_GET['remove_user_api_key'])) {
 		http_response_code(403);
 		die('Invalid token.');
 	}
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 	$sql = "UPDATE users SET user_api_key='' WHERE user_id='" . $mysql['user_id'] . "'";
-	$result = $db->query($sql);
+	$result = $conn->query($sql);
 	$_SESSION['user_api_key'] = '';
 	$_SESSION['user_cirrus_link'] = '';
 	header('location: ' . get_absolute_url() . 'account/account.php');
@@ -135,19 +136,19 @@ if (!empty($_GET['remove_user_api_key'])) {
 
 //get all of the user data
 if (!$userObj->hasPermission("access_to_personal_settings")) {
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 	$user_sql = "SELECT 	user_email
 				 FROM   	`users` 
 				 WHERE  	`user_id`='" . $mysql['user_id'] . "'";
 } else {
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 	$user_sql = "SELECT 	*
 				 FROM   	`users` 
 				 LEFT JOIN	`users_pref` USING (user_id)
 				 WHERE  	`users`.`user_id`='" . $mysql['user_id'] . "'";
 }
 
-$user_result = $db->query($user_sql);
+$user_result = $conn->query($user_sql);
 $user_row = $user_result->fetch_assoc();
 $currentUserEmail = isset($user_row['user_email']) ? (string)$user_row['user_email'] : '';
 $html = array_map('htmlentities', $user_row);
@@ -183,14 +184,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		if ($userObj->hasPermission("access_to_personal_settings")) {
 			//check user_email
 			if (!isset($error['user_email_invalid']) || !$error['user_email_invalid']) {
-				$mysql['user_email'] = $db->real_escape_string($submittedEmail);
-				$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+				$mysql['user_email'] = $conn->escape($submittedEmail);
+				$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 				$count_sql = "	SELECT 	*
 							  	FROM  		`users` 
 							  	WHERE 	`user_email` = '" . $mysql['user_email'] . "' 
 								AND   		`user_id`!='" . $mysql['user_id'] . "'
 								AND user_deleted != 1";
-				$count_result = $db->query($count_sql);
+				$count_result = $conn->query($count_sql);
 				if ($count_result->num_rows > 0) {
 					$error['user_email'] .= 'That email address is already being used.';
 				}
@@ -218,17 +219,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 			if (!$error) {
 
-				$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-				$mysql['user_timezone'] = $db->real_escape_string((string)$_POST['user_timezone']);
-				$mysql['user_daily_email'] = $db->real_escape_string((string)$_POST['user_daily_email']);
-				$mysql['cache_time'] = $db->real_escape_string((string)($_POST['user_cached_reports'] ?? ''));
-				$mysql['user_keyword_searched_or_bidded'] = $db->real_escape_string((string)$_POST['user_keyword_searched_or_bidded']);
-				$mysql['user_referer'] = $db->real_escape_string((string)$_POST['user_referer']);
-				$mysql['cloak_referer'] = $db->real_escape_string((string)$_POST['cloak_referer']);
-				$mysql['user_pref_ad_settings'] = $db->real_escape_string((string)$_POST['user_pref_ad_settings']);
-				$mysql['user_pref_dynamic_bid'] = $db->real_escape_string((string)$_POST['user_bid']);
-				$mysql['user_tracking_domain'] = $db->real_escape_string((string)$_POST['user_tracking_domain']);
-				$mysql['user_pref_privacy'] = $db->real_escape_string((string)$_POST['user_pref_privacy']);
+				$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+				$mysql['user_timezone'] = $conn->escape((string)$_POST['user_timezone']);
+				$mysql['user_daily_email'] = $conn->escape((string)$_POST['user_daily_email']);
+				$mysql['cache_time'] = $conn->escape((string)($_POST['user_cached_reports'] ?? ''));
+				$mysql['user_keyword_searched_or_bidded'] = $conn->escape((string)$_POST['user_keyword_searched_or_bidded']);
+				$mysql['user_referer'] = $conn->escape((string)$_POST['user_referer']);
+				$mysql['cloak_referer'] = $conn->escape((string)$_POST['cloak_referer']);
+				$mysql['user_pref_ad_settings'] = $conn->escape((string)$_POST['user_pref_ad_settings']);
+				$mysql['user_pref_dynamic_bid'] = $conn->escape((string)$_POST['user_bid']);
+				$mysql['user_tracking_domain'] = $conn->escape((string)$_POST['user_tracking_domain']);
+				$mysql['user_pref_privacy'] = $conn->escape((string)$_POST['user_pref_privacy']);
 
 				$user_sql = "
 					UPDATE
@@ -239,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 					WHERE
 						`user_id`='" . $mysql['user_id'] . "'
 				";
-				$user_result = $db->query($user_sql);
+				$user_result = $conn->query($user_sql);
 
 				$user_sql = "
 					UPDATE
@@ -258,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						`user_id`='" . $mysql['user_id'] . "'
 				";
 
-				$user_result = $db->query($user_sql);
+				$user_result = $conn->query($user_sql);
 				$update_profile = true;
 				$_SESSION['user_pref_ad_settings'] = $mysql['user_pref_ad_settings'];
 				registerDailyEmail($mysql['user_daily_email'], $mysql['user_timezone'], $html['install_hash']);
@@ -346,22 +347,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		}
 	} else {
 		if (!isset($error['user_email_invalid']) || !$error['user_email_invalid']) {
-			$mysql['user_email'] = $db->real_escape_string($submittedEmail);
-			$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+			$mysql['user_email'] = $conn->escape($submittedEmail);
+			$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 			$count_sql = "	SELECT 	*
 							  	FROM  		`users` 
 							  	WHERE 	`user_email` = '" . $mysql['user_email'] . "' 
 							  	AND   		`user_id`!='" . $mysql['user_id'] . "'";
-			$count_result = $db->query($count_sql);
+			$count_result = $conn->query($count_sql);
 			if ($count_result->num_rows > 0) {
 				$error['user_email'] .= 'That email address is already being used.';
 			}
 
 			if (!$error) {
-				$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
-				$mysql['user_email'] = $db->real_escape_string($submittedEmail);
+				$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
+				$mysql['user_email'] = $conn->escape($submittedEmail);
 				$sql = "UPDATE users SET user_email = '" . $mysql['user_email'] . "' WHERE user_id = '" . $mysql['user_id'] . "'";
-				$result = $db->query($sql);
+				$result = $conn->query($sql);
 				$update_profile = true;
 
 				if ($slack && $submittedEmail !== $currentUserEmail) {
@@ -379,7 +380,7 @@ if (!empty($_POST['update_account_currency']) && $_POST['update_account_currency
 	if (!hash_equals((string)($_SESSION['token'] ?? ''), (string)($_POST['token'] ?? ''))) {
 		$error['token'] = 'You must use our forms to submit data.';
 	}
-	$mysql['account_currency'] = $db->real_escape_string((string)$_POST['account_currency']);
+	$mysql['account_currency'] = $conn->escape((string)$_POST['account_currency']);
 
 	if (!$error) {
 		$user_sql = "
@@ -390,28 +391,28 @@ if (!empty($_POST['update_account_currency']) && $_POST['update_account_currency
 					WHERE
 						`user_id`='" . $mysql['user_id'] . "'
 				";
-		$user_result = $db->query($user_sql);
+		$user_result = $conn->query($user_sql);
 	}
 
 	if ($user_row['user_account_currency'] != $_POST['account_currency']) {
 		// scope to the acting user's own campaigns
-		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 		$sql = "SELECT aff_campaign_id, aff_campaign_payout, aff_campaign_currency, aff_campaign_foreign_payout FROM aff_campaigns WHERE aff_campaign_deleted = 0 AND user_id = '" . $mysql['user_id'] . "'";
-		$result = $db->query($sql);
+		$result = $conn->query($sql);
 		if ($result->num_rows > 0) {
 			while ($row = $result->fetch_assoc()) {
 
-				$mysql['aff_campaign_id'] = $db->real_escape_string((string)$row['aff_campaign_id']);
+				$mysql['aff_campaign_id'] = $conn->escape((string)$row['aff_campaign_id']);
 
 				if ($row['aff_campaign_foreign_payout'] == '0.00') {
 					$payout = getForeignPayout($_POST['account_currency'], $row['aff_campaign_currency'], $row['aff_campaign_payout']);
-					$db->query("UPDATE aff_campaigns SET aff_campaign_foreign_payout = '" . $row['aff_campaign_payout'] . "', aff_campaign_payout = '" . $payout['exchange_payout'] . "' WHERE aff_campaign_id = '" . $mysql['aff_campaign_id'] . "' AND user_id = '" . $mysql['user_id'] . "'");
+					$conn->query("UPDATE aff_campaigns SET aff_campaign_foreign_payout = '" . $row['aff_campaign_payout'] . "', aff_campaign_payout = '" . $payout['exchange_payout'] . "' WHERE aff_campaign_id = '" . $mysql['aff_campaign_id'] . "' AND user_id = '" . $mysql['user_id'] . "'");
 				} else {
 					if ($_POST['account_currency'] == $row['aff_campaign_currency']) {
-						$db->query("UPDATE aff_campaigns SET aff_campaign_payout = '" . $row['aff_campaign_foreign_payout'] . "', aff_campaign_foreign_payout = '0.00' WHERE aff_campaign_id = '" . $mysql['aff_campaign_id'] . "' AND user_id = '" . $mysql['user_id'] . "'");
+						$conn->query("UPDATE aff_campaigns SET aff_campaign_payout = '" . $row['aff_campaign_foreign_payout'] . "', aff_campaign_foreign_payout = '0.00' WHERE aff_campaign_id = '" . $mysql['aff_campaign_id'] . "' AND user_id = '" . $mysql['user_id'] . "'");
 					} else {
 						$payout = getForeignPayout($_POST['account_currency'], $row['aff_campaign_currency'], $row['aff_campaign_foreign_payout']);
-						$db->query("UPDATE aff_campaigns SET aff_campaign_payout = '" . $payout['exchange_payout'] . "' WHERE aff_campaign_id = '" . $mysql['aff_campaign_id'] . "' AND user_id = '" . $mysql['user_id'] . "'");
+						$conn->query("UPDATE aff_campaigns SET aff_campaign_payout = '" . $payout['exchange_payout'] . "' WHERE aff_campaign_id = '" . $mysql['aff_campaign_id'] . "' AND user_id = '" . $mysql['user_id'] . "'");
 					}
 				}
 			}
@@ -427,7 +428,7 @@ if (!empty($_POST['update_clickserver_api_key']) && $_POST['update_clickserver_a
 		$error['token'] = 'You must use our forms to submit data.';
 	}
 
-	$mysql['clickserver_api_key'] = $db->real_escape_string((string)$_POST['clickserver_api_key']);
+	$mysql['clickserver_api_key'] = $conn->escape((string)$_POST['clickserver_api_key']);
 
 	if (!preg_match('/\*/', (string) $_POST['clickserver_api_key'])) {
 		if (!clickserver_api_key_validate($mysql['clickserver_api_key']) && $mysql['clickserver_api_key'] != '') {
@@ -436,12 +437,12 @@ if (!empty($_POST['update_clickserver_api_key']) && $_POST['update_clickserver_a
 
 		if (!$error || $mysql['clickserver_api_key'] == '') {
 
-			$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-			$mysql['clickserver_api_key'] = $db->real_escape_string((string)$_POST['clickserver_api_key']);
+			$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+			$mysql['clickserver_api_key'] = $conn->escape((string)$_POST['clickserver_api_key']);
 			$user_sql = "	UPDATE 	`users`
 								SET     		`clickserver_api_key`='" . $mysql['clickserver_api_key'] . "'
 								WHERE  	`user_id`='" . $mysql['user_id'] . "'";
-			$user_result = $db->query($user_sql);
+			$user_result = $conn->query($user_sql);
 
 			$update_clickserver_api_key_done = true;
 
@@ -467,12 +468,12 @@ if (!empty($_POST['change_user_api_key']) && $_POST['change_user_api_key'] == '1
 
 		if (!$error) {
 
-			$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-			$mysql['user_api_key'] = $db->real_escape_string((string)$_POST['user_api_key']);
+			$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+			$mysql['user_api_key'] = $conn->escape((string)$_POST['user_api_key']);
 			$user_sql = "	UPDATE 	`users`
 								SET     		`user_api_key`='" . $mysql['user_api_key'] . "'
 								WHERE  	`user_id`='" . $mysql['user_id'] . "'";
-			$user_result = $db->query($user_sql);
+			$user_result = $conn->query($user_sql);
 
 			$change_api_key = true;
 
@@ -496,12 +497,12 @@ if (!empty($_POST['change_user_statsapp_key']) && $_POST['change_user_statsapp_k
 
 		if (!$error) {
 
-			$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-			$mysql['user_statsapp_key'] = $db->real_escape_string((string)$_POST['user_statsapp_key']);
+			$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+			$mysql['user_statsapp_key'] = $conn->escape((string)$_POST['user_statsapp_key']);
 			$user_sql = "	UPDATE 	`users`
 								SET     		`user_statsapp_key`='" . $mysql['user_statsapp_key'] . "'
 								WHERE  	`user_id`='" . $mysql['user_id'] . "'";
-			$user_result = $db->query($user_sql);
+			$user_result = $conn->query($user_sql);
 
 			$change_statsapp_key = true;
 
@@ -515,14 +516,14 @@ if (!empty($_POST['update_pcustomer_api_key']) && $_POST['update_pcustomer_api_k
 	if (!hash_equals((string)($_SESSION['token'] ?? ''), (string)($_POST['token'] ?? ''))) {
 		$error['token'] = 'You must use our forms to submit data.';
 	}
-	$mysql['pcustomer_api_key'] = $db->real_escape_string((string)$_POST['pcustomer_api_key']);
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+	$mysql['pcustomer_api_key'] = $conn->escape((string)$_POST['pcustomer_api_key']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 	$validate = validateCustomersApiKey($_POST['pcustomer_api_key']);
 	if ($validate['code'] != 200 && $mysql['pcustomer_api_key'] != '') {
 		$error['pcustomer_api_key_invalid'] = "API key is not valid. Check your key and try again!";
 	}
 	if (!$error) {
-		$db->query("UPDATE users SET pcustomer_api_key = '" . $mysql['pcustomer_api_key'] . "' WHERE user_id = '" . $mysql['user_id'] . "'");
+		$conn->query("UPDATE users SET pcustomer_api_key = '" . $mysql['pcustomer_api_key'] . "' WHERE user_id = '" . $mysql['user_id'] . "'");
 		$change_pcustomer_api_key = true;
 	}
 }
@@ -577,7 +578,7 @@ if (!empty($_POST['change_user_pass']) && $_POST['change_user_pass'] == '1') {
 		$update_stmt->execute();
 		$update_stmt->close();
 	} else {
-		affiliate_log('account', 'Failed to prepare password update statement: ' . $db->error);
+		affiliate_log('account', 'Failed to prepare password update statement: ' . $conn->writeConnection()->error);
 	}
 
 	$change_user_pass = true;
@@ -606,7 +607,7 @@ $user_sql = "	SELECT 	*
 				 FROM   	`users`
 				 LEFT JOIN	`users_pref` USING (user_id)
 				 WHERE  	`users`.`user_id`='" . $mysql['user_id'] . "'";
-$user_result = $db->query($user_sql);
+$user_result = $conn->query($user_sql);
 $user_row = $user_result->fetch_assoc();
 $html = array_map('htmlentities', $user_row);
 ?>
@@ -948,7 +949,7 @@ $html = array_map('htmlentities', $user_row);
 						$key_sql = "	SELECT 	*
 								 FROM   	`api_keys` 
 								 WHERE  	`user_id`='" . $mysql['user_id'] . "'";
-						$key_result = $db->query($key_sql);
+						$key_result = $conn->query($key_sql);
 						$rows = $key_result->num_rows;
 
 						if ($rows > 0) {

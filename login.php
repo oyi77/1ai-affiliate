@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		AUTH::delete_old_auth_hash();
 
 		$ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '0.0.0.0';
-		$ip_id = (int) INDEXES::get_ip_id($ip);
+	$ip_id = (int) get_ip_id($ip);
 		$survey_data = getSurveyData($user_row['install_hash']);
 		$modal_status = ($survey_data['modal'] ?? false) ? 0 : 1;
 		$vip_perks_status = ($survey_data['vip_perks'] ?? false) ? 1 : 0;

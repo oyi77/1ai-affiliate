@@ -8,45 +8,45 @@ use Api\V3\Exception\ConflictException;
 use Api\V3\Exception\DatabaseException;
 use Api\V3\Exception\NotFoundException;
 use Api\V3\Exception\ValidationException;
+use OneAIAffiliate\Database\Connection;
+use OneAIAffiliate\User\MysqlUserRepository;
+use OneAIAffiliate\User\UserRepositoryInterface;
 
 class UsersController
 {
-    public function __construct(private readonly \mysqli $db)
+    private readonly \mysqli $db;
+    private ?UserRepositoryInterface $userRepo = null;
+    private readonly Connection $conn;
+
+    public function __construct(\mysqli $db, ?UserRepositoryInterface $userRepo = null)
     {
+        $this->db = $db;
+        $this->userRepo = $userRepo;
+        $this->conn = new Connection($db);
+    }
+
+    private function getUserRepo(): UserRepositoryInterface
+    {
+        return $this->userRepo ??= new MysqlUserRepository($this->conn);
     }
 
     public function list(): array
     {
-        $stmt = $this->prepare(
-            'SELECT user_id, user_fname, user_lname, user_name, user_email, user_timezone, user_active, user_deleted, user_time_register
-            FROM users WHERE user_deleted = 0 ORDER BY user_id ASC'
-        );
-        $this->execute($stmt, 'List query failed');
-        $result = $stmt->get_result();
-        $rows = [];
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        $stmt->close();
-        return ['data' => $rows];
+        $result = $this->getUserRepo()->list(0, 500);
+
+        return ['data' => $result['rows']];
     }
 
     public function get(int $id): array
     {
-        $stmt = $this->prepare(
-            'SELECT user_id, user_fname, user_lname, user_name, user_email, user_timezone, user_active, user_deleted, user_time_register
-            FROM users WHERE user_id = ? AND user_deleted = 0 LIMIT 1'
-        );
-        $this->bind($stmt, 'i', $id);
-        $this->execute($stmt, 'Query failed');
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        if (!$row) {
+        $row = $this->getUserRepo()->findById($id);
+        if ($row === null) {
             throw new NotFoundException('User not found');
         }
 
-        $stmt = $this->prepare('SELECT r.role_id, r.role_name FROM user_role ur INNER JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = ?');
+        $stmt = $this->db->prepare(
+            'SELECT r.role_id, r.role_name FROM user_role ur INNER JOIN roles r ON ur.role_id = r.role_id WHERE ur.user_id = ?'
+        );
         $this->bind($stmt, 'i', $id);
         $this->execute($stmt, 'Roles query failed');
         $roles = [];
@@ -76,44 +76,15 @@ class UsersController
             throw new ValidationException('Validation failed', $errors);
         }
 
-        $stmt = $this->prepare('SELECT user_id FROM users WHERE user_name = ? LIMIT 1');
-        $this->bind($stmt, 's', $username);
-        $this->execute($stmt, 'Query failed');
-        if ($stmt->get_result()->num_rows > 0) {
-            $stmt->close();
-            throw new ConflictException('Username already exists');
-        }
-        $stmt->close();
-
-        $hashedPass = \hash_user_pass($password);
-
-        $fname = trim((string)($payload['user_fname'] ?? ''));
-        $lname = trim((string)($payload['user_lname'] ?? ''));
-        $tz = trim((string)($payload['user_timezone'] ?? 'UTC'));
-        $now = time();
-        $active = (int)($payload['user_active'] ?? 1);
-
-        $this->db->begin_transaction();
-        try {
-            $stmt = $this->prepare(
-                'INSERT INTO users (user_fname, user_lname, user_name, user_pass, user_email, user_timezone, user_time_register, user_active, user_deleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)'
-            );
-            $this->bind($stmt, 'ssssssii', $fname, $lname, $username, $hashedPass, $email, $tz, $now, $active);
-            $this->execute($stmt, 'Create failed');
-            $newId = $stmt->insert_id;
-            $stmt->close();
-
-            $stmt = $this->prepare('INSERT INTO users_pref (user_id) VALUES (?)');
-            $this->bind($stmt, 'i', $newId);
-            $this->execute($stmt, 'Failed to create user preferences');
-            $stmt->close();
-
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollback();
-            throw $e;
-        }
+        $newId = $this->getUserRepo()->create([
+            'fname' => trim((string)($payload['user_fname'] ?? '')),
+            'lname' => trim((string)($payload['user_lname'] ?? '')),
+            'name' => $username,
+            'password' => $password,
+            'email' => $email,
+            'timezone' => trim((string)($payload['user_timezone'] ?? 'UTC')),
+            'active' => (int)($payload['user_active'] ?? 1),
+        ]);
 
         return $this->get($newId);
     }
@@ -122,42 +93,37 @@ class UsersController
     {
         $this->get($id);
 
-        $sets = [];
-        $binds = [];
-        $types = '';
-
-        foreach (['user_fname' => 's', 'user_lname' => 's', 'user_email' => 's', 'user_timezone' => 's', 'user_active' => 'i'] as $f => $t) {
-            if (array_key_exists($f, $payload)) {
-                $sets[] = "$f = ?";
-                $binds[] = $payload[$f];
-                $types .= $t;
+        $update = [];
+        if (array_key_exists('user_fname', $payload)) {
+            $update['user_fname'] = $payload['user_fname'];
+        }
+        if (array_key_exists('user_lname', $payload)) {
+            $update['user_lname'] = $payload['user_lname'];
+        }
+        if (array_key_exists('user_email', $payload)) {
+            if (!filter_var($payload['user_email'], FILTER_VALIDATE_EMAIL)) {
+                throw new ValidationException('Invalid email', ['user_email' => 'Invalid email format']);
             }
+            $update['user_email'] = $payload['user_email'];
         }
-
-        if (array_key_exists('user_email', $payload) && !filter_var($payload['user_email'], FILTER_VALIDATE_EMAIL)) {
-            throw new ValidationException('Invalid email', ['user_email' => 'Invalid email format']);
-        }
-
         if (array_key_exists('user_pass', $payload) && $payload['user_pass'] !== '') {
             if (strlen((string) $payload['user_pass']) < 8) {
                 throw new ValidationException('Password too short', ['user_pass' => 'Must be at least 8 characters']);
             }
-            $sets[] = 'user_pass = ?';
-            $binds[] = \hash_user_pass((string) $payload['user_pass']);
-            $types .= 's';
+            $update['user_pass'] = (string) $payload['user_pass'];
+        }
+        if (array_key_exists('user_timezone', $payload)) {
+            $update['user_timezone'] = $payload['user_timezone'];
+        }
+        if (array_key_exists('user_active', $payload)) {
+            $update['user_active'] = (int) $payload['user_active'];
         }
 
-        if (empty($sets)) {
+        if (empty($update)) {
             throw new ValidationException('No fields to update');
         }
 
-        $binds[] = $id;
-        $types .= 'i';
-
-        $stmt = $this->prepare('UPDATE users SET ' . implode(', ', $sets) . ' WHERE user_id = ?');
-        $this->bind($stmt, $types, ...$binds);
-        $this->execute($stmt, 'Update failed');
-        $stmt->close();
+        $this->getUserRepo()->update($id, $update);
 
         return $this->get($id);
     }
@@ -165,25 +131,14 @@ class UsersController
     public function delete(int $id): void
     {
         $this->get($id);
-        $stmt = $this->prepare('UPDATE users SET user_deleted = 1 WHERE user_id = ?');
-        $this->bind($stmt, 'i', $id);
-        $this->execute($stmt, 'Delete failed');
-        $stmt->close();
+        $this->getUserRepo()->softDelete($id);
     }
 
     // --- Roles ---
 
     public function listRoles(): array
     {
-        $result = $this->db->query('SELECT role_id, role_name FROM roles ORDER BY role_id');
-        if (!$result) {
-            throw new DatabaseException('Roles query failed');
-        }
-        $rows = [];
-        while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
-        }
-        return ['data' => $rows];
+        return ['data' => $this->getUserRepo()->listRoles()];
     }
 
     public function assignRole(int $userId, array $payload): array
@@ -193,144 +148,72 @@ class UsersController
             throw new ValidationException('role_id is required', ['role_id' => 'Must be a positive integer']);
         }
 
-        $stmt = $this->prepare('INSERT IGNORE INTO user_role (user_id, role_id) VALUES (?, ?)');
-        $this->bind($stmt, 'ii', $userId, $roleId);
-        $this->execute($stmt, 'Failed to assign role');
-        $stmt->close();
+        $this->getUserRepo()->assignRole($userId, $roleId);
 
         return $this->get($userId);
     }
 
     public function removeRole(int $userId, int $roleId): void
     {
-        $stmt = $this->prepare('DELETE FROM user_role WHERE user_id = ? AND role_id = ?');
-        $this->bind($stmt, 'ii', $userId, $roleId);
-        $this->execute($stmt, 'Failed to remove role');
-        $stmt->close();
+        $this->getUserRepo()->removeRole($userId, $roleId);
     }
 
     // --- API Keys ---
 
     public function listApiKeys(int $userId): array
     {
-        $stmt = $this->prepare('SELECT user_id, api_key, created_at FROM api_keys WHERE user_id = ?');
-        $this->bind($stmt, 'i', $userId);
-        $this->execute($stmt, 'Query failed');
-        $result = $stmt->get_result();
-        $rows = [];
-        while ($row = $result->fetch_assoc()) {
-            // Mask key: show first 8 chars only
+        $rows = $this->getUserRepo()->listApiKeys($userId);
+        foreach ($rows as $i => $row) {
             if (isset($row['api_key']) && strlen($row['api_key']) > 8) {
-                $row['api_key'] = substr($row['api_key'], 0, 8) . str_repeat('*', 24);
+                $rows[$i]['api_key'] = substr($row['api_key'], 0, 8) . str_repeat('*', 24);
             }
-            $rows[] = $row;
         }
-        $stmt->close();
         return ['data' => $rows];
     }
 
     public function createApiKey(int $userId): array
     {
-        $key = bin2hex(random_bytes(32));
-        $now = time();
+        $name = 'Generated ' . date('Y-m-d H:i:s');
+        $key = $this->getUserRepo()->createApiKey($userId, $name);
 
-        $stmt = $this->prepare('INSERT INTO api_keys (user_id, api_key, created_at) VALUES (?, ?, ?)');
-        $this->bind($stmt, 'isi', $userId, $key, $now);
-
-        $this->execute($stmt, 'Failed to create API key');
-        $stmt->close();
-
-        // Return the full key only on creation — it cannot be retrieved later.
-        return ['data' => ['user_id' => $userId, 'api_key' => $key, 'created_at' => $now]];
+        return ['data' => ['user_id' => $userId, 'api_key' => $key, 'created_at' => time()]];
     }
 
     public function deleteApiKey(int $userId, string $apiKey): void
     {
-        $stmt = $this->prepare('DELETE FROM api_keys WHERE user_id = ? AND api_key = ?');
-        $this->bind($stmt, 'is', $userId, $apiKey);
-        $this->execute($stmt, 'Failed to delete API key');
-        $stmt->close();
+        $this->getUserRepo()->deleteApiKey($apiKey, $userId);
     }
 
     // --- Preferences ---
 
     public function getPreferences(int $userId): array
     {
-        $stmt = $this->prepare('SELECT * FROM users_pref WHERE user_id = ? LIMIT 1');
-        $this->bind($stmt, 'i', $userId);
-        $this->execute($stmt, 'Query failed');
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        if (!$row) {
+        $prefs = $this->getUserRepo()->getPreferences($userId);
+        if ($prefs === null) {
             throw new NotFoundException('User preferences not found');
         }
-        return ['data' => $row];
+        return ['data' => $prefs];
     }
 
     public function updatePreferences(int $userId, array $payload): array
     {
-        $this->getPreferences($userId);
+        $this->getUserRepo()->updatePreferences($userId, $payload);
 
-        $allowedFields = [
-            'user_pref_limit' => 'i', 'user_pref_time_predefined' => 's',
-            'user_tracking_domain' => 's', 'user_cpc_or_cpv' => 's',
-            'user_account_currency' => 's', 'user_slack_incoming_webhook' => 's',
-            'user_pref_cloak_referer' => 's', 'user_daily_email' => 's',
-            'ipqs_api_key' => 's', 'chart_time_range' => 's',
-        ];
-
-        $sets = [];
-        $binds = [];
-        $types = '';
-
-        foreach ($allowedFields as $f => $t) {
-            if (array_key_exists($f, $payload)) {
-                $sets[] = "$f = ?";
-                $binds[] = $payload[$f];
-                $types .= $t;
-            }
+        $prefs = $this->getUserRepo()->getPreferences($userId);
+        if ($prefs === null) {
+            throw new NotFoundException('User preferences not found');
         }
-
-        if (empty($sets)) {
-            throw new ValidationException('No valid fields to update');
-        }
-
-        $binds[] = $userId;
-        $types .= 'i';
-
-        $stmt = $this->prepare('UPDATE users_pref SET ' . implode(', ', $sets) . ' WHERE user_id = ?');
-        $this->bind($stmt, $types, ...$binds);
-        $this->execute($stmt, 'Preferences update failed');
-        $stmt->close();
-
-        return $this->getPreferences($userId);
+        return ['data' => $prefs];
     }
 
-    private function prepare(string $sql): \mysqli_stmt
-    {
-        $stmt = $this->db->prepare($sql);
-        if (!$stmt) {
-            throw new DatabaseException('Prepare failed');
-        }
-        return $stmt;
-    }
 
     private function bind(\mysqli_stmt $stmt, string $types, mixed ...$values): void
     {
-        // @phpstan-ignore-next-line oneai_affiliate.directStmtCall -- local checked bind wrapper
-        if (!$stmt->bind_param($types, ...$values)) {
-            $stmt->close();
-            throw new DatabaseException('Bind failed');
-        }
+        $this->conn->bind($stmt, $types, $values);
     }
 
     private function execute(\mysqli_stmt $stmt, string $message): void
     {
-        // @phpstan-ignore-next-line oneai_affiliate.directStmtCall -- local checked execute wrapper
-        if (!$stmt->execute()) {
-            $stmt->close();
-            throw new DatabaseException($message);
-        }
+        $this->conn->execute($stmt);
     }
 }

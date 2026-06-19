@@ -6,38 +6,100 @@ namespace OneAIAffiliate\Repository;
 
 final class NullLocationRepository implements LocationRepositoryInterface
 {
+    /** @var array<string, int> */
+    private array $countries = [];
+
+    /** @var array<string, int> */
+    private array $cities = [];
+
+    /** @var array<string, int> */
+    private array $regions = [];
+
+    /** @var array<string, int> */
+    private array $isps = [];
+
+    /** @var array<string, int> */
+    private array $ips = [];
+
+    /** @var array<string, int> */
+    private array $siteDomains = [];
+
+    /** @var array<string, int> */
+    private array $siteUrls = [];
+
+    private int $nextId = 1;
+
     public function findOrCreateCountry(string $name, string $code): int
     {
-        return 0;
+        return $this->countries[$code] ??= $this->nextId++;
     }
 
     public function findOrCreateCity(string $name, int $countryId): int
     {
-        return 0;
+        $key = $name . '|' . $countryId;
+
+        return $this->cities[$key] ??= $this->nextId++;
     }
 
     public function findOrCreateRegion(string $name, int $countryId): int
     {
-        return 0;
+        $key = $name . '|' . $countryId;
+
+        return $this->regions[$key] ??= $this->nextId++;
     }
 
     public function findOrCreateIsp(string $name): int
     {
-        return 0;
+        return $this->isps[$name] ??= $this->nextId++;
     }
-
-    public function findOrCreateIp(string $address): int
+    public function findOrCreateIp(string $address, ?IpLookupInput $geo = null): int
     {
-        return 0;
+        if ($address === '') {
+            return 0;
+        }
+
+        return $this->ips[$address] ??= $this->nextId++;
     }
 
     public function findOrCreateSiteDomain(string $url): int
     {
-        return 0;
+        $host = $this->extractDomainHost($url);
+
+        if ($host === '') {
+            return 0;
+        }
+
+        return $this->siteDomains[$host] ??= $this->nextId++;
     }
 
     public function findOrCreateSiteUrl(string $url): int
     {
-        return 0;
+        if ($url === '') {
+            return 0;
+        }
+
+        return $this->siteUrls[$url] ??= $this->nextId++;
+    }
+
+    private function extractDomainHost(string $url): string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+
+        $parsed = @parse_url($url);
+        if ($parsed === false) {
+            return '';
+        }
+
+        if (isset($parsed['host'])) {
+            $host = trim($parsed['host']);
+        } else {
+            $parts = explode('/', $parsed['path'] ?? '', 2);
+            $host = trim($parts[0]);
+        }
+
+        return str_replace('www.', '', $host);
     }
 }

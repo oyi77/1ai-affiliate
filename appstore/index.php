@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 include_once(str_repeat("../", 1).'config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user(); 
 
@@ -11,19 +12,19 @@ template_top('1ai-Affiliate ClickServer App Store');
 		// validate token
 		if (!hash_equals((string)($_SESSION['token'] ?? ''), (string)($_POST['token'] ?? ''))) { $error['token'] = 'You must use our forms to submit data.';  }
 
-		$mysql['clickserver_api_key'] = $db->real_escape_string((string)$_POST['clickserver_api_key']);
+		$mysql['clickserver_api_key'] = $conn->escape((string)$_POST['clickserver_api_key']);
 
 		if (!preg_match('/\*/', (string) $_POST['clickserver_api_key'])) {
 			if (!clickserver_api_key_validate($mysql['clickserver_api_key']) && $mysql['clickserver_api_key'] !='') { $error['clickserver_api_key'] = 'This API Key appears invalid.'; }
 
 			if (empty($error)) {
 					
-				$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-				$mysql['clickserver_api_key'] = $db->real_escape_string((string)$_POST['clickserver_api_key']);
+				$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+				$mysql['clickserver_api_key'] = $conn->escape((string)$_POST['clickserver_api_key']);
 				$user_sql = "	UPDATE 	`users`
 								SET     		`clickserver_api_key`='".$mysql['clickserver_api_key']."'
 								WHERE  	`user_id`='".$mysql['user_id']."'";
-				$user_result = $db->query($user_sql);
+				$user_result = $conn->query($user_sql);
 
 				$update_clickserver_api_key_done = true;
 					
@@ -32,12 +33,12 @@ template_top('1ai-Affiliate ClickServer App Store');
 	}
 	
 	//get all of the user data
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 	$user_sql = "	SELECT 	*
 				 FROM   	`users`
 				 LEFT JOIN	`users_pref` USING (user_id)
 				 WHERE  	`users`.`user_id`='".$mysql['user_id']."'";
-	$user_result = $db->query($user_sql);
+	$user_result = $conn->query($user_sql);
 	$user_row = $user_result->fetch_assoc();
 	$html = array_map('htmlentities', $user_row);
 	

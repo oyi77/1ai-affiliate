@@ -22,7 +22,7 @@ class FilterEngine
         $sql = "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_NAME = 'filters' AND COLUMN_NAME = '$column_name'";
 
-        $result = _mysqli_query($sql);
+        $result = $conn->query($sql);
         $row = $result->fetch_assoc();
         $enumList = explode(",", str_replace("'", "", substr((string) $row['COLUMN_TYPE'], 5, (strlen((string) $row['COLUMN_TYPE']) - 6))));
         $showSelected = '';
@@ -58,7 +58,7 @@ class FilterEngine
 
         $sql = "SELECT $filter from filters where id = $filter_id";
 
-        $result = _mysqli_query($sql);
+        $result = $conn->query($sql);
 
         if ($result)
             $row = $result->fetch_assoc();
@@ -166,6 +166,7 @@ class FilterEngine
     function setFilter($filter_name, $filter_condition, $filter_value, $filter_id)
     {
         global $db;
+        $conn = new \OneAIAffiliate\Database\Connection($db);
 
         // gate on the raw inputs, then bind the id as an integer
         if (($filter_name!='') && ($filter_condition!='') && ($filter_value!='') && ($filter_id!='')) {
@@ -174,7 +175,7 @@ class FilterEngine
             $sql = "INSERT INTO filters values (?,?,?,?) ON DUPLICATE KEY UPDATE filter_name=?,filter_condition=?,filter_value=?";
             $stmt = $db->prepare($sql);
             if (!$stmt) {
-                throw new \RuntimeException('Unable to prepare filter insert query: ' . $db->error);
+                throw new \RuntimeException('Unable to prepare filter insert query: ' . $conn->writeConnection()->error);
             }
             $stmt->bind_param(
                 'issssss',
@@ -197,7 +198,7 @@ class FilterEngine
             $sql = "INSERT INTO filters values (?,'','',NULL) ON DUPLICATE KEY UPDATE filter_name='',filter_condition='',filter_value=NULL";
             $stmt = $db->prepare($sql);
             if (!$stmt) {
-                throw new \RuntimeException('Unable to prepare filter reset query: ' . $db->error);
+                throw new \RuntimeException('Unable to prepare filter reset query: ' . $conn->writeConnection()->error);
             }
             $stmt->bind_param('i', $filter_id);
             if (!$stmt->execute()) {

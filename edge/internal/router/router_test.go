@@ -20,7 +20,7 @@ func TestRouter(t *testing.T) {
 				ID:          1,
 				Countries:   []string{"US", "CA"},
 				Devices:     []string{"mobile"},
-				Weight:      50,
+				Weight:      100,
 				StartAt:     now - 3600,
 				EndAt:       now + 3600,
 				IsFallback:  false,

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -88,15 +87,20 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
+	// Use a fresh context for the consumer (not the cancelled schema context)
+	consumerCtx, consumerCancel := context.WithCancel(context.Background())
+	defer consumerCancel()
+
 	go func() {
 		logger.Info().Msg("consuming click events...")
-		if err := consumer.Run(ctx); err != nil {
+		if err := consumer.Run(consumerCtx); err != nil {
 			logger.Error().Err(err).Msg("consumer error")
 		}
 	}()
 
 	<-quit
 	logger.Info().Msg("shutting down consumer...")
+	consumerCancel()
 	handler.flush()
 }
 

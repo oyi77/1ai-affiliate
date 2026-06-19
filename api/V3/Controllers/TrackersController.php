@@ -6,9 +6,23 @@ namespace Api\V3\Controllers;
 
 use Api\V3\Controller;
 use Api\V3\Exception\NotFoundException;
+use OneAIAffiliate\Database\Connection;
+use OneAIAffiliate\Tracker\MysqlTrackerRepository;
+use OneAIAffiliate\Tracker\TrackerRepositoryInterface;
 
 class TrackersController extends Controller
 {
+    private readonly TrackerRepositoryInterface $trackerRepository;
+
+    public function __construct(
+        \mysqli $db,
+        int $userId,
+        ?TrackerRepositoryInterface $trackerRepository = null,
+    ) {
+        parent::__construct($db, $userId);
+        $this->trackerRepository = $trackerRepository ?? new MysqlTrackerRepository(new Connection($db));
+    }
+
     protected function tableName(): string { return 'trackers'; }
     protected function primaryKey(): string { return 'tracker_id'; }
 
@@ -42,9 +56,12 @@ class TrackersController extends Controller
 
     public function getTrackingUrl(int $id): array
     {
-        $tracker = $this->get($id);
-        $row = $tracker['data'];
-        $publicId = $row['tracker_id_public'];
+        $row = $this->trackerRepository->findById($id, $this->userId);
+        if ($row === null) {
+            throw new NotFoundException();
+        }
+
+        $publicId = (int)$row['tracker_id_public'];
         $baseUrl = $this->getBaseUrl();
 
         return [
@@ -59,15 +76,11 @@ class TrackersController extends Controller
 
     private function getBaseUrl(): string
     {
-        $stmt = $this->prepare('SELECT user_tracking_domain FROM users_pref WHERE user_id = ? LIMIT 1');
-        $this->bind($stmt, 'i', $this->userId);
-        $this->execute($stmt, 'Failed to query tracking domain');
-        $row = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        if (!$row || empty($row['user_tracking_domain'])) {
+        $domain = $this->trackerRepository->findTrackingDomain($this->userId);
+        if ($domain === null || $domain === '') {
             throw new NotFoundException('Tracking domain not configured');
         }
-        return rtrim($row['user_tracking_domain'], '/');
+
+        return rtrim($domain, '/');
     }
 }

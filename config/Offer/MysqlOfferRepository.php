@@ -67,7 +67,7 @@ final class MysqlOfferRepository
     public function create(int $userId, array $data): int
     {
         $now = time();
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO 1ai_offers (advertiser_id, name, network, network_offer_id, vertical, geo,
              type, payout, payout_currency, cap_daily, cap_monthly, traffic_allowed,
              status, notes, created_at, updated_at)
@@ -118,40 +118,34 @@ final class MysqlOfferRepository
                 $types .= 'd';
             }
         }
-        if (array_key_exists('updated_at', $data)) {
-            $sets[] = 'updated_at = ?';
-            $binds[] = $data['updated_at'];
-            $types .= 'i';
-        }
-
-        if (!$sets) {
-            return;
-        }
+        $sets[] = 'updated_at = ?';
+        $binds[] = $data['updated_at'];
+        $types .= 'i';
 
         $binds[] = $id;
         $types .= 'i';
         $sql = 'UPDATE 1ai_offers SET ' . implode(', ', $sets) . ' WHERE id = ?';
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepareWrite($sql);
         $this->conn->bind($stmt, $types, $binds);
-        $this->conn->executeChecked($stmt, 'Offer update failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     public function linkCampaign(int $offerId, int $campaignId): void
     {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT IGNORE INTO 1ai_offer_campaigns (offer_id, campaign_id, created_at) VALUES (?, ?, ?)'
         );
         $this->conn->bind($stmt, 'iii', [$offerId, $campaignId, time()]);
-        $this->conn->executeChecked($stmt, 'Campaign link failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     public function unlinkCampaign(int $offerId, int $campaignId): void
     {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'DELETE FROM 1ai_offer_campaigns WHERE offer_id = ? AND campaign_id = ?'
         );
         $this->conn->bind($stmt, 'ii', [$offerId, $campaignId]);
-        $this->conn->executeChecked($stmt, 'Campaign unlink failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     /** @return list<array<string, mixed>> */
@@ -169,22 +163,22 @@ final class MysqlOfferRepository
     public function grantAccess(int $offerId, int $affiliateId, ?float $customPayout = null): void
     {
         $now = time();
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'INSERT INTO 1ai_offer_affiliate_access (offer_id, affiliate_id, custom_payout, status, created_at, updated_at)
              VALUES (?, ?, ?, \'approved\', ?, ?)
              ON DUPLICATE KEY UPDATE custom_payout = VALUES(custom_payout), status = \'approved\', updated_at = VALUES(updated_at)'
         );
         $this->conn->bind($stmt, 'iidii', [$offerId, $affiliateId, $customPayout, $now, $now]);
-        $this->conn->executeChecked($stmt, 'Access grant failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     public function revokeAccess(int $offerId, int $affiliateId): void
     {
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'UPDATE 1ai_offer_affiliate_access SET status = \'revoked\', updated_at = ? WHERE offer_id = ? AND affiliate_id = ?'
         );
         $this->conn->bind($stmt, 'iii', [time(), $offerId, $affiliateId]);
-        $this->conn->executeChecked($stmt, 'Access revoke failed');
+        $this->conn->executeUpdate($stmt);
     }
 
     /** @return list<array<string, mixed>> */

@@ -15,4 +15,18 @@ interface TrackerRepositoryInterface
      * @return array<string, mixed>|null Tracker row or null if not found
      */
     public function findByPublicId(string $publicId): ?array;
+
+    /**
+     * Fetch a tracker by internal ID scoped to a user.
+     *
+     * @return array<string, mixed>|null Tracker row or null if not found/unowned
+     */
+    public function findById(int $trackerId, int $userId): ?array;
+
+    /**
+     * Fetch the configured tracking domain for a user.
+     *
+     * @return string|null Domain or null if not configured
+     */
+    public function findTrackingDomain(int $userId): ?string;
 }

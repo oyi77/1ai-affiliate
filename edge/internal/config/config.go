@@ -15,6 +15,10 @@ type Config struct {
 	WriteTimeout  time.Duration
 	IdleTimeout   time.Duration
 
+	// TLS (optional)
+	TLSCertFile   string
+	TLSKeyFile    string
+
 	// Redis (routing rules, token whitelists, ephemeral click state)
 	RedisAddrs    []string
 	RedisPassword string
@@ -45,6 +49,8 @@ func Load() *Config {
 		ReadTimeout:   getDuration("READ_TIMEOUT", 5*time.Second),
 		WriteTimeout:  getDuration("WRITE_TIMEOUT", 5*time.Second),
 		IdleTimeout:   getDuration("IDLE_TIMEOUT", 30*time.Second),
+		TLSCertFile:   getEnv("TLS_CERT_FILE", ""),
+		TLSKeyFile:    getEnv("TLS_KEY_FILE", ""),
 		RedisAddrs:    getEnvSlice("REDIS_ADDRS", []string{"localhost:6379"}),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDB:       getInt("REDIS_DB", 0),

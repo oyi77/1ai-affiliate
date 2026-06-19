@@ -48,9 +48,9 @@ final class CommissionService
                 SET status = 'approved', approved_by = ?, approved_at = ?
                 WHERE $whereClause";
 
-        $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepareWrite($sql);
         $this->conn->bind($stmt, $types, $binds);
-        $this->conn->executeChecked($stmt, 'Commission approval failed');
+        $this->conn->executeUpdate($stmt);
 
         return $stmt->affected_rows;
     }
@@ -70,18 +70,18 @@ final class CommissionService
             return;
         }
 
-        $stmt = $this->conn->prepare(
+        $stmt = $this->conn->prepareWrite(
             'UPDATE affiliate_earnings SET status = \'rejected\' WHERE id = ?'
         );
         $this->conn->bind($stmt, 'i', [$earningId]);
-        $this->conn->executeChecked($stmt, 'Commission rejection failed');
+        $this->conn->executeUpdate($stmt);
 
         // Record clawback in ledger
         $affiliateId = (int) $earning['affiliate_id'];
         $amount = (float) $earning['payout_amount'];
         $balance = $this->getBalance($affiliateId);
 
-        $ledgerStmt = $this->conn->prepare(
+        $ledgerStmt = $this->conn->prepareWrite(
             'INSERT INTO commission_entries
              (affiliate_id, entry_type, amount, balance_before, balance_after,
               reference_type, reference_id, note, created_at)
@@ -91,7 +91,7 @@ final class CommissionService
             $affiliateId, -$amount, $balance + $amount, $balance,
             $earningId, $reason, time(),
         ]);
-        $this->conn->executeChecked($ledgerStmt, 'Clawback ledger entry failed');
+        $this->conn->executeInsert($ledgerStmt);
     }
 
     private function getBalance(int $affiliateId): float

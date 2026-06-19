@@ -8,29 +8,47 @@ const http = require('http');
  */
 async function receivePostback(req, res) {
   const params = { ...(req.query || {}), ...(req.body || {}) };
-  const { click_id, payout, transaction_id, event, status: convStatus, sig, ...customParams } = params;
+  // Accept click_id, clickid, or cid — all common S2S postback macro names
+  const rawClickId = params.click_id || params.clickid || params.cid;
+  const { payout, transaction_id, event, status: convStatus, sig, ...rest } = params;
+  // Remove the click_id aliases from customParams
+  delete rest.click_id;
+  delete rest.clickid;
+  delete rest.cid;
+  const customParams = rest;
 
-  if (!click_id) {
+  if (!rawClickId) {
     return res.status(400).json({ error: 'click_id required' });
   }
 
+  const click_id = String(rawClickId).trim();
+
   try {
-    // Find the smartlink by click_id
-    const [clicks] = await pool.query(
-      'SELECT l.id, l.affiliate_id, l.offer_id, o.postback_url, o.postback_auth_type, o.postback_auth_value FROM 1ai_affiliate_links l JOIN 1ai_offers o ON l.offer_id = o.id WHERE l.slug = ? LIMIT 1',
+    // Look up the real click record in 1ai_click_log by click_id
+    const [clickRows] = await pool.query(
+      `SELECT cl.click_id, cl.affiliate_id, cl.offer_id,
+              o.postback_url, o.postback_auth_type, o.postback_auth_value
+       FROM 1ai_click_log cl
+       JOIN 1ai_offers o ON cl.offer_id = o.id
+       WHERE cl.click_id = ? LIMIT 1`,
       [click_id]
     );
 
-    if (!clicks.length) {
-      return res.status(404).json({ error: 'Click not found' });
+    if (!clickRows.length) {
+      return res.status(404).json({ error: 'click_id not found' });
     }
 
-    const link = clicks[0];
+    const click = clickRows[0];
 
-    // Check for duplicate postbacks
+    // Idempotency: dedupe_hash = SHA-256(click_id + '|' + (txid || ''))
+    const crypto = require('crypto');
+    const txid = transaction_id || '';
+    const dedupeHash = crypto.createHash('sha256').update(click_id + '|' + txid).digest('hex');
+
+    // Check for duplicate postbacks via dedupe_hash
     const [existing] = await pool.query(
-      'SELECT id FROM 1ai_postback_logs WHERE offer_id = ? AND click_id = ?',
-      [link.offer_id, click_id]
+      'SELECT id FROM 1ai_postback_logs WHERE dedupe_hash = ? LIMIT 1',
+      [dedupeHash]
     );
 
     if (existing.length) {
@@ -38,34 +56,38 @@ async function receivePostback(req, res) {
     }
 
     // Verify signature if required
-    if (link.postback_auth_type === 'signature') {
-      const expectedSig = generateSignature(click_id + payout + transaction_id, link.postback_auth_value);
+    if (click.postback_auth_type === 'signature') {
+      const expectedSig = generateSignature(click_id + payout + txid, click.postback_auth_value);
       if (sig !== expectedSig) {
         return res.status(403).json({ error: 'Invalid signature' });
       }
     }
 
-    // Create postback log entry
+    // Create postback log entry (dedupe_hash enforces idempotency at DB level too)
     const postbackLogId = await logPostback({
-      offer_id: link.offer_id,
-      affiliate_id: link.affiliate_id,
+      offer_id: click.offer_id,
+      affiliate_id: click.affiliate_id,
       click_id,
-      transaction_id: transaction_id || null,
+      transaction_id: txid || null,
       payout: parseFloat(payout) || 0,
       conversion_event: event || 'conversion',
       status: 'received',
       custom_params: customParams,
-      postback_url: link.postback_url,
+      postback_url: click.postback_url,
+      dedupe_hash: dedupeHash,
     });
 
-    // Record conversion in smartlink
-    await pool.query('UPDATE 1ai_affiliate_links SET conversions = conversions + 1 WHERE id = ?', [link.id]);
+    // Mark the click as converted
+    await pool.query(
+      'UPDATE 1ai_click_log SET converted = 1, converted_at = UNIX_TIMESTAMP() WHERE click_id = ?',
+      [click_id]
+    );
 
     // Create earnings entry
     await pool.query(
-      `INSERT INTO 1ai_affiliate_earnings (affiliate_id, source, payout_amount, status, created_at) 
-       VALUES (?, ?, ?, ?, UNIX_TIMESTAMP())`,
-      [link.affiliate_id, 'postback', parseFloat(payout) || 0, 'pending']
+      `INSERT INTO 1ai_affiliate_earnings (affiliate_id, payout_amount, status, created_at)
+       VALUES (?, ?, ?, UNIX_TIMESTAMP())`,
+      [click.affiliate_id, parseFloat(payout) || 0, 'pending']
     );
 
     // Enqueue postback for async sending
@@ -242,12 +264,12 @@ function fireHttpRequest(url, method = 'GET', headers = {}, timeout = 10, body =
  * Log postback attempt
  */
 async function logPostback(data) {
-  const { offer_id, affiliate_id, click_id, transaction_id, payout, conversion_event, status, custom_params, postback_url } = data;
+  const { offer_id, affiliate_id, click_id, transaction_id, payout, conversion_event, status, custom_params, postback_url, dedupe_hash } = data;
 
   const [result] = await pool.query(
-    `INSERT INTO 1ai_postback_logs (offer_id, affiliate_id, click_id, transaction_id, payout, conversion_event, status, postback_url, postback_body)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [offer_id, affiliate_id, click_id, transaction_id, payout, conversion_event, status, postback_url || null, JSON.stringify(custom_params || {})]
+    `INSERT INTO 1ai_postback_logs (offer_id, affiliate_id, click_id, transaction_id, payout, conversion_event, status, postback_url, postback_body, dedupe_hash)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [offer_id, affiliate_id, click_id, transaction_id, payout, conversion_event, status, postback_url || null, JSON.stringify(custom_params || {}), dedupe_hash || null]
   );
 
   return result.insertId;

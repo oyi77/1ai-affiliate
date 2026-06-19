@@ -1,0 +1,68 @@
+:root {
+  /* Premium Dark Mode Palette */
+  --bg: #090a0f;
+  --surface-0: #090a0f;
+  --surface-1: rgba(22, 27, 34, 0.7);
+  --surface-2: rgba(28, 35, 51, 0.8);
+  --surface-3: rgba(40, 48, 68, 0.9);
+  --surface-hover: rgba(50, 58, 80, 0.95);
+  
+  --panel: var(--surface-1);
+  --panel2: var(--surface-2);
+  --panel-hover: var(--surface-hover);
+  
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-glow: rgba(99, 102, 241, 0.3);
+  --border-focus: var(--indigo);
+  
+  /* Text Colors */
+  --text: #f8fafc;
+  --text2: #94a3b8;
+  --text-muted: #64748b;
+  
+  /* Accents */
+  --indigo: #6366f1;
+  --indigo2: #818cf8;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+
+  /* Glassmorphism */
+  --blur: blur(12px);
+  --blur-lg: blur(20px);
+  
+  /* Typography scale */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.8125rem;  /* 13px */
+  --text-base: 0.875rem; /* 14px */
+  --text-lg: 1rem;       /* 16px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  
+  /* Spacing (4px base) */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;
+  --sp-4: 16px; --sp-5: 20px; --sp-6: 24px;
+  --sp-8: 32px; --sp-10: 40px; --sp-12: 48px;
+  
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+}

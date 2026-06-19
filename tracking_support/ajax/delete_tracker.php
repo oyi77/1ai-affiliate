@@ -1,14 +1,15 @@
 <?php
 declare(strict_types=1);
 include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
+$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 
 AUTH::require_user();
 
 $slack = false;
-$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
-$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '".$mysql['user_own_id']."'";
-$user_results = $db->query($user_sql);
+$user_results = $conn->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 if (!empty($user_row['url'])) 
@@ -19,13 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userObj->hasPermission("remove_trac
 	if (!isset($_POST['tracker_id'])) {
 		die("Error: No tracker ID provided");
 	}
-	$mysql['tracker_id'] = $db->real_escape_string((string)$_POST['tracker_id']);
-	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['tracker_id'] = $conn->escape((string)$_POST['tracker_id']);
+	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
 
 	if ($slack) {
 
 		$sql = "SELECT * FROM trackers WHERE tracker_id = '".$mysql['tracker_id']."' AND user_id = '".$mysql['user_id']."'";
-		$result = $db->query($sql);
+		$result = $conn->query($sql);
 		$row = false;
 		if ($result->num_rows > 0) {
 			$row = $result->fetch_assoc();
@@ -46,6 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userObj->hasPermission("remove_trac
 	}
 
 	$sql = "DELETE FROM trackers WHERE tracker_id = '".$mysql['tracker_id']."' AND user_id = '".$mysql['user_id']."'";
-	$result = $db->query($sql);
+	$result = $conn->query($sql);
 
 }

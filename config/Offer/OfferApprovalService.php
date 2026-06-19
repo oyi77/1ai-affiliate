@@ -20,6 +20,7 @@ use PDO;
 use PDOException;
 use InvalidArgumentException;
 use RuntimeException;
+use Throwable;
 
 class OfferApprovalService
 {
@@ -316,7 +317,7 @@ class OfferApprovalService
             try {
                 $this->approveOffer((int) $offerId, $omUserId);
                 $results['approved'][] = $offerId;
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 $results['failed'][] = [
                     'offer_id' => $offerId,
                     'error' => $e->getMessage()
@@ -384,11 +385,11 @@ class OfferApprovalService
             $errors[] = 'Margin floor must be between 0 and 100';
         }
 
-        if (isset($offer['cap_daily']) && $offer['cap_daily'] !== null && $offer['cap_daily'] < 0) {
+        if (isset($offer['cap_daily']) && $offer['cap_daily'] < 0) {
             $errors[] = 'Daily cap cannot be negative';
         }
 
-        if (isset($offer['cap_monthly']) && $offer['cap_monthly'] !== null && $offer['cap_monthly'] < 0) {
+        if (isset($offer['cap_monthly']) && $offer['cap_monthly'] < 0) {
             $errors[] = 'Monthly cap cannot be negative';
         }
 

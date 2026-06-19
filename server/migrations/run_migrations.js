@@ -21,6 +21,7 @@ const pool = require('../db/mysql');
 const logger = require('../logger');
 
 const SCRIPTS_DIR = path.resolve(__dirname, '../../scripts');
+const MIGRATIONS_DIR = __dirname;
 const MANIFEST_PATH = path.resolve(__dirname, 'manifest.json');
 const FORCE = process.env.FORCE === '1';
 
@@ -95,7 +96,10 @@ async function main() {
 
   let ran = 0;
   for (const file of files) {
-    const filePath = path.join(SCRIPTS_DIR, file);
+    let filePath = path.join(SCRIPTS_DIR, file);
+    if (!fs.existsSync(filePath)) {
+      filePath = path.join(MIGRATIONS_DIR, file);
+    }
     if (!fs.existsSync(filePath)) {
       logger.error({ file }, 'Migration file not found');
       process.exit(1);
