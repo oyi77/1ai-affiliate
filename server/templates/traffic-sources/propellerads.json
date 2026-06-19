@@ -1,0 +1,12 @@
+{
+  "id": "propellerads",
+  "name": "PropellerAds",
+  "icon": "🌐",
+  "description": "Pop & Push notification ads",
+  "fields": [
+    { "key": "name", "label": "Source Name", "type": "text", "required": true, "default": "PropellerAds" },
+    { "key": "platform_type", "type": "hidden", "default": "propellerads" },
+    { "key": "cost_model", "label": "Cost Model", "type": "select", "options": ["CPM", "CPA"], "required": true, "default": "CPM" },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "USD" }
+  ]
+}

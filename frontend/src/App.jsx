@@ -35,11 +35,12 @@ const Attribution = lazy(() => import('./pages/Attribution.jsx').then(m => ({ de
 const Reports = lazy(() => import('./pages/Reports.jsx').then(m => ({ default: m.Reports })).catch(() => fallback));
 const ClickTracker = lazy(() => import('./pages/ClickTracker.jsx').then(m => ({ default: m.ClickTracker })).catch(() => fallback));
 const DayParting = lazy(() => import('./pages/DayParting.jsx').then(m => ({ default: m.DayParting })).catch(() => fallback));
-const Integrations = lazy(() => import('./pages/Integrations.jsx').then(m => ({ default: m.Integrations })).catch(() => fallback));
+const Integrations = lazy(() => import('./pages/Integrations.jsx'));
 const Pipeline = lazy(() => import('./pages/Pipeline.jsx').then(m => ({ default: m.Pipeline })).catch(() => fallback));
 const Poster = lazy(() => import('./pages/Poster.jsx').then(m => ({ default: m.Poster })).catch(() => fallback));
 const APIDocs = lazy(() => import('./pages/APIDocs.jsx').then(m => ({ default: m.APIDocs })).catch(() => fallback));
 const AffiliateDashboard = lazy(() => import('./pages/AffiliateDashboard.jsx').then(m => ({ default: m.AffiliateDashboard })).catch(() => fallback));
+const AffiliatePortal = lazy(() => import('./pages/AffiliatePortal.jsx').then(m => ({ default: m.AffiliatePortal })).catch(() => fallback));
 const ConversionLog = lazy(() => import('./pages/ConversionLog.jsx').then(m => ({ default: m.ConversionLog })).catch(() => fallback));
 const Automation = lazy(() => import('./pages/Automation.jsx').then(m => ({ default: m.Automation })).catch(() => fallback));
 const LaporanOrder = lazy(() => import('./pages/LaporanOrder.jsx').then(m => ({ default: m.LaporanOrder })).catch(() => fallback));
@@ -48,7 +49,9 @@ const SaldoBudget = lazy(() => import('./pages/SaldoBudget.jsx').then(m => ({ de
 const TrafficRules = lazy(() => import('./pages/TrafficRules.jsx').then(m => ({ default: m.TrafficRules })).catch(() => fallback));
 const CampaignCompare = lazy(() => import('./pages/CampaignCompare.jsx').then(m => ({ default: m.CampaignCompare })).catch(() => fallback));
 const Webhooks = lazy(() => import('./pages/Webhooks.jsx').then(m => ({ default: m.Webhooks })).catch(() => fallback));
-
+const ReportBuilder = lazy(() => import('./pages/ReportBuilder.jsx').then(m => ({ default: m.ReportBuilder })).catch(() => fallback));
+const ConversionStatuses = lazy(() => import('./pages/ConversionStatuses.jsx').then(m => ({ default: m.ConversionStatuses })).catch(() => fallback));
+const AttributionView = lazy(() => import('./pages/AttributionView.jsx').then(m => ({ default: m.AttributionView })).catch(() => fallback));
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -98,12 +101,16 @@ function App() {
             <Route path="/campaign-compare" element={<CampaignCompare />} />
             <Route path="/webhooks" element={<Webhooks />} />
             <Route path="/affiliate-dashboard" element={<AffiliateDashboard />} />
+            <Route path="/affiliate-portal" element={<AffiliatePortal />} />
             <Route path="/automation" element={<Automation />} />
             <Route path="/laporan-order" element={<LaporanOrder />} />
             <Route path="/laporan-pembayaran" element={<LaporanPembayaran />} />
             <Route path="/saldo-budget" element={<SaldoBudget />} />
             <Route path="/traffic-rules" element={<TrafficRules />} />
             <Route path="/campaign-compare" element={<CampaignCompare />} />
+            <Route path="/report-builder" element={<ReportBuilder />} />
+            <Route path="/conversion-statuses" element={<ConversionStatuses />} />
+            <Route path="/attribution-view" element={<AttributionView />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
           </ErrorBoundary>

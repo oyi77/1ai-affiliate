@@ -151,9 +151,9 @@ const getLaporanIklan = asyncHandler(async (req, res) => {
  * Daily aggregation across spend and commissions.
  */
 const getAnalyticHarian = asyncHandler(async (req, res) => {
-  const { dateFrom, dateTo } = req.query;
+  const { dateFrom, dateTo, group_by } = req.query;
   const { getAnalyticHarian } = require('../services/reportService');
-  const data = await getAnalyticHarian(pool, { dateFrom, dateTo });
+  const data = await getAnalyticHarian(pool, { dateFrom, dateTo, groupBy: group_by });
   return success(res, { data });
 });
 
@@ -324,6 +324,113 @@ const compareCampaigns = asyncHandler(async (req, res) => {
   return success(res, { data: rows, bestWorst });
 });
 
+/**
+ * GET /api/admin/reports/campaign/:id/clicks — drill-down clicks for a campaign
+ */
+const getCampaignClicks = asyncHandler(async (req, res) => {
+  const campaignId = parseInt(req.params.id);
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(Math.max(1, parseInt(req.query.limit) || 50), 200);
+  const offset = (page - 1) * limit;
+
+  const [rows] = await pool.query(
+    `SELECT cl.* FROM 1ai_click_log cl
+     WHERE cl.campaign_id = ?
+     ORDER BY cl.clicked_at DESC LIMIT ? OFFSET ?`,
+    [campaignId, limit, offset]
+  );
+  const [cnt] = await pool.query('SELECT COUNT(*) AS total FROM 1ai_click_log WHERE campaign_id = ?', [campaignId]);
+  return paginated(res, rows, { page, limit, total: cnt[0]?.total || 0 });
+});
+
+/**
+ * GET /api/admin/reports/campaign/:id/conversions — drill-down conversions for a campaign
+ */
+const getCampaignConversions = asyncHandler(async (req, res) => {
+  const campaignId = parseInt(req.params.id);
+  const [rows] = await pool.query(
+    `SELECT * FROM 1ai_conversion_logs WHERE campaign_id = ? ORDER BY created_at DESC LIMIT 100`,
+    [campaignId]
+  );
+  return success(res, { data: rows });
+});
+
+/**
+ * GET /api/admin/reports/attribution?model=first|last|linear
+ */
+const getAttribution = asyncHandler(async (req, res) => {
+  const model = req.query.model || 'first';
+  const dateFrom = req.query.date_from;
+  const dateTo = req.query.date_to;
+
+  const conditions = [];
+  const params = [];
+  if (dateFrom) { conditions.push('cl.converted_at >= UNIX_TIMESTAMP(?)'); params.push(dateFrom); }
+  if (dateTo) { conditions.push('cl.converted_at <= UNIX_TIMESTAMP(?)'); params.push(dateTo + ' 23:59:59'); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')} AND cl.converted = 1` : 'WHERE cl.converted = 1';
+
+  let touchpointCol;
+  switch (model) {
+    case 'last': touchpointCol = 'cl.offer_id'; break;
+    case 'linear': touchpointCol = 'cl.affiliate_id'; break;
+    case 'first':
+    default: touchpointCol = 'cl.campaign_id'; break;
+  }
+
+  const [rows] = await pool.query(`
+    SELECT ${touchpointCol} AS touchpoint_id,
+           COUNT(*) AS conversions,
+           COALESCE(SUM(cl.payout), 0) AS revenue
+    FROM 1ai_click_log cl
+    ${where}
+    GROUP BY touchpoint_id
+    ORDER BY conversions DESC
+    LIMIT 50
+  `, params);
+
+  return success(res, { model, data: rows });
+});
+
+/**
+ * POST /api/admin/reports/custom — Custom report builder
+ */
+const getCustomReport = asyncHandler(async (req, res) => {
+  const { dimensions = [], metrics = [], date_from, date_to, limit = 100 } = req.body;
+
+  const validDimensions = { campaign: 'o.name', offer: 'o.name', affiliate: 'a.name', country: 'cl.country_code', device: 'cl.device_type', date: 'FROM_UNIXTIME(cl.clicked_at, "%Y-%m-%d")' };
+  const validMetrics = { clicks: 'COUNT(*)', conversions: 'SUM(cl.converted)', revenue: 'COALESCE(SUM(cl.payout), 0)' };
+
+  const selectDims = dimensions.filter(d => validDimensions[d]).map(d => `${validDimensions[d]} AS ${d}`);
+  const selectMets = metrics.filter(m => validMetrics[m]).map(m => `${validMetrics[m]} AS ${m}`);
+
+  if (!selectDims.length && !selectMets.length) {
+    return res.status(400).json({ error: 'Select at least one dimension or metric' });
+  }
+
+  const selectClauses = [...selectDims, ...selectMets].join(', ');
+  const groupBy = selectDims.length ? `GROUP BY ${selectDims.map((_, i) => i + 1).join(', ')}` : '';
+
+  const conditions = [];
+  const params = [];
+  if (date_from) { conditions.push('cl.clicked_at >= UNIX_TIMESTAMP(?)'); params.push(date_from); }
+  if (date_to) { conditions.push('cl.clicked_at <= UNIX_TIMESTAMP(?)'); params.push(date_to + ' 23:59:59'); }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const sql = `
+    SELECT ${selectClauses}
+    FROM 1ai_click_log cl
+    LEFT JOIN 1ai_offers o ON cl.offer_id = o.id
+    LEFT JOIN 1ai_affiliates a ON cl.affiliate_id = a.id
+    ${where}
+    ${groupBy}
+    ORDER BY ${selectMets.length ? selectMets[0].split(' AS ')[0] : '1'} DESC
+    LIMIT ?
+  `;
+  params.push(Math.min(limit, 500));
+
+  const [rows] = await pool.query(sql, params);
+  return success(res, { data: rows, dimensions, metrics });
+});
 module.exports = {
   getClicks,
   getConversions,
@@ -333,4 +440,8 @@ module.exports = {
   exportLaporanIklanPdf,
   getLaporanOrder,
   compareCampaigns,
+  getCampaignClicks,
+  getCampaignConversions,
+  getAttribution,
+  getCustomReport,
 };

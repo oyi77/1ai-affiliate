@@ -1,0 +1,14 @@
+{
+  "id": "cpl",
+  "name": "CPL Offer",
+  "icon": "📋",
+  "description": "Cost-per-lead offer",
+  "fields": [
+    { "key": "name", "label": "Offer Name", "type": "text", "required": true },
+    { "key": "offer_type", "type": "hidden", "default": "cpl" },
+    { "key": "url", "label": "Offer URL", "type": "text", "required": true },
+    { "key": "payout", "label": "Payout per Lead", "type": "number", "required": true, "min": 0 },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "IDR" },
+    { "key": "status", "type": "hidden", "default": "active" }
+  ]
+}

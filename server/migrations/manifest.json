@@ -14,6 +14,10 @@
     "024_automation_rules.sql",
     "025_schema_alignment_fixes.sql",
     "026_traffic_rules.sql",
-    "026_webhooks_and_capi.sql"
+    "026_webhooks_and_capi.sql",
+    "027_capi_gclid_eventid.sql",
+    "027b_seed_fraud_rules.sql",
+    "028_gdpr_consent.sql",
+    "029_exchange_rates_platform.sql"
   ]
 }

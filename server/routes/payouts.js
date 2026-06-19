@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const { authenticate, requireAdmin } = require('../middleware/auth');
 const { getPayoutRules, savePayoutRules } = require('../services/payoutService');
+const { batchPayout, getPayoutSummary, batchPayoutValidator } = require('../controllers/payoutController');
 const pool = require('../db/mysql');
 
 router.use(authenticate);
@@ -25,5 +26,9 @@ router.post('/rules', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// ── Admin batch payout endpoints ─────────────────────────────────────────────
+router.post('/batch', requireAdmin, batchPayoutValidator, batchPayout);
+router.get('/summary', requireAdmin, getPayoutSummary);
 
 module.exports = router;

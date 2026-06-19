@@ -1,0 +1,12 @@
+{
+  "id": "lazada",
+  "name": "Lazada Affiliate",
+  "icon": "🔴",
+  "description": "Lazada e-commerce affiliate program",
+  "fields": [
+    { "key": "company_name", "label": "Account Name", "type": "text", "required": true, "default": "Lazada" },
+    { "key": "platform_type", "type": "hidden", "default": "lazada" },
+    { "key": "commission_type", "label": "Commission Type", "type": "select", "options": ["percentage", "fixed"], "default": "percentage" },
+    { "key": "default_commission_rate", "label": "Commission Rate (%)", "type": "number", "default": 4, "min": 0 }
+  ]
+}

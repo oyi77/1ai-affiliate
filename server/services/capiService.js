@@ -33,6 +33,7 @@ async function sendMetaConversion(accessToken, pixelId, event) {
     data: [{
       event_name: event.event_name || 'Purchase',
       event_time: event.event_time || Math.floor(Date.now() / 1000),
+      event_id: event.event_id || undefined,
       action_source: event.action_source || 'website',
       user_data: {
         client_ip_address: event.user_data?.client_ip_address || '',
@@ -124,13 +125,31 @@ async function sendGoogleConversion(accessToken, customerId, conversionAction, c
  * @param {number} conversionData.click_id
  * @param {number} [conversionData.payout]
  * @param {string} [conversionData.transaction_id]
+ * @param {string} [conversionData.event_name] — e.g. 'Purchase', 'Lead'
  * @param {string} [conversionData.ip_address]
  * @param {string} [conversionData.user_agent]
  * @param {string} [conversionData.fbc] — Facebook click ID
  * @param {string} [conversionData.fbp] — Facebook browser ID
- */
+ * @param {string} [conversionData.gclid] — Google Click ID
+ * @param {string} [conversionData.currency] — ISO 4217 currency code
 async function handleConversion(pool, conversionData) {
   try {
+    const clickId = conversionData.click_id || '';
+    const eventName = conversionData.event_name || 'Purchase';
+    const eventId = `click_${clickId}_${eventName}`;
+
+    // Dedup: skip if we already sent this event within the last 48 hours
+    const [existing] = await pool.query(
+      `SELECT id FROM 1ai_capi_log
+       WHERE event_id = ? AND success = 1 AND created_at > UNIX_TIMESTAMP() - 172800
+       LIMIT 1`,
+      [eventId]
+    ).catch(() => [[]]);
+
+    if (existing && existing.length > 0) {
+      return; // Already sent — skip duplicate
+    }
+
     // Look up traffic sources linked to this offer's campaigns
     const [rows] = await pool.query(
       `SELECT ts.id, ts.platform_type, ts.api_config
@@ -163,15 +182,18 @@ async function handleConversion(pool, conversionData) {
 /**
  * Fire CAPI conversion for a specific platform (meta or google).
  * Records the result in 1ai_capi_log for auditing.
- */
 async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
   const startTime = Date.now();
   let result;
+  const clickId = conversionData.click_id || '';
 
   if (config.capi_platform === 'meta' && config.pixel_id && config.access_token) {
+    // event_id enables dedup between Pixel (client) and CAPI (server)
+    const eventId = `click_${clickId}_${conversionData.event_name || 'Purchase'}`;
     result = await sendMetaConversion(config.access_token, config.pixel_id, {
-      event_name: 'Purchase',
+      event_name: conversionData.event_name || 'Purchase',
       event_time: Math.floor(Date.now() / 1000),
+      event_id: eventId,
       user_data: {
         client_ip_address: conversionData.ip_address || '',
         client_user_agent: conversionData.user_agent || '',
@@ -180,7 +202,7 @@ async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
       },
       custom_data: {
         value: conversionData.payout || 0,
-        currency: 'IDR',
+        currency: conversionData.currency || 'IDR',
       },
     });
   } else if (config.capi_platform === 'google' && config.customer_id && config.access_token && config.conversion_action) {
@@ -189,9 +211,9 @@ async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
       config.customer_id,
       config.conversion_action,
       {
-        gclid: conversionData.fbc || '',
+        gclid: conversionData.gclid || '',  // Fixed: was incorrectly mapped from fbc
         conversion_value: conversionData.payout || 0,
-        currency_code: 'IDR',
+        currency_code: conversionData.currency || 'IDR',
       }
     );
   } else {
@@ -204,12 +226,13 @@ async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
   try {
     await pool.query(
       `INSERT INTO 1ai_capi_log
-       (traffic_source_id, platform, event_name, success, response_time_ms, error_message, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP())`,
+       (traffic_source_id, platform, event_name, event_id, success, response_time_ms, error_message, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP())`,
       [
         trafficSourceId,
         config.capi_platform,
-        'Purchase',
+        conversionData.event_name || 'Purchase',
+        `click_${clickId}_${conversionData.event_name || 'Purchase'}`,
         result.success ? 1 : 0,
         elapsed,
         result.error || null,

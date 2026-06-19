@@ -1,0 +1,14 @@
+{
+  "id": "revshare",
+  "name": "Revenue Share",
+  "icon": "📈",
+  "description": "Percentage of sale revenue",
+  "fields": [
+    { "key": "name", "label": "Offer Name", "type": "text", "required": true },
+    { "key": "offer_type", "type": "hidden", "default": "revshare" },
+    { "key": "url", "label": "Offer URL", "type": "text", "required": true },
+    { "key": "payout", "label": "Revenue Share (%)", "type": "number", "required": true, "min": 0, "default": 10 },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "IDR" },
+    { "key": "status", "type": "hidden", "default": "active" }
+  ]
+}

@@ -111,52 +111,60 @@ const updateTrafficSource = asyncHandler(async (req, res) => {
 });
 
 /**
- * POST /api/admin/traffic-sources/:id/connect-meta
- * Connect a Meta Ads account to this traffic source.
+ * POST /api/admin/traffic-sources/:id/connect
+ * Generic connect — works for any registered integration.
+ * Body: { platform_type, ...auth_fields }
  */
-const connectMetaAccount = asyncHandler(async (req, res) => {
+const connectIntegration = asyncHandler(async (req, res) => {
   const tsId = parseInt(req.params.id);
   if (!tsId) return error(res, 'Invalid traffic source id', 400);
 
-  const { access_token, act_id } = req.body;
-  if (!access_token || !act_id) return error(res, 'access_token and act_id required', 400);
+  const { platform_type, ...credentials } = req.body;
+  if (!platform_type) return error(res, 'platform_type required', 400);
 
-  const { validateToken, fetchAccountName } = require('../services/metaService');
-  const tokenResult = await validateToken(access_token);
-  if (!tokenResult.valid) return error(res, `Invalid Meta token: ${tokenResult.error}`, 400);
+  const registry = require('../integrations/registry');
+  const integration = registry.get(platform_type);
+  if (!integration) return error(res, `Unknown platform: ${platform_type}. Available: ${registry.listAll().map(i => i.id).join(', ')}`, 400);
 
-  const accountInfo = await fetchAccountName(act_id, access_token);
+  // Validate required fields
+  for (const field of integration.meta.auth_fields.filter(f => f.required)) {
+    if (!credentials[field.key]) return error(res, `${field.key} required`, 400);
+  }
+
+  // Test connection
+  const test = await integration.testConnection(credentials);
+  if (!test.ok) return error(res, `Connection test failed: ${test.error}`, 400);
 
   await pool.query(
-    `UPDATE 1ai_traffic_sources SET api_config = JSON_SET(COALESCE(api_config, '{}'), '$.act_id', ?, '$.access_token', ?, '$.account_name', ?), platform_type = 'meta', updated_at = ? WHERE id = ?`,
-    [act_id, access_token, accountInfo?.name || null, Math.floor(Date.now() / 1000), tsId]
+    `UPDATE 1ai_traffic_sources SET api_config = ?, platform_type = ?, updated_at = ? WHERE id = ?`,
+    [JSON.stringify(credentials), platform_type, Math.floor(Date.now() / 1000), tsId]
   );
-
-  return success(res, { success: true, account_name: accountInfo?.name, act_id });
+  return success(res, { success: true, platform: platform_type, account: test.account });
 });
 
 /**
  * POST /api/admin/traffic-sources/:id/sync
- * Sync daily stats from the connected ad platform.
+ * Generic sync — dispatches to the registered integration.
  */
 const syncTrafficSource = asyncHandler(async (req, res) => {
   const tsId = parseInt(req.params.id);
   if (!tsId) return error(res, 'Invalid traffic source id', 400);
 
-  const ts = await queryOne('SELECT id, api_config FROM 1ai_traffic_sources WHERE id = ?', [tsId]);
+  const ts = await queryOne('SELECT id, platform_type, api_config FROM 1ai_traffic_sources WHERE id = ?', [tsId]);
   if (!ts) return error(res, 'Traffic source not found', 404);
 
   const config = typeof ts.api_config === 'string' ? JSON.parse(ts.api_config) : ts.api_config;
-  if (!config?.act_id || !config?.access_token) return error(res, 'Meta account not connected. Connect first.', 400);
+  if (!config) return error(res, 'No API config. Connect first.', 400);
+
+  const registry = require('../integrations/registry');
+  if (!registry.get(ts.platform_type)) return error(res, `No integration for: ${ts.platform_type}`, 400);
 
   const { date_from, date_to } = req.query;
   const dateFrom = date_from || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
   const dateTo = date_to || new Date().toISOString().split('T')[0];
 
-  const { syncTrafficSourceStats } = require('../services/metaService');
-  const result = await syncTrafficSourceStats(pool, tsId, config.act_id, config.access_token, dateFrom, dateTo);
-
-  return success(res, { success: true, synced: result.synced, dates: result.dates });
+  const result = await registry.sync(ts.platform_type, pool, tsId, config, dateFrom, dateTo);
+  return success(res, { success: true, platform: ts.platform_type, synced: result.synced, errors: result.errors });
 });
 
 /**
@@ -184,7 +192,7 @@ module.exports = {
   getTrafficSources,
   createTrafficSource,
   updateTrafficSource,
-  connectMetaAccount,
+  connectIntegration,
   syncTrafficSource,
   getTrafficSourceDailyStats,
   createTrafficSourceSchema,

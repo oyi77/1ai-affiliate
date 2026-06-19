@@ -1,0 +1,14 @@
+{
+  "id": "cpa",
+  "name": "CPA Offer",
+  "icon": "💰",
+  "description": "Cost-per-action offer with fixed payout",
+  "fields": [
+    { "key": "name", "label": "Offer Name", "type": "text", "required": true },
+    { "key": "offer_type", "type": "hidden", "default": "cpa" },
+    { "key": "url", "label": "Offer URL", "type": "text", "required": true, "placeholder": "https://advertiser.com/offer" },
+    { "key": "payout", "label": "Payout Amount", "type": "number", "required": true, "min": 0 },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "IDR" },
+    { "key": "status", "type": "hidden", "default": "active" }
+  ]
+}

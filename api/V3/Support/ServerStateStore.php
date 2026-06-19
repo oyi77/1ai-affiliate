@@ -605,7 +605,7 @@ class ServerStateStore
         if (is_dir($path)) {
             return;
         }
-        if (!mkdir($path, 0700, true) && !is_dir($path)) {
+        if (!mkdir($path, 0770, true) && !is_dir($path)) {
             throw new DatabaseException('Failed to create state directory');
         }
     }

@@ -1,0 +1,13 @@
+{
+  "id": "tokopedia",
+  "name": "Tokopedia Affiliate",
+  "icon": "🟢",
+  "description": "Tokopedia e-commerce affiliate program",
+  "fields": [
+    { "key": "company_name", "label": "Account Name", "type": "text", "required": true, "default": "Tokopedia" },
+    { "key": "platform_type", "type": "hidden", "default": "tokopedia" },
+    { "key": "commission_type", "label": "Commission Type", "type": "select", "options": ["percentage", "fixed"], "default": "percentage" },
+    { "key": "default_commission_rate", "label": "Commission Rate (%)", "type": "number", "default": 3, "min": 0 },
+    { "key": "website", "label": "Affiliate Dashboard URL", "type": "text", "default": "https://affiliate.tokopedia.com" }
+  ]
+}

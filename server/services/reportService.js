@@ -78,7 +78,7 @@ async function getLaporanIklan(pool, { dateFrom, dateTo, advertiserId, trafficSo
  * @param {string} [filters.dateTo] — YYYY-MM-DD
  * @returns {Promise<Array<{date: string, spend: number, komisi: number, net_profit: number, clicks: number, orders: number}>>}
  */
-async function getAnalyticHarian(pool, { dateFrom, dateTo } = {}) {
+async function getAnalyticHarian(pool, { dateFrom, dateTo, groupBy = 'daily' } = {}) {
   const conditions = [];
   const params = [];
 
@@ -93,14 +93,23 @@ async function getAnalyticHarian(pool, { dateFrom, dateTo } = {}) {
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
+  // Date grouping expressions
+  const groupExprs = {
+    hourly: "DATE_FORMAT(day, '%Y-%m-%d %H:00:00')",
+    daily: "day",
+    weekly: "DATE(day - INTERVAL WEEKDAY(day) DAY)",
+    monthly: "DATE_FORMAT(day, '%Y-%m-01')",
+  };
+  const groupExpr = groupExprs[groupBy] || groupExprs.daily;
+
   const sql = `
     SELECT
-      d.day AS date,
-      COALESCE(s.spend, 0) AS spend,
-      COALESCE(c.komisi, 0) AS komisi,
-      COALESCE(c.komisi, 0) - COALESCE(s.spend, 0) AS net_profit,
-      COALESCE(s.clicks, 0) AS clicks,
-      COALESCE(c.orders, 0) AS orders
+      ${groupExpr} AS date,
+      COALESCE(SUM(s.spend), 0) AS spend,
+      COALESCE(SUM(c.komisi), 0) AS komisi,
+      COALESCE(SUM(c.komisi), 0) - COALESCE(SUM(s.spend), 0) AS net_profit,
+      COALESCE(SUM(s.clicks), 0) AS clicks,
+      COALESCE(SUM(c.orders), 0) AS orders
     FROM (
       SELECT DISTINCT report_date AS day FROM 1ai_meta_daily_stats
       UNION
@@ -117,7 +126,8 @@ async function getAnalyticHarian(pool, { dateFrom, dateTo } = {}) {
       GROUP BY report_date
     ) c ON c.report_date = d.day
     ${where}
-    ORDER BY d.day DESC
+    GROUP BY date
+    ORDER BY date DESC
   `;
 
   const [rows] = await pool.query(sql, params);
@@ -193,4 +203,59 @@ async function getLaporanTaglink(pool, { dateFrom, dateTo } = {}) {
   return rows;
 }
 
-module.exports = { getLaporanIklan, getAnalyticHarian, getLaporanTaglink };
+/**
+ * Get report breakdown by dimension (country, device, os, browser).
+ */
+async function getBreakdownByDimension(pool, { dimension, dateFrom, dateTo } = {}) {
+  const validDimensions = { country: 'country_code', device: 'device_type', os: 'os', browser: 'browser' };
+  const col = validDimensions[dimension];
+  if (!col) throw new Error(`Invalid dimension: ${dimension}. Use: country, device, os, browser`);
+
+  const conditions = [];
+  const params = [];
+  if (dateFrom) { conditions.push('clicked_at >= UNIX_TIMESTAMP(?)'); params.push(dateFrom); }
+  if (dateTo) { conditions.push('clicked_at <= UNIX_TIMESTAMP(?)'); params.push(dateTo + ' 23:59:59'); }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  // For os/browser, parse user_agent
+  let selectExpr;
+  if (dimension === 'os') {
+    selectExpr = `CASE
+      WHEN user_agent RLIKE 'Windows' THEN 'Windows'
+      WHEN user_agent RLIKE 'Mac OS' THEN 'macOS'
+      WHEN user_agent RLIKE 'Linux' THEN 'Linux'
+      WHEN user_agent RLIKE 'Android' THEN 'Android'
+      WHEN user_agent RLIKE 'iPhone|iPad' THEN 'iOS'
+      ELSE 'Other'
+    END AS dimension_value`;
+  } else if (dimension === 'browser') {
+    selectExpr = `CASE
+      WHEN user_agent RLIKE 'Chrome' THEN 'Chrome'
+      WHEN user_agent RLIKE 'Firefox' THEN 'Firefox'
+      WHEN user_agent RLIKE 'Safari' THEN 'Safari'
+      WHEN user_agent RLIKE 'Edge' THEN 'Edge'
+      WHEN user_agent RLIKE 'Opera|OPR' THEN 'Opera'
+      ELSE 'Other'
+    END AS dimension_value`;
+  } else {
+    selectExpr = `COALESCE(${col}, 'Unknown') AS dimension_value`;
+  }
+
+  const sql = `
+    SELECT ${selectExpr},
+           COUNT(*) AS clicks,
+           SUM(converted) AS conversions,
+           COALESCE(SUM(payout), 0) AS revenue
+    FROM 1ai_click_log
+    ${where}
+    GROUP BY dimension_value
+    ORDER BY clicks DESC
+    LIMIT 100
+  `;
+
+  const [rows] = await pool.query(sql, params);
+  return rows;
+}
+
+module.exports = { getLaporanIklan, getAnalyticHarian, getLaporanTaglink, getBreakdownByDimension };

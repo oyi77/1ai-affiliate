@@ -102,10 +102,13 @@ async function receivePostback(req, res) {
       click_id,
       payout: parseFloat(payout) || 0,
       transaction_id: txid || null,
+      event_name: event || 'Purchase',
       ip_address: req.ip || req.connection?.remoteAddress || '',
       user_agent: req.headers?.['user-agent'] || '',
       fbc: params.fbc || '',
       fbp: params.fbp || '',
+      gclid: params.gclid || params.GCLID || '',
+      currency: params.currency || 'IDR',
     }).catch(err => console.error('CAPI handleConversion error:', err.message));
 
     // Fire registered webhooks for the 'conversion' event

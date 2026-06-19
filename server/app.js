@@ -94,6 +94,7 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
 app.use('/api', require('./routes/postback'));
+app.use('/api/templates', require('./routes/templates'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/admin/stats', require('./routes/statsSSE'));
 app.use('/api/poster', require('./routes/poster'));
@@ -108,6 +109,9 @@ app.use('/api/admin/balance', require('./routes/balance'));
 app.use('/api/admin/automation', require('./routes/automation'));
 app.use('/api/admin/traffic-rules', require('./routes/trafficRules'));
 app.use('/api/admin/webhooks', require('./routes/webhooks'));
+app.use('/api/admin/payouts', require('./routes/payouts'));
+// Honeypot trap — invisible link that only bots follow
+app.get('/go/honeypot/:campaignId', require('./services/fraudRuleEngine').honeypotHandler);
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
@@ -173,6 +177,17 @@ if (require.main === module) {
     sendDailySummaryForAllUsers(pool).catch(err => {
       logger.error({ err }, '[cron] Telegram daily summary failed');
     });
+  });
+  // Auto-sync ad platform stats daily at 06:00 UTC
+  cron.schedule('0 6 * * *', () => {
+    logger.info('[cron] Auto-syncing traffic source stats...');
+    const { syncAllTrafficSources } = require('./services/autoSyncService');
+    syncAllTrafficSources().then(r => logger.info({ synced: r.synced, errors: r.errors.length }, '[cron] Auto-sync done')).catch(err => logger.error({ err }, '[cron] Auto-sync failed'));
+  });
+  // Campaign auto-rules — evaluate every 15 minutes
+  cron.schedule('*/15 * * * *', () => {
+    const { evaluateCampaignRules } = require('./services/campaignAutoRules');
+    evaluateCampaignRules().catch(err => logger.error({ err }, '[cron] Campaign auto-rules failed'));
   });
   const server = app.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);

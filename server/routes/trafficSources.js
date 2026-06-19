@@ -7,7 +7,7 @@ const {
   getTrafficSources,
   createTrafficSource,
   updateTrafficSource,
-  connectMetaAccount,
+  connectIntegration,
   syncTrafficSource,
   getTrafficSourceDailyStats,
   createTrafficSourceSchema,
@@ -15,11 +15,24 @@ const {
 
 router.use(authenticate);
 
+// CRUD
 router.get('/', requireRole('admin', 'affiliate', 'advertiser'), getTrafficSources);
 router.post('/', requireAdmin, validate(createTrafficSourceSchema), createTrafficSource);
 router.patch('/:id', requireAdmin, updateTrafficSource);
-router.post('/:id/connect-meta', requireAdmin, connectMetaAccount);
+
+// Integration marketplace — list available integrations
+router.get('/integrations', requireAdmin, (req, res) => {
+  const registry = require('../integrations/registry');
+  res.json({ data: registry.listAll() });
+});
+
+// Connect any platform (generic)
+router.post('/:id/connect', requireAdmin, connectIntegration);
+
+// Sync stats (generic — dispatches to the right platform)
 router.post('/:id/sync', requireAdmin, syncTrafficSource);
+
+// Daily stats
 router.get('/:id/daily-stats', requireAdmin, getTrafficSourceDailyStats);
 
 module.exports = router;

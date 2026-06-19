@@ -1,0 +1,16 @@
+{
+  "id": "branded",
+  "name": "Branded Landing Page",
+  "icon": "📄",
+  "description": "Custom branded landing page with deep link",
+  "fields": [
+    { "key": "name", "label": "Page Name", "type": "text", "required": true },
+    { "key": "type", "type": "hidden", "default": "branded" },
+    { "key": "slug", "label": "URL Slug", "type": "text", "required": true, "placeholder": "my-product" },
+    { "key": "headline", "label": "Headline", "type": "text", "required": true },
+    { "key": "description", "label": "Description", "type": "text" },
+    { "key": "cta_text", "label": "Button Text", "type": "text", "default": "Get It Now" },
+    { "key": "deep_link", "label": "Deep Link URL", "type": "text", "required": true },
+    { "key": "brand_color", "label": "Brand Color", "type": "text", "default": "#6366f1" }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "google",
+  "name": "Google Ads",
+  "icon": "🔍",
+  "description": "Search, Display & YouTube campaigns",
+  "fields": [
+    { "key": "name", "label": "Source Name", "type": "text", "required": true, "default": "Google Ads" },
+    { "key": "platform_type", "type": "hidden", "default": "google" },
+    { "key": "cost_model", "label": "Cost Model", "type": "select", "options": ["CPC", "CPM", "CPA"], "required": true, "default": "CPC" },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "IDR" }
+  ]
+}

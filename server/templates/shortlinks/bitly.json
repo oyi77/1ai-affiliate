@@ -1,0 +1,12 @@
+{
+  "id": "bitly",
+  "name": "Bitly Shortlink",
+  "icon": "🔗",
+  "description": "Shorten via Bitly API",
+  "fields": [
+    { "key": "name", "label": "Link Name", "type": "text", "required": true },
+    { "key": "service", "type": "hidden", "default": "bitly" },
+    { "key": "destination_url", "label": "Destination URL", "type": "text", "required": true },
+    { "key": "api_key", "label": "Bitly API Key", "type": "password", "required": true }
+  ]
+}

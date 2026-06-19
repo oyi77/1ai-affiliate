@@ -1,0 +1,12 @@
+{
+  "id": "tiktok",
+  "name": "TikTok Ads",
+  "icon": "🎵",
+  "description": "TikTok For Business campaigns",
+  "fields": [
+    { "key": "name", "label": "Source Name", "type": "text", "required": true, "default": "TikTok Ads" },
+    { "key": "platform_type", "type": "hidden", "default": "tiktok" },
+    { "key": "cost_model", "label": "Cost Model", "type": "select", "options": ["CPC", "CPM", "CPA"], "required": true, "default": "CPM" },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "IDR" }
+  ]
+}

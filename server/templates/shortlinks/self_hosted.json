@@ -1,0 +1,12 @@
+{
+  "id": "self_hosted",
+  "name": "Self-Hosted Shortlink",
+  "icon": "🏠",
+  "description": "Use your own tracking domain",
+  "fields": [
+    { "key": "name", "label": "Link Name", "type": "text", "required": true },
+    { "key": "service", "type": "hidden", "default": "self_hosted" },
+    { "key": "destination_url", "label": "Destination URL", "type": "text", "required": true },
+    { "key": "custom_domain", "label": "Custom Domain", "type": "text", "placeholder": "go.yourdomain.com" }
+  ]
+}

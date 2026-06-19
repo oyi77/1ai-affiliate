@@ -1,0 +1,14 @@
+{
+  "id": "custom",
+  "name": "Custom Advertiser",
+  "icon": "🏢",
+  "description": "Any advertiser with custom commission structure",
+  "fields": [
+    { "key": "company_name", "label": "Company Name", "type": "text", "required": true },
+    { "key": "platform_type", "type": "hidden", "default": "custom" },
+    { "key": "website", "label": "Website", "type": "text" },
+    { "key": "commission_type", "label": "Commission Type", "type": "select", "options": ["percentage", "fixed", "revshare"], "default": "percentage" },
+    { "key": "default_commission_rate", "label": "Commission Rate", "type": "number", "default": 10, "min": 0 },
+    { "key": "notes", "label": "Notes", "type": "text" }
+  ]
+}

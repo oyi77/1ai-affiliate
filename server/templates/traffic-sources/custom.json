@@ -1,0 +1,13 @@
+{
+  "id": "custom",
+  "name": "Custom / Other",
+  "icon": "⚙️",
+  "description": "Any traffic source with custom postback",
+  "fields": [
+    { "key": "name", "label": "Source Name", "type": "text", "required": true },
+    { "key": "platform_type", "type": "hidden", "default": "custom" },
+    { "key": "cost_model", "label": "Cost Model", "type": "select", "options": ["CPC", "CPM", "CPA", "revshare"], "required": true, "default": "CPC" },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "USD" },
+    { "key": "postback_url_template", "label": "Postback URL Template", "type": "text", "placeholder": "https://your-domain.com/postback?click_id={click_id}&payout={payout}" }
+  ]
+}

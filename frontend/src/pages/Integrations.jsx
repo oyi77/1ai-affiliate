@@ -1,327 +1,188 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../lib/api';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard } from '../components/ui/GlassCard';
-import { StatCard } from '../components/ui/StatCard';
-import { DataTable } from '../components/ui/DataTable';
-import { Modal } from '../components/ui/Modal';
-import { 
-  Plus, 
-  Webhook, 
-  XCircle, 
-  Activity,
-  RefreshCw,
-  Zap
-} from 'lucide-react';
+import api from '../lib/api';
 
-const EVENT_TYPES = [
-  { id: 'click', label: 'Click' },
-  { id: 'lead', label: 'Lead' },
-  { id: 'sale', label: 'Sale' },
-  { id: 'install', label: 'Install' },
-];
+export default function Integrations() {
+  const [integrations, setIntegrations] = useState([]);
+  const [trafficSources, setTrafficSources] = useState([]);
+  const [connecting, setConnecting] = useState(null);
+  const [credentials, setCredentials] = useState({});
+  const [testResult, setTestResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(null);
 
-export function Integrations() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [testingId, setTestingId] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    postback_url: '',
-    secret: '',
-    events: ['click', 'lead', 'sale'],
-    active: true
-  });
+  useEffect(() => {
+    Promise.all([
+      api.get('/admin/traffic-sources/integrations').then(r => setIntegrations(r.data?.data || [])),
+      api.get('/admin/traffic-sources').then(r => setTrafficSources(r.data?.data || [])),
+    ]).finally(() => setLoading(false));
+  }, []);
 
-  const queryClient = useQueryClient();
+  const connectedPlatforms = new Set(trafficSources.map(ts => ts.platform_type).filter(Boolean));
 
-  const { data: networks, isLoading } = useQuery({
-    queryKey: ['networks'],
-    queryFn: async () => {
-      const response = await api.get('/api/admin/networks');
-      return response.data?.data ?? response.data
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data) => api.post('/api/admin/networks', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['networks']);
-      setModalOpen(false);
-      setFormData({ name: '', postback_url: '', secret: '', events: ['click', 'lead', 'sale'], active: true });
-    },
-  });
-
-  const testPostback = async (id) => {
-    setTestingId(id);
+  const handleConnect = async () => {
+    if (!connecting) return;
     try {
-      await api.post('/api/admin/networks/test', { id });
-      queryClient.invalidateQueries(['networks']);
-    } catch (error) {
-      console.error('Test postback failed', error);
-    } finally {
-      setTestingId(null);
+      setTestResult({ status: 'testing', message: 'Testing connection...' });
+      const res = await api.post(`/admin/traffic-sources/${connecting.tsId || 0}/connect`, {
+        platform_type: connecting.id,
+        ...credentials,
+      });
+      setTestResult({ status: 'success', message: `Connected: ${res.data?.account || 'OK'}` });
+      // Refresh traffic sources
+      const ts = await api.get('/admin/traffic-sources');
+      setTrafficSources(ts.data?.data || []);
+      setTimeout(() => { setConnecting(null); setCredentials({}); setTestResult(null); }, 1500);
+    } catch (err) {
+      setTestResult({ status: 'error', message: err.response?.data?.error || err.message });
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    createMutation.mutate(formData);
+  const handleSync = async (tsId) => {
+    setSyncing(tsId);
+    try {
+      const res = await api.post(`/admin/traffic-sources/${tsId}/sync`);
+      alert(`Synced ${res.data?.synced || 0} rows`);
+    } catch (err) {
+      alert(`Sync failed: ${err.response?.data?.error || err.message}`);
+    } finally {
+      setSyncing(null);
+    }
   };
 
-  const toggleEvent = (eventId) => {
-    setFormData(prev => ({
-      ...prev,
-      events: prev.events.includes(eventId)
-        ? prev.events.filter(e => e !== eventId)
-        : [...prev.events, eventId]
-    }));
-  };
-
-  const summary = networks ? {
-    active: networks.filter(n => n.active).length,
-    postbacksToday: networks.reduce((sum, n) => sum + (n.postbacks_today || 0), 0),
-    successRate: networks.length > 0 
-      ? (networks.reduce((sum, n) => sum + (n.success_rate || 0), 0) / networks.length).toFixed(1) 
-      : 0,
-    failed: networks.reduce((sum, n) => sum + (n.failed_today || 0), 0)
-  } : { active: 0, postbacksToday: 0, successRate: 0, failed: 0 };
-
-  const columns = [
-    {
-      header: 'Network',
-      accessorKey: 'name',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-indigo-500/10 flex items-center justify-center">
-            <Webhook className="w-4 h-4 text-indigo-400" />
-          </div>
-          <span className="font-medium text-white">{row.original.name}</span>
-        </div>
-      ),
-    },
-    {
-      header: 'Postback URL',
-      accessorKey: 'postback_url',
-      cell: ({ row }) => (
-        <span className="text-sm text-slate-400 font-mono truncate max-w-xs block">
-          {row.original.postback_url}
-        </span>
-      ),
-    },
-    {
-      header: 'Status',
-      accessorKey: 'active',
-      cell: ({ row }) => {
-        const isActive = row.original.active;
-        const hasErrors = row.original.last_error;
-        
-        if (!isActive) {
-          return (
-            <span className="px-2 py-1 rounded-full text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">
-              INACTIVE
-            </span>
-          );
-        }
-        
-        if (hasErrors) {
-          return (
-            <span className="px-2 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">
-              ERROR
-            </span>
-          );
-        }
-        
-        return (
-          <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-400 border border-green-500/20">
-            ACTIVE
-          </span>
-        );
-      },
-    },
-    {
-      header: 'Last Fired',
-      accessorKey: 'last_fired',
-      cell: ({ row }) => (
-        <span className="text-sm text-slate-400">
-          {row.original.last_fired ? new Date(row.original.last_fired).toLocaleString() : 'Never'}
-        </span>
-      ),
-    },
-    {
-      header: 'Success %',
-      accessorKey: 'success_rate',
-      cell: ({ row }) => {
-        const rate = row.original.success_rate || 0;
-        const color = rate >= 90 ? 'text-green-400' : rate >= 70 ? 'text-yellow-400' : 'text-red-400';
-        return <span className={`text-sm font-bold ${color}`}>{rate}%</span>;
-      },
-    },
-    {
-      header: 'Actions',
-      cell: ({ row }) => (
-        <button
-          onClick={() => testPostback(row.original.id)}
-          disabled={testingId === row.original.id}
-          className={`p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors ${
-            testingId === row.original.id ? 'animate-spin' : ''
-          }`}
-          title="Test Postback"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
-      ),
-    },
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <RefreshCw className="w-8 h-8 text-indigo-400 animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <div className="text-white p-8">Loading integrations...</div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent mb-2">
-            API Integrations
-          </h1>
-          <p className="text-slate-400">Manage postback integrations and webhook endpoints</p>
-        </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="px-4 py-2 bg-indigo-primary hover:bg-indigo-light text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Add Integration
-        </button>
+        <h1 className="text-2xl font-bold text-white">Integrations</h1>
+        <span className="text-sm text-gray-400">{integrations.length} available</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          label="Active Integrations"
-          value={summary.active.toString()}
-          accent="indigo"
-          icon={Webhook}
-        />
-        <StatCard
-          label="Postbacks Today"
-          value={summary.postbacksToday.toLocaleString()}
-          accent="green"
-          icon={Activity}
-        />
-        <StatCard
-          label="Success Rate"
-          value={`${summary.successRate}%`}
-          accent="indigo"
-          icon={Zap}
-        />
-        <StatCard
-          label="Failed Today"
-          value={summary.failed.toString()}
-          accent="red"
-          icon={XCircle}
-        />
-      </div>
+      {/* Integration Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {integrations.map(int => {
+          const connected = connectedPlatforms.has(int.id);
+          const ts = trafficSources.find(t => t.platform_type === int.id);
+          return (
+            <GlassCard key={int.id}>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{int.icon}</span>
+                  <div>
+                    <h3 className="font-semibold text-white">{int.name}</h3>
+                    <p className="text-xs text-gray-400">{int.description}</p>
+                  </div>
+                </div>
+                {connected && <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-500/20 text-emerald-400">Connected</span>}
+              </div>
 
-      <GlassCard>
-        <DataTable data={networks || []} columns={columns} />
-      </GlassCard>
-
-      <Modal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        title="Add Integration"
-        description="Configure a new postback integration"
-        size="lg"
-      >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Network Name
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors"
-              placeholder="e.g., MaxBounty, PeerFly"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Postback URL
-            </label>
-            <input
-              type="url"
-              required
-              value={formData.postback_url}
-              onChange={(e) => setFormData({ ...formData, postback_url: e.target.value })}
-              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors font-mono text-sm"
-              placeholder="https://network.com/postback?click_id={click_id}"
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Use macros: {'{click_id}'}, {'{conversion_id}'}, {'{payout}'}, {'{status}'}
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Secret Key (Optional)
-            </label>
-            <input
-              type="text"
-              value={formData.secret}
-              onChange={(e) => setFormData({ ...formData, secret: e.target.value })}
-              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors font-mono"
-              placeholder="Optional authentication secret"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-3">
-              Events to Track
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {EVENT_TYPES.map(event => (
-                <label
-                  key={event.id}
-                  className="flex items-center gap-3 p-3 bg-black/20 border border-white/10 rounded-lg cursor-pointer hover:border-indigo-primary/50 transition-colors"
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => { setConnecting(int); setCredentials({}); setTestResult(null); }}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${connected ? 'bg-white/10 hover:bg-white/20 text-gray-300' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={formData.events.includes(event.id)}
-                    onChange={() => toggleEvent(event.id)}
-                    className="w-4 h-4 rounded border-white/20 bg-black/30 text-indigo-primary focus:ring-indigo-primary focus:ring-offset-0"
-                  />
-                  <span className="text-sm text-slate-300">{event.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+                  {connected ? 'Reconnect' : 'Connect'}
+                </button>
+                {connected && ts && (
+                  <button
+                    onClick={() => handleSync(ts.id)}
+                    disabled={syncing === ts.id}
+                    className="px-3 py-2 rounded-lg text-sm font-medium bg-white/10 hover:bg-white/20 text-gray-300 transition-colors disabled:opacity-50"
+                  >
+                    {syncing === ts.id ? 'Syncing...' : 'Sync'}
+                  </button>
+                )}
+              </div>
+            </GlassCard>
+          );
+        })}
+      </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="px-4 py-2 bg-indigo-primary hover:bg-indigo-light text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-            >
-              {createMutation.isPending ? 'Creating...' : 'Create Integration'}
-            </button>
+      {/* Connected Sources Table */}
+      {trafficSources.length > 0 && (
+        <GlassCard>
+          <h2 className="text-lg font-semibold text-white mb-4">Connected Sources</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-2 px-3 text-gray-400 font-medium">Platform</th>
+                  <th className="text-left py-2 px-3 text-gray-400 font-medium">Name</th>
+                  <th className="text-left py-2 px-3 text-gray-400 font-medium">Last Synced</th>
+                  <th className="text-right py-2 px-3 text-gray-400 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trafficSources.map(ts => {
+                  const int = integrations.find(i => i.id === ts.platform_type);
+                  return (
+                    <tr key={ts.id} className="border-b border-white/5">
+                      <td className="py-2 px-3 text-gray-300">{int?.icon} {int?.name || ts.platform_type}</td>
+                      <td className="py-2 px-3 text-gray-300">{ts.name}</td>
+                      <td className="py-2 px-3 text-gray-400">{ts.last_synced_at ? new Date(ts.last_synced_at * 1000).toLocaleString() : 'Never'}</td>
+                      <td className="py-2 px-3 text-right">
+                        <button onClick={() => handleSync(ts.id)} disabled={syncing === ts.id} className="text-indigo-400 hover:text-indigo-300 text-sm disabled:opacity-50">
+                          {syncing === ts.id ? 'Syncing...' : 'Sync Now'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </form>
-      </Modal>
+        </GlassCard>
+      )}
+
+      {/* Connect Modal */}
+      <AnimatePresence>
+        {connecting && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setConnecting(null)}>
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-white/10 bg-surface-2 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">{connecting.icon}</span>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Connect {connecting.name}</h3>
+                  <p className="text-xs text-gray-400">{connecting.description}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {/* Traffic source name */}
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Source Name</label>
+                  <input type="text" placeholder={`My ${connecting.name}`} onChange={e => setCredentials(c => ({ ...c, _name: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500" />
+                </div>
+                {/* Dynamic auth fields */}
+                {connecting.auth_fields?.map(field => (
+                  <div key={field.key}>
+                    <label className="block text-xs text-gray-400 mb-1">{field.label}{field.required && <span className="text-red-400 ml-1">*</span>}</label>
+                    <input
+                      type={field.type || 'text'}
+                      placeholder={field.label}
+                      onChange={e => setCredentials(c => ({ ...c, [field.key]: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {testResult && (
+                <div className={`mt-3 p-2 rounded-lg text-sm ${testResult.status === 'success' ? 'bg-emerald-500/20 text-emerald-400' : testResult.status === 'testing' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-red-500/20 text-red-400'}`}>
+                  {testResult.message}
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-5">
+                <button onClick={() => setConnecting(null)} className="flex-1 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 text-sm font-medium transition-colors">Cancel</button>
+                <button onClick={handleConnect} className="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors">Connect</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

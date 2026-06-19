@@ -62,6 +62,7 @@ $rotator_sql = "SELECT  tr.user_id,
 				LEFT JOIN users_pref AS up ON up.user_id = tr.user_id
 				WHERE   tracker_id_public='".$mysql['tracker_id_public']."'"; 
 $rotator_row = memcache_mysql_fetch_assoc($db, $rotator_sql);
+if (!$rotator_row) die();
 $user_id = $conn->escape((string)$rotator_row['user_id']);
 $user_keyword_searched_or_bidded = $conn->escape($rotator_row['user_keyword_searched_or_bidded']);
 
@@ -71,7 +72,6 @@ $rule_sql = "SELECT ru.id as rule_id
 			 FROM rotator_rules AS ru
 			 WHERE rotator_id='".$mysql['rotator_id']."' AND status='1'"; 
 $rule_row = foreach_memcache_mysql_fetch_assoc($db, $rule_sql);
-if (!$rotator_row) die();
 
 AUTH::set_timezone($rotator_row['user_timezone']);
 
@@ -549,7 +549,7 @@ if(isset($_GET['lpr']) && $_GET['lpr'] != '') {
 					LEFT JOIN 	keywords USING (keyword_id) 
 					WHERE 	ips.ip_address='".$ip_address."'
 					AND		clicks.user_id='".$user_id."'  
-					AND		clicks.click_time >= '30'
+					AND		clicks.click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY))
 					ORDER BY 	clicks.click_id DESC 
 					LIMIT 		1";
 	$click_result1 = $conn->query($click_sql1) or record_mysql_error($click_sql1);

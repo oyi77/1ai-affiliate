@@ -1,0 +1,13 @@
+{
+  "id": "direct_link",
+  "name": "Direct Link Campaign",
+  "icon": "🎯",
+  "description": "1:1 traffic source to offer mapping",
+  "fields": [
+    { "key": "name", "label": "Campaign Name", "type": "text", "required": true },
+    { "key": "type", "type": "hidden", "default": "direct" },
+    { "key": "traffic_source_id", "label": "Traffic Source", "type": "number", "required": true },
+    { "key": "offer_id", "label": "Offer", "type": "number", "required": true },
+    { "key": "status", "label": "Status", "type": "select", "options": ["active", "paused"], "default": "active" }
+  ]
+}

@@ -1,6 +1,6 @@
 const pool = require('../db/mysql');
 const { mintSmartlink, shortenUrl } = require('../services/smartlinkService');
-const fraudDetectionService = require('../services/fraudDetectionService');
+const fraudRuleEngine = require('../services/fraudRuleEngine');
 
 async function routeTrafficByHash(req, res) {
   const slug = req.params.hash;
@@ -14,13 +14,20 @@ async function routeTrafficByHash(req, res) {
     if (!links.length) return res.status(404).send('Link not found');
     const link = links[0];
 
-    // Fraud check
-    const fraud = await fraudDetectionService.evaluate({
-      ip: req.ip || req.connection?.remoteAddress || '',
-      userAgent: req.get('User-Agent') || '',
-      referer: req.get('Referer') || '',
+    // Fraud check — unified scoring engine
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    const userAgent = req.get('User-Agent') || '';
+    const referer = req.get('Referer') || '';
+    const fraud = await fraudRuleEngine.evaluateClick(pool, {
+      ip, userAgent, referer, slug,
+      offer_id: link.offer_id, affiliate_id: link.affiliate_id,
     });
-    if (fraud.block) return res.status(403).send('Blocked');
+    if (fraud.action === 'block') return res.status(403).send('Blocked');
+    // Record click for velocity tracking
+    fraudRuleEngine.recordClick(pool, ip, null, link.affiliate_id, userAgent, fraud.action === 'block', fraud.rules.map(r => r.reason).join('; '));
+    if (fraud.score >= 80) {
+      fraudRuleEngine.autoBlacklist(pool, ip, fraud.score, fraud.rules.map(r => r.reason).join('; '));
+    }
 
     // Determine target URL
     let targetUrl = 'https://example.com/fallback';

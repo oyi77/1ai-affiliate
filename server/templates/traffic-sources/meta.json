@@ -1,0 +1,12 @@
+{
+  "id": "meta",
+  "name": "Meta Ads",
+  "icon": "📘",
+  "description": "Facebook & Instagram advertising",
+  "fields": [
+    { "key": "name", "label": "Source Name", "type": "text", "required": true, "default": "Meta Ads" },
+    { "key": "platform_type", "type": "hidden", "default": "meta" },
+    { "key": "cost_model", "label": "Cost Model", "type": "select", "options": ["CPC", "CPM", "CPA"], "required": true, "default": "CPC" },
+    { "key": "currency", "label": "Currency", "type": "text", "default": "IDR" }
+  ]
+}

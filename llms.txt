@@ -1,0 +1,108 @@
+# 1ai-Affiliate — Affiliate Tracking Platform
+
+> Self-hosted CPA tracking with sub-ms redirects, modular integrations, and template-driven entity creation. AI-agent friendly: MCP server, llms.txt, structured API.
+
+## For AI Agents
+
+This is a self-hosted affiliate marketing tracking platform. You can manage it programmatically via REST API or MCP tools.
+
+### Quick Start
+
+- **Base URL**: `http://localhost:3001` (or your deployment URL)
+- **Auth**: JWT Bearer token from `POST /api/auth/login`
+- **API Docs**: `/api-docs` (interactive) or `/integration-api-docs.md` (integrations)
+
+### Core Concepts
+
+- **Traffic Source**: An ad platform (Meta, Google, TikTok, etc.) with stored credentials
+- **Offer**: A product/offer being promoted, with payout and postback config
+- **Campaign**: Links a traffic source to an offer with targeting rules
+- **Click**: Recorded when a user follows a smartlink/tracking link
+- **Conversion**: Recorded via S2S postback when a click leads to a sale
+
+### Integration System
+
+The platform uses a **plugin architecture** for ad platform integrations. Each integration is a self-contained module in `server/integrations/platforms/`. The registry auto-discovers all modules.
+
+**Available integrations** (auto-detected):
+- Meta Ads (Facebook/Instagram)
+- Google Ads (Search/Display/YouTube)
+- TikTok Ads
+
+**Adding a new integration**: Copy `server/integrations/platforms/_template.js`, fill in 3 functions (`meta`, `testConnection`, `fetchStats`), restart server. No other files need changing.
+
+### Key API Endpoints
+
+#### Authentication
+- `POST /api/auth/login` → `{ token }`
+- `POST /api/auth/register` → create account
+
+#### Integrations
+- `GET /api/admin/traffic-sources/integrations` → list all available integrations with auth field schemas
+- `POST /api/admin/traffic-sources/:id/connect` → connect a platform (body: `{ platform_type, ...credentials }`)
+- `POST /api/admin/traffic-sources/:id/sync` → sync campaign stats from the platform
+- `GET /api/admin/traffic-sources/:id/daily-stats` → get synced stats
+
+#### Tracking
+- `GET /go/:hash` → redirect click (302)
+- `POST /postback` → record conversion (S2S postback)
+- `GET /go/honeypot/:campaignId` → fraud trap (hidden from users)
+
+#### Reports
+- `GET /api/admin/reports/clicks` → paginated click log
+- `GET /api/admin/reports/conversions` → conversion log
+- `GET /api/admin/reports/ads` → merged ad spend + commission report
+- `GET /api/admin/reports/daily?group_by=hourly|daily|weekly|monthly` → time-series
+- `GET /api/admin/reports/breakdown?dimension=country|device|os|browser` → dimension breakdown
+- `GET /api/admin/reports/attribution?model=first|last|linear` → attribution model
+- `POST /api/admin/reports/custom` → custom report builder
+
+#### Campaigns & Offers
+- `GET/POST /api/admin/campaigns` → CRUD
+- `GET/POST /api/admin/offers` → CRUD
+- `GET/POST /api/admin/advertisers` → CRUD
+
+#### Fraud
+- `GET /api/admin/fraud/dashboard` → 24h fraud stats
+- Honeypot links auto-generated per campaign
+
+#### Webhooks
+- `POST /api/admin/webhooks` → register webhook
+- Events: click, conversion, fraud_block, cap_reached
+
+### Tech Stack
+
+- **Edge**: Go (sub-ms redirect, Kafka, Redis, ClickHouse)
+- **API**: Node.js Express (JWT, Zod validation)
+- **Frontend**: React 19 SPA (Vite, Tailwind CSS v4)
+- **Tracking Engine**: PHP 8.3+ (legacy, shared MySQL)
+- **Event Stream**: Kafka / Redpanda
+- **Analytics**: ClickHouse (90-day TTL, monthly partitions)
+- **Cache**: Redis Cluster
+- **DB**: MySQL 8.0+
+
+### Template System
+
+All major entities support templates: traffic-sources, advertisers, offers, campaigns, smartlinks, landing-pages, shortlinks.
+Each template is a JSON file in `server/templates/<entity-type>/`. Drop a file → it appears in the UI and API.
+
+- `GET /api/templates` — list all templates grouped by entity type
+- `GET /api/templates/:entityType` — list templates for one entity type
+- `POST /api/templates/:entityType/:templateId/apply` — merge template defaults with user values
+
+### MCP Server
+
+`mcp/server.js` — stdio MCP server with 10 tools: list_integrations, connect_integration, sync_traffic_source, list_traffic_sources, get_fraud_dashboard, get_reports, create_campaign, create_offer, list_templates, create_from_template.
+
+Config: `mcp/mcp.json` (for Claude Desktop, Cursor, etc.)
+
+### Files of Interest
+
+- `server/integrations/registry.js` — integration auto-discovery
+- `server/integrations/platforms/` — one file per ad platform
+- `server/integrations/platforms/_template.js` — copy this to add new integrations
+- `server/templates/` — JSON templates for all entity types
+- `server/services/templateRegistry.js` — template auto-discovery + validation
+- `server/services/fraudRuleEngine.js` — unified fraud scoring
+- `server/services/capiService.js` — Meta/Google Conversion API
+- `edge/cmd/edgeredirect/main.go` — Go edge redirect server

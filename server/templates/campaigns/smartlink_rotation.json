@@ -1,0 +1,12 @@
+{
+  "id": "smartlink_rotation",
+  "name": "Smartlink Rotation",
+  "icon": "🔗",
+  "description": "Auto-rotate offers based on geo/device/OS rules",
+  "fields": [
+    { "key": "name", "label": "Smartlink Name", "type": "text", "required": true },
+    { "key": "type", "type": "hidden", "default": "smartlink" },
+    { "key": "default_url", "label": "Fallback URL", "type": "text", "required": true, "placeholder": "https://fallback-offer.com" },
+    { "key": "rules_enabled", "label": "Enable Geo/Device Rules", "type": "select", "options": ["true", "false"], "default": "true" }
+  ]
+}

@@ -893,6 +893,41 @@ async function createManualConversion(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+/**
+ * GET /api/admin/pixel/test?offer_id=X — Generate test conversion pixel HTML
+ */
+async function testConversionPixel(req, res) {
+  const offerId = parseInt(req.query.offer_id);
+  if (!offerId) return res.status(400).json({ error: 'offer_id required' });
+
+  const offer = await queryOne('SELECT id, name, postback_url FROM 1ai_offers WHERE id = ?', [offerId]);
+  if (!offer.id) return res.status(404).json({ error: 'Offer not found' });
+
+  const testClickId = `test_${Date.now()}`;
+  const host = req.get('host') || 'localhost:3001';
+  const protocol = req.protocol || 'http';
+  const baseUrl = `${protocol}://${host}`;
+
+  const pixelHtml = `<!-- 1ai Conversion Pixel (Test) -->
+<img src="${baseUrl}/postback?click_id=${testClickId}&payout=10.00&event=Purchase" width="1" height="1" style="display:none" alt="" />
+<!-- Server-side postback URL -->
+<!-- ${baseUrl}/postback?click_id={CLICK_ID}&payout={PAYOUT}&event={EVENT} -->`;
+
+  res.json({
+    offer_id: offerId,
+    offer_name: offer.name,
+    test_click_id: testClickId,
+    pixel_html: pixelHtml,
+    postback_url: `${baseUrl}/postback`,
+    expected_params: {
+      click_id: testClickId,
+      payout: '10.00',
+      event: 'Purchase',
+      transaction_id: `tx_${Date.now()}`,
+    },
+    curl_command: `curl -X POST "${baseUrl}/postback" -d "click_id=${testClickId}&payout=10.00&event=Purchase"`,
+  });
+}
 
 module.exports = {
   getUsers,
@@ -919,7 +954,7 @@ module.exports = {
   getShortenerServices,
   saveShortenerService,
   deleteShortenerService,
-  testShortenerService,
   createManualConversion,
+  testConversionPixel,
 };
 

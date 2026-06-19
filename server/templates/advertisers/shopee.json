@@ -1,0 +1,13 @@
+{
+  "id": "shopee",
+  "name": "Shopee Affiliate",
+  "icon": "🛒",
+  "description": "Shopee e-commerce affiliate program",
+  "fields": [
+    { "key": "company_name", "label": "Account Name", "type": "text", "required": true, "default": "Shopee" },
+    { "key": "platform_type", "type": "hidden", "default": "shopee" },
+    { "key": "commission_type", "label": "Commission Type", "type": "select", "options": ["percentage", "fixed"], "default": "percentage" },
+    { "key": "default_commission_rate", "label": "Commission Rate (%)", "type": "number", "default": 5, "min": 0 },
+    { "key": "website", "label": "Affiliate Dashboard URL", "type": "text", "default": "https://affiliate.shopee.co.id" }
+  ]
+}

@@ -29,6 +29,7 @@ const {
   deleteShortenerService,
   testShortenerService,
   createManualConversion,
+  testConversionPixel,
 } = require('../controllers/adminController');
 
 router.use(authenticate);
@@ -85,5 +86,27 @@ router.post('/shorteners/:id/test', requireAdmin, testShortenerService);
 
 // Manual conversion entry
 router.post('/conversions/manual', requireAdmin, createManualConversion);
+router.get('/pixel/test', requireAdmin, testConversionPixel);
+
+// Fraud Dashboard
+router.get('/fraud/dashboard', requireAdmin, async (req, res) => {
+  const pool = require('../db/mysql');
+  try {
+    const [totalClicks] = await pool.query('SELECT COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)');
+    const [blockedClicks] = await pool.query('SELECT COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE blocked = 1 AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)');
+    const [topReasons] = await pool.query('SELECT reason, COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR) AND reason IS NOT NULL GROUP BY reason ORDER BY cnt DESC LIMIT 10');
+    const [topIPs] = await pool.query('SELECT ip_address, COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY ip_address ORDER BY cnt DESC LIMIT 10');
+    const [blacklistCount] = await pool.query('SELECT COUNT(*) AS cnt FROM 1ai_fraud_blacklist');
+    res.json({
+      total_clicks_24h: totalClicks[0]?.cnt || 0,
+      blocked_clicks_24h: blockedClicks[0]?.cnt || 0,
+      top_fraud_reasons: topReasons,
+      top_fraud_ips: topIPs,
+      blacklist_size: blacklistCount[0]?.cnt || 0,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
