@@ -48,9 +48,7 @@ if (!$result || $result->num_rows === 0) {
 $page = $result->fetch_assoc();
 
 // Increment impression counter (async, don't block page load)
-$page_id = (int)$page['id'];
-$update_sql = "UPDATE deep_link_pages SET impressions = impressions + 1 WHERE id = {$page_id}";
-$db->query($update_sql);
+$db->query("UPDATE deep_link_pages SET impressions = impressions + 1 WHERE id = " . (int)$page['id']);
 
 // Build landing page HTML
 $fallback_url = $page['app_store_url'] ?? 'https://shopee.co.id/';
@@ -112,7 +110,6 @@ $logo_url = htmlspecialchars($page['logo_url'] ?? '', ENT_QUOTES);
             font-size: 36px;
         }
         .promo-image {
-            width: 100%;
             max-height: 240px;
             object-fit: cover;
             border-radius: 12px;
@@ -131,7 +128,6 @@ $logo_url = htmlspecialchars($page['logo_url'] ?? '', ENT_QUOTES);
             margin-bottom: 24px;
         }
         .btn {
-            display: inline-block;
             background: <?= $accent ?>;
             color: #fff;
             font-size: 17px;

@@ -289,6 +289,35 @@ Configure URL shorteners (Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, or custo
 - `1ai_short_url_logs` — Analytics for shortened URLs
 - `1ai_affiliate_links` — Extended with `domain_id`, `short_url`, `shortener_service_id`
 
+## React SPA Frontend (Crystal UI)
+
+As of June 2026, the platform ships with a modern React 19 Single Page Application:
+
+```
+frontend/
+├── src/pages/         # 28 production pages
+├── src/components/ui/ # GlassCard, StatCard, DataTable, Modal, SlideOver
+├── src/layout/        # Shell with 27-item sidebar navigation
+├── src/lib/api.js     # Axios + JWT auth interceptor
+├── vite.config.js     # Builds → server/public/dist/
+└── package.json       # React 19, Tailwind v4, TanStack Query
+```
+
+**Quick start (dev):**
+```bash
+cd frontend && npm install && npm run dev    # Dev server with HMR, proxies /api → :3001
+```
+
+**Production build:**
+```bash
+cd frontend && npm run build                  # Outputs to server/public/dist/
+```
+
+The Express server serves the built SPA at `/` and proxies all API calls to the PHP backend.
+Legacy PHP admin panels (`/admin`, `/client`) remain accessible alongside the new React UI.
+
+See [frontend/AGENTS.md](frontend/AGENTS.md) for component patterns and design tokens.
+
 ## Directory Structure
 ## License
 
