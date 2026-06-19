@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   LayoutDashboard, Target, Layers, Link as LinkIcon, Users,
   DollarSign, Settings, Menu, X, Search, ChevronRight,
   Sparkles, BarChart3, Shield, Crown, HelpCircle,
   Globe, Server, TrendingUp, Eye, Clock, FileText,
-  Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart, Wallet, CreditCard
+  Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart, Wallet, CreditCard, Webhook,
+  Route, BarChartHorizontal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
@@ -12,11 +13,13 @@ import { Link, useLocation } from 'react-router-dom';
 const navigation = [
   { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
   { name: 'Campaigns', icon: Target, href: '/campaigns' },
+  { name: 'Campaign Compare', icon: BarChartHorizontal, href: '/campaign-compare' },
   { name: 'Offers', icon: Layers, href: '/offers' },
   { name: 'Affiliates', icon: Users, href: '/affiliates' },
   { name: 'Affiliate Dashboard', icon: BarChart2, href: '/affiliate-dashboard' },
   { name: 'Advertisers', icon: Building2, href: '/advertisers' },
   { name: 'Traffic Sources', icon: Radio, href: '/traffic-sources' },
+  { name: 'Traffic Rules', icon: Route, href: '/traffic-rules' },
   { name: 'Smartlinks', icon: LinkIcon, href: '/smartlinks' },
   { name: 'Landing Pages', icon: FileText, href: '/landing-pages' },
   { name: 'Deep Links', icon: LinkIcon, href: '/deep-links' },
@@ -42,6 +45,7 @@ const navigation = [
   { name: 'Shorteners', icon: LinkIcon, href: '/shorteners' },
   { name: 'Click Servers', icon: Server, href: '/click-servers' },
   { name: 'Integrations', icon: Layers, href: '/integrations' },
+  { name: 'Webhooks', icon: Webhook, href: '/webhooks' },
   { name: 'Pipeline', icon: Radio, href: '/pipeline' },
   { name: 'Poster', icon: Globe2, href: '/poster' },
   { name: 'Settings', icon: Settings, href: '/settings' },
@@ -53,6 +57,13 @@ const navigation = [
 
 export function Sidebar({ open, setOpen }) {
   const location = useLocation();
+
+  // Close sidebar on route change (mobile)
+  const closeOnMobile = useCallback(() => {
+    if (window.innerWidth < 1024) setOpen(false);
+  }, [setOpen]);
+
+  useEffect(() => { closeOnMobile(); }, [location.pathname, closeOnMobile]);
 
   return (
     <>
@@ -90,6 +101,7 @@ export function Sidebar({ open, setOpen }) {
                 <Link
                   key={item.name}
                   to={item.href}
+                  onClick={closeOnMobile}
                   className={`group flex items-center px-2.5 py-1.5 rounded-md text-sm transition-colors ${
                     isActive
                       ? 'bg-accent-subtle text-accent-light font-medium'
@@ -220,7 +232,17 @@ function NotificationBell() {
 }
 
 export function Shell({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Sidebar hidden by default on mobile (<lg), visible on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 1024);
+
+  // Sync on resize: auto-open when crossing into desktop, auto-close into mobile
+  useEffect(() => {
+    function onResize() {
+      if (window.innerWidth >= 1024) setSidebarOpen(true);
+    }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   return (
     <div className="min-h-screen bg-bg">
@@ -248,7 +270,7 @@ export function Shell({ children }) {
           </div>
         </header>
 
-        <div className="p-6 max-w-[1440px] mx-auto">
+        <div className="p-4 sm:p-6 max-w-[1440px] mx-auto">
           {children}
         </div>
       </main>

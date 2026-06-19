@@ -248,6 +248,82 @@ const getLaporanOrder = asyncHandler(async (req, res) => {
   return success(res, { data: rows });
 });
 
+/**
+ * GET /api/admin/reports/compare?ids=1,2,3
+ * Side-by-side campaign comparison with clicks, conversions, revenue, spend, EPC, CR, ROAS.
+ */
+const compareCampaigns = asyncHandler(async (req, res) => {
+  const idsParam = req.query.ids;
+  if (!idsParam) {
+    return error(res, 'ids query parameter is required (comma-separated campaign IDs)', 400);
+  }
+
+  const ids = idsParam.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id) && id > 0);
+  if (ids.length < 2) {
+    return error(res, 'At least 2 valid campaign IDs are required', 400);
+  }
+  if (ids.length > 10) {
+    return error(res, 'Maximum 10 campaigns can be compared', 400);
+  }
+
+  const placeholders = ids.map(() => '?').join(',');
+  const rows = await queryRows(
+    `SELECT
+       c.id,
+       c.name,
+       c.status,
+       COALESCE(SUM(cl_stats.total_clicks), 0) AS clicks,
+       COALESCE(SUM(cl_stats.total_conversions), 0) AS conversions,
+       COALESCE(SUM(cl_stats.total_revenue), 0) AS revenue,
+       COALESCE(SUM(mds_stats.total_spend), 0) AS spend,
+       CASE WHEN COALESCE(SUM(cl_stats.total_clicks), 0) > 0
+         THEN ROUND(COALESCE(SUM(cl_stats.total_revenue), 0) / SUM(cl_stats.total_clicks), 2)
+         ELSE 0 END AS epc,
+       CASE WHEN COALESCE(SUM(cl_stats.total_clicks), 0) > 0
+         THEN ROUND(COALESCE(SUM(cl_stats.total_conversions), 0) / SUM(cl_stats.total_clicks) * 100, 2)
+         ELSE 0 END AS cr,
+       CASE WHEN COALESCE(SUM(mds_stats.total_spend), 0) > 0
+         THEN ROUND((COALESCE(SUM(cl_stats.total_revenue), 0) - SUM(mds_stats.total_spend)) / SUM(mds_stats.total_spend) * 100, 2)
+         ELSE 0 END AS roi,
+       CASE WHEN COALESCE(SUM(mds_stats.total_spend), 0) > 0
+         THEN ROUND(COALESCE(SUM(cl_stats.total_revenue), 0) / SUM(mds_stats.total_spend), 2)
+         ELSE 0 END AS roas
+     FROM 1ai_campaigns c
+     LEFT JOIN (
+       SELECT campaign_id,
+              COUNT(*) AS total_clicks,
+              SUM(CASE WHEN converted = 1 THEN 1 ELSE 0 END) AS total_conversions,
+              COALESCE(SUM(payout), 0) AS total_revenue
+       FROM 1ai_click_log
+       GROUP BY campaign_id
+     ) cl_stats ON cl_stats.campaign_id = c.id
+     LEFT JOIN (
+       SELECT campaign_id,
+              COALESCE(SUM(spend), 0) AS total_spend
+       FROM 1ai_meta_daily_stats
+       GROUP BY campaign_id
+     ) mds_stats ON mds_stats.campaign_id = c.id
+     WHERE c.id IN (${placeholders})
+     GROUP BY c.id, c.name, c.status`,
+    ids
+  );
+
+  // Calculate best/worst per metric
+  const metrics = ['clicks', 'conversions', 'revenue', 'spend', 'epc', 'cr', 'roi', 'roas'];
+  const bestWorst = {};
+  for (const metric of metrics) {
+    const values = rows.map(r => Number(r[metric]) || 0);
+    if (values.length > 0) {
+      bestWorst[metric] = {
+        best: Math.max(...values),
+        worst: Math.min(...values),
+      };
+    }
+  }
+
+  return success(res, { data: rows, bestWorst });
+});
+
 module.exports = {
   getClicks,
   getConversions,
@@ -256,4 +332,5 @@ module.exports = {
   getLaporanTaglink,
   exportLaporanIklanPdf,
   getLaporanOrder,
+  compareCampaigns,
 };

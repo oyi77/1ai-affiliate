@@ -116,6 +116,7 @@ export function Affiliates() {
         data={affiliates || []} 
         columns={columns} 
         isLoading={isLoading}
+        emptyMessage="No affiliates yet."
       />
       <Modal open={createModalOpen} onOpenChange={setCreateModalOpen} title="New Affiliate">
         <div className="space-y-4">

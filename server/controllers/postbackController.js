@@ -94,6 +94,30 @@ async function receivePostback(req, res) {
     const postbackQueue = require('../services/postbackQueue');
     await postbackQueue.enqueue(postbackLogId);
 
+    // Fire Conversion API (CAPI) if configured for traffic sources linked to this offer
+    const capiService = require('../services/capiService');
+    capiService.handleConversion(pool, {
+      offer_id: click.offer_id,
+      affiliate_id: click.affiliate_id,
+      click_id,
+      payout: parseFloat(payout) || 0,
+      transaction_id: txid || null,
+      ip_address: req.ip || req.connection?.remoteAddress || '',
+      user_agent: req.headers?.['user-agent'] || '',
+      fbc: params.fbc || '',
+      fbp: params.fbp || '',
+    }).catch(err => console.error('CAPI handleConversion error:', err.message));
+
+    // Fire registered webhooks for the 'conversion' event
+    const zapierService = require('../services/zapierService');
+    zapierService.fireWebhooksForEvent(pool, click.affiliate_id, 'conversion', {
+      click_id,
+      offer_id: click.offer_id,
+      payout: parseFloat(payout) || 0,
+      transaction_id: txid || null,
+      status: 'received',
+    }).catch(err => console.error('Webhook fire error:', err.message));
+
     res.json({ success: true, postback_id: postbackLogId, payout, click_id });
   } catch (err) {
     if (isDuplicatePostbackError(err)) {

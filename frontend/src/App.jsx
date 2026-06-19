@@ -45,6 +45,9 @@ const Automation = lazy(() => import('./pages/Automation.jsx').then(m => ({ defa
 const LaporanOrder = lazy(() => import('./pages/LaporanOrder.jsx').then(m => ({ default: m.LaporanOrder })).catch(() => fallback));
 const LaporanPembayaran = lazy(() => import('./pages/LaporanPembayaran.jsx').then(m => ({ default: m.LaporanPembayaran })).catch(() => fallback));
 const SaldoBudget = lazy(() => import('./pages/SaldoBudget.jsx').then(m => ({ default: m.SaldoBudget })).catch(() => fallback));
+const TrafficRules = lazy(() => import('./pages/TrafficRules.jsx').then(m => ({ default: m.TrafficRules })).catch(() => fallback));
+const CampaignCompare = lazy(() => import('./pages/CampaignCompare.jsx').then(m => ({ default: m.CampaignCompare })).catch(() => fallback));
+const Webhooks = lazy(() => import('./pages/Webhooks.jsx').then(m => ({ default: m.Webhooks })).catch(() => fallback));
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -92,12 +95,15 @@ function App() {
             <Route path="/help" element={<Help />} />
             <Route path="/advertisers" element={<Advertisers />} />
             <Route path="/conversions/manual" element={<ManualConversion />} />
-            <Route path="/conversions" element={<ConversionLog />} />
+            <Route path="/campaign-compare" element={<CampaignCompare />} />
+            <Route path="/webhooks" element={<Webhooks />} />
             <Route path="/affiliate-dashboard" element={<AffiliateDashboard />} />
             <Route path="/automation" element={<Automation />} />
             <Route path="/laporan-order" element={<LaporanOrder />} />
             <Route path="/laporan-pembayaran" element={<LaporanPembayaran />} />
             <Route path="/saldo-budget" element={<SaldoBudget />} />
+            <Route path="/traffic-rules" element={<TrafficRules />} />
+            <Route path="/campaign-compare" element={<CampaignCompare />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
           </ErrorBoundary>

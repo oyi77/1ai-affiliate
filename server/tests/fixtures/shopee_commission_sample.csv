@@ -1,0 +1,6 @@
+Order ID,Product Name,Product Category,Order Amount,Commission,Commission Net,Order Status,Order Type,Sub ID,Date,Click Time,Order Time
+ORD-20260601-001,Tas Selempang Wanita Fashion,Tas,250000,12500,11250,Selesai,Same Shop,meta_camp_1,2026-06-01,1717200000,1717286400
+ORD-20260601-002,Kemeja Pria Lengan Panjang,Pakaian Pria,189000,9450,8505,Selesai,Same Shop,meta_camp_1,2026-06-01,1717200100,1717286500
+ORD-20260601-003,Earphone Bluetooth TWS,elektronik,125000,6250,5625,Dibatalkan,Different Shop,meta_camp_2,2026-06-01,1717200200,1717286600
+ORD-20260602-004,Sepatu Sneakers Casual,Sepatu,450000,22500,20250,Selesai,Same Shop,meta_camp_1,2026-06-02,1717286400,1717372800
+ORD-20260602-005,Masker Kain 3 Lapis,Kesehatan,25000,1250,1125,Selesai,Same Shop,organic,2026-06-02,1717286500,1717372900

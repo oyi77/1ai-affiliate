@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate, requireAdmin } = require('../middleware/auth');
+const { rateLimitAdmin } = require('../middleware/rateLimit');
 const {
   getUsers,
   createUser,
@@ -31,6 +32,7 @@ const {
 } = require('../controllers/adminController');
 
 router.use(authenticate);
+router.use(rateLimitAdmin);
 
 // Users
 router.get('/users', requireAdmin, getUsers);

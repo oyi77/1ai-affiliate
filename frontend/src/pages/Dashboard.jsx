@@ -167,7 +167,7 @@ export function Dashboard() {
         </div>
         {dailyData.length === 0 ? (
           <div className="h-64 flex items-center justify-center text-slate-400 text-sm">
-            No data available for this period
+            No data yet. Create your first campaign to get started.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>

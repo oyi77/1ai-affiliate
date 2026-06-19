@@ -175,7 +175,12 @@ const uploadAdvertiserReport = asyncHandler(async (req, res) => {
   if (!advertiser) return error(res, 'Advertiser not found', 404);
 
   const { processShopeeUpload } = require('../services/advertiserService');
-  const result = await processShopeeUpload(pool, advertiserId, req.user.id, req.file.buffer);
+  const shopeeAccountId = req.body?.shopee_account_id || null;
+  const shopeeAccountName = req.body?.shopee_account_name || null;
+  const result = await processShopeeUpload(pool, advertiserId, req.user.id, req.file.buffer, {
+    shopeeAccountId,
+    shopeeAccountName,
+  });
   return success(res, { success: true, ...result });
 });
 

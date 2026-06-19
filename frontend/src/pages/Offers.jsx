@@ -171,7 +171,7 @@ export function Offers() {
         </GlassCard>
       </div>
 
-      <DataTable data={offers || []} columns={columns} isLoading={isLoading} />
+      <DataTable data={offers || []} columns={columns} isLoading={isLoading} emptyMessage="No offers yet. Create your first offer." />
 
       <Modal
         open={createModalOpen}

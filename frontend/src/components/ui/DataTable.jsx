@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowUp, ArrowDown, Search, Download } from 'lucide-react';
 
-export function DataTable({ data = [], columns, searchable = true, exportable = true, isLoading = false }) {
+export function DataTable({ data = [], columns, searchable = true, exportable = true, isLoading = false, emptyMessage }) {
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 25 });
@@ -94,6 +94,13 @@ export function DataTable({ data = [], columns, searchable = true, exportable = 
             </tbody>
           </table>
         </div>
+        ) : data.length === 0 ? (
+          <div className="border border-white/[0.06] rounded-md">
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Search className="w-10 h-10 text-slate-600 mb-3" />
+              <p className="text-slate-400 text-sm">{emptyMessage || 'No data available'}</p>
+            </div>
+          </div>
       ) : (
         <>
           {/* Table */}

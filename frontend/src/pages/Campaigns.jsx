@@ -162,7 +162,7 @@ export function Campaigns() {
         </GlassCard>
       </div>
 
-      <DataTable data={campaigns || []} columns={columns} isLoading={isLoading} />
+      <DataTable data={campaigns || []} columns={columns} isLoading={isLoading} emptyMessage="No campaigns yet." />
 
       <Modal
         open={createModalOpen}

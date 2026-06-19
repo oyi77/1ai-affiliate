@@ -130,12 +130,16 @@ function parseShopeeCsv(buffer) {
  * @param {object} row — raw CSV row object
  * @param {number} advertiserId
  * @param {number} userId
+ * @param {string|null} [shopeeAccountId] — optional Shopee account identifier
+ * @param {string|null} [shopeeAccountName] — optional Shopee account display name
  * @returns {object} — ready for INSERT
  */
-function mapCommissionRow(row, advertiserId, userId) {
+function mapCommissionRow(row, advertiserId, userId, shopeeAccountId = null, shopeeAccountName = null) {
   return {
     user_id: userId,
     advertiser_id: advertiserId,
+    shopee_account_id: shopeeAccountId,
+    shopee_account_name: shopeeAccountName,
     taglink: row['Sub ID'] || row['Tag Link'] || row['Affiliate Sub ID'] || null,
     order_id: row['Order ID'] || row['Order No'] || null,
     product_name: row['Product Name'] || row['SKU Name'] || null,
@@ -165,8 +169,9 @@ async function bulkInsertReports(pool, rows) {
   let inserted = 0;
 
   const columns = [
-    'user_id', 'advertiser_id', 'taglink', 'order_id', 'product_name',
-    'product_category', 'commission_gross', 'commission_net', 'order_amount',
+    'user_id', 'advertiser_id', 'shopee_account_id', 'shopee_account_name',
+    'taglink', 'order_id', 'product_name', 'product_category',
+    'commission_gross', 'commission_net', 'order_amount',
     'order_status', 'order_type', 'report_date', 'created_at',
   ];
 

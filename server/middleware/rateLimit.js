@@ -43,9 +43,11 @@ const TIME_WINDOW_MS = 1000;
 const AUTH_REQUEST_LIMIT = 5;
 const AUTH_TIME_WINDOW_MS = 60000;
 
-// New per-role tier windows.
+// Per-endpoint tier windows.
 const windows = {
-  auth: new SlidingWindow(AUTH_TIME_WINDOW_MS, AUTH_REQUEST_LIMIT),
+  auth: new SlidingWindow(AUTH_TIME_WINDOW_MS, AUTH_REQUEST_LIMIT),       // login: 5/min
+  register: new SlidingWindow(60 * 1000, 3),                              // register: 3/min
+  admin: new SlidingWindow(60 * 1000, 100),                               // admin CRUD: 100/min
   write: new SlidingWindow(60 * 1000, 60),
   postback: new SlidingWindow(TIME_WINDOW_MS, REQUEST_LIMIT),
   ai: new SlidingWindow(60 * 1000, 30),
@@ -67,6 +69,8 @@ function createMiddleware(window, name, message) {
 }
 
 const rateLimitAuth = createMiddleware(windows.auth, 'auth', 'Too many attempts. Please try again later.');
+const rateLimitRegister = createMiddleware(windows.register, 'register', 'Too many registration attempts. Please try again later.');
+const rateLimitAdmin = createMiddleware(windows.admin, 'admin');
 const rateLimitWrite = createMiddleware(windows.write, 'write');
 const rateLimitPostback = createMiddleware(windows.postback, 'postback');
 const rateLimitAi = createMiddleware(windows.ai, 'ai');
@@ -86,6 +90,8 @@ function resetTier(tier, identifier) {
 
 module.exports = {
   rateLimitAuth,
+  rateLimitRegister,
+  rateLimitAdmin,
   rateLimitWrite,
   rateLimitPostback,
   rateLimitAi,

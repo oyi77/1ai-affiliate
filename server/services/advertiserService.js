@@ -121,11 +121,15 @@ async function updateAdvertiserProfile(pool, id, data) {
  * @param {number} advertiserId
  * @param {number} userId
  * @param {Buffer} fileBuffer — raw CSV file buffer
+ * @param {object} [options]
+ * @param {string|null} [options.shopeeAccountId]
+ * @param {string|null} [options.shopeeAccountName]
  * @returns {Promise<{format: string, inserted: number, errors: string[]}>}
  */
-async function processShopeeUpload(pool, advertiserId, userId, fileBuffer) {
+async function processShopeeUpload(pool, advertiserId, userId, fileBuffer, options = {}) {
   const { format, rows } = shopeeService.parseShopeeCsv(fileBuffer);
   const errors = [];
+  const { shopeeAccountId = null, shopeeAccountName = null } = options;
 
   if (format === 'payout') {
     // Payout format doesn't map to commission rows — return format info only
@@ -136,7 +140,7 @@ async function processShopeeUpload(pool, advertiserId, userId, fileBuffer) {
   const mapped = [];
   for (let i = 0; i < rows.length; i++) {
     try {
-      const row = shopeeService.mapCommissionRow(rows[i], advertiserId, userId);
+      const row = shopeeService.mapCommissionRow(rows[i], advertiserId, userId, shopeeAccountId, shopeeAccountName);
       if (row.order_id) {
         mapped.push(row);
       }

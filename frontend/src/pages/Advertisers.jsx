@@ -22,6 +22,8 @@ export function Advertisers() {
   const [detailRow, setDetailRow] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
+  const [selectedShopeeAccount, setSelectedShopeeAccount] = useState('');
+  const [newAccountName, setNewAccountName] = useState('');
   const queryClient = useQueryClient();
 
   const { data: advertisers, isLoading } = useQuery({
@@ -40,6 +42,22 @@ export function Advertisers() {
       resetForm();
     },
     onError: (err) => setFormError(err.response?.data?.error || 'Failed to create advertiser'),
+  });
+
+  const { data: shopeeAccounts = [] } = useQuery({
+    queryKey: ['shopee-accounts'],
+    queryFn: async () => {
+      const res = await api.get('/api/admin/shopee-accounts');
+      return res.data?.data ?? res.data ?? [];
+    },
+  });
+
+  const createShopeeAccountMutation = useMutation({
+    mutationFn: (data) => api.post('/api/admin/shopee-accounts', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['shopee-accounts']);
+      setNewAccountName('');
+    },
   });
 
   const columns = [
@@ -145,6 +163,11 @@ export function Advertisers() {
     try {
       const fd = new FormData();
       fd.append('file', file);
+      if (selectedShopeeAccount) {
+        const acct = shopeeAccounts.find(a => a.account_id === selectedShopeeAccount);
+        fd.append('shopee_account_id', selectedShopeeAccount);
+        if (acct?.name) fd.append('shopee_account_name', acct.name);
+      }
       const res = await api.post(`/api/admin/advertisers/${detailRow.id}/upload`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -155,7 +178,7 @@ export function Advertisers() {
     } finally {
       setUploading(false);
     }
-  }, [detailRow, queryClient]);
+  }, [detailRow, queryClient, selectedShopeeAccount, shopeeAccounts]);
 
   return (
     <div className="space-y-6">
@@ -174,7 +197,7 @@ export function Advertisers() {
       </div>
 
       <GlassCard>
-        <DataTable columns={columns} data={advertisers ?? []} isLoading={isLoading} />
+        <DataTable columns={columns} data={advertisers ?? []} isLoading={isLoading} emptyMessage="No advertisers yet. Add your first advertiser." />
       </GlassCard>
 
       {/* Create modal with template selector */}
@@ -279,7 +302,7 @@ export function Advertisers() {
       {/* Detail SlideOver with CSV upload */}
       <SlideOver
         open={!!detailRow}
-        onOpenChange={(open) => { if (!open) { setDetailRow(null); setUploadResult(null); } }}
+        onOpenChange={(open) => { if (!open) { setDetailRow(null); setUploadResult(null); setSelectedShopeeAccount(''); } }}
         title={detailRow?.user_name || 'Advertiser Detail'}
         description={detailRow?.user_email}
         width="lg"
@@ -301,6 +324,51 @@ export function Advertisers() {
               <a href={detailRow.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-indigo-light hover:underline text-sm">
                 <Globe className="w-4 h-4" /> {detailRow.website}
               </a>
+            )}
+
+            {/* Shopee Account Selector — only for Shopee advertisers */}
+            {detailRow.platform_type === 'shopee' && (
+              <div className="border-t border-white/10 pt-6">
+                <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                  🛒 Shopee Account
+                </h3>
+                <p className="text-xs text-slate-400 mb-3">Select which Shopee account this CSV belongs to, or add a new one.</p>
+                <div className="flex gap-2">
+                  <select
+                    value={selectedShopeeAccount}
+                    onChange={e => setSelectedShopeeAccount(e.target.value)}
+                    className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-indigo-primary appearance-none"
+                  >
+                    <option value="">— No specific account —</option>
+                    {shopeeAccounts.map(a => (
+                      <option key={a.account_id} value={a.account_id}>{a.name || a.account_id}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <input
+                    type="text"
+                    placeholder="New account name (e.g. Shopee Toko A)"
+                    value={newAccountName}
+                    onChange={e => setNewAccountName(e.target.value)}
+                    className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-indigo-primary"
+                  />
+                  <button
+                    type="button"
+                    disabled={!newAccountName.trim()}
+                    onClick={() => {
+                      const id = `shopee_${Date.now()}`;
+                      createShopeeAccountMutation.mutate(
+                        { account_id: id, name: newAccountName.trim() },
+                        { onSuccess: () => setSelectedShopeeAccount(id) }
+                      );
+                    }}
+                    className="px-3 py-2 bg-surface-3 border border-white/10 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* CSV Upload zone */}

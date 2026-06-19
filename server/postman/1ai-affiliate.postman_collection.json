@@ -1,0 +1,1507 @@
+{
+  "info": {
+    "name": "1AI Affiliate Platform",
+    "description": "Complete API collection for the 1AI Affiliate tracking platform.\n\n## Authentication\nAll endpoints (except Auth > Login, Auth > Register, and Postback) require a JWT token in the Authorization header:\n```\nAuthorization: Bearer {{admin_token}}\n```\n\n## Environment Variables\n- `base_url` — API server URL (e.g. http://localhost:3001)\n- `admin_token` — JWT for admin user\n- `affiliate_token` — JWT for affiliate user\n- `advertiser_token` — JWT for advertiser user",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3001" },
+    { "key": "admin_token", "value": "" },
+    { "key": "affiliate_token", "value": "" },
+    { "key": "advertiser_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@1ai.com\",\n  \"password\": \"admin123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Register Affiliate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Affiliate\",\n  \"email\": \"affiliate@example.com\",\n  \"password\": \"password123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@1ai.com\"\n}" },
+            "url": { "raw": "{{base_url}}/api/auth/forgot-password", "host": ["{{base_url}}"], "path": ["api", "auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@1ai.com\",\n  \"key\": \"RESET_KEY_HERE\",\n  \"password\": \"newpassword123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/auth/reset-password", "host": ["{{base_url}}"], "path": ["api", "auth", "reset-password"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"oldpassword\",\n  \"newPassword\": \"newpassword123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/auth/password", "host": ["{{base_url}}"], "path": ["api", "auth", "password"] }
+          }
+        },
+        {
+          "name": "Get API Key",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/auth/api-key", "host": ["{{base_url}}"], "path": ["api", "auth", "api-key"] }
+          }
+        },
+        {
+          "name": "Regenerate API Key",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/auth/api-key/regenerate", "host": ["{{base_url}}"], "path": ["api", "auth", "api-key", "regenerate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"affiliate\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Get Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/stats", "host": ["{{base_url}}"], "path": ["api", "admin", "stats"] }
+          }
+        },
+        {
+          "name": "Get System Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/system", "host": ["{{base_url}}"], "path": ["api", "admin", "system"] }
+          }
+        },
+        {
+          "name": "Get Click Servers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/clickservers", "host": ["{{base_url}}"], "path": ["api", "admin", "clickservers"] }
+          }
+        },
+        {
+          "name": "Add Click Server",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Server 2\",\n  \"url\": \"https://click2.example.com\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/clickservers", "host": ["{{base_url}}"], "path": ["api", "admin", "clickservers"] }
+          }
+        },
+        {
+          "name": "Get Commissions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/commissions", "host": ["{{base_url}}"], "path": ["api", "admin", "commissions"] }
+          }
+        },
+        {
+          "name": "Get Payments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/payments", "host": ["{{base_url}}"], "path": ["api", "admin", "payments"] }
+          }
+        },
+        {
+          "name": "Get Legacy Reports",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports", "host": ["{{base_url}}"], "path": ["api", "admin", "reports"] }
+          }
+        },
+        {
+          "name": "Export Report CSV",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports.csv", "host": ["{{base_url}}"], "path": ["api", "admin", "reports.csv"] }
+          }
+        },
+        {
+          "name": "Get Margin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/margin", "host": ["{{base_url}}"], "path": ["api", "admin", "margin"] }
+          }
+        },
+        {
+          "name": "Set Margin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"margin_pct\": 15\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/margin", "host": ["{{base_url}}"], "path": ["api", "admin", "margin"] }
+          }
+        },
+        {
+          "name": "Get Networks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/networks", "host": ["{{base_url}}"], "path": ["api", "admin", "networks"] }
+          }
+        },
+        {
+          "name": "Create Network",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Network\",\n  \"url\": \"https://network.example.com\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/networks", "host": ["{{base_url}}"], "path": ["api", "admin", "networks"] }
+          }
+        },
+        {
+          "name": "Get VIP Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/vip", "host": ["{{base_url}}"], "path": ["api", "admin", "vip"] }
+          }
+        },
+        {
+          "name": "Save VIP Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"tier\": \"gold\",\n  \"perks\": [\"priority_support\", \"lower_fees\"]\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/vip", "host": ["{{base_url}}"], "path": ["api", "admin", "vip"] }
+          }
+        },
+        {
+          "name": "Get Postback Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/postback-logs", "host": ["{{base_url}}"], "path": ["api", "admin", "postback-logs"] }
+          }
+        },
+        {
+          "name": "Manual Conversion",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"click_id\": \"CLICK_ID_HERE\",\n  \"payout\": 5000,\n  \"txid\": \"manual-001\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/conversions/manual", "host": ["{{base_url}}"], "path": ["api", "admin", "conversions", "manual"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Advertisers",
+      "item": [
+        {
+          "name": "List Advertisers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/advertisers", "host": ["{{base_url}}"], "path": ["api", "admin", "advertisers"] }
+          }
+        },
+        {
+          "name": "Create Advertiser",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Shopee Indonesia\",\n  \"email\": \"shopee@example.com\",\n  \"password\": \"password123\",\n  \"platform_type\": \"shopee\",\n  \"company_name\": \"Shopee ID\",\n  \"commission_type\": \"percentage\",\n  \"default_commission_rate\": 5.5\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/advertisers", "host": ["{{base_url}}"], "path": ["api", "admin", "advertisers"] }
+          }
+        },
+        {
+          "name": "Update Advertiser",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Name\",\n  \"default_commission_rate\": 7.0\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/advertisers/1", "host": ["{{base_url}}"], "path": ["api", "admin", "advertisers", "1"] }
+          }
+        },
+        {
+          "name": "Upload Report (CSV)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": [] }]
+            },
+            "url": { "raw": "{{base_url}}/api/admin/advertisers/1/upload", "host": ["{{base_url}}"], "path": ["api", "admin", "advertisers", "1", "upload"] }
+          }
+        },
+        {
+          "name": "Get Advertiser Reports",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/advertisers/1/reports", "host": ["{{base_url}}"], "path": ["api", "admin", "advertisers", "1", "reports"] }
+          }
+        },
+        {
+          "name": "Get Advertiser Payouts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/advertisers/1/payouts", "host": ["{{base_url}}"], "path": ["api", "admin", "advertisers", "1", "payouts"] }
+          }
+        },
+        {
+          "name": "Create Advertiser Payout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"report_id\": \"RPT-001\",\n  \"amount\": 1500000,\n  \"issued_date\": \"2026-06-15\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/advertisers/1/payouts", "host": ["{{base_url}}"], "path": ["api", "admin", "advertisers", "1", "payouts"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Traffic Sources",
+      "item": [
+        {
+          "name": "List Traffic Sources",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/traffic-sources", "host": ["{{base_url}}"], "path": ["api", "admin", "traffic-sources"] }
+          }
+        },
+        {
+          "name": "Create Traffic Source",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Meta Ads\",\n  \"platform_type\": \"meta\",\n  \"cost_model\": \"CPC\",\n  \"currency\": \"IDR\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/traffic-sources", "host": ["{{base_url}}"], "path": ["api", "admin", "traffic-sources"] }
+          }
+        },
+        {
+          "name": "Update Traffic Source",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Meta Ads Indonesia\",\n  \"cost_model\": \"CPM\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/traffic-sources/1", "host": ["{{base_url}}"], "path": ["api", "admin", "traffic-sources", "1"] }
+          }
+        },
+        {
+          "name": "Connect Meta Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"access_token\": \"EAAG...\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/traffic-sources/1/connect-meta", "host": ["{{base_url}}"], "path": ["api", "admin", "traffic-sources", "1", "connect-meta"] }
+          }
+        },
+        {
+          "name": "Sync Traffic Source",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/traffic-sources/1/sync", "host": ["{{base_url}}"], "path": ["api", "admin", "traffic-sources", "1", "sync"] }
+          }
+        },
+        {
+          "name": "Get Daily Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/traffic-sources/1/daily-stats", "host": ["{{base_url}}"], "path": ["api", "admin", "traffic-sources", "1", "daily-stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Offers",
+      "item": [
+        {
+          "name": "List Offers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/offers", "host": ["{{base_url}}"], "path": ["api", "admin", "offers"] }
+          }
+        },
+        {
+          "name": "Create Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Shopee Flash Sale\",\n  \"url\": \"https://shopee.co.id/flash\",\n  \"payout\": 5000,\n  \"payout_type\": \"CPA\",\n  \"country\": \"ID\",\n  \"status\": \"active\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/offers", "host": ["{{base_url}}"], "path": ["api", "admin", "offers"] }
+          }
+        },
+        {
+          "name": "Update Offer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"payout\": 7500,\n  \"status\": \"active\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/offers/1", "host": ["{{base_url}}"], "path": ["api", "admin", "offers", "1"] }
+          }
+        },
+        {
+          "name": "Set Offer Postback",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://postback.example.com/conv\",\n  \"method\": \"GET\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/offers/1/postback", "host": ["{{base_url}}"], "path": ["api", "admin", "offers", "1", "postback"] }
+          }
+        },
+        {
+          "name": "Get Offer Postback",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/offers/1/postback", "host": ["{{base_url}}"], "path": ["api", "admin", "offers", "1", "postback"] }
+          }
+        },
+        {
+          "name": "Get Offer Landing Pages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/offers/1/landing-pages", "host": ["{{base_url}}"], "path": ["api", "admin", "offers", "1", "landing-pages"] }
+          }
+        },
+        {
+          "name": "Add Offer Landing Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://landing.example.com/v1\",\n  \"weight\": 50\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/offers/1/landing-pages", "host": ["{{base_url}}"], "path": ["api", "admin", "offers", "1", "landing-pages"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Campaigns",
+      "item": [
+        {
+          "name": "List Campaigns",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/campaigns", "host": ["{{base_url}}"], "path": ["api", "admin", "campaigns"] }
+          }
+        },
+        {
+          "name": "Create Campaign",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Summer Sale Campaign\",\n  \"offer_id\": 1,\n  \"traffic_source_id\": 1,\n  \"status\": \"active\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/campaigns", "host": ["{{base_url}}"], "path": ["api", "admin", "campaigns"] }
+          }
+        },
+        {
+          "name": "Update Campaign",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Campaign Name\",\n  \"status\": \"paused\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/campaigns/1", "host": ["{{base_url}}"], "path": ["api", "admin", "campaigns", "1"] }
+          }
+        },
+        {
+          "name": "Set Offer Rotation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"rotation_type\": \"weighted\",\n  \"offers\": [\n    { \"offer_id\": 1, \"weight\": 60 },\n    { \"offer_id\": 2, \"weight\": 40 }\n  ]\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/campaigns/1/rotation", "host": ["{{base_url}}"], "path": ["api", "admin", "campaigns", "1", "rotation"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Clicks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/clicks?limit=50", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "clicks"], "query": [{ "key": "limit", "value": "50" }] }
+          }
+        },
+        {
+          "name": "Conversions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/conversions?limit=50", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "conversions"], "query": [{ "key": "limit", "value": "50" }] }
+          }
+        },
+        {
+          "name": "Laporan Iklan (Ad Report)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/ads?dateFrom=2026-06-01&dateTo=2026-06-19", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "ads"], "query": [{ "key": "dateFrom", "value": "2026-06-01" }, { "key": "dateTo", "value": "2026-06-19" }] }
+          }
+        },
+        {
+          "name": "Analytic Harian (Daily)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/daily?dateFrom=2026-06-01&dateTo=2026-06-19", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "daily"], "query": [{ "key": "dateFrom", "value": "2026-06-01" }, { "key": "dateTo", "value": "2026-06-19" }] }
+          }
+        },
+        {
+          "name": "Laporan Taglink",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/taglink?dateFrom=2026-06-01&dateTo=2026-06-19", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "taglink"], "query": [{ "key": "dateFrom", "value": "2026-06-01" }, { "key": "dateTo", "value": "2026-06-19" }] }
+          }
+        },
+        {
+          "name": "Laporan Iklan PDF",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/ads.pdf?dateFrom=2026-06-01&dateTo=2026-06-19", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "ads.pdf"], "query": [{ "key": "dateFrom", "value": "2026-06-01" }, { "key": "dateTo", "value": "2026-06-19" }] }
+          }
+        },
+        {
+          "name": "Laporan Order",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/orders", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "orders"] }
+          }
+        },
+        {
+          "name": "Compare Campaigns",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/reports/compare?ids=1,2,3", "host": ["{{base_url}}"], "path": ["api", "admin", "reports", "compare"], "query": [{ "key": "ids", "value": "1,2,3" }] }
+          }
+        },
+        {
+          "name": "Daily Stats (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/stats/daily?range=30d", "host": ["{{base_url}}"], "path": ["api", "admin", "stats", "daily"], "query": [{ "key": "range", "value": "30d" }] }
+          }
+        },
+        {
+          "name": "Stats Stream (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/stats/stream", "host": ["{{base_url}}"], "path": ["api", "admin", "stats", "stream"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Affiliates",
+      "item": [
+        {
+          "name": "List Affiliates",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/affiliates", "host": ["{{base_url}}"], "path": ["api", "admin", "affiliates"] }
+          }
+        },
+        {
+          "name": "Create Affiliate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Affiliate\",\n  \"email\": \"newaffiliate@example.com\",\n  \"password\": \"password123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/affiliates", "host": ["{{base_url}}"], "path": ["api", "admin", "affiliates"] }
+          }
+        },
+        {
+          "name": "Get Earnings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/affiliates/earnings", "host": ["{{base_url}}"], "path": ["api", "admin", "affiliates", "earnings"] }
+          }
+        },
+        {
+          "name": "Approve Earning",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/affiliates/earnings/1/approve", "host": ["{{base_url}}"], "path": ["api", "admin", "affiliates", "earnings", "1", "approve"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Affiliate Dashboard",
+      "description": "Self-service endpoints for affiliate users",
+      "item": [
+        {
+          "name": "My Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{affiliate_token}}" }],
+            "url": { "raw": "{{base_url}}/api/affiliate/stats", "host": ["{{base_url}}"], "path": ["api", "affiliate", "stats"] }
+          }
+        },
+        {
+          "name": "My Links",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{affiliate_token}}" }],
+            "url": { "raw": "{{base_url}}/api/affiliate/links", "host": ["{{base_url}}"], "path": ["api", "affiliate", "links"] }
+          }
+        },
+        {
+          "name": "My Earnings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{affiliate_token}}" }],
+            "url": { "raw": "{{base_url}}/api/affiliate/earnings", "host": ["{{base_url}}"], "path": ["api", "affiliate", "earnings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/profile", "host": ["{{base_url}}"], "path": ["api", "settings", "profile"] }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Admin\",\n  \"email\": \"admin@1ai.com\"\n}" },
+            "url": { "raw": "{{base_url}}/api/settings/profile", "host": ["{{base_url}}"], "path": ["api", "settings", "profile"] }
+          }
+        },
+        {
+          "name": "Generate API Key",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/api-key", "host": ["{{base_url}}"], "path": ["api", "settings", "api-key"] }
+          }
+        },
+        {
+          "name": "Remove API Key",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/api-key", "host": ["{{base_url}}"], "path": ["api", "settings", "api-key"] }
+          }
+        },
+        {
+          "name": "Get Integrations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/integrations", "host": ["{{base_url}}"], "path": ["api", "settings", "integrations"] }
+          }
+        },
+        {
+          "name": "Update Integration",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"provider\": \"telegram\",\n  \"enabled\": true,\n  \"config\": { \"bot_token\": \"123:ABC\" }\n}" },
+            "url": { "raw": "{{base_url}}/api/settings/integrations", "host": ["{{base_url}}"], "path": ["api", "settings", "integrations"] }
+          }
+        },
+        {
+          "name": "Get Postback Config",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/postback", "host": ["{{base_url}}"], "path": ["api", "settings", "postback"] }
+          }
+        },
+        {
+          "name": "Update Postback Config",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"postback_url\": \"https://postback.example.com\",\n  \"method\": \"GET\"\n}" },
+            "url": { "raw": "{{base_url}}/api/settings/postback", "host": ["{{base_url}}"], "path": ["api", "settings", "postback"] }
+          }
+        },
+        {
+          "name": "Get White Label Config",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/white-label", "host": ["{{base_url}}"], "path": ["api", "settings", "white-label"] }
+          }
+        },
+        {
+          "name": "Save White Label Config",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"brand_name\": \"My Affiliate Hub\",\n  \"primary_color\": \"#6366f1\",\n  \"logo_url\": \"https://example.com/logo.png\"\n}" },
+            "url": { "raw": "{{base_url}}/api/settings/white-label", "host": ["{{base_url}}"], "path": ["api", "settings", "white-label"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Telegram",
+      "item": [
+        {
+          "name": "Get Telegram Config",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/telegram", "host": ["{{base_url}}"], "path": ["api", "settings", "telegram"] }
+          }
+        },
+        {
+          "name": "Save Telegram Config",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"bot_token\": \"123456:ABC-DEF\",\n  \"chat_id\": \"-100123456789\",\n  \"daily_summary_enabled\": true,\n  \"balance_alert_enabled\": true,\n  \"balance_alert_threshold\": 200000\n}" },
+            "url": { "raw": "{{base_url}}/api/settings/telegram", "host": ["{{base_url}}"], "path": ["api", "settings", "telegram"] }
+          }
+        },
+        {
+          "name": "Test Telegram Connection",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/telegram/test", "host": ["{{base_url}}"], "path": ["api", "settings", "telegram", "test"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payouts",
+      "item": [
+        {
+          "name": "Get Payout Rules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/settings/payouts/rules", "host": ["{{base_url}}"], "path": ["api", "settings", "payouts", "rules"] }
+          }
+        },
+        {
+          "name": "Save Payout Rules",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"min_amount\": 100000,\n  \"auto_approve\": false,\n  \"payment_method\": \"bank_transfer\",\n  \"payment_schedule\": \"monthly\"\n}" },
+            "url": { "raw": "{{base_url}}/api/settings/payouts/rules", "host": ["{{base_url}}"], "path": ["api", "settings", "payouts", "rules"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Domains",
+      "item": [
+        {
+          "name": "List Domains",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/domains", "host": ["{{base_url}}"], "path": ["api", "admin", "domains"] }
+          }
+        },
+        {
+          "name": "Create Domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"domain\": \"track.example.com\",\n  \"type\": \"smartlink\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/domains", "host": ["{{base_url}}"], "path": ["api", "admin", "domains"] }
+          }
+        },
+        {
+          "name": "Update Domain",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"active\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/domains/1", "host": ["{{base_url}}"], "path": ["api", "admin", "domains", "1"] }
+          }
+        },
+        {
+          "name": "Delete Domain",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/domains/1", "host": ["{{base_url}}"], "path": ["api", "admin", "domains", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shorteners",
+      "item": [
+        {
+          "name": "List Shortener Services",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/shorteners", "host": ["{{base_url}}"], "path": ["api", "admin", "shorteners"] }
+          }
+        },
+        {
+          "name": "Save Shortener Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Short.io\",\n  \"api_key\": \"sk_...\",\n  \"base_url\": \"https://short.io\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/shorteners", "host": ["{{base_url}}"], "path": ["api", "admin", "shorteners"] }
+          }
+        },
+        {
+          "name": "Delete Shortener Service",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/shorteners/1", "host": ["{{base_url}}"], "path": ["api", "admin", "shorteners", "1"] }
+          }
+        },
+        {
+          "name": "Test Shortener Service",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/shorteners/1/test", "host": ["{{base_url}}"], "path": ["api", "admin", "shorteners", "1", "test"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/notifications", "host": ["{{base_url}}"], "path": ["api", "admin", "notifications"] }
+          }
+        },
+        {
+          "name": "Mark All Read",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/notifications/read-all", "host": ["{{base_url}}"], "path": ["api", "admin", "notifications", "read-all"] }
+          }
+        },
+        {
+          "name": "Mark One Read",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/notifications/1/read", "host": ["{{base_url}}"], "path": ["api", "admin", "notifications", "1", "read"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Taglinks",
+      "item": [
+        {
+          "name": "List Taglinks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/taglinks", "host": ["{{base_url}}"], "path": ["api", "admin", "taglinks"] }
+          }
+        },
+        {
+          "name": "Create Taglink",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"taglink\": \"summer2026\",\n  \"offer_id\": 1,\n  \"traffic_source_id\": 1,\n  \"meta_campaign_id\": \"12033000000001\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/taglinks", "host": ["{{base_url}}"], "path": ["api", "admin", "taglinks"] }
+          }
+        },
+        {
+          "name": "Update Taglink",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"paused\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/taglinks/1", "host": ["{{base_url}}"], "path": ["api", "admin", "taglinks", "1"] }
+          }
+        },
+        {
+          "name": "Delete Taglink",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/taglinks/1", "host": ["{{base_url}}"], "path": ["api", "admin", "taglinks", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Balance",
+      "item": [
+        {
+          "name": "Get Balance Entries",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/balance", "host": ["{{base_url}}"], "path": ["api", "admin", "balance"] }
+          }
+        },
+        {
+          "name": "Create Balance Entry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 500000,\n  \"type\": \"deposit\",\n  \"note\": \"Top-up via bank transfer\"\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/balance", "host": ["{{base_url}}"], "path": ["api", "admin", "balance"] }
+          }
+        },
+        {
+          "name": "Get Balance Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/balance/summary", "host": ["{{base_url}}"], "path": ["api", "admin", "balance", "summary"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Automation",
+      "item": [
+        {
+          "name": "List Rules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/automation", "host": ["{{base_url}}"], "path": ["api", "admin", "automation"] }
+          }
+        },
+        {
+          "name": "Create Rule",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Pause low-ROI campaigns\",\n  \"trigger\": \"daily\",\n  \"condition\": { \"field\": \"roi\", \"operator\": \"lt\", \"value\": -20 },\n  \"action\": { \"type\": \"pause_campaign\" }\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/automation", "host": ["{{base_url}}"], "path": ["api", "admin", "automation"] }
+          }
+        },
+        {
+          "name": "Update Rule",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"condition\": { \"field\": \"roi\", \"operator\": \"lt\", \"value\": -30 }\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/automation/1", "host": ["{{base_url}}"], "path": ["api", "admin", "automation", "1"] }
+          }
+        },
+        {
+          "name": "Delete Rule",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/automation/1", "host": ["{{base_url}}"], "path": ["api", "admin", "automation", "1"] }
+          }
+        },
+        {
+          "name": "Run Rules Now",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/automation/run", "host": ["{{base_url}}"], "path": ["api", "admin", "automation", "run"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Smartlinks",
+      "item": [
+        {
+          "name": "Generate Smartlink",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"offer_id\": 1,\n  \"campaign_id\": 1,\n  \"custom_slug\": \"summer-sale\"\n}" },
+            "url": { "raw": "{{base_url}}/api/smartlink/generate", "host": ["{{base_url}}"], "path": ["api", "smartlink", "generate"] }
+          }
+        },
+        {
+          "name": "List Smartlinks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/smartlink/list", "host": ["{{base_url}}"], "path": ["api", "smartlink", "list"] }
+          }
+        },
+        {
+          "name": "Record Conversion",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"click_id\": \"CLICK_ID\",\n  \"payout\": 5000\n}" },
+            "url": { "raw": "{{base_url}}/api/smartlink/convert", "host": ["{{base_url}}"], "path": ["api", "smartlink", "convert"] }
+          }
+        },
+        {
+          "name": "Get Smartlink Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/smartlink/stats", "host": ["{{base_url}}"], "path": ["api", "smartlink", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Content (AI)",
+      "item": [
+        {
+          "name": "Content Status",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/content/status", "host": ["{{base_url}}"], "path": ["api", "content", "status"] }
+          }
+        },
+        {
+          "name": "Generate Banner",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"product\": \"Shopee Flash Sale\",\n  \"style\": \"modern\",\n  \"dimensions\": \"1200x628\"\n}" },
+            "url": { "raw": "{{base_url}}/api/content/banner", "host": ["{{base_url}}"], "path": ["api", "content", "banner"] }
+          }
+        },
+        {
+          "name": "Generate Caption",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"product\": \"Shopee Flash Sale\",\n  \"tone\": \"casual\",\n  \"platform\": \"instagram\"\n}" },
+            "url": { "raw": "{{base_url}}/api/content/caption", "host": ["{{base_url}}"], "path": ["api", "content", "caption"] }
+          }
+        },
+        {
+          "name": "Generate Carousel",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"product\": \"Shopee Flash Sale\",\n  \"slides\": 5\n}" },
+            "url": { "raw": "{{base_url}}/api/content/carousel", "host": ["{{base_url}}"], "path": ["api", "content", "carousel"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Offer Manager (OM)",
+      "item": [
+        {
+          "name": "Get Pending Offers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/om/offers/pending", "host": ["{{base_url}}"], "path": ["api", "om", "offers", "pending"] }
+          }
+        },
+        {
+          "name": "Get Approved Offers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/om/offers/approved", "host": ["{{base_url}}"], "path": ["api", "om", "offers", "approved"] }
+          }
+        },
+        {
+          "name": "Approve Offer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/om/offers/1/approve", "host": ["{{base_url}}"], "path": ["api", "om", "offers", "1", "approve"] }
+          }
+        },
+        {
+          "name": "Reject Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Incomplete landing page\"\n}" },
+            "url": { "raw": "{{base_url}}/api/om/offers/1/reject", "host": ["{{base_url}}"], "path": ["api", "om", "offers", "1", "reject"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account Manager (AM)",
+      "item": [
+        {
+          "name": "List Assignments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/am/assignments", "host": ["{{base_url}}"], "path": ["api", "am", "assignments"] }
+          }
+        },
+        {
+          "name": "Assign Offer to Affiliate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"offer_id\": 1,\n  \"affiliate_id\": 2\n}" },
+            "url": { "raw": "{{base_url}}/api/am/assign", "host": ["{{base_url}}"], "path": ["api", "am", "assign"] }
+          }
+        },
+        {
+          "name": "Assign Offer Globally",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"offer_id\": 1\n}" },
+            "url": { "raw": "{{base_url}}/api/am/assign-global", "host": ["{{base_url}}"], "path": ["api", "am", "assign-global"] }
+          }
+        },
+        {
+          "name": "List AM Mappings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/am/mappings", "host": ["{{base_url}}"], "path": ["api", "am", "mappings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 100000,\n  \"method\": \"bank_transfer\"\n}" },
+            "url": { "raw": "{{base_url}}/api/payment/create", "host": ["{{base_url}}"], "path": ["api", "payment", "create"] }
+          }
+        },
+        {
+          "name": "Payment Callback (Tripay)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reference\": \"TXN-001\",\n  \"status\": \"PAID\"\n}" },
+            "url": { "raw": "{{base_url}}/api/payment/callback", "host": ["{{base_url}}"], "path": ["api", "payment", "callback"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GeoIP",
+      "item": [
+        {
+          "name": "Lookup IP",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/geo/8.8.8.8", "host": ["{{base_url}}"], "path": ["api", "geo", "8.8.8.8"] }
+          }
+        },
+        {
+          "name": "Lookup My IP",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/geo/me/ip", "host": ["{{base_url}}"], "path": ["api", "geo", "me", "ip"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Agents",
+      "item": [
+        {
+          "name": "Run Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"agent\": \"fraudDetection\",\n  \"params\": { \"lookback_hours\": 24 }\n}" },
+            "url": { "raw": "{{base_url}}/api/ai/run", "host": ["{{base_url}}"], "path": ["api", "ai", "run"] }
+          }
+        },
+        {
+          "name": "List Runs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/ai/runs", "host": ["{{base_url}}"], "path": ["api", "ai", "runs"] }
+          }
+        },
+        {
+          "name": "Get Run Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/ai/runs/RUN_ID", "host": ["{{base_url}}"], "path": ["api", "ai", "runs", "RUN_ID"] }
+          }
+        },
+        {
+          "name": "Kill Switch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/ai/kill-switch", "host": ["{{base_url}}"], "path": ["api", "ai", "kill-switch"] }
+          }
+        },
+        {
+          "name": "Get Spend Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/ai/spend", "host": ["{{base_url}}"], "path": ["api", "ai", "spend"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Poster",
+      "item": [
+        {
+          "name": "Trigger Poster",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/poster/trigger", "host": ["{{base_url}}"], "path": ["api", "poster", "trigger"] }
+          }
+        },
+        {
+          "name": "List Queue",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/poster/queue", "host": ["{{base_url}}"], "path": ["api", "poster", "queue"] }
+          }
+        },
+        {
+          "name": "Add to Queue",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"Check out this deal!\",\n  \"channel_id\": \"-100123456\"\n}" },
+            "url": { "raw": "{{base_url}}/api/poster/queue", "host": ["{{base_url}}"], "path": ["api", "poster", "queue"] }
+          }
+        },
+        {
+          "name": "Test Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/poster/test", "host": ["{{base_url}}"], "path": ["api", "poster", "test"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pipeline",
+      "item": [
+        {
+          "name": "Run Pipeline",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"platform\": \"tiktok\",\n  \"niche\": \"fashion\"\n}" },
+            "url": { "raw": "{{base_url}}/api/pipeline/run", "host": ["{{base_url}}"], "path": ["api", "pipeline", "run"] }
+          }
+        },
+        {
+          "name": "List Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/pipeline/jobs", "host": ["{{base_url}}"], "path": ["api", "pipeline", "jobs"] }
+          }
+        },
+        {
+          "name": "Get Job Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/pipeline/jobs/1", "host": ["{{base_url}}"], "path": ["api", "pipeline", "jobs", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postback (Public)",
+      "description": "No auth required — secured via click_id uniqueness and optional signature",
+      "item": [
+        {
+          "name": "Receive Postback (GET)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/postback?click_id=abc123&payout=5000&txid=txn001", "host": ["{{base_url}}"], "path": ["api", "postback"], "query": [{ "key": "click_id", "value": "abc123" }, { "key": "payout", "value": "5000" }, { "key": "txid", "value": "txn001" }] }
+          }
+        },
+        {
+          "name": "Receive Postback (POST)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"click_id\": \"abc123\",\n  \"payout\": 5000,\n  \"txid\": \"txn001\"\n}" },
+            "url": { "raw": "{{base_url}}/api/postback", "host": ["{{base_url}}"], "path": ["api", "postback"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Docs",
+      "item": [
+        {
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/docs", "host": ["{{base_url}}"], "path": ["api", "docs"] }
+          }
+        },
+        {
+          "name": "Get Document",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/docs/tutorials-and-guides/00-tutorial", "host": ["{{base_url}}"], "path": ["api", "docs", "tutorials-and-guides", "00-tutorial"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "Metrics (Prometheus)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/metrics", "host": ["{{base_url}}"], "path": ["metrics"] }
+          }
+        }
+      ]
+    }
+  ]
+}

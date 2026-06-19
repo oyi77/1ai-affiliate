@@ -13,6 +13,8 @@ const { auditLog } = require('./middleware/auditLog');
 const postbackQueue = require('./services/postbackQueue');
 const posterWorker = require('./services/posterWorker');
 const pipelineWorker = require('./services/pipelineWorker');
+const cron = require('node-cron');
+const { sendDailySummaryForAllUsers } = require('./cron/telegramDailySummary');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -101,8 +103,11 @@ app.use('/api/settings/telegram', require('./routes/telegram'));
 app.use('/api/settings/payouts', require('./routes/payouts'));
 app.use('/api/admin/notifications', require('./routes/notifications'));
 app.use('/api/admin/taglinks', require('./routes/taglinks'));
+app.use('/api/admin/shopee-accounts', require('./routes/shopeeAccounts'));
 app.use('/api/admin/balance', require('./routes/balance'));
 app.use('/api/admin/automation', require('./routes/automation'));
+app.use('/api/admin/traffic-rules', require('./routes/trafficRules'));
+app.use('/api/admin/webhooks', require('./routes/webhooks'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
@@ -162,10 +167,35 @@ if (require.main === module) {
   postbackQueue.start();
   posterWorker.start();
   pipelineWorker.start();
-  app.listen(PORT, () => {
+  // Telegram daily summary cron — 08:00 WIB (01:00 UTC)
+  cron.schedule('0 1 * * *', () => {
+    logger.info('[cron] Running Telegram daily summary...');
+    sendDailySummaryForAllUsers(pool).catch(err => {
+      logger.error({ err }, '[cron] Telegram daily summary failed');
+    });
+  });
+  const server = app.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);
     logger.info(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
   });
+
+  function gracefulShutdown(signal) {
+    logger.info(`Received ${signal}. Starting graceful shutdown...`);
+    server.close(() => {
+      logger.info('HTTP server closed.');
+      pool.end().then(() => {
+        logger.info('Database pool closed.');
+        process.exit(0);
+      }).catch(() => process.exit(1));
+    });
+    setTimeout(() => {
+      logger.error('Forced shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+  }
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 module.exports = app;

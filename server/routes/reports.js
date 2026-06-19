@@ -10,6 +10,7 @@ const {
   getLaporanTaglink,
   exportLaporanIklanPdf,
   getLaporanOrder,
+  compareCampaigns,
 } = require('../controllers/reportController');
 
 router.use(authenticate);
@@ -21,5 +22,6 @@ router.get('/daily', requireAdmin, getAnalyticHarian);
 router.get('/taglink', requireAdmin, getLaporanTaglink);
 router.get('/ads.pdf', requireAdmin, exportLaporanIklanPdf);
 router.get('/orders', requireAdmin, getLaporanOrder);
+router.get('/compare', requireAdmin, compareCampaigns);
 
 module.exports = router;

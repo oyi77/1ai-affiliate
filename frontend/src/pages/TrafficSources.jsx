@@ -213,7 +213,7 @@ export function TrafficSources() {
       </div>
 
       <GlassCard>
-        <DataTable columns={columns} data={sources ?? []} isLoading={isLoading} />
+        <DataTable columns={columns} data={sources ?? []} isLoading={isLoading} emptyMessage="No traffic sources yet. Connect Meta Ads or Google Ads." />
       </GlassCard>
 
       {/* Create modal */}
