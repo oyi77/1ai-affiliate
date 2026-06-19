@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard } from '../components/ui/GlassCard';
+import TemplatePicker from '../components/TemplatePicker';
 import api from '../lib/api';
 
 export default function Integrations() {
@@ -57,7 +58,16 @@ export default function Integrations() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Integrations</h1>
-        <span className="text-sm text-gray-400">{integrations.length} available</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400">{integrations.length} available</span>
+          <TemplatePicker entityType="traffic-sources" title="Quick Add Traffic Source" onSubmit={async (values) => {
+            await api.post('/admin/traffic-sources', values);
+            const ts = await api.get('/admin/traffic-sources');
+            setTrafficSources(ts.data?.data || []);
+          }}>
+            <button className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors">+ Quick Add</button>
+          </TemplatePicker>
+        </div>
       </div>
 
       {/* Integration Cards */}
