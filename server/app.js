@@ -40,6 +40,17 @@ app.use(helmet({
 app.use(cors());
 app.use(express.json());
 app.use(pinoHttp({ logger, genReqId: req => req.get('X-Request-ID') || crypto.randomUUID() }));
+// API key auth (X-API-Key header as alternative to JWT)
+const { apiKeyAuth } = require('./middleware/apiKeyAuth');
+app.use('/api', (req, res, next) => {
+  // Skip auth for public endpoints
+  if (req.path === '/auth/login' || req.path === '/auth/register' || req.path === '/postback' || req.path.startsWith('/t/') || req.path === '/consent') return next();
+  // If no JWT token, try API key
+  if (!req.headers.authorization && req.headers['x-api-key']) {
+    return apiKeyAuth(req, res, next);
+  }
+  next();
+});
 
 // Idempotency for mutating requests
 app.use(idempotency());
@@ -85,6 +96,7 @@ app.use('/api/admin/offers', require('./routes/offers'));
 app.use('/api/admin/campaigns', require('./routes/campaigns'));
 app.use('/api/admin/reports', require('./routes/reports'));
 app.use('/api/admin/affiliates', require('./routes/affiliates'));
+app.use('/api/t', require('./routes/tracking'));
 app.use('/api/om', require('./routes/om'));
 app.use('/api/am', require('./routes/am'));
 app.use('/api/payment', require('./routes/payment'));
