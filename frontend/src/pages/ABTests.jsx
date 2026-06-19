@@ -1,23 +1,56 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  FlaskConical, Plus, Trash2, Loader2, CheckCircle, BarChart3, ChevronRight, X, Trophy,
-} from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
+import { Modal } from '../components/ui/Modal';
+import { FlaskConical, Plus, Trash2, Loader2, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import api from '../lib/api';
 
-const STATUS_COLORS = {
-  active: 'bg-green-500/20 text-green-400',
-  paused: 'bg-yellow-500/20 text-yellow-400',
+const STATUS_STYLES = {
+  active: 'bg-emerald-500/20 text-emerald-400',
+  paused: 'bg-amber-500/20 text-amber-400',
   completed: 'bg-blue-500/20 text-blue-400',
   draft: 'bg-slate-500/20 text-slate-400',
 };
 
+function BarChart({ results }) {
+  const maxConversions = Math.max(...results.map((r) => r.conversions || 0), 1);
+
+  return (
+    <div className="space-y-3">
+      {results.map((r, i) => {
+        const pct = maxConversions > 0 ? ((r.conversions || 0) / maxConversions) * 100 : 0;
+        return (
+          <div key={i}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-slate-300">{r.name || r.variant_name || `Variant ${i + 1}`}</span>
+              <div className="flex items-center gap-4 text-xs text-slate-400">
+                <span>{(r.clicks || 0).toLocaleString()} clicks</span>
+                <span>{(r.conversions || 0).toLocaleString()} conv</span>
+                <span className="text-white font-medium">{(r.conversion_rate || 0).toFixed(2)}%</span>
+                <span>${(r.revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+            <div className="h-4 bg-white/5 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.max(pct, 1)}%`,
+                  backgroundColor: i === 0 ? '#6366f1' : i === 1 ? '#06b6d4' : i === 2 ? '#f59e0b' : '#10b981',
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ABTests() {
   const queryClient = useQueryClient();
-  const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState({
+  const [createOpen, setCreateOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
+  const [form, setForm] = useState({
     campaign_id: '',
     name: '',
     variants: [
@@ -25,335 +58,243 @@ export function ABTests() {
       { name: 'Variant A', weight: 50 },
     ],
   });
-  const [selectedTest, setSelectedTest] = useState(null);
-  const [createError, setCreateError] = useState(null);
 
-  const { data, isLoading } = useQuery({
+  const { data: tests = [], isLoading } = useQuery({
     queryKey: ['ab-tests'],
     queryFn: async () => {
-      const res = await api.get('/api/enterprise/ab-tests');
-      return res.data;
+      const { data } = await api.get('/api/enterprise/ab-tests');
+      return Array.isArray(data) ? data : data?.tests || [];
     },
   });
 
-  const tests = data?.data || data || [];
-
-  const { data: resultsData, isLoading: resultsLoading } = useQuery({
-    queryKey: ['ab-test-results', selectedTest],
+  const { data: results, isLoading: resultsLoading } = useQuery({
+    queryKey: ['ab-test-results', expandedId],
     queryFn: async () => {
-      const res = await api.get(`/api/enterprise/ab-tests/${selectedTest}/results`);
-      return res.data;
+      const { data } = await api.get(`/api/enterprise/ab-tests/${expandedId}/results`);
+      return data;
     },
-    enabled: !!selectedTest,
+    enabled: !!expandedId,
   });
 
   const createMutation = useMutation({
-    mutationFn: async (body) => api.post('/api/enterprise/ab-tests', body),
+    mutationFn: (body) => api.post('/api/enterprise/ab-tests', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ab-tests'] });
-      setShowCreate(false);
-      setCreateForm({ campaign_id: '', name: '', variants: [{ name: 'Control', weight: 50 }, { name: 'Variant A', weight: 50 }] });
-      setCreateError(null);
-    },
-    onError: (err) => {
-      setCreateError(err.response?.data?.error || 'Failed to create A/B test');
+      setCreateOpen(false);
+      setForm({
+        campaign_id: '',
+        name: '',
+        variants: [
+          { name: 'Control', weight: 50 },
+          { name: 'Variant A', weight: 50 },
+        ],
+      });
     },
   });
 
-  function addVariant() {
-    setCreateForm(prev => ({
-      ...prev,
-      variants: [...prev.variants, { name: `Variant ${String.fromCharCode(65 + prev.variants.length)}`, weight: 0 }],
+  const addVariant = () => {
+    setForm((p) => ({
+      ...p,
+      variants: [...p.variants, { name: `Variant ${String.fromCharCode(65 + p.variants.length)}`, weight: 0 }],
     }));
-  }
+  };
 
-  function removeVariant(index) {
-    if (createForm.variants.length <= 2) return;
-    setCreateForm(prev => ({
-      ...prev,
-      variants: prev.variants.filter((_, i) => i !== index),
+  const removeVariant = (idx) => {
+    setForm((p) => ({ ...p, variants: p.variants.filter((_, i) => i !== idx) }));
+  };
+
+  const updateVariant = (idx, field, value) => {
+    setForm((p) => ({
+      ...p,
+      variants: p.variants.map((v, i) => (i === idx ? { ...v, [field]: field === 'weight' ? Number(value) || 0 : value } : v)),
     }));
-  }
+  };
 
-  function updateVariant(index, field, value) {
-    setCreateForm(prev => ({
-      ...prev,
-      variants: prev.variants.map((v, i) => i === index ? { ...v, [field]: field === 'weight' ? Number(value) || 0 : value } : v),
-    }));
-  }
-
-  function formatTimestamp(ts) {
+  const formatDate = (ts) => {
     if (!ts) return '—';
-    return new Date(ts * 1000 || ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
+    const d = typeof ts === 'number' ? new Date(ts > 1e12 ? ts : ts * 1000) : new Date(ts);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
-  const results = resultsData?.variants || resultsData?.data || [];
-  const maxRate = results.length > 0 ? Math.max(...results.map(r => r.conversion_rate || 0), 0.01) : 1;
+  const toggleExpand = (id) => setExpandedId((prev) => (prev === id ? null : id));
 
-  if (isLoading) return <div className="text-white p-8">Loading A/B tests...</div>;
+  const variantResults = results?.variants || results?.data || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            A/B Tests
-          </h1>
-          <p className="text-slate-400 mt-2">Create and monitor A/B test campaigns with variant performance</p>
+          <h1 className="text-2xl font-bold text-white">A/B Tests</h1>
+          <p className="text-slate-400 text-sm mt-1">Manage experiments and view conversion results</p>
         </div>
         <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all"
+          onClick={() => setCreateOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors"
         >
-          <Plus className="w-4 h-4" />
-          New A/B Test
+          <Plus className="w-4 h-4" /> New A/B Test
         </button>
       </div>
 
-      {/* Create Form */}
-      <AnimatePresence>
-        {showCreate && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <GlassCard>
-              <h3 className="text-lg font-bold text-white mb-4">Create A/B Test</h3>
-              {createError && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
-                  {createError}
-                </div>
-              )}
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase">Campaign ID</label>
-                    <input
-                      type="text"
-                      value={createForm.campaign_id}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, campaign_id: e.target.value }))}
-                      className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                      placeholder="campaign_123"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase">Test Name</label>
-                    <input
-                      type="text"
-                      value={createForm.name}
-                      onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                      placeholder="Landing Page Headline Test"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-400 uppercase">Variants</label>
-                    <button
-                      onClick={addVariant}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
-                    >
-                      <Plus className="w-3 h-3" /> Add Variant
-                    </button>
-                  </div>
-                  {createForm.variants.map((v, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <input
-                        type="text"
-                        value={v.name}
-                        onChange={(e) => updateVariant(i, 'name', e.target.value)}
-                        className="flex-1 bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-indigo-primary text-sm"
-                        placeholder="Variant name"
-                      />
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          value={v.weight}
-                          onChange={(e) => updateVariant(i, 'weight', e.target.value)}
-                          min={0}
-                          max={100}
-                          className="w-20 bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-indigo-primary text-sm text-center"
-                        />
-                        <span className="text-slate-400 text-xs">%</span>
-                      </div>
-                      {createForm.variants.length > 2 && (
-                        <button
-                          onClick={() => removeVariant(i)}
-                          className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-all"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <p className="text-xs text-slate-500">
-                    Total weight: {createForm.variants.reduce((s, v) => s + v.weight, 0)}%
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => createMutation.mutate(createForm)}
-                    disabled={createMutation.isPending || !createForm.name || !createForm.campaign_id}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
-                  >
-                    {createMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <FlaskConical className="w-4 h-4" />
-                    )}
-                    Create Test
-                  </button>
-                  <button
-                    onClick={() => { setShowCreate(false); setCreateError(null); }}
-                    className="px-4 py-2.5 bg-white/5 text-slate-400 rounded-lg hover:bg-white/10 transition-all"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </GlassCard>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Tests List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {tests.length === 0 ? (
-          <GlassCard className="lg:col-span-2">
-            <div className="py-12 text-center text-slate-500">
-              <FlaskConical className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              No A/B tests yet. Create one to start optimizing.
-            </div>
-          </GlassCard>
+      {/* Test list */}
+      <GlassCard>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+          </div>
+        ) : tests.length === 0 ? (
+          <div className="text-center py-12 text-slate-500">
+            <FlaskConical className="w-10 h-10 mx-auto mb-3 opacity-40" />
+            <p>No A/B tests yet</p>
+          </div>
         ) : (
-          tests.map((test) => (
-            <motion.div
-              key={test.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`cursor-pointer ${selectedTest === test.id ? 'ring-2 ring-indigo-primary rounded-xl' : ''}`}
-              onClick={() => setSelectedTest(selectedTest === test.id ? null : test.id)}
-            >
-              <GlassCard>
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-white font-bold">{test.name || 'Untitled Test'}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5 font-mono">{test.campaign_id || '—'}</p>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${STATUS_COLORS[test.status] || STATUS_COLORS.draft}`}>
-                    {test.status || 'draft'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-slate-400">
-                  <span>{(test.variants || []).length} variants</span>
-                  <span>Created {formatTimestamp(test.created_at)}</span>
-                </div>
-                <div className="flex items-center gap-1 mt-2 text-indigo-400 text-xs">
-                  <BarChart3 className="w-3 h-3" />
-                  {selectedTest === test.id ? 'Hide results' : 'View results'}
-                  <ChevronRight className={`w-3 h-3 transition-transform ${selectedTest === test.id ? 'rotate-90' : ''}`} />
-                </div>
-              </GlassCard>
-            </motion.div>
-          ))
-        )}
-      </div>
-
-      {/* Results Panel */}
-      <AnimatePresence>
-        {selectedTest && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <GlassCard>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-indigo-400" />
-                  Results
-                </h3>
+          <div className="divide-y divide-white/5">
+            {tests.map((test) => (
+              <div key={test.id}>
                 <button
-                  onClick={() => setSelectedTest(null)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                  onClick={() => toggleExpand(test.id)}
+                  className="w-full flex items-center justify-between py-4 px-2 hover:bg-white/[0.02] rounded-lg transition-colors text-left"
                 >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {resultsLoading ? (
-                <div className="py-8 text-center text-slate-400">
-                  <Loader2 className="w-6 h-6 mx-auto animate-spin" />
-                </div>
-              ) : results.length === 0 ? (
-                <div className="py-8 text-center text-slate-500">No results data yet.</div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Results Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b border-white/10">
-                          <th className="pb-3 text-xs font-bold text-slate-400 uppercase">Variant</th>
-                          <th className="pb-3 text-xs font-bold text-slate-400 uppercase text-right">Clicks</th>
-                          <th className="pb-3 text-xs font-bold text-slate-400 uppercase text-right">Conversions</th>
-                          <th className="pb-3 text-xs font-bold text-slate-400 uppercase text-right">Conv. Rate</th>
-                          <th className="pb-3 text-xs font-bold text-slate-400 uppercase text-right">Revenue</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {results.map((r, i) => (
-                          <tr key={i} className="hover:bg-white/5">
-                            <td className="py-3 text-sm text-white font-medium flex items-center gap-2">
-                              {i === 0 && results.every((x) => (r.conversion_rate || 0) >= (x.conversion_rate || 0)) && (
-                                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                              )}
-                              {r.name || r.variant_name || `Variant ${i}`}
-                            </td>
-                            <td className="py-3 text-sm text-slate-300 text-right">{(r.clicks || 0).toLocaleString()}</td>
-                            <td className="py-3 text-sm text-slate-300 text-right">{(r.conversions || 0).toLocaleString()}</td>
-                            <td className="py-3 text-sm text-right">
-                              <span className={`font-bold ${(r.conversion_rate || 0) === maxRate ? 'text-green-400' : 'text-slate-300'}`}>
-                                {(r.conversion_rate || 0).toFixed(2)}%
-                              </span>
-                            </td>
-                            <td className="py-3 text-sm text-slate-300 text-right font-mono">
-                              ${(r.revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* CSS Bar Chart */}
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">Conversion Rate by Variant</h4>
-                    <div className="space-y-3">
-                      {results.map((r, i) => {
-                        const rate = r.conversion_rate || 0;
-                        const pct = maxRate > 0 ? (rate / maxRate) * 100 : 0;
-                        return (
-                          <div key={i}>
-                            <div className="flex items-center justify-between text-xs mb-1">
-                              <span className="text-slate-300">{r.name || r.variant_name || `Variant ${i}`}</span>
-                              <span className="text-slate-400 font-mono">{rate.toFixed(2)}%</span>
-                            </div>
-                            <div className="h-4 bg-white/5 rounded-full overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${pct}%` }}
-                                transition={{ duration: 0.8, ease: 'easeOut' }}
-                                className={`h-full rounded-full ${i === 0 ? 'bg-indigo-primary' : i === 1 ? 'bg-cyan-500' : i === 2 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
+                  <div className="flex items-center gap-3">
+                    {expandedId === test.id ? (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    )}
+                    <div>
+                      <p className="text-white font-medium">{test.name || 'Untitled Test'}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Campaign: {test.campaign_id || '—'} &middot; {(test.variants || []).length} variants
+                      </p>
                     </div>
                   </div>
-                </div>
-              )}
-            </GlassCard>
-          </motion.div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-500">{formatDate(test.created_at)}</span>
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${STATUS_STYLES[test.status] || STATUS_STYLES.draft}`}>
+                      {test.status || 'draft'}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Results panel */}
+                {expandedId === test.id && (
+                  <div className="px-2 pb-4">
+                    <GlassCard className="ml-7">
+                      <div className="flex items-center gap-2 mb-4">
+                        <BarChart3 className="w-4 h-4 text-indigo-400" />
+                        <h3 className="text-sm font-semibold text-white">Results</h3>
+                      </div>
+                      {resultsLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+                        </div>
+                      ) : variantResults.length === 0 ? (
+                        <p className="text-slate-500 text-sm py-4">No results data yet</p>
+                      ) : (
+                        <BarChart results={variantResults} />
+                      )}
+                    </GlassCard>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
-      </AnimatePresence>
+      </GlassCard>
+
+      {/* Create modal */}
+      <Modal open={createOpen} onOpenChange={setCreateOpen} title="Create A/B Test" description="Set up a new experiment">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            createMutation.mutate(form);
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Campaign ID</label>
+            <input
+              type="text"
+              value={form.campaign_id}
+              onChange={(e) => setForm((p) => ({ ...p, campaign_id: e.target.value }))}
+              placeholder="campaign_123"
+              required
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Test Name</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+              placeholder="Landing Page Test"
+              required
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Variants</label>
+            <div className="space-y-2">
+              {form.variants.map((v, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={v.name}
+                    onChange={(e) => updateVariant(idx, 'name', e.target.value)}
+                    placeholder="Variant name"
+                    className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  />
+                  <input
+                    type="number"
+                    value={v.weight}
+                    onChange={(e) => updateVariant(idx, 'weight', e.target.value)}
+                    min={0}
+                    max={100}
+                    className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <span className="text-xs text-slate-500 w-4">%</span>
+                  {form.variants.length > 2 && (
+                    <button
+                      type="button"
+                      onClick={() => removeVariant(idx)}
+                      className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={addVariant}
+              className="mt-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              + Add variant
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={createMutation.isPending || !form.name || !form.campaign_id}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <FlaskConical className="w-4 h-4" />}
+              Create Test
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreateOpen(false)}
+              className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

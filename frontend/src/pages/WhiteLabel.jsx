@@ -1,245 +1,234 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { Palette, Globe, Image, Save, Loader2, CheckCircle, Eye, FileText, Type } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
+import { Palette, Globe, ImageIcon, Save, Loader2, CheckCircle2, Code2, Eye } from 'lucide-react';
 import api from '../lib/api';
+
+const defaultConfig = {
+  brand_name: '',
+  logo_url: '',
+  brand_color: '#6366f1',
+  custom_domain: '',
+  favicon_url: '',
+  footer_html: '',
+};
 
 export function WhiteLabel() {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState({
-    brand_name: '',
-    logo_url: '',
-    brand_color: '#6366f1',
-    custom_domain: '',
-    favicon_url: '',
-    footer_html: '',
-  });
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [form, setForm] = useState(defaultConfig);
+  const [saved, setSaved] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['white-label'],
     queryFn: async () => {
-      const res = await api.get('/api/enterprise/white-label');
-      return res.data;
+      const { data } = await api.get('/api/enterprise/white-label');
+      return data;
     },
   });
 
   useEffect(() => {
-    if (data) {
-      setForm({
-        brand_name: data.brand_name || '',
-        logo_url: data.logo_url || '',
-        brand_color: data.brand_color || '#6366f1',
-        custom_domain: data.custom_domain || '',
-        favicon_url: data.favicon_url || '',
-        footer_html: data.footer_html || '',
-      });
-    }
+    if (data) setForm({ ...defaultConfig, ...data });
   }, [data]);
 
-  const saveMutation = useMutation({
-    mutationFn: async (body) => api.put('/api/enterprise/white-label', body),
+  const mutation = useMutation({
+    mutationFn: (body) => api.put('/api/enterprise/white-label', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['white-label'] });
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     },
   });
 
-  const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const handleChange = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }));
 
-  if (isLoading) return <div className="text-white p-8">Loading white-label settings...</div>;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutation.mutate(form);
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            White-Label Branding
-          </h1>
-          <p className="text-slate-400 mt-2">Customize your portal appearance with your own branding</p>
+          <h1 className="text-2xl font-bold text-white">White-Label Branding</h1>
+          <p className="text-slate-400 text-sm mt-1">Customize your portal appearance</p>
         </div>
+        {saved && (
+          <span className="flex items-center gap-1.5 text-emerald-400 text-sm">
+            <CheckCircle2 className="w-4 h-4" /> Saved
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Settings Form */}
-        <div className="lg:col-span-2 space-y-6">
-          <GlassCard>
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Palette className="w-5 h-5 text-indigo-400" />
-              Brand Identity
-            </h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                  <Type className="w-3.5 h-3.5" /> Brand Name
-                </label>
-                <input
-                  type="text"
-                  value={form.brand_name}
-                  onChange={(e) => update('brand_name', e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                  placeholder="Acme Corp"
-                />
+        <div className="lg:col-span-2">
+          <form onSubmit={handleSubmit}>
+            <GlassCard>
+              <div className="flex items-center gap-2 mb-6">
+                <Palette className="w-5 h-5 text-indigo-400" />
+                <h2 className="text-lg font-semibold text-white">Brand Settings</h2>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                  <Image className="w-3.5 h-3.5" /> Logo URL
-                </label>
-                <input
-                  type="url"
-                  value={form.logo_url}
-                  onChange={(e) => update('logo_url', e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                  placeholder="https://cdn.example.com/logo.svg"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                  <Palette className="w-3.5 h-3.5" /> Brand Color
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={form.brand_color}
-                    onChange={(e) => update('brand_color', e.target.value)}
-                    className="w-12 h-10 rounded-lg cursor-pointer border border-white/10 bg-transparent"
-                  />
-                  <input
-                    type="text"
-                    value={form.brand_color}
-                    onChange={(e) => update('brand_color', e.target.value)}
-                    className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                    placeholder="#6366f1"
-                  />
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Brand Name</label>
+                    <input
+                      type="text"
+                      value={form.brand_name}
+                      onChange={handleChange('brand_name')}
+                      placeholder="Your Brand"
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5" /> Custom Domain
-                </label>
-                <input
-                  type="text"
-                  value={form.custom_domain}
-                  onChange={(e) => update('custom_domain', e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                  placeholder="portal.yourdomain.com"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Logo URL</label>
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                      <input
+                        type="url"
+                        value={form.logo_url}
+                        onChange={handleChange('logo_url')}
+                        placeholder="https://example.com/logo.png"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                  <Image className="w-3.5 h-3.5" /> Favicon URL
-                </label>
-                <input
-                  type="url"
-                  value={form.favicon_url}
-                  onChange={(e) => update('favicon_url', e.target.value)}
-                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                  placeholder="https://cdn.example.com/favicon.ico"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Brand Color</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={form.brand_color}
+                        onChange={handleChange('brand_color')}
+                        className="w-10 h-10 rounded-lg border border-white/10 cursor-pointer bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={form.brand_color}
+                        onChange={handleChange('brand_color')}
+                        placeholder="#6366f1"
+                        className="w-32 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono"
+                      />
+                      <div
+                        className="w-10 h-10 rounded-lg border border-white/10"
+                        style={{ backgroundColor: form.brand_color }}
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5" /> Footer HTML
-                </label>
-                <textarea
-                  value={form.footer_html}
-                  onChange={(e) => update('footer_html', e.target.value)}
-                  rows={4}
-                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm resize-y"
-                  placeholder='<footer>&copy; 2026 Acme Corp. All rights reserved.</footer>'
-                />
-              </div>
-            </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Custom Domain</label>
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                      <input
+                        type="text"
+                        value={form.custom_domain}
+                        onChange={handleChange('custom_domain')}
+                        placeholder="portal.yourbrand.com"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                  </div>
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => saveMutation.mutate(form)}
-                disabled={saveMutation.isPending}
-                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
-              >
-                {saveMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                Save Branding
-              </button>
-              {saveSuccess && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-1.5 text-green-400 text-sm font-medium self-center"
-                >
-                  <CheckCircle className="w-4 h-4" /> Saved successfully
-                </motion.span>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Favicon URL</label>
+                    <input
+                      type="url"
+                      value={form.favicon_url}
+                      onChange={handleChange('favicon_url')}
+                      placeholder="https://example.com/favicon.ico"
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1.5">Footer HTML</label>
+                    <textarea
+                      value={form.footer_html}
+                      onChange={handleChange('footer_html')}
+                      placeholder="<p>&copy; 2026 Your Brand. All rights reserved.</p>"
+                      rows={4}
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm font-mono resize-y"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={mutation.isPending}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  >
+                    {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Save Changes
+                  </button>
+                </div>
               )}
-            </div>
-          </GlassCard>
+            </GlassCard>
+          </form>
         </div>
 
         {/* Preview Panel */}
-        <div className="space-y-6">
+        <div className="lg:col-span-1">
           <GlassCard>
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-4">
               <Eye className="w-5 h-5 text-indigo-400" />
-              Live Preview
-            </h3>
-            <div className="rounded-lg overflow-hidden border border-white/10">
+              <h2 className="text-lg font-semibold text-white">Preview</h2>
+            </div>
+
+            <div
+              className="rounded-lg overflow-hidden border border-white/10"
+              style={{ '--brand': form.brand_color || '#6366f1' }}
+            >
               {/* Mini header */}
-              <div className="p-3 flex items-center gap-3" style={{ backgroundColor: form.brand_color || '#6366f1' }}>
+              <div className="p-3 flex items-center gap-2" style={{ backgroundColor: form.brand_color }}>
                 {form.logo_url ? (
-                  <img src={form.logo_url} alt="Logo" className="w-8 h-8 rounded object-contain bg-white/20" />
+                  <img src={form.logo_url} alt="" className="w-6 h-6 rounded object-contain" />
                 ) : (
-                  <div className="w-8 h-8 rounded bg-white/20 flex items-center justify-center text-white text-xs font-bold">
-                    {(form.brand_name || 'B').charAt(0).toUpperCase()}
-                  </div>
+                  <div className="w-6 h-6 rounded bg-white/20" />
                 )}
-                <span className="text-white font-bold text-sm truncate">{form.brand_name || 'Your Brand'}</span>
+                <span className="text-white text-sm font-semibold truncate">
+                  {form.brand_name || 'Your Brand'}
+                </span>
               </div>
 
-              {/* Mini content */}
+              {/* Mini body */}
               <div className="bg-slate-900 p-4 space-y-2">
-                <div className="h-3 w-3/4 rounded bg-white/10" />
-                <div className="h-3 w-1/2 rounded bg-white/5" />
-                <div className="h-20 w-full rounded bg-white/5 mt-3 flex items-center justify-center text-slate-500 text-xs">
-                  Dashboard Content
-                </div>
+                <div className="h-2 bg-white/10 rounded w-3/4" />
+                <div className="h-2 bg-white/5 rounded w-1/2" />
+                <div className="h-16 bg-white/5 rounded mt-3" />
               </div>
 
-              {/* Mini footer */}
-              <div className="px-3 py-2 bg-slate-950 border-t border-white/5 text-[10px] text-slate-500">
+              {/* Footer preview */}
+              <div className="bg-slate-950 px-3 py-2 text-xs text-slate-500 border-t border-white/5">
                 {form.footer_html ? (
                   <div dangerouslySetInnerHTML={{ __html: form.footer_html }} />
                 ) : (
-                  <span>Powered by Your Platform</span>
+                  <span>Footer preview</span>
                 )}
               </div>
             </div>
-          </GlassCard>
 
-          <GlassCard>
-            <h3 className="text-sm font-bold text-white mb-3">Configuration Summary</h3>
-            <div className="space-y-2 text-xs">
-              {[
-                { label: 'Brand', value: form.brand_name || '—' },
-                { label: 'Domain', value: form.custom_domain || '—' },
-                { label: 'Logo', value: form.logo_url ? 'Set' : '—' },
-                { label: 'Favicon', value: form.favicon_url ? 'Set' : '—' },
-                { label: 'Color', value: form.brand_color },
-                { label: 'Footer', value: form.footer_html ? 'Custom' : '—' },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between">
-                  <span className="text-slate-500">{label}</span>
-                  <span className="text-slate-300 font-mono truncate ml-2 max-w-[140px]">{value}</span>
-                </div>
-              ))}
+            {/* Config summary */}
+            <div className="mt-4 space-y-1.5 text-xs">
+              <div className="flex justify-between text-slate-400">
+                <span>Domain</span>
+                <span className="text-slate-300 font-mono">{form.custom_domain || '—'}</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Favicon</span>
+                <span className="text-slate-300">{form.favicon_url ? '✓' : '—'}</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Logo</span>
+                <span className="text-slate-300">{form.logo_url ? '✓' : '—'}</span>
+              </div>
             </div>
           </GlassCard>
         </div>

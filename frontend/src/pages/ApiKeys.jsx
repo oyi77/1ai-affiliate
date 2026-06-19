@@ -1,286 +1,256 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Key, Plus, Trash2, Copy, Loader2, CheckCircle, XCircle, Eye, EyeOff, Shield,
-} from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
+import { Modal } from '../components/ui/Modal';
+import { Key, Plus, Trash2, Copy, Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import api from '../lib/api';
 
-const SCOPES = ['read', 'write', 'admin'];
+const SCOPE_OPTIONS = [
+  { value: 'read', label: 'Read' },
+  { value: 'write', label: 'Write' },
+  { value: 'admin', label: 'Admin' },
+];
+
 const EXPIRY_OPTIONS = [
   { value: 'never', label: 'Never' },
-  { value: '30d', label: '30 Days' },
-  { value: '90d', label: '90 Days' },
-  { value: '365d', label: '365 Days' },
+  { value: '30d', label: '30 days' },
+  { value: '90d', label: '90 days' },
+  { value: '365d', label: '365 days' },
 ];
 
 export function ApiKeys() {
   const queryClient = useQueryClient();
-  const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState({ name: '', scopes: [], expiry: 'never' });
-  const [createdKey, setCreatedKey] = useState(null);
-  const [copiedKey, setCopiedKey] = useState(false);
-  const [createError, setCreateError] = useState(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', scopes: ['read'], expiry: 'never' });
+  const [newKey, setNewKey] = useState(null);
+  const [copied, setCopied] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data: keys = [], isLoading } = useQuery({
     queryKey: ['api-keys'],
     queryFn: async () => {
-      const res = await api.get('/api/enterprise/api-keys');
-      return res.data;
+      const { data } = await api.get('/api/enterprise/api-keys');
+      return Array.isArray(data) ? data : data?.keys || [];
     },
   });
 
-  const keys = data?.data || data || [];
-
   const createMutation = useMutation({
-    mutationFn: async (body) => api.post('/api/enterprise/api-keys', body),
+    mutationFn: (body) => api.post('/api/enterprise/api-keys', body),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['api-keys'] });
-      const key = res.data?.key || res.data?.api_key || res.data;
-      setCreatedKey(key);
-      setCreateForm({ name: '', scopes: [], expiry: 'never' });
-      setCreateError(null);
-    },
-    onError: (err) => {
-      setCreateError(err.response?.data?.error || 'Failed to create API key');
+      const fullKey = res.data?.key || res.data?.api_key || '';
+      setNewKey(fullKey);
+      setCreateOpen(false);
     },
   });
 
   const revokeMutation = useMutation({
-    mutationFn: async (id) => api.delete(`/api/enterprise/api-keys/${id}`),
+    mutationFn: (id) => api.delete(`/api/enterprise/api-keys/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] }),
   });
 
-  function toggleScope(scope) {
-    setCreateForm(prev => ({
-      ...prev,
-      scopes: prev.scopes.includes(scope)
-        ? prev.scopes.filter(s => s !== scope)
-        : [...prev.scopes, scope],
+  const toggleScope = useCallback((scope) => {
+    setForm((p) => ({
+      ...p,
+      scopes: p.scopes.includes(scope) ? p.scopes.filter((s) => s !== scope) : [...p.scopes, scope],
     }));
-  }
+  }, []);
 
-  function copyToClipboard(text) {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 2000);
-  }
+  const copyKey = () => {
+    navigator.clipboard.writeText(newKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-  function formatTimestamp(ts) {
+  const resetForm = () => {
+    setForm({ name: '', scopes: ['read'], expiry: 'never' });
+  };
+
+  const formatDate = (ts) => {
     if (!ts) return '—';
-    return new Date(ts * 1000 || ts).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
-    });
-  }
-
-  if (isLoading) return <div className="text-white p-8">Loading API keys...</div>;
+    const d = typeof ts === 'number' ? new Date(ts > 1e12 ? ts : ts * 1000) : new Date(ts);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            API Keys
-          </h1>
-          <p className="text-slate-400 mt-2">Create and manage API keys for programmatic access</p>
+          <h1 className="text-2xl font-bold text-white">API Keys</h1>
+          <p className="text-slate-400 text-sm mt-1">Create and manage API keys for programmatic access</p>
         </div>
         <button
-          onClick={() => { setShowCreate(!showCreate); setCreatedKey(null); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all"
+          onClick={() => { resetForm(); setCreateOpen(true); }}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors"
         >
-          <Plus className="w-4 h-4" />
-          Create API Key
+          <Plus className="w-4 h-4" /> Create API Key
         </button>
       </div>
 
-      {/* Newly created key alert */}
-      <AnimatePresence>
-        {createdKey && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            <GlassCard className="border border-green-500/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-green-400 font-bold text-sm">API Key Created Successfully</p>
-                  <p className="text-amber-400 text-xs mt-1">
-                    Copy this key now — it will not be shown again.
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <code className="flex-1 bg-black/30 rounded-lg px-3 py-2 text-xs font-mono text-white break-all">
-                      {typeof createdKey === 'string' ? createdKey : createdKey.key || JSON.stringify(createdKey)}
-                    </code>
-                    <button
-                      onClick={() => copyToClipboard(typeof createdKey === 'string' ? createdKey : createdKey.key || '')}
-                      className="p-2 rounded-lg bg-indigo-primary/20 text-indigo-400 hover:bg-indigo-primary/30 transition-all"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {copiedKey && (
-                    <span className="text-green-400 text-xs mt-1 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" /> Copied to clipboard
-                    </span>
-                  )}
-                </div>
-                <button onClick={() => setCreatedKey(null)} className="text-slate-500 hover:text-white">
-                  <XCircle className="w-5 h-5" />
+      {/* New key banner */}
+      {newKey && (
+        <GlassCard className="border-emerald-500/30 border">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-400 font-medium text-sm">API Key Created</span>
+              </div>
+              <p className="text-slate-400 text-xs mb-2">Copy this key now. It won't be shown again.</p>
+              <div className="flex items-center gap-2">
+                <code className="text-sm font-mono text-white bg-white/5 border border-white/10 rounded px-3 py-2 flex-1 truncate">
+                  {newKey}
+                </code>
+                <button
+                  onClick={copyKey}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-sm text-slate-300 transition-colors"
+                >
+                  {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {copied ? 'Copied' : 'Copy'}
                 </button>
               </div>
-            </GlassCard>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Create Form */}
-      {showCreate && (
-        <GlassCard>
-          <h3 className="text-lg font-bold text-white mb-4">Create New API Key</h3>
-          {createError && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
-              {createError}
             </div>
-          )}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase">Key Name</label>
-              <input
-                type="text"
-                value={createForm.name}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
-                placeholder="Production API Key"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase">Scopes</label>
-              <div className="flex flex-wrap gap-2">
-                {SCOPES.map(scope => (
-                  <button
-                    key={scope}
-                    onClick={() => toggleScope(scope)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                      createForm.scopes.includes(scope)
-                        ? 'bg-indigo-primary text-white'
-                        : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <Shield className="w-3 h-3" />
-                    {scope}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase">Expiration</label>
-              <select
-                value={createForm.expiry}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, expiry: e.target.value }))}
-                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary text-sm"
-              >
-                {EXPIRY_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => createMutation.mutate(createForm)}
-                disabled={createMutation.isPending || !createForm.name || createForm.scopes.length === 0}
-                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
-              >
-                {createMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-                Create Key
-              </button>
-              <button
-                onClick={() => { setShowCreate(false); setCreateError(null); }}
-                className="px-4 py-2.5 bg-white/5 text-slate-400 rounded-lg hover:bg-white/10 transition-all"
-              >
-                Cancel
-              </button>
-            </div>
+            <button onClick={() => setNewKey(null)} className="text-slate-500 hover:text-white ml-4">
+              &times;
+            </button>
           </div>
         </GlassCard>
       )}
 
-      {/* Keys Table */}
+      {/* Keys table */}
       <GlassCard>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="pb-3 text-xs font-bold text-slate-400 uppercase">Name</th>
-                <th className="pb-3 text-xs font-bold text-slate-400 uppercase">Key Prefix</th>
-                <th className="pb-3 text-xs font-bold text-slate-400 uppercase">Scopes</th>
-                <th className="pb-3 text-xs font-bold text-slate-400 uppercase">Last Used</th>
-                <th className="pb-3 text-xs font-bold text-slate-400 uppercase">Expires</th>
-                <th className="pb-3 text-xs font-bold text-slate-400 uppercase text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {keys.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
-                    <Key className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                    No API keys yet. Create one to get started.
-                  </td>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+          </div>
+        ) : keys.length === 0 ? (
+          <div className="text-center py-12 text-slate-500">
+            <Key className="w-10 h-10 mx-auto mb-3 opacity-40" />
+            <p>No API keys yet</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-400 uppercase">Name</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-400 uppercase">Key Prefix</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-400 uppercase">Scopes</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-400 uppercase">Last Used</th>
+                  <th className="text-left py-3 px-4 text-xs font-medium text-slate-400 uppercase">Expires</th>
+                  <th className="text-right py-3 px-4 text-xs font-medium text-slate-400 uppercase">Actions</th>
                 </tr>
-              ) : (
-                keys.map((k) => (
-                  <motion.tr
-                    key={k.id || k.key_prefix}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="hover:bg-white/5 transition-colors"
-                  >
-                    <td className="py-3 text-sm text-white font-medium">{k.name || '—'}</td>
-                    <td className="py-3">
-                      <code className="text-xs font-mono text-slate-300 bg-black/30 px-2 py-1 rounded">
-                        {k.key_prefix || '***'}...
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {keys.map((key) => (
+                  <tr key={key.id} className="hover:bg-white/[0.02]">
+                    <td className="py-3 px-4 text-white font-medium">{key.name}</td>
+                    <td className="py-3 px-4">
+                      <code className="text-xs font-mono text-slate-300 bg-white/5 px-2 py-0.5 rounded">
+                        {key.key_prefix || key.prefix || '***'}...
                       </code>
                     </td>
-                    <td className="py-3">
-                      <div className="flex gap-1.5 flex-wrap">
-                        {(k.scopes || []).map(s => (
-                          <span key={s} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-primary/20 text-indigo-400">
+                    <td className="py-3 px-4">
+                      <div className="flex gap-1">
+                        {(key.scopes || []).map((s) => (
+                          <span key={s} className="px-1.5 py-0.5 text-xs rounded bg-indigo-500/20 text-indigo-300">
                             {s}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="py-3 text-sm text-slate-400">{formatTimestamp(k.last_used)}</td>
-                    <td className="py-3 text-sm text-slate-400">{k.expires ? formatTimestamp(k.expires) : 'Never'}</td>
-                    <td className="py-3 text-right">
+                    <td className="py-3 px-4 text-slate-400 text-xs">{formatDate(key.last_used)}</td>
+                    <td className="py-3 px-4 text-slate-400 text-xs">{formatDate(key.expires)}</td>
+                    <td className="py-3 px-4 text-right">
                       <button
-                        onClick={() => {
-                          if (window.confirm('Revoke this API key? This cannot be undone.')) {
-                            revokeMutation.mutate(k.id);
-                          }
-                        }}
-                        className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-all"
-                        title="Revoke key"
+                        onClick={() => revokeMutation.mutate(key.id)}
+                        disabled={revokeMutation.isPending}
+                        className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                        title="Revoke"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
-                  </motion.tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </GlassCard>
+
+      {/* Create modal */}
+      <Modal open={createOpen} onOpenChange={setCreateOpen} title="Create API Key" description="Generate a new API key for programmatic access">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            createMutation.mutate(form);
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Key Name</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+              placeholder="My Integration Key"
+              required
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Scopes</label>
+            <div className="flex gap-2">
+              {SCOPE_OPTIONS.map((s) => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => toggleScope(s.value)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    form.scopes.includes(s.value)
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white/5 text-slate-400 border border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Expiration</label>
+            <select
+              value={form.expiry}
+              onChange={(e) => setForm((p) => ({ ...p, expiry: e.target.value }))}
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              {EXPIRY_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value} className="bg-slate-800">{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={createMutation.isPending || !form.name || form.scopes.length === 0}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
+              Create Key
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreateOpen(false)}
+              className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
