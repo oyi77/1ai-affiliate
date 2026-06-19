@@ -9,6 +9,7 @@ const {
   getAnalyticHarian,
   getLaporanTaglink,
   exportLaporanIklanPdf,
+  getLaporanOrder,
 } = require('../controllers/reportController');
 
 router.use(authenticate);
@@ -19,5 +20,6 @@ router.get('/ads', requireAdmin, getLaporanIklan);
 router.get('/daily', requireAdmin, getAnalyticHarian);
 router.get('/taglink', requireAdmin, getLaporanTaglink);
 router.get('/ads.pdf', requireAdmin, exportLaporanIklanPdf);
+router.get('/orders', requireAdmin, getLaporanOrder);
 
 module.exports = router;

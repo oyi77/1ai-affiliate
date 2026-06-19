@@ -4,7 +4,7 @@ import {
   DollarSign, Settings, Menu, X, Search, ChevronRight,
   Sparkles, BarChart3, Shield, Crown, HelpCircle,
   Globe, Server, TrendingUp, Eye, Clock, FileText,
-  Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart
+  Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart, Wallet, CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
@@ -28,6 +28,10 @@ const navigation = [
   { name: 'Laporan Iklan', icon: FileText, href: '/laporan-iklan' },
   { name: 'Analytic Harian', icon: TrendingUp, href: '/analytic-harian' },
   { name: 'Laporan Taglink', icon: LinkIcon, href: '/laporan-taglink' },
+  { name: 'Laporan Order', icon: ShoppingCart, href: '/laporan-order' },
+  { name: 'Laporan Pembayaran', icon: CreditCard, href: '/laporan-pembayaran' },
+  { name: 'Saldo & Budget', icon: Wallet, href: '/saldo-budget' },
+  { name: 'Automation', icon: Zap, href: '/automation' },
   { name: 'Click Tracker', icon: Eye, href: '/click-tracker' },
   { name: 'Day-Parting', icon: Clock, href: '/day-parting' },
   { name: 'Earnings', icon: DollarSign, href: '/earnings' },

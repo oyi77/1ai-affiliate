@@ -1520,15 +1520,519 @@
         },
       },
       },
+        '/api/auth/register': {
+          post: {
+            tags: ['Authentication'],
+            summary: 'Register new affiliate account',
+            description: 'Public endpoint. Creates a new user with role=affiliate and an affiliate profile. Returns JWT token.',
+            operationId: 'authRegister',
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['name', 'email', 'password'],
+                    properties: {
+                      name: { type: 'string', example: 'Jane Affiliate' },
+                      email: { type: 'string', format: 'email', example: 'jane@example.com' },
+                      password: { type: 'string', format: 'password', minLength: 6, example: 'secret123' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '201': { description: 'Registration successful', content: { 'application/json': { schema: { type: 'object', properties: { token: { type: 'string' }, user: { type: 'object' } } } } } },
+              '400': { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '409': { description: 'Email already registered', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/advertisers': {
+          get: {
+            tags: ['Advertisers'],
+            summary: 'List advertisers',
+            description: 'Returns all advertisers with user data and platform info.',
+            operationId: 'getAdvertisers',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': { description: 'List of advertisers', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } },
+              '401': { description: 'Authorization required', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+          post: {
+            tags: ['Advertisers'],
+            summary: 'Create advertiser',
+            description: 'Create a new advertiser account with user profile.',
+            operationId: 'createAdvertiser',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['email', 'password'],
+                    properties: {
+                      name: { type: 'string', example: 'John Advertiser' },
+                      email: { type: 'string', format: 'email', example: 'john@shopee.com' },
+                      password: { type: 'string', format: 'password', example: 'secret123' },
+                      company_name: { type: 'string', example: 'PT Shopee Indonesia' },
+                      website: { type: 'string', example: 'https://shopee.co.id' },
+                      platform_type: { type: 'string', enum: ['shopee', 'tokopedia', 'lazada', 'custom'], example: 'shopee' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '201': { description: 'Advertiser created', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, id: { type: 'integer' } } } } } },
+              '400': { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+              '409': { description: 'Email already exists', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/advertisers/{id}': {
+          patch: {
+            tags: ['Advertisers'],
+            summary: 'Update advertiser',
+            description: 'Update advertiser fields (name, company, website, platform_type, notes).',
+            operationId: 'updateAdvertiser',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            requestBody: { content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' }, company_name: { type: 'string' }, website: { type: 'string' }, platform_type: { type: 'string' }, notes: { type: 'string' } } } } } },
+            responses: {
+              '200': { description: 'Advertiser updated', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' } } } } } },
+              '404': { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/advertisers/{id}/upload': {
+          post: {
+            tags: ['Advertisers'],
+            summary: 'Upload CSV commission report',
+            description: 'Upload a CSV file (Shopee commission format) to import commission data. Supports multipart/form-data.',
+            operationId: 'uploadAdvertiserReport',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } } } },
+            responses: {
+              '200': { description: 'Upload result', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, format: { type: 'string' }, inserted: { type: 'integer' } } } } } },
+              '400': { description: 'No file or invalid format', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/advertisers/{id}/reports': {
+          get: {
+            tags: ['Advertisers'],
+            summary: 'Get advertiser reports',
+            description: 'Returns uploaded commission report data for the advertiser.',
+            operationId: 'getAdvertiserReports',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            responses: { '200': { description: 'Report data', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/advertisers/{id}/payouts': {
+          get: {
+            tags: ['Advertisers'],
+            summary: 'Get advertiser payouts',
+            description: 'Returns payout history for the advertiser.',
+            operationId: 'getAdvertiserPayouts',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            responses: { '200': { description: 'Payout data', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+          post: {
+            tags: ['Advertisers'],
+            summary: 'Create advertiser payout',
+            description: 'Record a new payout for the advertiser.',
+            operationId: 'createAdvertiserPayout',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['amount'], properties: { amount: { type: 'number', example: 500000 }, note: { type: 'string' } } } } } },
+            responses: { '201': { description: 'Payout created', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, id: { type: 'integer' } } } } } } },
+          },
+        },
+        '/api/admin/traffic-sources': {
+          get: {
+            tags: ['Traffic Sources'],
+            summary: 'List traffic sources',
+            description: 'Returns all traffic sources with platform type, cost model, and sync status.',
+            operationId: 'getTrafficSources',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'List of traffic sources', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+          post: {
+            tags: ['Traffic Sources'],
+            summary: 'Create traffic source',
+            description: 'Create a new traffic source with platform template.',
+            operationId: 'createTrafficSource',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['name'],
+                    properties: {
+                      name: { type: 'string', example: 'Meta Ads - Main' },
+                      platform_type: { type: 'string', enum: ['meta', 'google', 'tiktok', 'propellerads', 'custom'], example: 'meta' },
+                      cost_model: { type: 'string', enum: ['CPC', 'CPM', 'CPA', 'revshare'], example: 'CPC' },
+                      currency: { type: 'string', example: 'IDR' },
+                      tracking_domain: { type: 'string', example: 'trk.example.com' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: { '201': { description: 'Source created', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, id: { type: 'integer' } } } } } } },
+          },
+        },
+        '/api/admin/traffic-sources/{id}': {
+          patch: {
+            tags: ['Traffic Sources'],
+            summary: 'Update traffic source',
+            description: 'Update traffic source fields.',
+            operationId: 'updateTrafficSource',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            responses: { '200': { description: 'Updated', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' } } } } } } },
+          },
+        },
+        '/api/admin/traffic-sources/{id}/connect-meta': {
+          post: {
+            tags: ['Traffic Sources'],
+            summary: 'Connect Meta Ads account',
+            description: 'Link a Meta Ads account. Validates token, fetches account name, stores credentials.',
+            operationId: 'connectMetaAccount',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            requestBody: {
+              required: true,
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    required: ['act_id', 'access_token'],
+                    properties: {
+                      act_id: { type: 'string', description: 'Meta Ad Account ID', example: 'act_123456789' },
+                      access_token: { type: 'string', description: 'Meta Ads API token', example: 'EAAxxxxxxxxxxxxxxx' },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              '200': { description: 'Account connected', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, account_name: { type: 'string' } } } } } },
+              '400': { description: 'Invalid token or account', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/admin/traffic-sources/{id}/sync': {
+          post: {
+            tags: ['Traffic Sources'],
+            summary: 'Sync traffic source stats',
+            description: 'Trigger immediate data sync (e.g. fetch Meta Ads daily insights).',
+            operationId: 'syncTrafficSource',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            responses: { '200': { description: 'Sync triggered', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' }, synced: { type: 'integer' } } } } } } },
+          },
+        },
+        '/api/admin/traffic-sources/{id}/daily-stats': {
+          get: {
+            tags: ['Traffic Sources'],
+            summary: 'Get daily stats',
+            description: 'Returns daily spend/impressions/clicks stats for a traffic source.',
+            operationId: 'getTrafficSourceDailyStats',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+              { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+            ],
+            responses: { '200': { description: 'Daily stats', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/offers': {
+          get: {
+            tags: ['Offers'],
+            summary: 'List offers',
+            description: 'Returns all offers with EPC, CR, and ROI metrics.',
+            operationId: 'getOffers',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'List of offers', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+          post: { tags: ['Offers'], summary: 'Create offer', operationId: 'createOffer', security: [{ BearerAuth: [] }], responses: { '201': { description: 'Offer created' } } },
+        },
+        '/api/admin/offers/{id}': {
+          patch: { tags: ['Offers'], summary: 'Update offer', operationId: 'updateOffer', security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Offer updated' } } },
+        },
+        '/api/admin/offers/{id}/postback': {
+          get: { tags: ['Offers'], summary: 'Get offer postback config', operationId: 'getOfferPostback', security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Postback config' } } },
+          post: { tags: ['Offers'], summary: 'Set offer postback', operationId: 'setOfferPostback', security: [{ BearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Postback saved' } } },
+        },
+        '/api/admin/reports/clicks': {
+          get: {
+            tags: ['Reports'],
+            summary: 'Click log',
+            description: 'Detailed click log with full parameters: click ID, offer, affiliate, subid, IP, country, device, OS, browser, payout, converted, timestamp.',
+            operationId: 'getClicks',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'offer_id', in: 'query', schema: { type: 'integer' } },
+            ],
+            responses: { '200': { description: 'Click data', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/reports/conversions': {
+          get: {
+            tags: ['Reports'],
+            summary: 'Conversion log',
+            description: 'Conversion log with offer, affiliate, payout, status, and transaction details.',
+            operationId: 'getConversions',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+            ],
+            responses: { '200': { description: 'Conversion data', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/reports/ads': {
+          get: {
+            tags: ['Reports'],
+            summary: 'Ad report (Laporan Iklan)',
+            description: 'Merged report: Meta Ads spend + Shopee commissions. Groups by campaign + date. Includes ROAS and net profit.',
+            operationId: 'getLaporanIklan',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'advertiser_id', in: 'query', schema: { type: 'integer' } },
+              { name: 'traffic_source_id', in: 'query', schema: { type: 'integer' } },
+            ],
+            responses: { '200': { description: 'Ad report', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/reports/daily': {
+          get: {
+            tags: ['Reports'],
+            summary: 'Daily analytics (Analytic Harian)',
+            description: 'Daily aggregated data across Meta spend and Shopee commissions.',
+            operationId: 'getAnalyticHarian',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+            ],
+            responses: { '200': { description: 'Daily analytics', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/reports/taglink': {
+          get: {
+            tags: ['Reports'],
+            summary: 'Taglink report (Laporan Taglink)',
+            description: 'Performance grouped by taglink, sorted by ROAS.',
+            operationId: 'getLaporanTaglink',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+            ],
+            responses: { '200': { description: 'Taglink report', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/reports/ads.pdf': {
+          get: {
+            tags: ['Reports'],
+            summary: 'Export ad report as PDF',
+            description: 'PDF download of the ad report with ROAS color coding.',
+            operationId: 'exportLaporanIklanPdf',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
+              { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
+            ],
+            responses: { '200': { description: 'PDF file', content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } } } },
+          },
+        },
+        '/api/admin/affiliates': {
+          get: {
+            tags: ['Affiliates'],
+            summary: 'List affiliates',
+            description: 'Returns all affiliates with user data and metrics.',
+            operationId: 'getAffiliates',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'limit', in: 'query', schema: { type: 'integer', default: 100 } }],
+            responses: { '200': { description: 'List of affiliates', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Affiliate' } } } } } } } },
+          },
+        },
+        '/api/admin/affiliates/earnings': {
+          get: {
+            tags: ['Affiliates'],
+            summary: 'List affiliate earnings',
+            description: 'Returns earnings with affiliate and offer details.',
+            operationId: 'getEarnings',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'Earnings list', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Earning' } } } } } } } },
+          },
+        },
+        '/api/admin/affiliates/earnings/{id}/approve': {
+          post: {
+            tags: ['Affiliates'],
+            summary: 'Approve earning',
+            description: 'Approve a pending affiliate earning.',
+            operationId: 'approveEarning',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            responses: { '200': { description: 'Earning approved', content: { 'application/json': { schema: { type: 'object', properties: { approved: { type: 'integer' } } } } } } },
+          },
+        },
+        '/api/admin/notifications': {
+          get: {
+            tags: ['Notifications'],
+            summary: 'List notifications',
+            description: 'Returns in-app notifications for the authenticated user.',
+            operationId: 'getNotifications',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'Notifications', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/admin/notifications/read-all': {
+          post: {
+            tags: ['Notifications'],
+            summary: 'Mark all as read',
+            operationId: 'markAllRead',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'All marked as read' } },
+          },
+        },
+        '/api/admin/notifications/{id}/read': {
+          post: {
+            tags: ['Notifications'],
+            summary: 'Mark notification as read',
+            operationId: 'markAsRead',
+            security: [{ BearerAuth: [] }],
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+            responses: { '200': { description: 'Marked as read' } },
+          },
+        },
+        '/api/affiliate/stats': {
+          get: {
+            tags: ['Affiliate Dashboard'],
+            summary: 'Get my stats',
+            description: 'Returns affiliate dashboard stats: total clicks, conversions, earnings, pending, approved, this month. Filtered to current user.',
+            operationId: 'getMyStats',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'Affiliate stats', content: { 'application/json': { schema: { type: 'object', properties: { total_clicks: { type: 'integer' }, total_conversions: { type: 'integer' }, total_earnings: { type: 'number' }, pending: { type: 'integer' }, this_month: { type: 'number' } } } } } } },
+          },
+        },
+        '/api/affiliate/links': {
+          get: {
+            tags: ['Affiliate Dashboard'],
+            summary: 'Get my links',
+            description: 'Returns all smartlinks for the authenticated affiliate.',
+            operationId: 'getMyLinks',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'Affiliate links', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { type: 'object' } } } } } } } },
+          },
+        },
+        '/api/affiliate/earnings': {
+          get: {
+            tags: ['Affiliate Dashboard'],
+            summary: 'Get my earnings',
+            description: 'Paginated earnings history for the authenticated affiliate.',
+            operationId: 'getMyEarnings',
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+              { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
+            ],
+            responses: { '200': { description: 'Earnings list', content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Earning' } }, total: { type: 'integer' }, page: { type: 'integer' }, pages: { type: 'integer' } } } } } } },
+          },
+        },
+        '/api/settings/telegram': {
+          get: {
+            tags: ['Telegram'],
+            summary: 'Get Telegram config',
+            description: 'Returns Telegram bot configuration for the authenticated user.',
+            operationId: 'getTelegramConfig',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'Telegram config', content: { 'application/json': { schema: { type: 'object', properties: { bot_token: { type: 'string', nullable: true }, chat_id: { type: 'string', nullable: true }, daily_summary_enabled: { type: 'boolean' }, balance_alert_enabled: { type: 'boolean' } } } } } } },
+          },
+          post: {
+            tags: ['Telegram'],
+            summary: 'Save Telegram config',
+            description: 'Save or update Telegram bot configuration.',
+            operationId: 'saveTelegramConfig',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { type: 'object', properties: { bot_token: { type: 'string' }, chat_id: { type: 'string' }, daily_summary_enabled: { type: 'boolean' }, balance_alert_enabled: { type: 'boolean' }, balance_alert_threshold: { type: 'number' } } } } },
+            },
+            responses: { '200': { description: 'Config saved' } },
+          },
+        },
+        '/api/settings/telegram/test': {
+          post: {
+            tags: ['Telegram'],
+            summary: 'Test Telegram connection',
+            description: 'Send a test message to the configured Telegram chat.',
+            operationId: 'testTelegramConnection',
+            security: [{ BearerAuth: [] }],
+            responses: {
+              '200': { description: 'Test message sent', content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean' } } } } } },
+              '400': { description: 'Missing config', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+            },
+          },
+        },
+        '/api/settings/payouts/rules': {
+          get: {
+            tags: ['Payouts'],
+            summary: 'Get payout rules',
+            description: 'Returns automated payout rule configuration.',
+            operationId: 'getPayoutRules',
+            security: [{ BearerAuth: [] }],
+            responses: { '200': { description: 'Payout rules', content: { 'application/json': { schema: { type: 'object', properties: { min_amount: { type: 'number' }, auto_approve: { type: 'boolean' }, payment_method: { type: 'string' }, payment_schedule: { type: 'string' }, enabled: { type: 'boolean' } } } } } } },
+          },
+          post: {
+            tags: ['Payouts'],
+            summary: 'Save payout rules',
+            description: 'Save automated payout processing rules.',
+            operationId: 'savePayoutRules',
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { type: 'object', properties: { min_amount: { type: 'number', example: 50000 }, auto_approve: { type: 'boolean' }, payment_method: { type: 'string', enum: ['bank_transfer', 'ewallet', 'manual'] }, payment_schedule: { type: 'string', enum: ['weekly', 'biweekly', 'monthly'] }, enabled: { type: 'boolean' } } } } },
+            },
+            responses: { '200': { description: 'Rules saved' } },
+          },
+        },
       tags: [
         { name: 'Health', description: 'Service health check' },
-        { name: 'Authentication', description: 'Login, user profile, password management' },
+        { name: 'Authentication', description: 'Login, register, user profile, password management' },
         { name: 'Admin', description: 'Admin-only endpoints — require JWT Bearer + admin role, or X-API-Key' },
+        { name: 'Advertisers', description: 'Advertiser CRUD, CSV upload, reports, payouts' },
+        { name: 'Traffic Sources', description: 'Traffic source CRUD, Meta Ads connect, sync, daily stats' },
+        { name: 'Offers', description: 'Offer CRUD, postback config' },
+        { name: 'Campaigns', description: 'Campaign CRUD' },
+        { name: 'Reports', description: 'Clicks, conversions, ad reports, daily analytics, taglink, PDF export' },
+        { name: 'Affiliates', description: 'Affiliate CRUD, earnings, approve' },
+        { name: 'Affiliate Dashboard', description: 'Affiliate self-service: stats, links, earnings' },
+        { name: 'Notifications', description: 'In-app notifications' },
+        { name: 'Telegram', description: 'Telegram bot integration config and test' },
+        { name: 'Payouts', description: 'Automated payout processing rules' },
         { name: 'Settings', description: 'Profile, API keys, integrations management' },
         { name: 'Documentation', description: 'Documentation index and file serving' },
-        { name: 'GeoIP', description: 'IP geolocation lookup using Loyalsoldier/geoip (free, weekly-updated)' },
-        { name: 'Content', description: '6 Gemini-powered content generation tools for affiliate marketing' },
-        { name: 'Payment', description: 'Tripay payment integration for affiliate subscriptions' },
+        { name: 'GeoIP', description: 'IP geolocation lookup' },
+        { name: 'Content', description: '6 Gemini-powered content generation tools' },
+        { name: 'Payment', description: 'Tripay payment integration' },
       ],
     };
 

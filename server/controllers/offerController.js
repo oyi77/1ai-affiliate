@@ -88,8 +88,8 @@ const createOffer = asyncHandler(async (req, res) => {
   }
 
   const offerId = await queryInsert(
-    `INSERT INTO 1ai_offers (name, payout, network_payout, advertiser_id, network_id, created_at, updated_at, status)
-     VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'active')`,
+    `INSERT INTO 1ai_offers (name, payout, network_payout, advertiser_id, network_id, created_at, status)
+     VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP(), 'active')`,
     [name, payout_amount || 0, network_payout || payout_amount || 0, adv_id, network_id || null]
   );
 
@@ -118,8 +118,7 @@ const updateOffer = asyncHandler(async (req, res) => {
        vertical = COALESCE(?, vertical),
        geo = COALESCE(?, geo),
        notes = COALESCE(?, notes),
-       affiliate_url = COALESCE(?, affiliate_url),
-       updated_at = UNIX_TIMESTAMP()
+       affiliate_url = COALESCE(?, affiliate_url)
      WHERE id = ?`,
     [data.name ?? null, data.payout ?? null, data.network_payout ?? null,
      data.status ?? null, data.vertical ?? null, data.geo ?? null,

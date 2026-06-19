@@ -167,11 +167,16 @@ const updateAdvertiser = asyncHandler(async (req, res) => {
 });
 
 const uploadAdvertiserReport = asyncHandler(async (req, res) => {
-  return success(res, {
-    success: true,
-    message: 'Upload endpoint ready',
-    file: req.file?.originalname || null,
-  });
+  const advertiserId = parseInt(req.params.id);
+  if (!advertiserId) return error(res, 'Invalid advertiser id', 400);
+  if (!req.file) return error(res, 'No file uploaded', 400);
+
+  const advertiser = await queryOne('SELECT id FROM 1ai_advertisers WHERE id = ?', [advertiserId]);
+  if (!advertiser) return error(res, 'Advertiser not found', 404);
+
+  const { processShopeeUpload } = require('../services/advertiserService');
+  const result = await processShopeeUpload(pool, advertiserId, req.user.id, req.file.buffer);
+  return success(res, { success: true, ...result });
 });
 
 const getAdvertiserReports = asyncHandler(async (req, res) => {

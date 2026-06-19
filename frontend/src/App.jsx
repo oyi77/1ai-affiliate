@@ -41,6 +41,10 @@ const Poster = lazy(() => import('./pages/Poster.jsx').then(m => ({ default: m.P
 const APIDocs = lazy(() => import('./pages/APIDocs.jsx').then(m => ({ default: m.APIDocs })).catch(() => fallback));
 const AffiliateDashboard = lazy(() => import('./pages/AffiliateDashboard.jsx').then(m => ({ default: m.AffiliateDashboard })).catch(() => fallback));
 const ConversionLog = lazy(() => import('./pages/ConversionLog.jsx').then(m => ({ default: m.ConversionLog })).catch(() => fallback));
+const Automation = lazy(() => import('./pages/Automation.jsx').then(m => ({ default: m.Automation })).catch(() => fallback));
+const LaporanOrder = lazy(() => import('./pages/LaporanOrder.jsx').then(m => ({ default: m.LaporanOrder })).catch(() => fallback));
+const LaporanPembayaran = lazy(() => import('./pages/LaporanPembayaran.jsx').then(m => ({ default: m.LaporanPembayaran })).catch(() => fallback));
+const SaldoBudget = lazy(() => import('./pages/SaldoBudget.jsx').then(m => ({ default: m.SaldoBudget })).catch(() => fallback));
 
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -90,6 +94,10 @@ function App() {
             <Route path="/conversions/manual" element={<ManualConversion />} />
             <Route path="/conversions" element={<ConversionLog />} />
             <Route path="/affiliate-dashboard" element={<AffiliateDashboard />} />
+            <Route path="/automation" element={<Automation />} />
+            <Route path="/laporan-order" element={<LaporanOrder />} />
+            <Route path="/laporan-pembayaran" element={<LaporanPembayaran />} />
+            <Route path="/saldo-budget" element={<SaldoBudget />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
           </ErrorBoundary>

@@ -100,6 +100,9 @@ app.use('/api/affiliate', require('./routes/affiliate'));
 app.use('/api/settings/telegram', require('./routes/telegram'));
 app.use('/api/settings/payouts', require('./routes/payouts'));
 app.use('/api/admin/notifications', require('./routes/notifications'));
+app.use('/api/admin/taglinks', require('./routes/taglinks'));
+app.use('/api/admin/balance', require('./routes/balance'));
+app.use('/api/admin/automation', require('./routes/automation'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status

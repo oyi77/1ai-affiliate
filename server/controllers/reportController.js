@@ -120,11 +120,12 @@ const getConversions = asyncHandler(async (req, res) => {
     `SELECT ae.id AS earning_id, ae.affiliate_id, ae.conversion_id,
             ae.payout_amount, ae.admin_amount, ae.status AS earning_status,
             ae.approved_at, ae.paid_at, ae.created_at AS earning_created_at,
-            cl.click_id, cl.transaction_id, cl.conversion_time,
-            o.id AS offer_id, o.name AS offer_name, o.payout AS offer_payout
+            cl.click_id, cl.conversion_time,
+            oc.offer_id, o.name AS offer_name, o.payout AS offer_payout
      FROM 1ai_affiliate_earnings ae
      LEFT JOIN 1ai_conversion_logs cl ON ae.conversion_id = cl.conversion_id
-     LEFT JOIN 1ai_offers o ON cl.offer_id = o.id
+     LEFT JOIN 1ai_offer_campaigns oc ON cl.aff_campaign_id = oc.aff_campaign_id
+     LEFT JOIN 1ai_offers o ON oc.offer_id = o.id
      ${where}
      ORDER BY ae.created_at DESC
      LIMIT ? OFFSET ?`,
@@ -139,7 +140,10 @@ const getConversions = asyncHandler(async (req, res) => {
  * Merged Meta spend + Shopee commission report.
  */
 const getLaporanIklan = asyncHandler(async (req, res) => {
-  return success(res, { data: [], message: 'Report pending Meta×Shopee integration' });
+  const { dateFrom, dateTo, advertiser_id, traffic_source_id } = req.query;
+  const { getLaporanIklan } = require('../services/reportService');
+  const data = await getLaporanIklan(pool, { dateFrom, dateTo, advertiserId: advertiser_id, trafficSourceId: traffic_source_id });
+  return success(res, { data });
 });
 
 /**
@@ -147,7 +151,10 @@ const getLaporanIklan = asyncHandler(async (req, res) => {
  * Daily aggregation across spend and commissions.
  */
 const getAnalyticHarian = asyncHandler(async (req, res) => {
-  return success(res, { data: [], message: 'Report pending Meta×Shopee integration' });
+  const { dateFrom, dateTo } = req.query;
+  const { getAnalyticHarian } = require('../services/reportService');
+  const data = await getAnalyticHarian(pool, { dateFrom, dateTo });
+  return success(res, { data });
 });
 
 /**
@@ -155,7 +162,10 @@ const getAnalyticHarian = asyncHandler(async (req, res) => {
  * Per-taglink performance report.
  */
 const getLaporanTaglink = asyncHandler(async (req, res) => {
-  return success(res, { data: [], message: 'Report pending Meta×Shopee integration' });
+  const { dateFrom, dateTo } = req.query;
+  const { getLaporanTaglink } = require('../services/reportService');
+  const data = await getLaporanTaglink(pool, { dateFrom, dateTo });
+  return success(res, { data });
 });
 
 /**
@@ -208,6 +218,36 @@ const exportLaporanIklanPdf = asyncHandler(async (req, res) => {
   res.send(pdfBuffer);
 });
 
+/**
+ * GET /api/admin/reports/orders
+ * Order-level report grouped by date: spend, estimasi kotor, komisi update, profit/loss, komisi bersih.
+ */
+const getLaporanOrder = asyncHandler(async (req, res) => {
+  const { date_from, date_to } = req.query;
+  let where = '1=1';
+  const params = [];
+  if (date_from) { where += ' AND sr.report_date >= ?'; params.push(date_from); }
+  if (date_to) { where += ' AND sr.report_date <= ?'; params.push(date_to); }
+
+  const rows = await queryRows(
+    `SELECT sr.report_date AS tanggal_transaksi,
+            COALESCE(SUM(mds.spend), 0) AS spend,
+            COALESCE(SUM(sr.order_amount), 0) AS estimasi_kotor,
+            COALESCE(SUM(sr.commission_gross), 0) AS komisi_update,
+            COALESCE(SUM(sr.commission_net) - SUM(mds.spend), 0) AS profit_loss,
+            COALESCE(SUM(sr.commission_net), 0) AS komisi_bersih,
+            CASE WHEN SUM(sr.commission_net) > 0 THEN 'completed' ELSE 'pending' END AS status
+     FROM 1ai_shopee_reports sr
+     LEFT JOIN 1ai_taglink_mappings tlm ON tlm.taglink = sr.taglink
+     LEFT JOIN 1ai_meta_daily_stats mds ON mds.campaign_id = tlm.meta_campaign_id AND mds.report_date = sr.report_date
+     WHERE ${where}
+     GROUP BY sr.report_date
+     ORDER BY sr.report_date DESC`,
+    params
+  );
+  return success(res, { data: rows });
+});
+
 module.exports = {
   getClicks,
   getConversions,
@@ -215,4 +255,5 @@ module.exports = {
   getAnalyticHarian,
   getLaporanTaglink,
   exportLaporanIklanPdf,
+  getLaporanOrder,
 };

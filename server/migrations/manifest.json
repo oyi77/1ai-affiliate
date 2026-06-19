@@ -10,6 +10,7 @@
     "2026_07_01_add_deep_link_pages.sql",
     "2026_07_02_postback_consolidated.sql",
     "015_adtech_worldclass.sql",
-    "023_bemob_entity_model.sql"
+    "023_bemob_entity_model.sql",
+    "024_automation_rules.sql"
   ]
 }

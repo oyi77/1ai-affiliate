@@ -8,9 +8,10 @@ Port 3001. Serves the React SPA at `/`, routes all API calls to PHP backend.
 server/
 ├── app.js                 # Entry: middleware stack, route mounting, SPA fallback
 ├── routes/                # /api/auth, /api/admin, /api/content, /api/smartlink, /api/payment, ...
-├── controllers/           # Request handlers (auth, admin, payment, poster, pipeline)
-├── services/              # Gemini SDK, smartlinkService, posterService, pipelineService
-├── middleware/             # idempotency.js, auditLog.js
+├── controllers/           # Request handlers (auth, admin, advertiser, trafficSource, report, offer, campaign, affiliate)
+├── services/              # Gemini SDK, smartlinkService, posterService, pipelineService, metaService, shopeeService, telegramService, payoutService
+├── utils/                 # queryHelpers, validate (Zod), apiResponse, asyncHandler
+├── middleware/             # auth.js, roleMiddleware.js, idempotency.js, auditLog.js
 ├── db/mysql.js            # MySQL2 connection pool (shared with PHP)
 ├── public/                # Static assets + dist/ (React build output)
 │   ├── dist/              # Production React SPA (npm run build output)
@@ -40,18 +41,28 @@ server/
 
 | Prefix | Router File | Purpose |
 |--------|-------------|---------|
-| `/api/auth` | `routes/auth.js` | Login, register, JWT |
-| `/api/admin` | `routes/admin.js` | Dashboard stats, campaigns, offers, affiliates |
+| `/api/auth` | `routes/auth.js` | Login, register, JWT, password reset |
+| `/api/admin` | `routes/admin.js` | Users, stats, commissions, payments, system, VIP, domains, shorteners, margin, networks, postback logs, manual conversions |
+| `/api/admin/advertisers` | `routes/advertisers.js` | Advertiser CRUD, CSV upload, reports, payouts |
+| `/api/admin/traffic-sources` | `routes/trafficSources.js` | Traffic source CRUD, Meta Ads connect, sync, daily stats |
+| `/api/admin/offers` | `routes/offers.js` | Offer CRUD, postback config, landing pages |
+| `/api/admin/campaigns` | `routes/campaigns.js` | Campaign CRUD, rotation |
+| `/api/admin/reports` | `routes/reports.js` | Clicks, conversions, ad reports, daily analytics, taglink, PDF export |
+| `/api/admin/affiliates` | `routes/affiliates.js` | Affiliate CRUD, earnings, approve |
+| `/api/admin/notifications` | `routes/notifications.js` | In-app notifications, mark read |
+| `/api/admin/stats` | `routes/statsSSE.js` | Stats with SSE streaming |
+| `/api/affiliate` | `routes/affiliate.js` | Affiliate self-service: stats, links, earnings |
 | `/api/am` | `routes/am.js` | Affiliate manager endpoints |
 | `/api/om` | `routes/om.js` | Offer manager endpoints |
 | `/api/payment` | `routes/payment.js` | Tripay payment gateway |
-| `/api/content` | `routes/content.js` | Gemini AI (banner, carousel, captions, etc.) |
+| `/api/content` | `routes/content.js` | Gemini AI (banner, carousel, captions, brand-kit, ab-test, bg-remove) |
 | `/api/smartlink` | `routes/smartlink.js` | Smartlink generation + list |
-| `/api/settings` | `routes/settings.js` | User preferences, config |
+| `/api/settings` | `routes/settings.js` | User preferences, profile, API keys, integrations |
+| `/api/settings/telegram` | `routes/telegram.js` | Telegram bot config + test message |
+| `/api/settings/payouts` | `routes/payouts.js` | Automated payout rules |
 | `/api/docs` | `routes/docs.js` | API documentation |
 | `/api/geo` | `routes/geoip.js` | GeoIP lookups |
 | `/api/ai` | `routes/ai.js` | AI agent endpoints |
-| `/api/admin/stats` | `routes/statsSSE.js` | Stats with SSE streaming |
 | `/api/poster` | `routes/poster.js` | Telegram poster queue |
 | `/api/pipeline` | `routes/pipeline.js` | TikTok/FB pipeline status |
 | `/api` | `routes/postback.js` | Postback webhook receiver |
@@ -87,3 +98,19 @@ GET *                → dist/index.html (SPA client-side routing)
 ### gemini.js
 - Gemini SDK wrapper
 - Circuit breaker pattern for AI content generation
+
+### metaService.js
+- Meta Ads Graph API client
+- Token validation, account name fetch, daily insights, stat sync
+
+### shopeeService.js
+- Shopee CSV parser with Indonesian number format support
+- Bulk insert in batches of 500 rows
+
+### telegramService.js
+- Telegram bot message sending
+- Daily summary, balance alerts, test connection
+
+### payoutService.js
+- Automated payout rule processing
+- Configurable min amount, payment method, schedule

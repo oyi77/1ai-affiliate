@@ -1,6 +1,6 @@
 # Frontend — React 19 SPA (Crystal UI)
 
-28-page affiliate tracking dashboard built with React 19, Vite 8, Tailwind CSS v4.
+40-page affiliate tracking dashboard built with React 19, Vite 8, Tailwind CSS v4.
 
 ## Architecture
 
@@ -12,6 +12,7 @@ main.jsx → QueryClientProvider → App.jsx → BrowserRouter → Shell (layout
 - **Tables**: TanStack Table v8 (headless — Crystal UI styling via className)
 - **Motion**: Framer Motion v12 (spring easing, 60fps)
 - **Modals**: Radix UI Dialog/DropdownMenu (accessible primitives)
+- **SlideOver**: Radix Dialog with slide-from-right animation for detail views
 - **Icons**: Lucide React (consistent, tree-shakeable)
 - **HTTP**: Axios with JWT interceptor (`lib/api.js`)
 
@@ -19,11 +20,11 @@ main.jsx → QueryClientProvider → App.jsx → BrowserRouter → Shell (layout
 
 ```
 frontend/src/
-├── components/ui/      # GlassCard, StatCard, DataTable, Modal, SlideOver
+├── components/ui/      # GlassCard, StatCard, DataTable, Modal, SlideOver, ErrorBoundary
 ├── hooks/              # useStats (useQuery wrapper)
-├── layout/Shell.jsx    # Sidebar (27 items) + glass header + search
+├── layout/Shell.jsx    # Sidebar (35+ items) + glass header + search + notification bell
 ├── lib/api.js          # Axios instance, auth interceptor
-├── pages/              # 28 lazy-loaded pages
+├── pages/              # 40 lazy-loaded pages
 ├── App.jsx             # Router + lazy imports + Suspense
 ├── main.jsx            # QueryClientProvider + StrictMode
 └── index.css           # @theme tokens, @layer base/components, animations
@@ -56,6 +57,20 @@ frontend/src/
 // Headless TanStack Table with Crystal UI styling
 ```
 
+### Modal
+```jsx
+<Modal open={open} onOpenChange={setOpen} title="Title" size="md|lg|xl">
+  <form>...</form>
+</Modal>
+```
+
+### SlideOver
+```jsx
+<SlideOver open={open} onOpenChange={setOpen} title="Detail" width="sm|md|lg">
+  <div>Detail content slides in from right</div>
+</SlideOver>
+```
+
 ## Page Structure
 
 Each page exports a named function component:
@@ -70,6 +85,30 @@ export function Campaigns() {
 }
 ```
 
+### Template Selector Pattern
+Used by Advertisers, TrafficSources, and other pages that need entity templates:
+```jsx
+const TEMPLATES = [
+  { id: 'shopee', label: 'Shopee', icon: '🛒', platform_type: 'shopee', desc: '...' },
+  // ...
+];
+// Rendered as clickable cards that pre-fill form fields
+```
+
+## Pages (40 total)
+
+| Category | Pages |
+|----------|-------|
+| Dashboard | Dashboard, Affiliate Dashboard |
+| Campaigns | Campaigns, Offers, Landing Pages, Deep Links |
+| Affiliates | Affiliates, Earnings, Commissions |
+| Advertisers | Advertisers (with template selector + CSV upload SlideOver) |
+| Traffic | Traffic Sources (with Meta Ads connect + sync), Click Tracker, Day-Parting |
+| Reports | Reports, Laporan Iklan, Laporan Order, Laporan Pembayaran, Analytic Harian, Laporan Taglink, Clicks, Conversions |
+| Tools | Smartlinks, Postback Builder, AI Tools, Analytics, Attribution |
+| System | Settings, Domains, Shorteners, Click Servers, Integrations, Pipeline, Poster, Saldo Budget, Automation |
+| Admin | Admin, VIP Perks, Manual Conversion, API Docs, Support, Login |
+
 ## Build
 
 ```bash
@@ -78,7 +117,7 @@ npm run build      # Production → ../server/public/dist/
 npm run lint       # ESLint
 ```
 
-Build output: 23 chunks, 146KB gzip core, lazy-loaded pages (1-14KB each).
+Build output: 40+ chunks, lazy-loaded pages (1-16KB each).
 
 ## API Proxy
 

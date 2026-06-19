@@ -48,8 +48,9 @@ const createTrafficSource = asyncHandler(async (req, res) => {
 
   const id = await queryInsert(
     `INSERT INTO 1ai_traffic_sources
-       (name, platform_type, cost_model, currency, tracking_domain, postback_url_template, user_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (name, platform_type, cost_model, currency, tracking_domain,
+        postback_url_template, user_id, affiliate_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.name,
       data.platform_type || null,
@@ -58,6 +59,8 @@ const createTrafficSource = asyncHandler(async (req, res) => {
       data.tracking_domain || null,
       data.postback_url_template || null,
       req.user.id,
+      null,
+      now,
       now,
     ]
   );
@@ -112,7 +115,24 @@ const updateTrafficSource = asyncHandler(async (req, res) => {
  * Connect a Meta Ads account to this traffic source.
  */
 const connectMetaAccount = asyncHandler(async (req, res) => {
-  return success(res, { success: true, message: 'Meta API integration ready' });
+  const tsId = parseInt(req.params.id);
+  if (!tsId) return error(res, 'Invalid traffic source id', 400);
+
+  const { access_token, act_id } = req.body;
+  if (!access_token || !act_id) return error(res, 'access_token and act_id required', 400);
+
+  const { validateToken, fetchAccountName } = require('../services/metaService');
+  const tokenResult = await validateToken(access_token);
+  if (!tokenResult.valid) return error(res, `Invalid Meta token: ${tokenResult.error}`, 400);
+
+  const accountInfo = await fetchAccountName(act_id, access_token);
+
+  await pool.query(
+    `UPDATE 1ai_traffic_sources SET api_config = JSON_SET(COALESCE(api_config, '{}'), '$.act_id', ?, '$.access_token', ?, '$.account_name', ?), platform_type = 'meta', updated_at = ? WHERE id = ?`,
+    [act_id, access_token, accountInfo?.name || null, Math.floor(Date.now() / 1000), tsId]
+  );
+
+  return success(res, { success: true, account_name: accountInfo?.name, act_id });
 });
 
 /**
@@ -120,7 +140,23 @@ const connectMetaAccount = asyncHandler(async (req, res) => {
  * Sync daily stats from the connected ad platform.
  */
 const syncTrafficSource = asyncHandler(async (req, res) => {
-  return success(res, { success: true, message: 'Sync queued' });
+  const tsId = parseInt(req.params.id);
+  if (!tsId) return error(res, 'Invalid traffic source id', 400);
+
+  const ts = await queryOne('SELECT id, api_config FROM 1ai_traffic_sources WHERE id = ?', [tsId]);
+  if (!ts) return error(res, 'Traffic source not found', 404);
+
+  const config = typeof ts.api_config === 'string' ? JSON.parse(ts.api_config) : ts.api_config;
+  if (!config?.act_id || !config?.access_token) return error(res, 'Meta account not connected. Connect first.', 400);
+
+  const { date_from, date_to } = req.query;
+  const dateFrom = date_from || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+  const dateTo = date_to || new Date().toISOString().split('T')[0];
+
+  const { syncTrafficSourceStats } = require('../services/metaService');
+  const result = await syncTrafficSourceStats(pool, tsId, config.act_id, config.access_token, dateFrom, dateTo);
+
+  return success(res, { success: true, synced: result.synced, dates: result.dates });
 });
 
 /**
@@ -151,4 +187,6 @@ module.exports = {
   connectMetaAccount,
   syncTrafficSource,
   getTrafficSourceDailyStats,
+  createTrafficSourceSchema,
+  validate: validate,
 };

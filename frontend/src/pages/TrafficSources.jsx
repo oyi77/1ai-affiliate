@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
-import { Radio, Plus, Globe, Megaphone, Settings, Check, X as XIcon } from 'lucide-react';
+import { SlideOver } from '../components/ui/SlideOver';
+import { Radio, Plus, Globe, Settings, Check, RefreshCw, Link2, Loader2 } from 'lucide-react';
 import api from '../lib/api';
 
 const TEMPLATES = [
@@ -19,6 +20,11 @@ export function TrafficSources() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({ name: '', platform_type: '', cost_model: 'CPC', currency: 'IDR', tracking_domain: '' });
   const [formError, setFormError] = useState('');
+  const [detailRow, setDetailRow] = useState(null);
+  const [metaForm, setMetaForm] = useState({ act_id: '', access_token: '' });
+  const [metaError, setMetaError] = useState('');
+  const [metaConnecting, setMetaConnecting] = useState(false);
+  const [syncingId, setSyncingId] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: sources, isLoading } = useQuery({
@@ -37,6 +43,30 @@ export function TrafficSources() {
       resetForm();
     },
     onError: (err) => setFormError(err.response?.data?.error || 'Failed to create traffic source'),
+  });
+
+  const connectMetaMutation = useMutation({
+    mutationFn: ({ id, data }) => api.post(`/api/admin/traffic-sources/${id}/connect-meta`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['traffic-sources'] });
+      setMetaConnecting(false);
+      setMetaError('');
+      setDetailRow(null);
+      setMetaForm({ act_id: '', access_token: '' });
+    },
+    onError: (err) => {
+      setMetaConnecting(false);
+      setMetaError(err.response?.data?.error || 'Failed to connect Meta account');
+    },
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: (id) => api.post(`/api/admin/traffic-sources/${id}/sync`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['traffic-sources'] });
+      setSyncingId(null);
+    },
+    onError: () => setSyncingId(null),
   });
 
   function resetForm() {
@@ -64,22 +94,33 @@ export function TrafficSources() {
     createMutation.mutate(formData);
   }
 
+  function handleMetaConnect(e) {
+    e.preventDefault();
+    setMetaError('');
+    if (!metaForm.act_id || !metaForm.access_token) {
+      setMetaError('Both Account ID and Access Token are required');
+      return;
+    }
+    setMetaConnecting(true);
+    connectMetaMutation.mutate({ id: detailRow.id, data: metaForm });
+  }
+
   const columns = [
     {
       header: 'Name',
       accessorKey: 'name',
       cell: ({ row }) => (
-        <div className="flex items-center gap-3">
+        <button onClick={() => setDetailRow(row.original)} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 rounded-full bg-surface-3 flex items-center justify-center text-slate-400">
             <Radio className="w-4 h-4" />
           </div>
-          <div>
+          <div className="text-left">
             <div className="font-semibold text-white">{row.original.name}</div>
             {row.original.tracking_domain && (
               <div className="text-xs text-slate-500">{row.original.tracking_domain}</div>
             )}
           </div>
-        </div>
+        </button>
       ),
     },
     {
@@ -131,10 +172,26 @@ export function TrafficSources() {
     {
       header: 'Actions',
       id: 'actions',
-      cell: () => (
-        <button className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-          <Settings className="w-4 h-4" />
-        </button>
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); setSyncingId(row.original.id); syncMutation.mutate(row.original.id); }}
+            disabled={syncingId === row.original.id}
+            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+            title="Sync"
+          >
+            {syncingId === row.original.id
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <RefreshCw className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={() => setDetailRow(row.original)}
+            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+            title="Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -159,9 +216,9 @@ export function TrafficSources() {
         <DataTable columns={columns} data={sources ?? []} isLoading={isLoading} />
       </GlassCard>
 
+      {/* Create modal */}
       <Modal open={createModalOpen} onOpenChange={setCreateModalOpen} title="New Traffic Source" description="Choose a template or create a custom source." size="lg">
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Template selector */}
           <div>
             <label className="text-sm font-medium text-slate-300 mb-3 block">Platform Template</label>
             <div className="grid grid-cols-5 gap-3">
@@ -189,7 +246,6 @@ export function TrafficSources() {
             </div>
           </div>
 
-          {/* Form fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-medium text-slate-400 mb-1.5 block">Source Name</label>
@@ -266,6 +322,98 @@ export function TrafficSources() {
           </div>
         </form>
       </Modal>
+
+      {/* Detail SlideOver with Meta connect form */}
+      <SlideOver
+        open={!!detailRow}
+        onOpenChange={(open) => { if (!open) { setDetailRow(null); setMetaError(''); setMetaForm({ act_id: '', access_token: '' }); } }}
+        title={detailRow?.name || 'Traffic Source'}
+        description={detailRow?.platform_type ? `${detailRow.platform_type} · ${detailRow.cost_model}` : ''}
+        width="lg"
+      >
+        {detailRow && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
+                <div className="text-xs text-slate-500 mb-1">Platform</div>
+                <div className="text-white font-semibold capitalize">{detailRow.platform_type || '—'}</div>
+              </div>
+              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
+                <div className="text-xs text-slate-500 mb-1">Cost Model</div>
+                <div className="text-white font-semibold font-mono">{detailRow.cost_model || '—'}</div>
+              </div>
+              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
+                <div className="text-xs text-slate-500 mb-1">Currency</div>
+                <div className="text-white font-semibold">{detailRow.currency || 'IDR'}</div>
+              </div>
+              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
+                <div className="text-xs text-slate-500 mb-1">Last Synced</div>
+                <div className="text-white font-semibold">
+                  {detailRow.last_synced_at ? new Date(detailRow.last_synced_at * 1000).toLocaleString() : 'Never'}
+                </div>
+              </div>
+            </div>
+
+            {/* Sync button */}
+            <button
+              onClick={() => { setSyncingId(detailRow.id); syncMutation.mutate(detailRow.id); }}
+              disabled={syncingId === detailRow.id}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-3 hover:bg-white/10 border border-white/10 rounded-lg text-white font-medium transition-colors disabled:opacity-50"
+            >
+              {syncingId === detailRow.id
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Syncing...</>
+                : <><RefreshCw className="w-4 h-4" /> Sync Now</>}
+            </button>
+
+            {/* Meta Ads connect form */}
+            {detailRow.platform_type === 'meta' && (
+              <div className="border-t border-white/10 pt-6">
+                <h3 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
+                  <Link2 className="w-5 h-5 text-blue-400" />
+                  Connect Meta Ads Account
+                </h3>
+                <p className="text-sm text-slate-400 mb-4">Link your Meta Ads account to auto-sync spend, impressions, and campaign data.</p>
+
+                <form onSubmit={handleMetaConnect} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block">Ad Account ID</label>
+                    <input
+                      type="text"
+                      placeholder="act_123456789"
+                      value={metaForm.act_id}
+                      onChange={e => setMetaForm(p => ({ ...p, act_id: e.target.value }))}
+                      className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white font-mono text-sm focus:outline-none focus:border-indigo-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block">Access Token</label>
+                    <input
+                      type="password"
+                      placeholder="EAAxxxxxxxxxxxxxxx"
+                      value={metaForm.access_token}
+                      onChange={e => setMetaForm(p => ({ ...p, access_token: e.target.value }))}
+                      className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white font-mono text-sm focus:outline-none focus:border-indigo-primary"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      Generate from <a href="https://business.facebook.com/settings/system-users" target="_blank" rel="noopener noreferrer" className="text-indigo-light hover:underline">Meta Business Suite → System Users</a>. Requires <code className="text-xs bg-black/30 px-1 py-0.5 rounded">ads_read</code> permission.
+                    </p>
+                  </div>
+
+                  {metaError && <p className="text-red-400 text-sm">{metaError}</p>}
+
+                  <button
+                    type="submit"
+                    disabled={metaConnecting}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  >
+                    {metaConnecting ? 'Connecting...' : 'Connect Meta Account'}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
+      </SlideOver>
     </div>
   );
 }

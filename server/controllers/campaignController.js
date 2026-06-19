@@ -95,18 +95,27 @@ const updateCampaign = asyncHandler(async (req, res) => {
   const campaignId = parseInt(req.params.id);
   if (!campaignId) return error(res, 'Invalid campaign id', 400);
 
-  const existing = await queryOne('SELECT id FROM 1ai_offers WHERE id = ?', [campaignId]);
+  const existing = await queryOne('SELECT aff_campaign_id AS id FROM 1ai_aff_campaigns WHERE aff_campaign_id = ?', [campaignId]);
   if (!existing) return error(res, 'Campaign not found', 404);
 
   const data = req.validated;
-  const setClauses = Object.keys(data).map(k => `${k} = ?`).join(', ');
-  const values = [...Object.values(data), Math.floor(Date.now() / 1000), campaignId];
+  const name = data.name || null;
+  const status = data.status || null;
+
+  const setClauses = [];
+  const params = [];
+  if (name) { setClauses.push('aff_campaign_name = ?'); params.push(name); }
+  if (status) { setClauses.push('aff_campaign_status = ?'); params.push(status); }
+
+  if (setClauses.length === 0) return error(res, 'No fields to update', 400);
+
+  params.push(campaignId);
   await pool.query(
-    `UPDATE 1ai_offers SET ${setClauses}, updated_at = ? WHERE id = ?`,
-    values
+    `UPDATE 1ai_aff_campaigns SET ${setClauses.join(', ')} WHERE aff_campaign_id = ?`,
+    params
   );
 
-  const updated = await queryOne('SELECT * FROM 1ai_offers WHERE id = ?', [campaignId]);
+  const updated = await queryOne('SELECT * FROM 1ai_aff_campaigns WHERE aff_campaign_id = ?', [campaignId]);
   return success(res, { data: updated });
 });
 
