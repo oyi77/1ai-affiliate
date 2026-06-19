@@ -85,17 +85,26 @@ async function fireWebhooksForEvent(pool, userId, event, payload) {
       data: payload,
     };
 
-    const results = await Promise.allSettled(
-      matching.map(wh => triggerZapierWebhook(wh.url, webhookPayload, wh.secret))
-    );
-
-    // Update last_triggered_at for successful webhooks
-    const now = Math.floor(Date.now() / 1000);
+    // Fire with retry (exponential backoff: 1s, 4s, 16s, 64s)
+    const MAX_RETRIES = 4;
     for (let i = 0; i < matching.length; i++) {
-      if (results[i].status === 'fulfilled' && results[i].value.success) {
+      const wh = matching[i];
+      let result;
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        result = await triggerZapierWebhook(wh.url, webhookPayload, wh.secret);
+        if (result.success) break;
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.pow(4, attempt) * 1000; // 1s, 4s, 16s, 64s
+          await new Promise(r => setTimeout(r, delay));
+        }
+      }
+      if (result.success) {
+        pool.query('UPDATE 1ai_webhooks SET last_triggered_at = ? WHERE id = ?', [now, wh.id]).catch(() => {});
+      } else {
+        // Dead letter — log failure after all retries exhausted
         pool.query(
-          'UPDATE 1ai_webhooks SET last_triggered_at = ? WHERE id = ?',
-          [now, matching[i].id]
+          'INSERT INTO 1ai_webhook_queue (webhook_id, event, payload, status, attempts, last_error, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [wh.id, event, JSON.stringify(webhookPayload), 'dead', MAX_RETRIES + 1, result.error, now]
         ).catch(() => {});
       }
     }

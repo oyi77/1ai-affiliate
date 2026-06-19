@@ -143,9 +143,26 @@ async function forgotPassword(req, res) {
       [resetKey, resetTime, user.user_id]
     );
 
-    // TODO: In production, send an email to user_email containing a reset link with the key.
-    // e.g. https://yourdomain.com/reset-password?key=<resetKey>&uid=<user_id>
-    // Never return the key or userId in the response (prevents token harvesting).
+    // Send reset email (optional — requires SMTP_HOST env var)
+    if (process.env.SMTP_HOST) {
+      try {
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST, port: parseInt(process.env.SMTP_PORT || '587'),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+        });
+        const baseUrl = process.env.APP_URL || 'https://affiliate.berkahkarya.org';
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || 'noreply@berkahkarya.org',
+          to: user.user_email,
+          subject: 'Password Reset — 1ai-Affiliate',
+          text: `Click this link to reset your password: ${baseUrl}/pass-reset.php?uid=${user.user_id}&key=${resetKey}\n\nThis link expires in 3 days. If you didn't request this, ignore this email.`,
+        });
+      } catch (emailErr) {
+        console.error('Reset email send failed:', emailErr.message);
+      }
+    }
     res.json({ message: 'If that email exists, a reset link has been sent.' });
   } catch (err) {
     console.error('Forgot password error:', err);

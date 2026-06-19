@@ -1,22 +1,25 @@
 package graphql
 
 import (
+	"context"
+	"fmt"
+	"time"
 
 	"github.com/graphql-go/graphql"
+	"github.com/1ai-affiliate/edge/internal/clickhouse"
 )
 
 // Schema represents the GraphQL schema for the 1ai-affiliate API.
 var Schema graphql.Schema
 
-func init() {
-	var err error
-	Schema, err = graphql.NewSchema(graphql.SchemaConfig{
-		Query:    queryType,
-		Mutation: mutationType,
+// NewSchema creates a GraphQL schema backed by the given ClickHouse client.
+func NewSchema(ch *clickhouse.Client) (graphql.Schema, error) {
+	qt := buildQueryType(ch)
+	mt := buildMutationType(ch)
+	return graphql.NewSchema(graphql.SchemaConfig{
+		Query:    qt,
+		Mutation: mt,
 	})
-	if err != nil {
-		panic(err)
-	}
 }
 
 // --- Types ---
@@ -139,107 +142,105 @@ var analyticsByCampaignType = graphql.NewObject(graphql.ObjectConfig{
 
 // --- Query fields ---
 
-var queryType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
-	Fields: graphql.Fields{
-		"clicks": &graphql.Field{
-			Type: graphql.NewList(clickType),
-			Args: graphql.FieldConfigArgument{
-				"campaignId": &graphql.ArgumentConfig{Type: graphql.Int},
-				"affiliateId": &graphql.ArgumentConfig{Type: graphql.Int},
-				"from":       &graphql.ArgumentConfig{Type: graphql.DateTime},
-				"to":         &graphql.ArgumentConfig{Type: graphql.DateTime},
-				"limit":      &graphql.ArgumentConfig{Type: graphql.Int},
-				"offset":     &graphql.ArgumentConfig{Type: graphql.Int},
+func buildQueryType(ch *clickhouse.Client) *graphql.Object {
+	return graphql.NewObject(graphql.ObjectConfig{
+		Name: "Query",
+		Fields: graphql.Fields{
+			"clicks": &graphql.Field{
+				Type: graphql.NewList(clickType),
+				Args: graphql.FieldConfigArgument{
+					"campaignId":  &graphql.ArgumentConfig{Type: graphql.Int},
+					"affiliateId": &graphql.ArgumentConfig{Type: graphql.Int},
+					"from":        &graphql.ArgumentConfig{Type: graphql.DateTime},
+					"to":          &graphql.ArgumentConfig{Type: graphql.DateTime},
+					"limit":       &graphql.ArgumentConfig{Type: graphql.Int},
+					"offset":      &graphql.ArgumentConfig{Type: graphql.Int},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					var affID *int
+					if v, ok := p.Args["affiliateId"].(int); ok { affID = &v }
+					var from, to *time.Time
+					if v, ok := p.Args["from"].(time.Time); ok { from = &v }
+					if v, ok := p.Args["to"].(time.Time); ok { to = &v }
+					limit := 100
+					if v, ok := p.Args["limit"].(int); ok && v > 0 { limit = v }
+					offset := 0
+					if v, ok := p.Args["offset"].(int); ok { offset = v }
+					return ch.QueryClicks(context.Background(), affID, from, to, limit, offset)
+				},
 			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				// TODO: query ClickHouse
-				return nil, nil
+			"conversions": &graphql.Field{
+				Type: graphql.NewList(conversionType),
+				Args: graphql.FieldConfigArgument{
+					"affiliateId": &graphql.ArgumentConfig{Type: graphql.Int},
+					"offerId":     &graphql.ArgumentConfig{Type: graphql.Int},
+					"from":        &graphql.ArgumentConfig{Type: graphql.DateTime},
+					"to":          &graphql.ArgumentConfig{Type: graphql.DateTime},
+					"limit":       &graphql.ArgumentConfig{Type: graphql.Int},
+					"offset":      &graphql.ArgumentConfig{Type: graphql.Int},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					var affID, offerID *int
+					if v, ok := p.Args["affiliateId"].(int); ok { affID = &v }
+					if v, ok := p.Args["offerId"].(int); ok { offerID = &v }
+					var from, to *time.Time
+					if v, ok := p.Args["from"].(time.Time); ok { from = &v }
+					if v, ok := p.Args["to"].(time.Time); ok { to = &v }
+					limit := 100
+					if v, ok := p.Args["limit"].(int); ok && v > 0 { limit = v }
+					offset := 0
+					if v, ok := p.Args["offset"].(int); ok { offset = v }
+					return ch.QueryConversions(context.Background(), affID, offerID, from, to, limit, offset)
+				},
+			},
+			"analytics": &graphql.Field{
+				Type: analyticsType,
+				Args: graphql.FieldConfigArgument{
+					"from":        &graphql.ArgumentConfig{Type: graphql.DateTime},
+					"to":          &graphql.ArgumentConfig{Type: graphql.DateTime},
+					"campaignId":  &graphql.ArgumentConfig{Type: graphql.Int},
+					"affiliateId": &graphql.ArgumentConfig{Type: graphql.Int},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					var campID, affID *int
+					if v, ok := p.Args["campaignId"].(int); ok { campID = &v }
+					if v, ok := p.Args["affiliateId"].(int); ok { affID = &v }
+					var from, to *time.Time
+					if v, ok := p.Args["from"].(time.Time); ok { from = &v }
+					if v, ok := p.Args["to"].(time.Time); ok { to = &v }
+					return ch.QueryAnalytics(context.Background(), from, to, campID, affID)
+				},
 			},
 		},
-		"conversions": &graphql.Field{
-			Type: graphql.NewList(conversionType),
-			Args: graphql.FieldConfigArgument{
-				"affiliateId": &graphql.ArgumentConfig{Type: graphql.Int},
-				"offerId":     &graphql.ArgumentConfig{Type: graphql.Int},
-				"from":        &graphql.ArgumentConfig{Type: graphql.DateTime},
-				"to":          &graphql.ArgumentConfig{Type: graphql.DateTime},
-				"limit":       &graphql.ArgumentConfig{Type: graphql.Int},
-				"offset":      &graphql.ArgumentConfig{Type: graphql.Int},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
-			},
-		},
-		"campaigns": &graphql.Field{
-			Type: graphql.NewList(campaignType),
-			Args: graphql.FieldConfigArgument{
-				"status": &graphql.ArgumentConfig{Type: graphql.String},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
-			},
-		},
-		"affiliates": &graphql.Field{
-			Type: graphql.NewList(affiliateType),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
-			},
-		},
-		"analytics": &graphql.Field{
-			Type: analyticsType,
-			Args: graphql.FieldConfigArgument{
-				"from":       &graphql.ArgumentConfig{Type: graphql.DateTime},
-				"to":         &graphql.ArgumentConfig{Type: graphql.DateTime},
-				"campaignId": &graphql.ArgumentConfig{Type: graphql.Int},
-				"affiliateId": &graphql.ArgumentConfig{Type: graphql.Int},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
-			},
-		},
-	},
-})
+	})
+}
 
 // --- Mutation fields ---
 
-var mutationType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Mutation",
-	Fields: graphql.Fields{
-		"createCampaign": &graphql.Field{
-			Type: campaignType,
-			Args: graphql.FieldConfigArgument{
-				"name":       &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
-				"offerId":    &graphql.ArgumentConfig{Type: graphql.Int},
-				"defaultUrl": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
-				"dailyCap":   &graphql.ArgumentConfig{Type: graphql.Int},
+func buildMutationType(ch *clickhouse.Client) *graphql.Object {
+	return graphql.NewObject(graphql.ObjectConfig{
+		Name: "Mutation",
+		Fields: graphql.Fields{
+			// Mutations are handled by the Node API, not the Go edge.
+			// These stubs return an error directing callers to the REST API.
+			"createCampaign": &graphql.Field{
+				Type: campaignType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return nil, fmt.Errorf("use POST /api/admin/campaigns instead")
+				},
 			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
+			"updateCampaign": &graphql.Field{
+				Type: campaignType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return nil, fmt.Errorf("use PATCH /api/admin/campaigns/:id instead")
+				},
 			},
-		},
-		"updateCampaign": &graphql.Field{
-			Type: campaignType,
-			Args: graphql.FieldConfigArgument{
-				"id":         &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.Int)},
-				"name":       &graphql.ArgumentConfig{Type: graphql.String},
-				"status":     &graphql.ArgumentConfig{Type: graphql.String},
-				"defaultUrl": &graphql.ArgumentConfig{Type: graphql.String},
-				"dailyCap":   &graphql.ArgumentConfig{Type: graphql.Int},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
+			"scheduleExport": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return nil, fmt.Errorf("use POST /api/enterprise/scheduled-exports instead")
+				},
 			},
 		},
-		"scheduleExport": &graphql.Field{
-			Type: graphql.String,
-			Args: graphql.FieldConfigArgument{
-				"modelId": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.Int)},
-				"format":  &graphql.ArgumentConfig{Type: graphql.String},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
-			},
-		},
-	},
-})
+	})
+}

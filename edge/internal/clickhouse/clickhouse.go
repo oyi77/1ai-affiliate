@@ -210,6 +210,117 @@ type ConversionRow struct {
 	IP           string
 }
 
+// QueryClicks fetches clicks from ClickHouse with optional filters.
+func (c *Client) QueryClicks(ctx context.Context, affiliateID *int, from, to *time.Time, limit, offset int) ([]map[string]interface{}, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 100
+	}
+	query := "SELECT click_id, timestamp, campaign_id, affiliate_id, offer_id, ip, country, device_type, fraud_score FROM 1ai_clicks WHERE 1=1"
+	args := []interface{}{}
+	if affiliateID != nil {
+		query += " AND affiliate_id = ?"
+		args = append(args, *affiliateID)
+	}
+	if from != nil {
+		query += " AND timestamp >= ?"
+		args = append(args, *from)
+	}
+	if to != nil {
+		query += " AND timestamp <= ?"
+		args = append(args, *to)
+	}
+	query += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+	return c.queryRows(ctx, query, args...)
+}
+
+// QueryConversions fetches conversions from ClickHouse.
+func (c *Client) QueryConversions(ctx context.Context, affiliateID, offerID *int, from, to *time.Time, limit, offset int) ([]map[string]interface{}, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 100
+	}
+	query := "SELECT conversion_id, click_id, timestamp, affiliate_id, offer_id, payout, revenue, status FROM 1ai_conversions WHERE 1=1"
+	args := []interface{}{}
+	if affiliateID != nil {
+		query += " AND affiliate_id = ?"
+		args = append(args, *affiliateID)
+	}
+	if offerID != nil {
+		query += " AND offer_id = ?"
+		args = append(args, *offerID)
+	}
+	if from != nil {
+		query += " AND timestamp >= ?"
+		args = append(args, *from)
+	}
+	if to != nil {
+		query += " AND timestamp <= ?"
+		args = append(args, *to)
+	}
+	query += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+	return c.queryRows(ctx, query, args...)
+}
+
+// QueryAnalytics returns aggregated analytics.
+func (c *Client) QueryAnalytics(ctx context.Context, from, to *time.Time, campaignID, affiliateID *int) (map[string]interface{}, error) {
+	query := "SELECT count() AS total_clicks, uniq(ip) AS unique_ips, avg(fraud_score) AS avg_fraud_score FROM 1ai_clicks WHERE 1=1"
+	args := []interface{}{}
+	if from != nil {
+		query += " AND timestamp >= ?"
+		args = append(args, *from)
+	}
+	if to != nil {
+		query += " AND timestamp <= ?"
+		args = append(args, *to)
+	}
+	if campaignID != nil {
+		query += " AND campaign_id = ?"
+		args = append(args, *campaignID)
+	}
+	if affiliateID != nil {
+		query += " AND affiliate_id = ?"
+		args = append(args, *affiliateID)
+	}
+	rows, err := c.queryRows(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) > 0 {
+		return rows[0], nil
+	}
+	return map[string]interface{}{"total_clicks": 0, "unique_ips": 0, "avg_fraud_score": 0}, nil
+}
+
+// queryRows executes a query and returns rows as maps.
+func (c *Client) queryRows(ctx context.Context, query string, args ...interface{}) ([]map[string]interface{}, error) {
+	rows, err := c.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	columns := rows.Columns()
+	var results []map[string]interface{}
+
+	for rows.Next() {
+		// Create scan targets — all as interface{}
+		targets := make([]interface{}, len(columns))
+		for i := range targets {
+			targets[i] = new(interface{})
+		}
+		if err := rows.Scan(targets...); err != nil {
+			return nil, err
+		}
+		row := make(map[string]interface{}, len(columns))
+		for i, col := range columns {
+			row[col] = *(targets[i].(*interface{}))
+		}
+		results = append(results, row)
+	}
+	return results, rows.Err()
+}
+
 func (c *Client) Close() error {
 	return c.conn.Close()
 }

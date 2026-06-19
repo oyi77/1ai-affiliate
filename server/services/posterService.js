@@ -120,7 +120,7 @@ const posterService = {
    * @returns {object} { id } of the inserted row
    */
   async addToQueue(data) {
-    const { product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche, offer_id } = data;
+    const { product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche, offer_id, affiliate_id } = data;
 
     if (!product_url || !product_name || !normal_price || !promo_price) {
       throw new Error('product_url, product_name, normal_price, and promo_price are required');
@@ -147,7 +147,7 @@ const posterService = {
       try {
         const result = await mintSmartlink({
           offerId: offer_id,
-          affiliateId: 1, // TODO: determine correct affiliate_id from context
+          affiliateId: affiliate_id || 1,
           domainId: null,
           shortenerServiceId: null
         });
