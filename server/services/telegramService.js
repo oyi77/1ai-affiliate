@@ -1,3 +1,4 @@
+const C = require('../utils/constants');
 const { queryOne, queryRows, queryInsert, queryUpdate } = require('../utils/queryHelpers');
 
 const TELEGRAM_API = 'https://api.telegram.org/bot';

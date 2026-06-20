@@ -1,7 +1,8 @@
 'use strict';
+const C = require('../../utils/constants');
 
-const TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const API_URL = 'https://googleads.googleapis.com/v17';
+const TOKEN_URL = C.URLS.GOOGLE_TOKEN_URL;
+const API_URL = C.URLS.GOOGLE_ADS_API;
 
 const meta = {
   id: 'google',

@@ -1,3 +1,4 @@
+const C = require('../utils/constants');
 const pool = require('../db/mysql');
 const { firePostback, normalizeInteger } = require('../controllers/postbackController');
 
@@ -30,7 +31,7 @@ class PostbackQueue {
     this.processing = true;
 
     console.log('[PostbackQueue] Starting processor...');
-    setInterval(() => this.process(), 10000);
+    setInterval(() => this.process(), C.LIMITS.POSTBACK_QUEUE_INTERVAL_MS);
   }
 
   async process() {

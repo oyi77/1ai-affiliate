@@ -1,6 +1,7 @@
 'use strict';
+const C = require('../../utils/constants');
 
-const GRAPH_API = 'https://graph.facebook.com/v19.0';
+const GRAPH_API = C.URLS.META_GRAPH_API;
 
 const meta = {
   id: 'meta',

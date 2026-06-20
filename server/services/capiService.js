@@ -43,7 +43,7 @@ async function sendMetaConversion(accessToken, pixelId, event) {
       },
       custom_data: {
         value: event.custom_data?.value || 0,
-        currency: event.custom_data?.currency || 'IDR', // ponytail: ultimate fallback, overridden by traffic source config
+        currency: event.custom_data?.currency || C.DEFAULTS.CURRENCY, // ponytail: ultimate fallback, overridden by traffic source config
         content_ids: event.custom_data?.content_ids || [],
       },
     }],
@@ -89,7 +89,7 @@ async function sendGoogleConversion(accessToken, customerId, conversionAction, c
       conversion_action: conversionAction,
       gclid: conversion.gclid,
       conversion_value: conversion.conversion_value || 0,
-      currency_code: conversion.currency_code || 'IDR', // ponytail: ultimate fallback, overridden by traffic source config
+      currency_code: conversion.currency_code || C.DEFAULTS.CURRENCY, // ponytail: ultimate fallback, overridden by traffic source config
       conversion_date_time: conversion.conversion_date_time || null,
     }],
     partial_failure: true,
@@ -141,7 +141,7 @@ async function handleConversion(pool, conversionData) {
     // Dedup: skip if we already sent this event within the last 48 hours
     const [existing] = await pool.query(
       `SELECT id FROM 1ai_capi_log
-       WHERE event_id = ? AND success = 1 AND created_at > UNIX_TIMESTAMP() - 172800
+       WHERE event_id = ? AND success = 1 AND created_at > UNIX_TIMESTAMP() - C.LIMITS.CAPI_DEDUP_WINDOW_SEC
        LIMIT 1`,
       [eventId]
     ).catch(() => [[]]);
@@ -202,7 +202,7 @@ async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
       },
       custom_data: {
         value: conversionData.payout || 0,
-        currency: conversionData.currency || config.currency || 'IDR',
+        currency: conversionData.currency || config.currency || C.DEFAULTS.CURRENCY,
       },
     });
   } else if (config.capi_platform === 'google' && config.customer_id && config.access_token && config.conversion_action) {
@@ -213,7 +213,7 @@ async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
       {
         gclid: conversionData.gclid || '',  // Fixed: was incorrectly mapped from fbc
         conversion_value: conversionData.payout || 0,
-        currency_code: conversionData.currency || config.currency || 'IDR',
+        currency_code: conversionData.currency || config.currency || C.DEFAULTS.CURRENCY,
       }
     );
   } else {

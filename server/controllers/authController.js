@@ -1,10 +1,11 @@
+const C = require('../utils/constants');
 const pool = require('../db/mysql');
 const { generateToken } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // Password reset key expiry: 3 days (in seconds)
-const RESET_KEY_EXPIRY = 3 * 24 * 60 * 60;
+const RESET_KEY_EXPIRY = C.DEFAULTS.RESET_KEY_EXPIRY_SEC;
 
 /**
  * Login using users table (same DB as PHP tracking platform).

@@ -4,6 +4,7 @@
  * Integrates with the webhook management system.
  */
 
+const C = require('../utils/constants');
 const crypto = require('crypto');
 
 /**
@@ -27,7 +28,7 @@ async function triggerZapierWebhook(url, data, secret) {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeout = setTimeout(() => controller.abort(), C.LIMITS.WEBHOOK_TIMEOUT_MS);
 
   try {
     const res = await fetch(url, {

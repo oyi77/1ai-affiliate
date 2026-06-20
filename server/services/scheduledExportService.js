@@ -5,6 +5,7 @@
  * Runs report queries on a schedule and emails CSV/JSON results.
  */
 
+const C = require('../utils/constants');
 const pool = require('../db/mysql');
 
 /**
@@ -69,11 +70,11 @@ async function fetchReportData(exp) {
 
   switch (exp.report_type) {
     case 'clicks': {
-      const [rows] = await pool.query('SELECT * FROM 1ai_click_log WHERE clicked_at >= UNIX_TIMESTAMP(?) AND clicked_at <= UNIX_TIMESTAMP(?) LIMIT 10000', [dateFrom, dateTo + ' 23:59:59']);
+      const [rows] = await pool.query('SELECT * FROM 1ai_click_log WHERE clicked_at >= UNIX_TIMESTAMP(?) AND clicked_at <= UNIX_TIMESTAMP(?) LIMIT ${C.LIMITS.EXPORT_ROW_LIMIT}', [dateFrom, dateTo + ' 23:59:59']);
       return rows;
     }
     case 'conversions': {
-      const [rows] = await pool.query('SELECT * FROM 1ai_conversion_logs WHERE conv_time >= UNIX_TIMESTAMP(?) AND conv_time <= UNIX_TIMESTAMP(?) LIMIT 10000', [dateFrom, dateTo + ' 23:59:59']);
+      const [rows] = await pool.query('SELECT * FROM 1ai_conversion_logs WHERE conv_time >= UNIX_TIMESTAMP(?) AND conv_time <= UNIX_TIMESTAMP(?) LIMIT ${C.LIMITS.EXPORT_ROW_LIMIT}', [dateFrom, dateTo + ' 23:59:59']);
       return rows;
     }
     case 'daily': {

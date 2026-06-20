@@ -1,5 +1,6 @@
 'use strict';
 
+const C = require('../utils/constants');
 const express = require('express');
 const router = express.Router();
 const { authenticate, requireAdmin } = require('../middleware/auth');
@@ -35,7 +36,7 @@ router.get('/api-keys', asyncHandler(async (req, res) => {
 router.post('/api-keys', asyncHandler(async (req, res) => {
   const { name, scopes, expires_in_days } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
-  const expiresAt = expires_in_days ? Math.floor(Date.now() / 1000) + (expires_in_days * 86400) : null;
+  const expiresAt = expires_in_days ? Math.floor(Date.now() / 1000) + (expires_in_days * C.TIME.DAY) : null;
   const result = await apiKeyService.createKey(req.user.id, name, scopes, expiresAt);
   success(res, { data: result });
 }));

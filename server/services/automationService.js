@@ -1,3 +1,4 @@
+const C = require('../utils/constants');
 const { queryOne, queryRows, queryInsert, queryUpdate } = require('../utils/queryHelpers');
 
 /**

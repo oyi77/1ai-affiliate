@@ -8,6 +8,7 @@
  * Rules are JSON conditions like the fraud engine.
  */
 
+const C = require('../utils/constants');
 const pool = require('../db/mysql');
 
 /**

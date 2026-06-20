@@ -5,6 +5,7 @@
  * ponytail: minimal handler, no auth needed (public endpoint).
  */
 
+const C = require('../utils/constants');
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/mysql');
@@ -34,7 +35,7 @@ router.get('/click', async (req, res) => {
 
     // Set first-party cookie with click_id
     const clickId = result.insertId;
-    res.cookie('_1ai_click', clickId, { maxAge: 30 * 86400 * 1000, httpOnly: false, sameSite: 'lax' });
+    res.cookie('_1ai_click', clickId, { maxAge: C.DEFAULTS.COOKIE_MAX_AGE_SEC * 1000, httpOnly: false, sameSite: 'lax' });
     res.status(204).end();
   } catch (err) {
     // Silent fail — tracking should never break the page

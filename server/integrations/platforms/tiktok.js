@@ -1,6 +1,7 @@
 'use strict';
+const C = require('../../utils/constants');
 
-const API_URL = 'https://business-api.tiktok.com/open_api/v1.3';
+const API_URL = C.URLS.TIKTOK_ADS_API;
 
 const meta = {
   id: 'tiktok',
