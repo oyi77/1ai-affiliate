@@ -59,16 +59,22 @@ async function routeTrafficByHash(req, res) {
 }
 
 async function generateSmartlink(req, res) {
-  const { offer_id, domain_id, shortener_service_id } = req.body;
+  const { offer_id, domain_id, shortener_service_id, affiliate_id } = req.body;
   if (!offer_id) return res.status(400).json({ error: 'offer_id required' });
 
   try {
-    const [aff] = await pool.query(
-      'SELECT id FROM 1ai_affiliates WHERE user_id = ?',
-      [req.user.id]
-    );
-    const affiliateId = aff.length ? aff[0].id : null;
-    if (!affiliateId) return res.status(403).json({ error: 'Affiliate profile not found' });
+    let affiliateId = affiliate_id;
+
+    // If admin doesn't provide affiliate_id, try to find their own affiliate profile
+    if (!affiliateId) {
+      const [aff] = await pool.query(
+        'SELECT id FROM 1ai_affiliates WHERE user_id = ?',
+        [req.user.id]
+      );
+      affiliateId = aff.length ? aff[0].id : null;
+    }
+
+    if (!affiliateId) return res.status(403).json({ error: 'Affiliate profile not found. Provide affiliate_id as admin or ensure user has affiliate profile.' });
 
     const result = await mintSmartlink({
       offerId: offer_id,

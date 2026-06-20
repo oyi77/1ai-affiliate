@@ -956,5 +956,7 @@ module.exports = {
   deleteShortenerService,
   createManualConversion,
   testConversionPixel,
+  testShortenerService,
+  testConversionPixel,
 };
 

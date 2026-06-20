@@ -374,7 +374,7 @@ const getAttribution = asyncHandler(async (req, res) => {
     case 'last': touchpointCol = 'cl.offer_id'; break;
     case 'linear': touchpointCol = 'cl.affiliate_id'; break;
     case 'first':
-    default: touchpointCol = 'cl.campaign_id'; break;
+    default: touchpointCol = 'cl.offer_id'; break;
   }
 
   const [rows] = await pool.query(`
