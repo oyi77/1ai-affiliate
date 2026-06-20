@@ -6,7 +6,7 @@ import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Plus, Gift, DollarSign, Network } from 'lucide-react';
+import { Plus, Gift, DollarSign, Network, Download } from 'lucide-react';
 
 export function Offers() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -134,6 +134,28 @@ export function Offers() {
     },
   ];
 
+
+  const exportCSV = () => {
+    if (!offers?.length) return;
+    const headers = columns.map((c) => c.header).join(',');
+    const rows = offers
+      .map((row) =>
+        columns
+          .map((c) => {
+            const val = row[c.accessorKey];
+            return typeof val === 'string' ? `"${val}"` : (val ?? '');
+          })
+          .join(',')
+      )
+      .join('\n');
+    const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `offers-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -144,13 +166,22 @@ export function Offers() {
           <p className="text-slate-400 mt-2">Manage affiliate offers and network integrations</p>
         </div>
 
-        <button
-          onClick={() => setCreateModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light hover:-translate-y-0.5 transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          New Offer
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-2 px-4 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all"
+          >
+            <Download className="w-5 h-5" />
+            Export
+          </button>
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light hover:-translate-y-0.5 transition-all"
+          >
+            <Plus className="w-5 h-5" />
+            New Offer
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

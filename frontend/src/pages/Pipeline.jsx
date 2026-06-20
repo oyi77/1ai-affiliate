@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
 import { DataTable } from '../components/ui/DataTable';
@@ -12,37 +14,50 @@ import {
   TrendingUp
 } from 'lucide-react';
 
-const MOCK_STATUS = {
-  connected: true,
-  lastSync: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-  itemsProcessed: 1247,
-  errors: 3,
-  running: true
-};
-
-const MOCK_ACTIVITY = [
-  { id: 1, time: new Date(Date.now() - 1000 * 60 * 2), action: 'Video scraped', item: '@username/video123', status: 'success' },
-  { id: 2, time: new Date(Date.now() - 1000 * 60 * 5), action: 'Metadata extracted', item: '@creator/post456', status: 'success' },
-  { id: 3, time: new Date(Date.now() - 1000 * 60 * 8), action: 'Download failed', item: '@brand/reel789', status: 'error' },
-  { id: 4, time: new Date(Date.now() - 1000 * 60 * 12), action: 'Video scraped', item: '@influencer/clip321', status: 'success' },
-  { id: 5, time: new Date(Date.now() - 1000 * 60 * 15), action: 'API rate limit', item: '@viral/trending654', status: 'warning' },
-  { id: 6, time: new Date(Date.now() - 1000 * 60 * 20), action: 'Video scraped', item: '@marketing/ad987', status: 'success' },
-  { id: 7, time: new Date(Date.now() - 1000 * 60 * 25), action: 'Metadata extracted', item: '@shop/product111', status: 'success' },
-  { id: 8, time: new Date(Date.now() - 1000 * 60 * 30), action: 'Thumbnail generated', item: '@content/tutorial222', status: 'success' },
-];
-
-const NOW = Date.now();
-
 export function Pipeline() {
-  const [running, setRunning] = useState(MOCK_STATUS.running);
+  const queryClient = useQueryClient();
 
-  const togglePipeline = () => {
-    setRunning(!running);
-  };
+  const { data: jobsData, isLoading } = useSafeQuery({
+    queryKey: ['pipeline-jobs'],
+    queryFn: async () => {
+      const r = await api.get('/api/pipeline/jobs?limit=50');
+      return r.data?.data ?? r.data ?? [];
+    },
+  });
 
+  const { data: pipelineStatus } = useSafeQuery({
+    queryKey: ['pipeline-status'],
+    queryFn: async () => {
+      const r = await api.get('/api/pipeline/accounts');
+      return r.data?.data ?? r.data;
+    },
+  });
+
+  const running = pipelineStatus?.running ?? true;
+
+  const toggleMutation = useMutation({
+    mutationFn: async () => {
+      const r = await api.post('/api/pipeline/run', { action: running ? 'stop' : 'start' });
+      return r.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pipeline-status'] });
+    },
+  });
+
+  const runNowMutation = useMutation({
+    mutationFn: async () => {
+      const r = await api.post('/api/pipeline/run');
+      return r.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pipeline-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['pipeline-status'] });
+    },
+  });
 
   const formatRelativeTime = (date) => {
-    const seconds = Math.floor((NOW - new Date(date)) / 1000);
+    const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
     if (seconds < 60) return `${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
@@ -124,7 +139,7 @@ export function Pipeline() {
           <p className="text-slate-400">Monitor content scraping and processing pipeline</p>
         </div>
         <button
-          onClick={togglePipeline}
+          onClick={() => toggleMutation.mutate()}
           className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
             running
               ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20'
@@ -143,31 +158,39 @@ export function Pipeline() {
             </>
           )}
         </button>
+        <button
+          onClick={() => runNowMutation.mutate()}
+          disabled={runNowMutation.isPending}
+          className="px-4 py-2 bg-indigo-primary hover:bg-indigo-light text-white rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+        >
+          <Play className="w-4 h-4" />
+          {runNowMutation.isPending ? 'Running...' : 'Run Now'}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label="Status"
-          value={MOCK_STATUS.connected ? 'Connected' : 'Disconnected'}
-          accent={MOCK_STATUS.connected ? 'green' : 'red'}
-          icon={MOCK_STATUS.connected ? CheckCircle2 : XCircle}
+          value={pipelineStatus?.connected !== false ? 'Connected' : 'Disconnected'}
+          accent={pipelineStatus?.connected !== false ? 'green' : 'red'}
+          icon={pipelineStatus?.connected !== false ? CheckCircle2 : XCircle}
         />
         <StatCard
           label="Last Sync"
-          value={formatRelativeTime(MOCK_STATUS.lastSync)}
+          value={pipelineStatus?.lastSync ? formatRelativeTime(pipelineStatus.lastSync) : '—'}
           accent="indigo"
           icon={Clock}
         />
         <StatCard
           label="Items Processed"
-          value={MOCK_STATUS.itemsProcessed.toLocaleString()}
+          value={(pipelineStatus?.itemsProcessed ?? 0).toLocaleString()}
           accent="green"
           icon={TrendingUp}
         />
         <StatCard
           label="Errors"
-          value={MOCK_STATUS.errors.toString()}
-          accent={MOCK_STATUS.errors > 0 ? 'red' : 'green'}
+          value={String(pipelineStatus?.errors ?? 0)}
+          accent={(pipelineStatus?.errors ?? 0) > 0 ? 'red' : 'green'}
           icon={XCircle}
         />
       </div>
@@ -179,7 +202,7 @@ export function Pipeline() {
           </h2>
           <p className="text-sm text-slate-400">Recent pipeline activity and events</p>
         </div>
-        <DataTable data={MOCK_ACTIVITY} columns={columns} searchable={false} exportable={false} />
+        <DataTable data={jobsData} columns={columns} searchable={false} exportable={false} />
       </GlassCard>
 
       {running && (

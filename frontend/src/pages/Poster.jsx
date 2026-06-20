@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
 import { DataTable } from '../components/ui/DataTable';
@@ -12,24 +15,8 @@ import {
   Plus
 } from 'lucide-react';
 
-const MOCK_STATUS = {
-  connected: true,
-  queueSize: 23,
-  postedToday: 147,
-  failed: 2
-};
-
-const MOCK_QUEUE = [
-  { id: 1, item: 'Affiliate offer #1234', scheduled: new Date(Date.now() + 1000 * 60 * 15), status: 'pending', channel: '@affiliate_deals' },
-  { id: 2, item: 'Product review video', scheduled: new Date(Date.now() + 1000 * 60 * 45), status: 'pending', channel: '@reviews_daily' },
-  { id: 3, item: 'Flash sale alert', scheduled: new Date(Date.now() + 1000 * 60 * 90), status: 'pending', channel: '@flash_alerts' },
-  { id: 4, item: 'Weekly earnings report', scheduled: new Date(Date.now() + 1000 * 60 * 120), status: 'pending', channel: '@earnings_hub' },
-  { id: 5, item: 'New offer announcement', scheduled: new Date(Date.now() + 1000 * 60 * 180), status: 'pending', channel: '@affiliate_deals' },
-  { id: 6, item: 'Tutorial: How to track clicks', scheduled: new Date(Date.now() - 1000 * 60 * 30), status: 'failed', channel: '@tutorial_zone' },
-  { id: 7, item: 'Top performer spotlight', scheduled: new Date(Date.now() + 1000 * 60 * 240), status: 'pending', channel: '@success_stories' },
-];
-
 export function Poster() {
+  const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     message: '',
@@ -38,11 +25,57 @@ export function Poster() {
     scheduledTime: ''
   });
 
+  const { data: queueData, isLoading } = useSafeQuery({
+    queryKey: ['poster-queue'],
+    queryFn: async () => {
+      const r = await api.get('/api/poster/queue?limit=50');
+      return r.data?.data ?? r.data ?? [];
+    },
+  });
+
+  const { data: posterStatus } = useSafeQuery({
+    queryKey: ['poster-status'],
+    queryFn: async () => {
+      const r = await api.get('/api/poster/queue');
+      const items = r.data?.data ?? r.data ?? [];
+      return {
+        connected: true,
+        queueSize: Array.isArray(items) ? items.filter(i => i.status === 'pending').length : 0,
+        postedToday: Array.isArray(items) ? items.filter(i => i.status === 'posted').length : 0,
+        failed: Array.isArray(items) ? items.filter(i => i.status === 'failed').length : 0,
+      };
+    },
+  });
+
+  const triggerMutation = useMutation({
+    mutationFn: async () => {
+      const r = await api.post('/api/poster/trigger');
+      return r.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['poster-queue'] });
+    },
+  });
+
+  const addToQueueMutation = useMutation({
+    mutationFn: async (data) => {
+      const r = await api.post('/api/poster/queue', data);
+      return r.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['poster-queue'] });
+      setModalOpen(false);
+      setFormData({ message: '', channel: '', scheduleNow: true, scheduledTime: '' });
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Manual post:', formData);
-    setModalOpen(false);
-    setFormData({ message: '', channel: '', scheduleNow: true, scheduledTime: '' });
+    addToQueueMutation.mutate({
+      message: formData.message,
+      channel: formData.channel,
+      scheduledTime: formData.scheduleNow ? new Date().toISOString() : formData.scheduledTime,
+    });
   };
 
   const formatRelativeTime = (date) => {
@@ -147,31 +180,39 @@ export function Poster() {
           <Plus className="w-5 h-5" />
           Manual Post
         </button>
+        <button
+          onClick={() => triggerMutation.mutate()}
+          disabled={triggerMutation.isPending}
+          className="px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+        >
+          <Send className="w-4 h-4" />
+          {triggerMutation.isPending ? 'Sending...' : 'Trigger Post'}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label="Status"
-          value={MOCK_STATUS.connected ? 'Connected' : 'Disconnected'}
-          accent={MOCK_STATUS.connected ? 'green' : 'red'}
-          icon={MOCK_STATUS.connected ? CheckCircle2 : XCircle}
+          value={posterStatus?.connected !== false ? 'Connected' : 'Disconnected'}
+          accent={posterStatus?.connected !== false ? 'green' : 'red'}
+          icon={posterStatus?.connected !== false ? CheckCircle2 : XCircle}
         />
         <StatCard
           label="Queue Size"
-          value={MOCK_STATUS.queueSize.toString()}
+          value={String(posterStatus?.queueSize ?? 0)}
           accent="yellow"
           icon={Clock}
         />
         <StatCard
           label="Posted Today"
-          value={MOCK_STATUS.postedToday.toLocaleString()}
+          value={(posterStatus?.postedToday ?? 0).toLocaleString()}
           accent="green"
           icon={MessageCircle}
         />
         <StatCard
           label="Failed Today"
-          value={MOCK_STATUS.failed.toString()}
-          accent={MOCK_STATUS.failed > 0 ? 'red' : 'green'}
+          value={String(posterStatus?.failed ?? 0)}
+          accent={(posterStatus?.failed ?? 0) > 0 ? 'red' : 'green'}
           icon={XCircle}
         />
       </div>
@@ -183,10 +224,10 @@ export function Poster() {
           </h2>
           <p className="text-sm text-slate-400">Scheduled and pending posts across all channels</p>
         </div>
-        <DataTable data={MOCK_QUEUE} columns={columns} searchable={false} exportable={false} />
+        <DataTable data={queueData} columns={columns} searchable={false} exportable={false} />
       </GlassCard>
 
-      {MOCK_STATUS.connected && (
+      {(posterStatus?.connected !== false) && (
         <GlassCard className="border-green-500/30">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">

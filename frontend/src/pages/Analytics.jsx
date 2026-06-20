@@ -75,6 +75,29 @@ export function Analytics() {
     },
   ];
 
+  const exportCSV = () => {
+    const rows = report?.data || report || [];
+    if (!rows.length) return;
+    const headers = columns.map((c) => c.header).join(',');
+    const csvRows = rows
+      .map((row) =>
+        columns
+          .map((c) => {
+            const val = row[c.accessorKey];
+            return typeof val === 'string' ? `"${val}"` : (val ?? '');
+          })
+          .join(',')
+      )
+      .join('\n');
+    const blob = new Blob([`${headers}\n${csvRows}`], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analytics-${range}-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -100,7 +123,7 @@ export function Analytics() {
             ))}
           </div>
 
-          <button className="p-2 bg-surface-2 border border-white/10 rounded-lg text-slate-400 hover:text-white transition-all">
+          <button onClick={exportCSV} className="p-2 bg-surface-2 border border-white/10 rounded-lg text-slate-400 hover:text-white transition-all">
             <Download className="w-5 h-5" />
           </button>
         </div>

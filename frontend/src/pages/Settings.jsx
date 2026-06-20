@@ -11,6 +11,13 @@ import {
 export function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState({
+    new_conversion: true,
+    payout_processed: true,
+    campaign_paused: true,
+    fraud_alert: true,
+    weekly_report: true,
+  });
   const queryClient = useQueryClient();
 
   const { data: profile } = useSafeQuery({
@@ -48,6 +55,20 @@ export function Settings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['profile']);
+    },
+  });
+
+  useEffect(() => {
+    api.get('/api/settings/notifications').then(res => {
+      const prefs = res.data?.data ?? res.data;
+      if (prefs && typeof prefs === 'object') setNotifPrefs(prev => ({ ...prev, ...prefs }));
+    }).catch(() => {});
+  }, []);
+
+  const notifSaveMutation = useMutation({
+    mutationFn: (data) => api.post('/api/settings/notifications', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['notifications']);
     },
   });
 
@@ -99,7 +120,7 @@ export function Settings() {
           {activeTab === 'profile' && (
             <GlassCard>
               <h3 className="text-xl font-bold text-white mb-6">Profile Information</h3>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); updateMutation.mutate(formData); }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-400 uppercase">Company Name</label>
@@ -147,8 +168,7 @@ export function Settings() {
                 </div>
 
                 <button
-                  type="button"
-                  onClick={() => updateMutation.mutate(formData)}
+                  type="submit"
                   disabled={updateMutation.isPending}
                   className="flex items-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
                 >
@@ -272,30 +292,46 @@ export function Settings() {
           {activeTab === 'telegram' && <TelegramSettings />}
           {activeTab === 'payouts' && <PayoutSettings />}
 
-          {/* TODO: persist notification preferences — backend endpoint needed */}
           {activeTab === 'notifications' && (
             <GlassCard>
               <h3 className="text-xl font-bold text-white mb-6">Notification Preferences</h3>
               <div className="space-y-4">
                 {[
-                  { label: 'New Conversion', desc: 'Get notified when a conversion is recorded' },
-                  { label: 'Payout Processed', desc: 'Alert when a payout is sent' },
-                  { label: 'Campaign Paused', desc: 'Notify when a campaign hits cap or is paused' },
-                  { label: 'Fraud Alert', desc: 'Alert on suspicious activity detection' },
-                  { label: 'Weekly Report', desc: 'Receive a weekly performance summary' },
+                  { key: 'new_conversion', label: 'New Conversion', desc: 'Get notified when a conversion is recorded' },
+                  { key: 'payout_processed', label: 'Payout Processed', desc: 'Alert when a payout is sent' },
+                  { key: 'campaign_paused', label: 'Campaign Paused', desc: 'Notify when a campaign hits cap or is paused' },
+                  { key: 'fraud_alert', label: 'Fraud Alert', desc: 'Alert on suspicious activity detection' },
+                  { key: 'weekly_report', label: 'Weekly Report', desc: 'Receive a weekly performance summary' },
                 ].map(notif => (
-                  <div key={notif.label} className="flex items-center justify-between p-4 bg-black/20 border border-white/10 rounded-lg">
+                  <div key={notif.key} className="flex items-center justify-between p-4 bg-black/20 border border-white/10 rounded-lg">
                     <div>
                       <div className="text-sm font-bold text-white">{notif.label}</div>
                       <div className="text-xs text-slate-400">{notif.desc}</div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={notifPrefs[notif.key]}
+                        onChange={() => setNotifPrefs(prev => ({ ...prev, [notif.key]: !prev[notif.key] }))}
+                      />
                       <div className="w-11 h-6 bg-surface-3 peer-checked:bg-indigo-primary rounded-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
                     </label>
                   </div>
                 ))}
               </div>
+              <button
+                onClick={() => notifSaveMutation.mutate(notifPrefs)}
+                disabled={notifSaveMutation.isPending}
+                className="mt-6 flex items-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
+              >
+                {notifSaveMutation.isPending ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Save className="w-5 h-5" />
+                )}
+                Save Preferences
+              </button>
             </GlassCard>
           )}
         </div>

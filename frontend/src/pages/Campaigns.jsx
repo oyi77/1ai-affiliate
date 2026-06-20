@@ -6,7 +6,7 @@ import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
-import { Plus, Target, Play, Pause, TrendingUp } from 'lucide-react';
+import { Plus, Target, Play, Pause, TrendingUp, Download } from 'lucide-react';
 
 export function Campaigns() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -132,6 +132,28 @@ export function Campaigns() {
     },
   ];
 
+
+  const exportCSV = () => {
+    if (!campaigns?.length) return;
+    const headers = columns.map((c) => c.header).join(',');
+    const rows = campaigns
+      .map((row) =>
+        columns
+          .map((c) => {
+            const val = row[c.accessorKey];
+            return typeof val === 'string' ? `"${val}"` : (val ?? '');
+          })
+          .join(',')
+      )
+      .join('\n');
+    const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `campaigns-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -142,13 +164,22 @@ export function Campaigns() {
           <p className="text-slate-400 mt-2">Manage your affiliate campaigns and track performance</p>
         </div>
 
-        <button
-          onClick={() => setCreateModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light hover:-translate-y-0.5 transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          New Campaign
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-2 px-4 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all"
+          >
+            <Download className="w-5 h-5" />
+            Export
+          </button>
+          <button
+            onClick={() => setCreateModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light hover:-translate-y-0.5 transition-all"
+          >
+            <Plus className="w-5 h-5" />
+            New Campaign
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

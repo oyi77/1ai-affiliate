@@ -15,6 +15,7 @@ export function DeepLinkGenerator() {
   const [generatedLink, setGeneratedLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState([]);
+  const [showQr, setShowQr] = useState(false);
 
   const generateLink = () => {
     const params = new URLSearchParams();
@@ -163,12 +164,30 @@ export function DeepLinkGenerator() {
                 </button>
                 <button
                   className="flex items-center justify-center gap-2 px-4 py-3 bg-surface-3 hover:bg-white/5 border border-white/10 rounded-lg text-sm font-bold text-slate-300 hover:text-white transition-all"
-                  onClick={() => alert('QR Code generation coming soon!')}
+                  onClick={() => setShowQr(!showQr)}
                 >
                   <QrCode className="w-4 h-4" />
                   QR Code
                 </button>
               </div>
+
+              {showQr && (
+                <div className="flex flex-col items-center gap-3 p-4 bg-black/20 border border-white/10 rounded-lg">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(generatedLink)}`}
+                    alt="QR Code"
+                    width={200}
+                    height={200}
+                    className="rounded-lg"
+                  />
+                  <button
+                    onClick={() => setShowQr(false)}
+                    className="text-xs text-slate-400 hover:text-white transition-colors"
+                  >
+                    Hide QR Code
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-500 py-12">
