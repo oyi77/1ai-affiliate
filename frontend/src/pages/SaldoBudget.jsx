@@ -1,6 +1,7 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -18,7 +19,7 @@ export function SaldoBudget() {
   const [formError, setFormError] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: summary } = useQuery({
+  const { data: summary } = useSafeQuery({
     queryKey: ['balance-summary'],
     queryFn: async () => {
       const res = await api.get('/api/admin/balance/summary');
@@ -26,7 +27,7 @@ export function SaldoBudget() {
     },
   });
 
-  const { data: ledger, isLoading } = useQuery({
+  const { data: ledger, isLoading } = useSafeQuery({
     queryKey: ['balance-ledger'],
     queryFn: async () => {
       const res = await api.get('/api/admin/balance');

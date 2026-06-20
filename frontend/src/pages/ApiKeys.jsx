@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Modal } from '../components/ui/Modal';
 import { Key, Plus, Trash2, Copy, Loader2, CheckCircle2 } from 'lucide-react';
@@ -25,7 +26,7 @@ export function ApiKeys() {
   const [newKey, setNewKey] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const { data: keys = [], isLoading } = useQuery({
+  const { data: keys = [], isLoading } = useSafeQuery({
     queryKey: ['api-keys'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/api-keys');
@@ -41,11 +42,17 @@ export function ApiKeys() {
       setNewKey(fullKey);
       setCreateOpen(false);
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const revokeMutation = useMutation({
     mutationFn: (id) => api.delete(`/api/enterprise/api-keys/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['api-keys'] }),
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const toggleScope = useCallback((scope) => {

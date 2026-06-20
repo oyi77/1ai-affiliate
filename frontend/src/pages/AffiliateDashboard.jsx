@@ -1,5 +1,5 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
@@ -33,17 +33,17 @@ const earningColumns = [
 ];
 
 export function AffiliateDashboard() {
-  const { data: stats, isLoading: loadingStats } = useQuery({
+  const { data: stats, isLoading: loadingStats } = useSafeQuery({
     queryKey: ['affiliate-stats'],
     queryFn: async () => { const r = await api.get('/api/affiliate/stats'); return r.data?.data ?? r.data; },
   });
 
-  const { data: links, isLoading: loadingLinks } = useQuery({
+  const { data: links, isLoading: loadingLinks } = useSafeQuery({
     queryKey: ['affiliate-links'],
     queryFn: async () => { const r = await api.get('/api/affiliate/links'); return r.data?.data ?? r.data; },
   });
 
-  const { data: earnings, isLoading: loadingEarnings } = useQuery({
+  const { data: earnings, isLoading: loadingEarnings } = useSafeQuery({
     queryKey: ['affiliate-earnings'],
     queryFn: async () => { const r = await api.get('/api/affiliate/earnings'); return r.data?.data ?? r.data; },
   });

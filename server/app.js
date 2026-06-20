@@ -106,6 +106,7 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
 app.use('/api', require('./routes/postback'));
+app.use('/api/templates/landing', require('./routes/landingTemplates'));
 app.use('/api/templates', require('./routes/templates'));
 app.use('/api/enterprise', require('./routes/enterprise'));
 app.use('/api/ai', require('./routes/ai'));

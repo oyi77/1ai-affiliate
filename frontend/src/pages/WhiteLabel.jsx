@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Palette, Globe, ImageIcon, Save, Loader2, CheckCircle2, Eye } from 'lucide-react';
 
@@ -17,7 +18,7 @@ export function WhiteLabel() {
   const [form, setForm] = useState(defaultConfig);
   const [saved, setSaved] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useSafeQuery({
     queryKey: ['white-label'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/white-label');
@@ -35,6 +36,9 @@ export function WhiteLabel() {
       queryClient.invalidateQueries({ queryKey: ['white-label'] });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 

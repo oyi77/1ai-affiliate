@@ -1,6 +1,6 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
@@ -40,7 +40,7 @@ export function AnalyticHarian() {
   const dateFrom = daysAgo(range);
   const dateTo = today();
 
-  const { data: dailyData, isLoading } = useQuery({
+  const { data: dailyData, isLoading } = useSafeQuery({
     queryKey: ['analytic-harian', dateFrom, dateTo],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/daily?date_from=${dateFrom}&date_to=${dateTo}`);

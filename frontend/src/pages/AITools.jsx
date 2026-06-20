@@ -56,9 +56,9 @@ const tools = [
     icon: Sparkles,
     color: 'purple',
     fields: [
-      { name: 'business', label: 'Business Name', placeholder: 'TechStore' },
+      { name: 'brand_name', label: 'Brand Name', placeholder: 'TechStore' },
       { name: 'industry', label: 'Industry', placeholder: 'Consumer Electronics' },
-      { name: 'values', label: 'Core Values', placeholder: 'Innovation, Quality, Trust' },
+      { name: 'vibe', label: 'Brand Vibe', placeholder: 'Innovation, Quality, Trust' },
     ],
   },
   {
@@ -68,8 +68,8 @@ const tools = [
     icon: Lightbulb,
     color: 'yellow',
     fields: [
-      { name: 'page_type', label: 'Page Type', placeholder: 'Landing Page' },
-      { name: 'goal', label: 'Conversion Goal', placeholder: 'Email signups' },
+      { name: 'product', label: 'Product/Service', placeholder: 'Landing Page' },
+      { name: 'audience', label: 'Target Audience', placeholder: 'Email signups' },
     ],
   },
   {
@@ -79,8 +79,8 @@ const tools = [
     icon: Scissors,
     color: 'green',
     fields: [
-      { name: 'subject', label: 'Subject', placeholder: 'Product photo of a sneaker' },
-      { name: 'use_case', label: 'Use Case', placeholder: 'E-commerce listing' },
+      { name: 'image_subject', label: 'Image Subject', placeholder: 'Product photo of a sneaker' },
+      { name: 'intent', label: 'Intent', placeholder: 'E-commerce listing' },
     ],
   },
 ];
@@ -97,6 +97,9 @@ export function AITools() {
     },
     onSuccess: (data) => {
       setResult(data);
+    },
+    onError: (err) => {
+      setResult({ error: err.response?.data?.error || 'Generation failed' });
     },
   });
 
@@ -203,9 +206,13 @@ export function AITools() {
               <div className="mt-6 p-6 bg-black/40 border border-white/10 rounded-lg">
                 <div className="text-sm font-bold text-slate-400 uppercase mb-3">Result</div>
                 <div className="prose prose-invert max-w-none">
-                  <pre className="text-slate-200 whitespace-pre-wrap text-sm leading-relaxed">
-                    {JSON.stringify(result, null, 2)}
-                  </pre>
+                  {result?.error ? (
+                    <div className="text-red-400 text-sm font-medium">{result.error}</div>
+                  ) : (
+                    <pre className="text-slate-200 whitespace-pre-wrap text-sm leading-relaxed">
+                      {JSON.stringify(result, null, 2)}
+                    </pre>
+                  )}
                 </div>
               </div>
             )}

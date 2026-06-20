@@ -45,6 +45,15 @@ export function Login({ onLogin }) {
       setMode('reset');
       setError('');
     },
+    onError: (err) => {
+      setError(err.response?.data?.error || 'Failed to send reset email');
+    },
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: (data) => api.post('/api/auth/reset-password', data),
+    onSuccess: () => { setMode('login'); setError(''); },
+    onError: (err) => setError(err.response?.data?.error || 'Reset failed'),
   });
 
   const handleSubmit = (e) => {
@@ -60,10 +69,12 @@ export function Login({ onLogin }) {
       registerMutation.mutate({ name: form.name, email: form.email, password: form.password });
     } else if (mode === 'forgot') {
       forgotMutation.mutate({ username: form.username, email: form.email });
+    } else if (mode === 'reset') {
+      resetMutation.mutate({ username: form.username, key: form.resetKey, newPassword: form.password });
     }
   };
 
-  const isPending = loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending;
+  const isPending = loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending || resetMutation.isPending;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

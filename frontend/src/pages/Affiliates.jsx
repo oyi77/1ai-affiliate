@@ -25,6 +25,9 @@ export function Affiliates() {
       setCreateModalOpen(false);
       setFormData({ name: '', email: '' });
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const columns = [
@@ -81,7 +84,7 @@ export function Affiliates() {
       cell: ({ getValue }) => (
         <div className="flex items-center gap-2 text-slate-400">
           <Clock className="w-4 h-4" />
-          {getValue() ? new Date(getValue()).toLocaleDateString() : '-'}
+          {getValue() ? new Date(Number(getValue()) * 1000).toLocaleDateString() : '-'}
         </div>
       ),
     },

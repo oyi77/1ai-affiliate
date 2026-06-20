@@ -1,28 +1,28 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import { DollarSign, Calendar, TrendingUp } from 'lucide-react';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { GlassCard } from '../components/ui/GlassCard';
 
 export function Commissions() {
-  const { data: commissions, isLoading } = useQuery({
+  const { data: commissions, isLoading } = useSafeQuery({
     queryKey: ['commissions'],
     queryFn: async () => {
       const { data } = await api.get('/api/admin/commissions?limit=100');
-      return data;
+      return data?.data ?? data ?? [];
     },
   });
 
   const formatRp = (amount) => formatIDR(amount);
 
-  const totalCommissions = commissions?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
+  const totalCommissions = commissions?.reduce((sum, c) => sum + Number(c.amount || 0), 0) || 0;
   
   const now = new Date();
   const thisMonthCommissions = commissions?.filter(c => {
-    const d = new Date(c.created_at);
+    const d = new Date(Number(c.created_at) * 1000);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
+  }).reduce((sum, c) => sum + Number(c.amount || 0), 0) || 0;
 
   const avgCommission = commissions?.length > 0 ? totalCommissions / commissions.length : 0;
 
@@ -53,7 +53,7 @@ export function Commissions() {
       header: 'Date',
       cell: ({ getValue }) => (
         <span className="text-slate-400">
-          {new Date(getValue()).toLocaleDateString('id-ID', {
+          {new Date(Number(getValue()) * 1000).toLocaleDateString('id-ID', {
             day: '2-digit',
             month: 'short',
             year: 'numeric',

@@ -187,6 +187,9 @@ export function AffiliatePortal() {
       queryClient.invalidateQueries(['affiliate-links']);
       setOfferId('');
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const handleGenerate = (e) => {

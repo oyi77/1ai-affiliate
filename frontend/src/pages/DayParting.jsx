@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
@@ -28,7 +28,7 @@ function formatHour(h) {
 export function DayParting() {
   const [tooltip, setTooltip] = useState(null);
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useSafeQuery({
     queryKey: ['dayparting-stats'],
     queryFn: async () => {
       const res = await api.get('/api/admin/stats');

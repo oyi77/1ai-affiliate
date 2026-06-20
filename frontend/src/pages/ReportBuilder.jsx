@@ -1,3 +1,4 @@
+import { formatCurrency } from '../lib/currency';
 import { useState, useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -35,9 +36,9 @@ const METRICS = [
 function fmtMetric(val, metric) {
   if (val == null) return '—';
   if (metric === 'revenue' || metric === 'spend')
-    return `$${Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return formatCurrency(val);
   if (metric === 'epc')
-    return `$${Number(val).toFixed(2)}`;
+    return formatCurrency(val);
   if (metric === 'cr')
     return `${Number(val).toFixed(2)}%`;
   if (metric === 'roas')
@@ -75,6 +76,9 @@ export function ReportBuilder() {
         filters: { date_from: dateFrom, date_to: dateTo },
       });
       return data?.data ?? data ?? [];
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 

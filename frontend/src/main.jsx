@@ -9,6 +9,14 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      // When a query fails, log the error so it doesn't silently hang.
+      // Pages should check isError for custom UI, but this prevents
+      // the "infinite loading" anti-pattern when they don't.
+      onError: (err) => {
+        if (err?.response?.status === 403) {
+          console.warn('[403] Access denied:', err.config?.url);
+        }
+      },
     },
   },
 })

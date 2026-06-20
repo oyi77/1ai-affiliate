@@ -1,6 +1,6 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { StatCard } from '../components/ui/StatCard';
@@ -26,7 +26,7 @@ export function LaporanOrder() {
   const [dateFrom, setDateFrom] = useState(daysAgo(30));
   const [dateTo, setDateTo] = useState(today());
 
-  const { data: reportData, isLoading } = useQuery({
+  const { data: reportData, isLoading } = useSafeQuery({
     queryKey: ['laporan-order', dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({ date_from: dateFrom, date_to: dateTo });

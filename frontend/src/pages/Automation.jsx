@@ -1,6 +1,7 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -171,7 +172,7 @@ export function Automation() {
   const [formError, setFormError] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: rules, isLoading } = useQuery({
+  const { data: rules, isLoading } = useSafeQuery({
     queryKey: ['automation-rules'],
     queryFn: async () => {
       const res = await api.get('/api/admin/automation');
@@ -220,7 +221,9 @@ export function Automation() {
     setEditRule(rule);
     setRuleType(rule.rule_type);
     setName(rule.name);
-    setConfig(typeof rule.config === 'string' ? JSON.parse(rule.config) : rule.config);
+    let parsed;
+    try { parsed = typeof rule.config === 'string' ? JSON.parse(rule.config) : rule.config; } catch { parsed = {}; }
+    setConfig(parsed);
     setEnabled(!!rule.enabled);
     setFormError('');
     setCreateModalOpen(true);
@@ -295,7 +298,8 @@ export function Automation() {
       accessorKey: 'config',
       header: 'Config',
       cell: ({ getValue }) => {
-        const cfg = typeof getValue() === 'string' ? JSON.parse(getValue()) : getValue();
+        let cfg;
+        try { cfg = typeof getValue() === 'string' ? JSON.parse(getValue()) : getValue(); } catch { cfg = {}; }
         const keys = Object.keys(cfg || {}).filter(k => k !== 'action').slice(0, 3);
         return (
           <span className="text-xs text-slate-400 font-mono">

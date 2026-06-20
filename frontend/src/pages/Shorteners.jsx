@@ -40,6 +40,9 @@ export function Shorteners() {
       setModalOpen(false);
       setFormData({ service_id: '', name: '', api_key: '', custom_endpoint: '' });
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const deleteMutation = useMutation({
@@ -47,12 +50,15 @@ export function Shorteners() {
     onSuccess: () => {
       queryClient.invalidateQueries(['shorteners']);
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const testConnection = async (id) => {
     setTestingId(id);
     try {
-      await api.post(`/api/admin/shorteners/test`, { id });
+      await api.post(`/api/admin/shorteners/${id}/test`);
       queryClient.invalidateQueries(['shorteners']);
     } catch (error) {
       console.error('Test connection failed', error);

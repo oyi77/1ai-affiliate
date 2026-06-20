@@ -1,6 +1,7 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { CheckCircle, Clock, Wallet, CreditCard } from 'lucide-react';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
@@ -12,34 +13,37 @@ export function Earnings() {
   const [selectedEarning, setSelectedEarning] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: earningsResponse, isLoading } = useQuery({
+  const { data: earningsResponse, isLoading } = useSafeQuery({
     queryKey: ['earnings'],
     queryFn: async () => {
-      const { data } = await api.get('/api/admin/earnings?limit=100');
-      return data;
+      const { data } = await api.get('/api/admin/affiliates/earnings?limit=100');
+      return data?.data ?? data ?? [];
     },
   });
 
-  const earnings = earningsResponse?.data || [];
+  const earnings = Array.isArray(earningsResponse) ? earningsResponse : [];
 
   const approveMutation = useMutation({
     mutationFn: async (id) => {
-      return api.post(`/api/admin/earnings/${id}/approve`);
+      return api.post(`/api/admin/affiliates/earnings/${id}/approve`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['earnings']);
       setApproveModalOpen(false);
       setSelectedEarning(null);
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const formatRp = (amount) => formatIDR(amount);
 
   const stats = {
-    total: earnings.reduce((sum, e) => sum + (e.payout_amount || 0), 0),
-    pending: earnings.filter(e => e.status === 'pending').reduce((sum, e) => sum + (e.payout_amount || 0), 0),
-    approved: earnings.filter(e => e.status === 'approved').reduce((sum, e) => sum + (e.payout_amount || 0), 0),
-    paid: earnings.filter(e => e.status === 'paid').reduce((sum, e) => sum + (e.payout_amount || 0), 0),
+    total: earnings.reduce((sum, e) => sum + Number(e.payout_amount || 0), 0),
+    pending: earnings.filter(e => e.status === 'pending').reduce((sum, e) => sum + Number(e.payout_amount || 0), 0),
+    approved: earnings.filter(e => e.status === 'approved').reduce((sum, e) => sum + Number(e.payout_amount || 0), 0),
+    paid: earnings.filter(e => e.status === 'paid').reduce((sum, e) => sum + Number(e.payout_amount || 0), 0),
   };
 
   const columns = [
@@ -89,7 +93,7 @@ export function Earnings() {
       header: 'Date',
       cell: ({ getValue }) => (
         <span className="text-slate-400">
-          {new Date(getValue()).toLocaleDateString('id-ID', {
+          {new Date(typeof getValue() === 'number' ? getValue() * 1000 : getValue()).toLocaleDateString('id-ID', {
             day: '2-digit',
             month: 'short',
             year: 'numeric'

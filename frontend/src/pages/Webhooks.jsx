@@ -1,6 +1,7 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import {
@@ -15,7 +16,7 @@ export function Webhooks() {
   const [testResults, setTestResults] = useState({});
   const [createError, setCreateError] = useState(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useSafeQuery({
     queryKey: ['webhooks'],
     queryFn: async () => {
       const r = await api.get('/api/admin/webhooks');

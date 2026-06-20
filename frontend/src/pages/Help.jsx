@@ -45,13 +45,13 @@ export function Help() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <GlassCard className="cursor-pointer group">
+        <GlassCard className="cursor-pointer group" onClick={() => window.location.href = '/api-docs'}>
           <BookOpen className="w-8 h-8 text-indigo-light mb-4 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-2">Documentation</h3>
           <p className="text-slate-400 text-sm">Comprehensive guides and API reference</p>
         </GlassCard>
 
-        <GlassCard className="cursor-pointer group">
+        <GlassCard className="cursor-pointer group" onClick={() => window.location.href = 'mailto:support@1ai.aff'}>
           <MessageCircle className="w-8 h-8 text-green-success mb-4 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-2">Live Chat</h3>
           <p className="text-slate-400 text-sm">Chat with our support team in real-time</p>
@@ -60,7 +60,7 @@ export function Help() {
         <GlassCard className="cursor-pointer group">
           <Mail className="w-8 h-8 text-yellow-warning mb-4 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-2">Email Support</h3>
-          <p className="text-slate-400 text-sm">support@1ai.aff — 24h response time</p>
+          <p className="text-slate-400 text-sm"><a href="mailto:support@1ai.aff" className="text-yellow-warning hover:underline">support@1ai.aff</a> — 24h response time</p>
         </GlassCard>
       </div>
 

@@ -1,6 +1,6 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { StatCard } from '../components/ui/StatCard';
@@ -35,7 +35,7 @@ export function LaporanIklan() {
   const [advertiserId, setAdvertiserId] = useState('');
   const [trafficSourceId, setTrafficSourceId] = useState('');
 
-  const { data: advertisers } = useQuery({
+  const { data: advertisers } = useSafeQuery({
     queryKey: ['advertisers-min'],
     queryFn: async () => {
       const res = await api.get('/api/admin/advertisers');
@@ -43,7 +43,7 @@ export function LaporanIklan() {
     },
   });
 
-  const { data: trafficSources } = useQuery({
+  const { data: trafficSources } = useSafeQuery({
     queryKey: ['traffic-sources-min'],
     queryFn: async () => {
       const res = await api.get('/api/admin/traffic-sources');
@@ -51,7 +51,7 @@ export function LaporanIklan() {
     },
   });
 
-  const { data: reportData, isLoading } = useQuery({
+  const { data: reportData, isLoading } = useSafeQuery({
     queryKey: ['laporan-iklan', dateFrom, dateTo, advertiserId, trafficSourceId],
     queryFn: async () => {
       const params = new URLSearchParams({ date_from: dateFrom, date_to: dateTo });

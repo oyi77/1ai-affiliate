@@ -113,6 +113,9 @@ export function Pipeline() {
 
   return (
     <div className="space-y-8">
+      <div className="p-3 bg-yellow-warning/10 border border-yellow-warning/20 rounded-lg text-yellow-warning text-sm">
+        ⚠️ Pipeline monitoring is under development — data shown is for demo purposes.
+      </div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent mb-2">

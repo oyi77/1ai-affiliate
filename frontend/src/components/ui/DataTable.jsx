@@ -28,9 +28,11 @@ export function DataTable({ data = [], columns, searchable = true, exportable = 
   });
 
   const exportCSV = () => {
-    const headers = columns.map(col => col.header).join(',');
     const rows = table.getFilteredRowModel().rows.map(row =>
-      columns.map(col => row.getValue(col.accessorKey)).join(',')
+      columns.map(col => {
+        const val = col.accessorKey ? row.getValue(col.accessorKey) : '';
+        return String(val ?? '');
+      }).join(',')
     ).join('\n');
     const csv = `${headers}\n${rows}`;
     const blob = new Blob([csv], { type: 'text/csv' });

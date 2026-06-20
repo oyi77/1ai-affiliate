@@ -1,3 +1,5 @@
+import { formatCurrency } from '../lib/currency';
+
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -67,6 +69,9 @@ export function ConversionStatuses() {
       queryClient.invalidateQueries(['commissions']);
       setSelected(new Set());
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const bulkReject = useMutation({
@@ -76,6 +81,9 @@ export function ConversionStatuses() {
     onSuccess: () => {
       queryClient.invalidateQueries(['commissions']);
       setSelected(new Set());
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 
@@ -137,7 +145,7 @@ export function ConversionStatuses() {
         header: 'Amount',
         cell: ({ getValue }) => (
           <span className="text-white font-bold">
-            ${Number(getValue() || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            {formatCurrency(getValue() || 0)}
           </span>
         ),
       },
@@ -174,7 +182,7 @@ export function ConversionStatuses() {
         cell: ({ getValue }) => (
           <span className="text-slate-400 text-sm">
             {getValue()
-              ? new Date(getValue()).toLocaleDateString('id-ID', {
+              ? new Date(Number(getValue()) * 1000).toLocaleDateString('id-ID', {
                   day: '2-digit',
                   month: 'short',
                   year: 'numeric',

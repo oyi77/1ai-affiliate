@@ -62,7 +62,7 @@ export function DeepLinkGenerator() {
       accessorKey: 'created_at',
       cell: ({ row }) => (
         <div className="text-slate-400 text-xs">
-          {new Date(row.original.created_at).toLocaleTimeString()}
+          {new Date(Number(row.original.created_at) * 1000).toLocaleTimeString()}
         </div>
       ),
     },

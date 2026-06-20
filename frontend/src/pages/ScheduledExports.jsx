@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Modal } from '../components/ui/Modal';
 import { CalendarClock, Plus, Trash2, Loader2, FileDown, Mail, Clock } from 'lucide-react';
@@ -36,7 +37,7 @@ export function ScheduledExports() {
     email: '',
   });
 
-  const { data: exports = [], isLoading } = useQuery({
+  const { data: exports = [], isLoading } = useSafeQuery({
     queryKey: ['scheduled-exports'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/scheduled-exports');
@@ -51,11 +52,17 @@ export function ScheduledExports() {
       setCreateOpen(false);
       setForm({ name: '', report_type: 'clicks', schedule: 'daily', format: 'csv', email: '' });
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/api/enterprise/scheduled-exports/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scheduled-exports'] }),
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const formatDate = (ts) => {

@@ -1,6 +1,7 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -28,7 +29,7 @@ export function LaporanPembayaran() {
   const [formError, setFormError] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: payouts, isLoading } = useQuery({
+  const { data: payouts, isLoading } = useSafeQuery({
     queryKey: ['shopee-payouts'],
     queryFn: async () => {
       const res = await api.get('/api/admin/advertisers/0/payouts');

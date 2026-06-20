@@ -8,7 +8,8 @@ import {
   ChevronRight, 
   ChevronLeft,
   Copy,
-  QrCode
+  Target,
+  QrCode,
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 
@@ -18,8 +19,6 @@ const steps = [
   { id: 3, name: 'Customize', icon: Monitor },
   { id: 4, name: 'Preview', icon: CheckCircle2 },
 ];
-
-import { Target } from 'lucide-react';
 
 export function SmartlinkGenerator() {
   const [step, setStep] = useState(1);
@@ -135,19 +134,19 @@ export function SmartlinkGenerator() {
             <div className="bg-black/40 border border-white/10 rounded-xl p-6 space-y-4">
               <div className="flex items-center justify-between p-3 bg-surface-3 rounded-lg border border-white/5">
                 <code className="text-indigo-light text-sm truncate mr-4">{finalUrl}</code>
-                <button className="p-2 hover:bg-white/5 rounded-md transition-all text-slate-400 hover:text-white">
+                <button onClick={() => navigator.clipboard.writeText(finalUrl).catch(() => {})} className="p-2 hover:bg-white/5 rounded-md transition-all text-slate-400 hover:text-white">
                   <Copy className="w-5 h-5" />
                 </button>
               </div>
               
               <div className="flex items-center justify-center gap-6">
-                <button className="flex flex-col items-center gap-2 text-slate-400 hover:text-white transition-all">
+                <button disabled title="Coming soon" className="flex flex-col items-center gap-2 text-slate-400 opacity-50 cursor-not-allowed transition-all">
                   <div className="p-3 bg-surface-3 rounded-lg border border-white/5">
                     <QrCode className="w-6 h-6" />
                   </div>
                   <span className="text-xs font-semibold">Get QR Code</span>
                 </button>
-                <button className="flex flex-col items-center gap-2 text-slate-400 hover:text-white transition-all">
+                <button disabled title="Coming soon" className="flex flex-col items-center gap-2 text-slate-400 opacity-50 cursor-not-allowed transition-all">
                   <div className="p-3 bg-surface-3 rounded-lg border border-white/5">
                     <LinkIcon className="w-6 h-6" />
                   </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { MousePointer, TrendingUp, DollarSign, ShoppingCart, Users, Activity } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -7,6 +7,7 @@ import { StatCard } from '../components/ui/StatCard';
 import { useStats } from '../hooks/useStats';
 import { useClicks } from '../hooks/useClicks';
 import { useCampaigns } from '../hooks/useCampaigns';
+import { formatCurrency } from '../lib/currency';
 import { OnboardingWizard } from '../components/OnboardingWizard';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -26,13 +27,6 @@ function deriveSparkline(current, changeRatio, points = 7) {
   });
 }
 
-function formatCurrency(amount) {
-  const num = Number(amount);
-  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
-  if (num >= 1_000) return `$${(num / 1_000).toFixed(1)}K`;
-  return `$${num.toFixed(2)}`;
-}
-
 function formatRelativeTime(isoString) {
   if (!isoString) return '—';
   const diff = Date.now() - new Date(isoString).getTime();
@@ -49,7 +43,7 @@ export function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useStats('admin');
   const { data: clicksResult, isLoading: clicksLoading } = useClicks(5);
   const { data: campaigns, isLoading: campaignsLoading } = useCampaigns(10);
-  const { data: dailyData = [] } = useQuery({
+  const { data: dailyData = [] } = useSafeQuery({
     queryKey: ['daily-stats', range],
     queryFn: async () => {
       const res = await api.get(`/api/admin/stats/daily?range=${range}`);
@@ -57,7 +51,7 @@ export function Dashboard() {
     },
   });
 
-  const recentClicks = clicksResult?.data ?? [];
+  const recentClicks = clicksResult ?? [];
 
   // Sort campaigns by revenue desc, then clicks desc
   const topCampaigns = campaigns
@@ -110,7 +104,7 @@ export function Dashboard() {
     },
     {
       label: 'Avg EPC',
-      value: `$${Number(stats?.avg_epc ?? 0).toFixed(4)}`,
+      value: formatCurrency(stats?.avg_epc ?? 0),
       change: { value: Number((stats?.avg_ctr ?? 0).toFixed(1)), direction: (stats?.avg_epc ?? 0) > 0 ? 'up' : 'flat', vsLabel: 'avg CTR' },
       sparkline: deriveSparkline(stats?.avg_epc ?? 0, clickChange),
       accent: 'yellow',

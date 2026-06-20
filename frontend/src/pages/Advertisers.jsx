@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -26,7 +27,7 @@ export function Advertisers() {
   const [newAccountName, setNewAccountName] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: advertisers, isLoading } = useQuery({
+  const { data: advertisers, isLoading } = useSafeQuery({
     queryKey: ['advertisers'],
     queryFn: async () => {
       const res = await api.get('/api/admin/advertisers');
@@ -44,7 +45,7 @@ export function Advertisers() {
     onError: (err) => setFormError(err.response?.data?.error || 'Failed to create advertiser'),
   });
 
-  const { data: shopeeAccounts = [] } = useQuery({
+  const { data: shopeeAccounts = [] } = useSafeQuery({
     queryKey: ['shopee-accounts'],
     queryFn: async () => {
       const res = await api.get('/api/admin/shopee-accounts');

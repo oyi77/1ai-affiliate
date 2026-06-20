@@ -76,6 +76,7 @@ const navigation = [
       { name: 'Pipeline', icon: Radio, href: '/pipeline' },
       { name: 'Settings', icon: Settings, href: '/settings' },
       { name: 'Admin', icon: Shield, href: '/admin' },
+      { name: 'Template Manager', icon: FileText, href: '/template-manager' },
       { name: 'API Docs', icon: FileText, href: '/api-docs' },
     ],
   },

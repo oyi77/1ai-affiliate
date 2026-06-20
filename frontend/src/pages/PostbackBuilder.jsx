@@ -102,9 +102,10 @@ export function PostbackBuilder() {
   })();
 
   const copyUrl = () => {
-    navigator.clipboard.writeText(previewUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(previewUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
   };
 
   const testPostback = async () => {

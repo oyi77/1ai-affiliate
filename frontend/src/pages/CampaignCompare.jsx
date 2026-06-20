@@ -1,6 +1,6 @@
 import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { BarChart3, TrendingUp, TrendingDown, Minus, Search, X } from 'lucide-react';
@@ -20,7 +20,7 @@ export function CampaignCompare() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [inputValue, setInputValue] = useState('');
 
-  const { data: campaigns, isLoading: campaignsLoading } = useQuery({
+  const { data: campaigns, isLoading: campaignsLoading } = useSafeQuery({
     queryKey: ['campaigns'],
     queryFn: async () => {
       const res = await api.get('/api/admin/campaigns');
@@ -29,7 +29,7 @@ export function CampaignCompare() {
   });
 
   const idsParam = selectedIds.join(',');
-  const { data: compareResult, isLoading: compareLoading, refetch } = useQuery({
+  const { data: compareResult, isLoading: compareLoading, refetch } = useSafeQuery({
     queryKey: ['campaign-compare', idsParam],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/compare?ids=${idsParam}`);

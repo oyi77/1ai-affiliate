@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -75,7 +76,7 @@ export function TrafficRules() {
   });
   const queryClient = useQueryClient();
 
-  const { data: rules, isLoading } = useQuery({
+  const { data: rules, isLoading } = useSafeQuery({
     queryKey: ['traffic-rules'],
     queryFn: async () => {
       const res = await api.get('/api/admin/traffic-rules');
@@ -101,16 +102,25 @@ export function TrafficRules() {
       setEditRule(null);
       resetForm();
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => api.delete(`/api/admin/traffic-rules/${id}`),
     onSuccess: () => queryClient.invalidateQueries(['traffic-rules']),
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, enabled }) => api.patch(`/api/admin/traffic-rules/${id}`, { enabled }),
     onSuccess: () => queryClient.invalidateQueries(['traffic-rules']),
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const resetForm = () => {

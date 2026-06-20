@@ -1,5 +1,7 @@
+import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Modal } from '../components/ui/Modal';
 import { FlaskConical, Plus, Trash2, Loader2, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
@@ -27,7 +29,7 @@ function BarChart({ results }) {
                 <span>{(r.clicks || 0).toLocaleString()} clicks</span>
                 <span>{(r.conversions || 0).toLocaleString()} conv</span>
                 <span className="text-white font-medium">{(r.conversion_rate || 0).toFixed(2)}%</span>
-                <span>${(r.revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>{formatCurrency(r.revenue || 0)}</span>
               </div>
             </div>
             <div className="h-4 bg-white/5 rounded-full overflow-hidden">
@@ -59,7 +61,7 @@ export function ABTests() {
     ],
   });
 
-  const { data: tests = [], isLoading } = useQuery({
+  const { data: tests = [], isLoading } = useSafeQuery({
     queryKey: ['ab-tests'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/ab-tests');
@@ -67,7 +69,7 @@ export function ABTests() {
     },
   });
 
-  const { data: results, isLoading: resultsLoading } = useQuery({
+  const { data: results, isLoading: resultsLoading } = useSafeQuery({
     queryKey: ['ab-test-results', expandedId],
     queryFn: async () => {
       const { data } = await api.get(`/api/enterprise/ab-tests/${expandedId}/results`);
@@ -89,6 +91,9 @@ export function ABTests() {
           { name: 'Variant A', weight: 50 },
         ],
       });
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 

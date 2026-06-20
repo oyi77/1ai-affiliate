@@ -56,7 +56,7 @@ export function ManualConversion() {
       <GlassCard>
         <form onSubmit={handleSubmit} className="space-y-4">
           {field('click_id', 'Click ID *', { placeholder: 'e.g. abc123def456', required: true })}
-          {field('payout', 'Payout ($) *', { type: 'number', step: '0.01', min: '0', placeholder: '0.00', required: true })}
+          {field('payout', 'Payout (Rp) *', { type: 'number', step: '0.01', min: '0', placeholder: '0.00', required: true })}
           {field('txid', 'Transaction ID', { placeholder: 'Optional — auto-generated if blank' })}
           {field('conversion_event', 'Conversion Event', { placeholder: 'conversion' })}
 

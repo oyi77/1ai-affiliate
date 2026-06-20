@@ -57,6 +57,7 @@ const ApiKeys = lazy(() => import('./pages/ApiKeys.jsx').then(m => ({ default: m
 const ABTests = lazy(() => import('./pages/ABTests.jsx').then(m => ({ default: m.ABTests })).catch(() => fallback));
 const ScheduledExports = lazy(() => import('./pages/ScheduledExports.jsx').then(m => ({ default: m.ScheduledExports })).catch(() => fallback));
 const RealtimeDashboard = lazy(() => import('./pages/RealtimeDashboard.jsx').then(m => ({ default: m.RealtimeDashboard })).catch(() => fallback));
+const TemplateManager = lazy(() => import('./pages/TemplateManager.jsx').then(m => ({ default: m.TemplateManager })).catch(() => fallback));
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -120,7 +121,7 @@ function App() {
             <Route path="/api-keys" element={<ApiKeys />} />
             <Route path="/realtime" element={<RealtimeDashboard />} />
             <Route path="/ab-tests" element={<ABTests />} />
-            <Route path="/scheduled-exports" element={<ScheduledExports />} />
+            <Route path="/template-manager" element={<TemplateManager />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
           </ErrorBoundary>

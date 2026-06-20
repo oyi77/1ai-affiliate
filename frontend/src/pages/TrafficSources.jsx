@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -27,7 +28,7 @@ export function TrafficSources() {
   const [syncingId, setSyncingId] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: sources, isLoading } = useQuery({
+  const { data: sources, isLoading } = useSafeQuery({
     queryKey: ['traffic-sources'],
     queryFn: async () => {
       const res = await api.get('/api/admin/traffic-sources');

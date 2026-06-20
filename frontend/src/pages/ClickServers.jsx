@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -16,11 +17,12 @@ export function ClickServers() {
 
   const queryClient = useQueryClient();
 
-  const { data: servers, isLoading } = useQuery({
+  const { data: servers, isLoading } = useSafeQuery({
     queryKey: ['click-servers'],
     queryFn: async () => {
       const response = await api.get('/api/admin/clickservers');
-      return response.data?.data ?? response.data
+      const raw = response.data?.data ?? response.data;
+      return Array.isArray(raw) ? raw : (raw?.domains ?? []);
     },
   });
 
@@ -30,6 +32,9 @@ export function ClickServers() {
       queryClient.invalidateQueries(['click-servers']);
       setModalOpen(false);
       setFormData({ url: '', name: '', active: true });
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 
@@ -86,7 +91,7 @@ export function ClickServers() {
         <div className="flex items-center gap-2 text-slate-400">
           <Calendar className="w-4 h-4" />
           <span className="text-sm">
-            {row.original.created_at ? new Date(row.original.created_at).toLocaleDateString() : 'N/A'}
+            {row.original.created_at ? new Date(Number(row.original.created_at) * 1000).toLocaleDateString() : 'N/A'}
           </span>
         </div>
       ),

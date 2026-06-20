@@ -10,7 +10,7 @@ export function useClicks(limit = 5) {
     queryKey: ['clicks', limit],
     queryFn: async () => {
       const response = await api.get(`/api/admin/clicks?limit=${limit}&page=1`);
-      return response.data;
+      return response.data?.data ?? response.data ?? [];
     },
     refetchInterval: 30000,
   });

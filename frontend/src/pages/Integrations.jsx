@@ -15,8 +15,8 @@ export default function Integrations() {
 
   useEffect(() => {
     Promise.all([
-      api.get('/admin/traffic-sources/integrations').then(r => setIntegrations(r.data?.data || [])),
-      api.get('/admin/traffic-sources').then(r => setTrafficSources(r.data?.data || [])),
+      api.get('/api/admin/traffic-sources/integrations').then(r => setIntegrations(r.data?.data || [])),
+      api.get('/api/admin/traffic-sources').then(r => setTrafficSources(r.data?.data || [])),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -26,13 +26,13 @@ export default function Integrations() {
     if (!connecting) return;
     try {
       setTestResult({ status: 'testing', message: 'Testing connection...' });
-      const res = await api.post(`/admin/traffic-sources/${connecting.tsId || 0}/connect`, {
+      const res = await api.post(`/api/admin/traffic-sources/${connecting.tsId || 0}/connect`, {
         platform_type: connecting.id,
         ...credentials,
       });
       setTestResult({ status: 'success', message: `Connected: ${res.data?.account || 'OK'}` });
       // Refresh traffic sources
-      const ts = await api.get('/admin/traffic-sources');
+      const ts = await api.get('/api/admin/traffic-sources');
       setTrafficSources(ts.data?.data || []);
       setTimeout(() => { setConnecting(null); setCredentials({}); setTestResult(null); }, 1500);
     } catch (err) {
@@ -43,7 +43,7 @@ export default function Integrations() {
   const handleSync = async (tsId) => {
     setSyncing(tsId);
     try {
-      const res = await api.post(`/admin/traffic-sources/${tsId}/sync`);
+      const res = await api.post(`/api/admin/traffic-sources/${tsId}/sync`);
       alert(`Synced ${res.data?.synced || 0} rows`);
     } catch (err) {
       alert(`Sync failed: ${err.response?.data?.error || err.message}`);
@@ -131,7 +131,7 @@ export default function Integrations() {
                     <tr key={ts.id} className="border-b border-white/5">
                       <td className="py-2 px-3 text-gray-300">{int?.icon} {int?.name || ts.platform_type}</td>
                       <td className="py-2 px-3 text-gray-300">{ts.name}</td>
-                      <td className="py-2 px-3 text-gray-400">{ts.last_synced_at ? new Date(ts.last_synced_at * 1000).toLocaleString() : 'Never'}</td>
+                      <td className="py-2 px-3 text-gray-400">{ts.last_synced_at ? (typeof ts.last_synced_at === 'number' ? new Date(ts.last_synced_at * 1000) : new Date(ts.last_synced_at)).toLocaleString() : 'Never'}</td>
                       <td className="py-2 px-3 text-right">
                         <button onClick={() => handleSync(ts.id)} disabled={syncing === ts.id} className="text-indigo-400 hover:text-indigo-300 text-sm disabled:opacity-50">
                           {syncing === ts.id ? 'Syncing...' : 'Sync Now'}

@@ -1,5 +1,7 @@
+import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -16,7 +18,7 @@ export function Offers() {
   });
   const queryClient = useQueryClient();
 
-  const { data: offers, isLoading } = useQuery({
+  const { data: offers, isLoading } = useSafeQuery({
     queryKey: ['offers'],
     queryFn: async () => {
       const response = await api.get('/api/admin/offers?limit=100');
@@ -24,7 +26,7 @@ export function Offers() {
     },
   });
 
-  const { data: networks } = useQuery({
+  const { data: networks } = useSafeQuery({
     queryKey: ['networks'],
     queryFn: async () => {
       const response = await api.get('/api/admin/networks');
@@ -40,6 +42,9 @@ export function Offers() {
       queryClient.invalidateQueries(['offers']);
       setCreateModalOpen(false);
       setFormData({ name: '', payout: '', network_id: '', status: 'active' });
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 
@@ -78,7 +83,7 @@ export function Offers() {
       cell: ({ getValue }) => (
         <div className="flex items-center gap-2 text-green-success font-bold">
           <DollarSign className="w-4 h-4" />
-          {parseFloat(getValue() || 0).toFixed(2)}
+          {formatCurrency(getValue() || 0)}
         </div>
       ),
     },
@@ -105,7 +110,7 @@ export function Offers() {
       cell: ({ getValue }) => {
         const val = Number(getValue()) || 0;
         const color = val > 0.5 ? 'text-green-success' : val > 0 ? 'text-yellow-warning' : 'text-slate-500';
-        return <span className={`font-mono text-sm ${color}`}>${val.toFixed(4)}</span>;
+        return <span className={`font-mono text-sm ${color}`}>{formatCurrency(val)}</span>;
       },
     },
     {
@@ -125,7 +130,7 @@ export function Offers() {
     {
       header: 'Revenue',
       accessorKey: 'revenue',
-      cell: ({ getValue }) => <span className="text-slate-300">${(Number(getValue()) || 0).toLocaleString()}</span>,
+      cell: ({ getValue }) => <span className="text-slate-300">{formatCurrency(getValue() || 0)}</span>,
     },
   ];
 
@@ -162,7 +167,7 @@ export function Offers() {
         <GlassCard>
           <div className="text-slate-400 text-sm font-semibold mb-2">Avg Payout</div>
           <div className="text-3xl font-bold text-white">
-            ${(offers?.reduce((sum, o) => sum + parseFloat(o.payout || 0), 0) / (offers?.length || 1)).toFixed(2)}
+            {formatCurrency(offers?.length ? offers.reduce((sum, o) => sum + Number(o.payout || 0), 0) / offers.length : 0)}
           </div>
         </GlassCard>
         <GlassCard>

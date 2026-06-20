@@ -1,5 +1,6 @@
+import { formatCurrency } from '../lib/currency';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -32,7 +33,7 @@ export function ClickTracker() {
     return p.toString();
   };
 
-  const { data: clickData, isLoading } = useQuery({
+  const { data: clickData, isLoading } = useSafeQuery({
     queryKey: ['click-log', page, filters],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/clicks?${buildQuery()}`);
@@ -40,7 +41,7 @@ export function ClickTracker() {
     },
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useSafeQuery({
     queryKey: ['click-tracker-stats'],
     queryFn: async () => {
       const res = await api.get('/api/admin/stats');
@@ -108,7 +109,7 @@ export function ClickTracker() {
       header: 'Payout',
       accessorKey: 'payout',
       cell: ({ getValue }) => (
-        <span className="text-green-400 font-semibold text-sm">${(Number(getValue()) || 0).toFixed(2)}</span>
+        <span className="text-green-400 font-semibold text-sm">{formatCurrency(getValue() || 0)}</span>
       ),
     },
     {

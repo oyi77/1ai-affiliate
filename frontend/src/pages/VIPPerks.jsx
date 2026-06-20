@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { 
@@ -14,27 +14,27 @@ const tiers = [
     name: 'Starter',
     icon: Star,
     color: 'slate',
-    minRevenue: '$0',
+    minRevenue: 'Rp 0',
     features: ['Basic tracking', 'Standard support', '5 campaigns', 'Email notifications'],
   },
   {
     name: 'Pro',
     icon: Trophy,
     color: 'indigo',
-    minRevenue: '$1,000/mo',
+    minRevenue: 'Rp 15.000.000/bulan',
     features: ['Advanced analytics', 'Priority support', 'Unlimited campaigns', 'AI tools access', 'Custom domains', 'API access'],
   },
   {
     name: 'Premium',
     icon: Crown,
     color: 'yellow',
-    minRevenue: '$10,000/mo',
+    minRevenue: 'Rp 150.000.000/bulan',
     features: ['Everything in Pro', 'Dedicated account manager', 'Custom integrations', 'White-label options', 'Higher API limits', 'Early access features'],
   },
 ];
 
 export function VIPPerks() {
-  const { data: profile } = useQuery({
+  const { data: profile } = useSafeQuery({
     queryKey: ['vip-profile'],
     queryFn: async () => {
       const response = await api.get('/api/admin/vip');
@@ -96,7 +96,7 @@ export function VIPPerks() {
               </ul>
 
               {!isCurrent && (
-                <button className="w-full mt-8 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all border border-white/5">
+                <button onClick={() => alert('Contact support@1ai.aff to upgrade')} className="w-full mt-8 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all border border-white/5">
                   {tiers.indexOf(tier) > tiers.findIndex(t => t.name === currentTier) ? 'Upgrade' : 'Downgrade'}
                 </button>
               )}

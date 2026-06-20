@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
@@ -22,7 +23,7 @@ export function Domains() {
 
   const queryClient = useQueryClient();
 
-  const { data: domains, isLoading } = useQuery({
+  const { data: domains, isLoading } = useSafeQuery({
     queryKey: ['domains'],
     queryFn: async () => {
       const response = await api.get('/api/admin/domains');
@@ -36,6 +37,9 @@ export function Domains() {
       queryClient.invalidateQueries(['domains']);
       closeModal();
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const updateMutation = useMutation({
@@ -43,6 +47,9 @@ export function Domains() {
     onSuccess: () => {
       queryClient.invalidateQueries(['domains']);
       closeModal();
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 
@@ -52,6 +59,9 @@ export function Domains() {
       queryClient.invalidateQueries(['domains']);
       setDeleteConfirmOpen(false);
       setDomainToDelete(null);
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
     },
   });
 

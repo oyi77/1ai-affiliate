@@ -1,6 +1,7 @@
+import { formatCurrency } from '../lib/currency';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
@@ -17,7 +18,7 @@ export function Analytics() {
   const [range, setRange] = useState('7d');
   const [filterType] = useState('all');
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useSafeQuery({
     queryKey: ['analytics-stats', range],
     queryFn: async () => {
       const response = await api.get(`/api/admin/stats?range=${range}`);
@@ -25,7 +26,7 @@ export function Analytics() {
     },
   });
 
-  const { data: report, isLoading: reportLoading } = useQuery({
+  const { data: report, isLoading: reportLoading } = useSafeQuery({
     queryKey: ['analytics-report', range, filterType],
     queryFn: async () => {
       const response = await api.get(`/api/admin/reports?range=${range}&type=${filterType}`);
@@ -64,13 +65,13 @@ export function Analytics() {
       accessorKey: 'epc',
       cell: ({ row }) => {
         const epc = (row.original.revenue / (row.original.clicks || 1)).toFixed(2);
-        return <span className="text-green-success font-semibold">${epc}</span>;
+        return <span className="text-green-success font-semibold">{formatCurrency(epc)}</span>;
       },
     },
     {
       header: 'Revenue',
       accessorKey: 'revenue',
-      cell: ({ getValue }) => <span className="text-white font-bold">${(getValue() || 0).toLocaleString()}</span>,
+      cell: ({ getValue }) => <span className="text-white font-bold">{formatCurrency(getValue() || 0)}</span>,
     },
   ];
 
@@ -147,31 +148,28 @@ export function Analytics() {
               <PieChartIcon className="w-4 h-4 text-slate-500" />
             </div>
             <div className="space-y-4">
-              {[
-                { name: 'Facebook Ads', val: 45, color: 'bg-blue' },
-                { name: 'Google Search', val: 32, color: 'bg-green-success' },
-                { name: 'TikTok', val: 18, color: 'bg-pink' },
-                { name: 'Other', val: 5, color: 'bg-slate-600' },
-              ].map(source => (
+              {stats?.topSources ? stats.topSources.map(source => (
                 <div key={source.name} className="space-y-1.5">
                   <div className="flex justify-between text-xs font-semibold">
                     <span className="text-slate-300">{source.name}</span>
                     <span className="text-white">{source.val}%</span>
                   </div>
                   <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden">
-                    <div className={`h-full ${source.color} rounded-full`} style={{ width: `${source.val}%` }} />
+                    <div className={`h-full ${source.color || 'bg-indigo-primary'} rounded-full`} style={{ width: `${source.val}%` }} />
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p className="text-slate-500 text-sm">No data available</p>
+              )}
             </div>
           </GlassCard>
 
           <GlassCard className="bg-gradient-to-br from-indigo-primary/20 to-transparent">
             <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Network CR</h4>
-            <div className="text-3xl font-bold text-white mb-1">4.82%</div>
+            <div className="text-3xl font-bold text-white mb-1">{stats?.networkCr ? `${stats.networkCr}%` : '—'}</div>
             <div className="text-xs text-green-success font-semibold flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
-              +0.5% vs avg
+              {stats?.networkCrTrend ? `${stats.networkCrTrend}% vs avg` : '—'}
             </div>
           </GlassCard>
         </div>

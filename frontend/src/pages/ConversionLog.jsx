@@ -1,5 +1,7 @@
+import { formatCurrency } from '../lib/currency';
+
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -8,7 +10,7 @@ import { ShoppingCart, DollarSign, CheckCircle, Clock } from 'lucide-react';
 export function ConversionLog() {
   const [page, setPage] = useState(1);
 
-  const { data: convData, isLoading } = useQuery({
+  const { data: convData, isLoading } = useSafeQuery({
     queryKey: ['conversion-log', page],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/conversions?page=${page}&limit=50`);
@@ -57,7 +59,7 @@ export function ConversionLog() {
       header: 'Payout',
       accessorKey: 'payout_amount',
       cell: ({ getValue }) => (
-        <span className="text-green-400 font-semibold text-sm">${(Number(getValue()) || 0).toFixed(2)}</span>
+        <span className="text-green-400 font-semibold text-sm">{formatCurrency(getValue() || 0)}</span>
       ),
     },
     {
@@ -84,7 +86,7 @@ export function ConversionLog() {
         const ts = getValue();
         return (
           <span className="text-xs text-slate-400 whitespace-nowrap">
-            {ts ? new Date(ts * 1000).toLocaleString() : '—'}
+            {ts ? new Date(typeof ts === 'number' ? ts * 1000 : ts).toLocaleString() : '—'}
           </span>
         );
       },
@@ -112,7 +114,7 @@ export function ConversionLog() {
           <div className="text-slate-400 text-sm font-semibold mb-2">This Page Payout</div>
           <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-green-success" />
-            <span className="text-2xl font-bold text-white">${totalPayout.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-white">{formatCurrency(totalPayout)}</span>
           </div>
         </GlassCard>
         <GlassCard>

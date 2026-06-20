@@ -13,28 +13,31 @@ export function RealtimeDashboard() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const es = new EventSource(`/api/admin/stats/stream?token=${token}`);
-    eventSourceRef.current = es;
+    function connect() {
+      const es = new EventSource(`/api/admin/stats/stream?token=${token}`);
+      eventSourceRef.current = es;
 
-    es.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data);
-        setStats(data);
-        setConnected(true);
-        setHistory(h => [...h.slice(-59), { ...data, t: Date.now() }]); // Keep last 60 points
-      } catch {}
-    };
+      es.onopen = () => setConnected(true);
 
-    es.onerror = () => {
-      setConnected(false);
-      setTimeout(() => {
-        // Reconnect after 3s
-        const newEs = new EventSource(`/api/admin/stats/stream?token=${token}`);
-        eventSourceRef.current = newEs;
-      }, 3000);
-    };
+      es.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          setStats(data);
+          setConnected(true);
+          setHistory(h => [...h.slice(-59), { ...data, t: Date.now() }]); // Keep last 60 points
+        } catch {}
+      };
 
-    return () => { es.close(); };
+      es.onerror = () => {
+        setConnected(false);
+        es.close();
+        setTimeout(connect, 3000);
+      };
+    }
+
+    connect();
+
+    return () => { eventSourceRef.current?.close(); };
   }, []);
 
   const formatNum = (n) => Number(n || 0).toLocaleString();
@@ -92,7 +95,7 @@ export function RealtimeDashboard() {
         </GlassCard>
         <GlassCard>
           <div className="text-xs text-gray-400 mb-1">Last Update</div>
-          <div className="text-sm text-gray-300">{stats?.timestamp ? new Date(stats.timestamp * 1000).toLocaleTimeString() : '—'}</div>
+          <div className="text-sm text-gray-300">{stats?.timestamp ? new Date(stats.timestamp).toLocaleTimeString() : '—'}</div>
         </GlassCard>
       </div>
 

@@ -47,27 +47,30 @@ export function Admin() {
       setCreateModalOpen(false);
       setNewUser({ username: '', email: '', password: '', role: 'affiliate' });
     },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Operation failed');
+    },
   });
 
   const userColumns = [
     {
       header: 'User',
-      accessorKey: 'username',
+      accessorKey: 'user_name',
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-surface-3 flex items-center justify-center text-slate-400 border border-white/10">
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-semibold text-white">{row.original.username}</div>
-            <div className="text-xs text-slate-500">{row.original.email}</div>
+            <div className="font-semibold text-white">{row.original.user_name}</div>
+            <div className="text-xs text-slate-500">{row.original.user_email}</div>
           </div>
         </div>
       ),
     },
     {
       header: 'Role',
-      accessorKey: 'role',
+      accessorKey: 'user_role',
       cell: ({ getValue }) => {
         const role = getValue() || 'affiliate';
         const colors = {
@@ -84,7 +87,7 @@ export function Admin() {
     },
     {
       header: 'Status',
-      accessorKey: 'status',
+      accessorKey: 'user_active',
       cell: () => (
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-success" />
@@ -94,10 +97,10 @@ export function Admin() {
     },
     {
       header: 'Created',
-      accessorKey: 'created_at',
+      accessorKey: 'user_date_added',
       cell: ({ getValue }) => (
         <span className="text-slate-400 text-sm">
-          {getValue() ? new Date(getValue()).toLocaleDateString() : '-'}
+          {getValue() ? new Date(Number(getValue()) * 1000).toLocaleDateString() : '-'}
         </span>
       ),
     },
@@ -159,7 +162,7 @@ export function Admin() {
             <div className="text-slate-400 text-sm font-semibold">Uptime</div>
             <Server className="w-5 h-5 text-slate-500" />
           </div>
-          <div className="text-3xl font-bold text-white">99.9%</div>
+          <div className="text-3xl font-bold text-white">{systemStatus?.uptime ?? '—'}</div>
         </GlassCard>
 
         <GlassCard>
@@ -167,7 +170,7 @@ export function Admin() {
             <div className="text-slate-400 text-sm font-semibold">API Calls Today</div>
             <Shield className="w-5 h-5 text-indigo-light" />
           </div>
-          <div className="text-3xl font-bold text-indigo-light">12,847</div>
+          <div className="text-3xl font-bold text-indigo-light">{systemStatus?.apiCallsToday ?? '—'}</div>
         </GlassCard>
       </div>
 
@@ -193,7 +196,7 @@ export function Admin() {
         <GlassCard>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-white">System Health</h3>
-            <button className="p-2 text-slate-400 hover:text-white transition-colors">
+            <button onClick={() => { queryClient.invalidateQueries({ queryKey: ['system-status'] }); queryClient.invalidateQueries({ queryKey: ['users'] }); }} className="p-2 text-slate-400 hover:text-white transition-colors">
               <RefreshCw className="w-5 h-5" />
             </button>
           </div>
@@ -223,24 +226,7 @@ export function Admin() {
         <GlassCard>
           <h3 className="text-lg font-bold text-white mb-4">Recent Activity Logs</h3>
           <div className="space-y-2 font-mono text-sm">
-            {[
-              { time: '12:34:56', level: 'info', msg: 'User admin logged in' },
-              { time: '12:34:01', level: 'info', msg: 'Campaign "Summer Sale" created' },
-              { time: '12:33:45', level: 'warn', msg: 'Rate limit hit from IP 192.168.1.1' },
-              { time: '12:32:12', level: 'info', msg: 'Smartlink generated for offer #123' },
-            ].map((log, i) => (
-              <div key={i} className="flex items-center gap-4 p-2 hover:bg-white/5 rounded">
-                <span className="text-slate-500">{log.time}</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                  log.level === 'info' ? 'bg-blue/10 text-blue' : 
-                  log.level === 'warn' ? 'bg-yellow-warning/10 text-yellow-warning' : 
-                  'bg-red-error/10 text-red-error'
-                }`}>
-                  {log.level.toUpperCase()}
-                </span>
-                <span className="text-slate-300">{log.msg}</span>
-              </div>
-            ))}
+            <p className="text-slate-400 text-sm">No logs available.</p>
           </div>
         </GlassCard>
       )}

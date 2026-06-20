@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import {
@@ -12,7 +13,7 @@ export function Settings() {
   const [showApiKey, setShowApiKey] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: profile } = useQuery({
+  const { data: profile } = useSafeQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const response = await api.get('/api/admin/vip');
@@ -25,6 +26,20 @@ export function Settings() {
     website: '',
     notification_email: '',
     timezone: 'UTC',
+  });
+
+  useEffect(() => {
+    if (profile) setFormData({
+      company_name: profile.company_name || '',
+      website: profile.website || '',
+      notification_email: profile.notification_email || '',
+      timezone: profile.timezone || 'UTC',
+    });
+  }, [profile]);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const changePasswordMutation = useMutation({
+    mutationFn: (data) => api.post('/api/auth/change-password', data),
+    onSuccess: () => { setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' }); },
   });
 
   const updateMutation = useMutation({
@@ -167,7 +182,7 @@ export function Settings() {
                   </div>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 p-3 bg-surface-3 rounded-md text-sm text-indigo-light font-mono">
-                      {showApiKey ? (profile?.api_key || 'sk_live_xxxxxxxxxxxx') : '••••••••••••••••••••'}
+                      {showApiKey ? (profile?.api_key || 'No API key generated yet') : '••••••••••••••••••••'}
                     </code>
                     <button
                       onClick={() => navigator.clipboard.writeText(profile?.api_key || '')}
@@ -218,16 +233,34 @@ export function Settings() {
                   <div className="space-y-4 mt-4">
                     <input
                       type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
                       className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary"
                       placeholder="Current password"
                     />
                     <input
                       type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
                       className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary"
                       placeholder="New password"
                     />
-                    <button className="px-4 py-2 bg-surface-3 text-slate-300 rounded-lg text-sm font-bold hover:bg-surface-hover transition-all">
-                      Update Password
+                    <input
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                      className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary"
+                      placeholder="Confirm new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (passwordForm.newPassword !== passwordForm.confirmPassword) return;
+                        changePasswordMutation.mutate({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword });
+                      }}
+                      className="px-4 py-2 bg-surface-3 text-slate-300 rounded-lg text-sm font-bold hover:bg-surface-hover transition-all"
+                    >
+                      {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
                     </button>
                   </div>
                 </div>
@@ -239,6 +272,7 @@ export function Settings() {
           {activeTab === 'telegram' && <TelegramSettings />}
           {activeTab === 'payouts' && <PayoutSettings />}
 
+          {/* TODO: persist notification preferences — backend endpoint needed */}
           {activeTab === 'notifications' && (
             <GlassCard>
               <h3 className="text-xl font-bold text-white mb-6">Notification Preferences</h3>
@@ -279,7 +313,7 @@ function TelegramSettings() {
   });
   const [testResult, setTestResult] = useState(null);
 
-  const { data: config, isLoading } = useQuery({
+  const { data: config, isLoading } = useSafeQuery({
     queryKey: ['telegram-config'],
     queryFn: async () => { const r = await api.get('/api/settings/telegram'); return r.data?.data ?? r.data; },
   });
@@ -360,7 +394,7 @@ function TelegramSettings() {
               onClick={() => toggle(item.key)}
               className={`relative inline-flex items-center cursor-pointer w-11 h-6 rounded-full transition-colors ${form[item.key] ? 'bg-indigo-primary' : 'bg-surface-3'}`}
             >
-              <span className={`inline-block w-5 h-5 bg-white rounded-full transition-transform ${form[item.key] ? 'translate-x-5.5 ml-[2px]' : 'translate-x-0.5'}`} />
+              <span className={`inline-block w-5 h-5 bg-white rounded-full transition-transform ${form[item.key] ? 'translate-x-[22px] ml-[2px]' : 'translate-x-0.5'}`} />
             </button>
           </div>
         ))}
@@ -413,7 +447,7 @@ function PayoutSettings() {
     payment_schedule: 'monthly', enabled: true,
   });
 
-  const { data: rules, isLoading } = useQuery({
+  const { data: rules, isLoading } = useSafeQuery({
     queryKey: ['payout-rules'],
     queryFn: async () => { const r = await api.get('/api/settings/payouts/rules'); return r.data?.data ?? r.data; },
   });
@@ -425,7 +459,7 @@ function PayoutSettings() {
         auto_approve: !!rules.auto_approve,
         payment_method: rules.payment_method || 'bank_transfer',
         payment_schedule: rules.payment_schedule || 'monthly',
-        enabled: rules.enabled !== 0,
+        enabled: !!rules.enabled,
       });
     }
   }, [rules]);
@@ -496,7 +530,7 @@ function PayoutSettings() {
               onClick={() => setForm(f => ({ ...f, [item.key]: !f[item.key] }))}
               className={`relative inline-flex items-center cursor-pointer w-11 h-6 rounded-full transition-colors ${form[item.key] ? 'bg-indigo-primary' : 'bg-surface-3'}`}
             >
-              <span className={`inline-block w-5 h-5 bg-white rounded-full transition-transform ${form[item.key] ? 'translate-x-5.5 ml-[2px]' : 'translate-x-0.5'}`} />
+              <span className={`inline-block w-5 h-5 bg-white rounded-full transition-transform ${form[item.key] ? 'translate-x-[22px] ml-[2px]' : 'translate-x-0.5'}`} />
             </button>
           </div>
         ))}
@@ -521,7 +555,7 @@ function WhiteLabelSettings() {
     custom_domain: '', hide_branding: false,
   });
 
-  const { data: config, isLoading } = useQuery({
+  const { data: config, isLoading } = useSafeQuery({
     queryKey: ['white-label'],
     queryFn: async () => { const r = await api.get('/api/settings/white-label'); return r.data?.data ?? r.data; },
   });
@@ -614,7 +648,7 @@ function WhiteLabelSettings() {
             onClick={() => setForm(f => ({ ...f, hide_branding: !f.hide_branding }))}
             className={`relative inline-flex items-center cursor-pointer w-11 h-6 rounded-full transition-colors ${form.hide_branding ? 'bg-indigo-primary' : 'bg-surface-3'}`}
           >
-            <span className={`inline-block w-5 h-5 bg-white rounded-full transition-transform ${form.hide_branding ? 'translate-x-5.5 ml-[2px]' : 'translate-x-0.5'}`} />
+            <span className={`inline-block w-5 h-5 bg-white rounded-full transition-transform ${form.hide_branding ? 'translate-x-[22px] ml-[2px]' : 'translate-x-0.5'}`} />
           </button>
         </div>
 

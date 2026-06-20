@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import { motion } from 'framer-motion';
 import { GitBranch, Layers, BarChart3, Calendar, TrendingUp } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import api from '../lib/api';
+import { formatCurrency } from '../lib/currency';
 
 const MODELS = [
   { value: 'first', label: 'First Touch', icon: GitBranch, desc: 'Credits the first interaction' },
@@ -34,7 +35,7 @@ export function AttributionView() {
   const [dateFrom, setDateFrom] = useState(defaults.from);
   const [dateTo, setDateTo] = useState(defaults.to);
 
-  const { data: results = [], isLoading } = useQuery({
+  const { data: results = [], isLoading } = useSafeQuery({
     queryKey: ['attribution-view', model, dateFrom, dateTo],
     queryFn: async () => {
       const { data } = await api.get('/api/admin/reports/attribution', {
@@ -82,7 +83,7 @@ export function AttributionView() {
         header: 'Revenue',
         cell: ({ getValue }) => (
           <span className="text-white font-bold">
-            ${Number(getValue() || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            {formatCurrency(getValue() || 0)}
           </span>
         ),
       },
@@ -189,7 +190,7 @@ export function AttributionView() {
           <p className="text-2xl font-bold text-white">
             {isLoading
               ? '—'
-              : `$${totals.revenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              : formatCurrency(totals.revenue)}
           </p>
         </GlassCard>
       </div>
@@ -248,14 +249,14 @@ export function AttributionView() {
                       >
                         {pct > 15 && (
                           <span className="text-[10px] font-bold text-white">
-                            ${rev.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            {formatCurrency(rev)}
                           </span>
                         )}
                       </motion.div>
                     </div>
                     {pct <= 15 && (
                       <span className="text-xs text-slate-400 w-16 text-right shrink-0">
-                        ${rev.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        {formatCurrency(rev)}
                       </span>
                     )}
                   </motion.div>

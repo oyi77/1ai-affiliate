@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
@@ -29,7 +29,7 @@ const MODELS = [
 ];
 
 export function Attribution() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useSafeQuery({
     queryKey: ['attribution-stats'],
     queryFn: async () => {
       const res = await api.get('/api/admin/stats');

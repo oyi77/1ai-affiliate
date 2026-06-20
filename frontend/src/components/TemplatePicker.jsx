@@ -20,7 +20,11 @@ export default function TemplatePicker({ entityType, onSubmit, title, children }
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    api.get(`/templates/${entityType}`).then(r => {
+    // Landing pages use the dedicated /api/templates/landing endpoint
+    const url = entityType === 'landing-pages'
+      ? '/api/templates/landing'
+      : `/templates/${entityType}`;
+    api.get(url).then(r => {
       setTemplates(r.data?.data || []);
     }).finally(() => setLoading(false));
   }, [entityType, open]);

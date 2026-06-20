@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Calendar, FileText, Download, Filter } from 'lucide-react';
+import { formatCurrency } from '../lib/currency';
 
 const DATE_PRESETS = [
   { label: 'Today', value: 'today' },
@@ -25,7 +26,7 @@ export function Reports() {
   const [reportType, setReportType] = useState('summary');
   const [generated, setGenerated] = useState(false);
 
-  const { data: reportRows = [], isLoading, refetch } = useQuery({
+  const { data: reportRows = [], isLoading, refetch } = useSafeQuery({
     queryKey: ['reports', range, reportType],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports?range=${range}&type=${reportType}`);
@@ -63,7 +64,7 @@ export function Reports() {
       header: 'Revenue',
       accessorKey: 'revenue',
       cell: ({ getValue }) => (
-        <span className="text-white font-bold">${(getValue() || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+        <span className="text-white font-bold">{formatCurrency(getValue() || 0)}</span>
       ),
     },
     {
@@ -71,7 +72,7 @@ export function Reports() {
       accessorKey: 'epc',
       cell: ({ row }) => {
         const epc = row.original.revenue / (row.original.clicks || 1);
-        return <span className="text-green-success font-semibold">${epc.toFixed(2)}</span>;
+        return <span className="text-green-success font-semibold">{formatCurrency(epc)}</span>;
       },
     },
     {
