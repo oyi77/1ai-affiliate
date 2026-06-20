@@ -1,4 +1,5 @@
 const C = require('../utils/constants');
+const settings = require('../services/settingsService');
 const pool = require('../db/mysql');
 const { generateToken } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
@@ -153,9 +154,9 @@ async function forgotPassword(req, res) {
           secure: process.env.SMTP_SECURE === 'true',
           auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
         });
-        const baseUrl = process.env.APP_URL || 'https://affiliate.berkahkarya.org';
+        const baseUrl = `https://${await settings.get('app_domain')}`;
         await transporter.sendMail({
-          from: process.env.SMTP_FROM || 'noreply@berkahkarya.org',
+          from: await settings.get('noreply_email'),
           to: user.user_email,
           subject: 'Password Reset — 1ai-Affiliate',
           text: `Click this link to reset your password: ${baseUrl}/pass-reset.php?uid=${user.user_id}&key=${resetKey}\n\nThis link expires in 3 days. If you didn't request this, ignore this email.`,

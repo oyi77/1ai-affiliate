@@ -4,9 +4,10 @@ import { DollarSign, Calendar, TrendingUp } from 'lucide-react';
 import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { GlassCard } from '../components/ui/GlassCard';
+import { ErrorState } from '../components/ErrorState';
 
 export function Commissions() {
-  const { data: commissions, isLoading } = useSafeQuery({
+  const { data: commissions, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['commissions'],
     queryFn: async () => {
       const { data } = await api.get('/api/admin/commissions?limit=100');
@@ -65,6 +66,7 @@ export function Commissions() {
     }
   ];
 
+  if (isError && (!commissions || (Array.isArray(commissions) && !commissions.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div>

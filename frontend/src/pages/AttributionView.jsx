@@ -6,6 +6,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import api from '../lib/api';
 import { formatCurrency } from '../lib/currency';
+import { ErrorState } from '../components/ErrorState';
 
 const MODELS = [
   { value: 'first', label: 'First Touch', icon: GitBranch, desc: 'Credits the first interaction' },
@@ -35,7 +36,7 @@ export function AttributionView() {
   const [dateFrom, setDateFrom] = useState(defaults.from);
   const [dateTo, setDateTo] = useState(defaults.to);
 
-  const { data: results = [], isLoading } = useSafeQuery({
+  const { data: results = [], isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['attribution-view', model, dateFrom, dateTo],
     queryFn: async () => {
       const { data } = await api.get('/api/admin/reports/attribution', {
@@ -114,6 +115,7 @@ export function AttributionView() {
 
   const mc = modelColor(model);
 
+  if (isError && (!results || (Array.isArray(results) && !results.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <motion.div
       className="space-y-8"

@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Plus
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Poster() {
   const queryClient = useQueryClient();
@@ -25,7 +26,7 @@ export function Poster() {
     scheduledTime: ''
   });
 
-  const { data: queueData, isLoading } = useSafeQuery({
+  const { data: queueData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['poster-queue'],
     queryFn: async () => {
       const r = await api.get('/api/poster/queue?limit=50');
@@ -161,6 +162,7 @@ export function Poster() {
     },
   ];
 
+  if (isError && (!queueData || (Array.isArray(queueData) && !queueData.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="p-3 bg-yellow-warning/10 border border-yellow-warning/20 rounded-lg text-yellow-warning text-sm">

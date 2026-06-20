@@ -7,6 +7,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Plus, Gift, DollarSign, Network, Download } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Offers() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -18,7 +19,7 @@ export function Offers() {
   });
   const queryClient = useQueryClient();
 
-  const { data: offers, isLoading } = useSafeQuery({
+  const { data: offers, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['offers'],
     queryFn: async () => {
       const response = await api.get('/api/admin/offers?limit=100');
@@ -156,6 +157,7 @@ export function Offers() {
     a.click();
     URL.revokeObjectURL(url);
   };
+  if (isError && (!offers || (Array.isArray(offers) && !offers.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">

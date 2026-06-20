@@ -9,6 +9,7 @@ import { Modal } from '../components/ui/Modal';
 import {
   Plus, Eye, Pencil, Trash2, Copy, Globe, Lock, X, Save, FileText,
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const CATEGORIES = [
   { id: 'sweepstakes', label: 'Sweepstakes', color: 'bg-emerald-500/20 text-emerald-400' },
@@ -82,6 +83,7 @@ function TemplateEditorModal({ open, onOpenChange, template, onSave }) {
 
   const inputBase = 'w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors';
 
+  if (isError && (!templates || (Array.isArray(templates) && !templates.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <Modal open={open} onOpenChange={onOpenChange} title={template ? 'Edit Template' : 'Create Template'} size="xl">
       <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
@@ -199,7 +201,7 @@ export function TemplateManager() {
   const [editTemplate, setEditTemplate] = useState(null);
   const [previewTemplate, setPreviewTemplate] = useState(null);
 
-  const { data: templates = [], isLoading } = useSafeQuery({
+  const { data: templates = [], isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['admin-templates'],
     queryFn: async () => {
       const res = await api.get('/api/templates/landing');

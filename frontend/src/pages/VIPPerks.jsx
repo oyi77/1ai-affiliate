@@ -1,3 +1,4 @@
+import { useSettings } from '../hooks/useSettings';
 import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -8,6 +9,7 @@ import {
   Zap, 
   Check
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const tiers = [
   {
@@ -34,7 +36,9 @@ const tiers = [
 ];
 
 export function VIPPerks() {
-  const { data: profile } = useSafeQuery({
+  const { settings } = useSettings();
+  const supportEmail = settings.support_email || 'support@berkahkarya.org';
+  const { data: profile, isError, error, refetch } = useSafeQuery({
     queryKey: ['vip-profile'],
     queryFn: async () => {
       const response = await api.get('/api/admin/vip');
@@ -44,6 +48,7 @@ export function VIPPerks() {
 
   const currentTier = profile?.tier || 'Starter';
 
+  if (isError && (!profile || (Array.isArray(profile) && !profile.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -96,7 +101,7 @@ export function VIPPerks() {
               </ul>
 
               {!isCurrent && (
-                <button onClick={() => alert('Contact support@1ai.aff to upgrade')} className="w-full mt-8 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all border border-white/5">
+                <button onClick={() => alert(`Contact ${supportEmail} to upgrade`)} className="w-full mt-8 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all border border-white/5">
                   {tiers.indexOf(tier) > tiers.findIndex(t => t.name === currentTier) ? 'Upgrade' : 'Downgrade'}
                 </button>
               )}

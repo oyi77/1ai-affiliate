@@ -6,6 +6,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { StatCard } from '../components/ui/StatCard';
 import { DollarSign, ShoppingCart, TrendingUp, TrendingDown, FileText, Download } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 function fmtRp(n) {
   const val = Number(n) || 0;
@@ -26,7 +27,7 @@ export function LaporanOrder() {
   const [dateFrom, setDateFrom] = useState(daysAgo(30));
   const [dateTo, setDateTo] = useState(today());
 
-  const { data: reportData, isLoading } = useSafeQuery({
+  const { data: reportData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['laporan-order', dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({ date_from: dateFrom, date_to: dateTo });
@@ -111,6 +112,7 @@ export function LaporanOrder() {
     },
   ];
 
+  if (isError && (!reportData || (Array.isArray(reportData) && !reportData.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div>

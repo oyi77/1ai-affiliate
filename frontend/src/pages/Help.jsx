@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSettings } from '../hooks/useSettings';
 import { GlassCard } from '../components/ui/GlassCard';
 import { 
   BookOpen, 
@@ -33,6 +34,11 @@ const faqs = [
 ];
 
 export function Help() {
+  const { settings } = useSettings();
+  const supportEmail = settings.support_email || 'support@berkahkarya.org';
+  const statusUrl = settings.status_page_url || 'https://status.berkahkarya.org';
+  const changelogUrl = settings.changelog_url || 'https://changelog.berkahkarya.org';
+  const communityUrl = settings.community_url || 'https://community.berkahkarya.org';
   const [openFaq, setOpenFaq] = useState(null);
 
   return (
@@ -45,13 +51,13 @@ export function Help() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <GlassCard className="cursor-pointer group" onClick={() => window.location.href = '/api-docs'}>
+        <GlassCard className="cursor-pointer group" onClick={() => window.location.href = `mailto:${supportEmail}`}>
           <BookOpen className="w-8 h-8 text-indigo-light mb-4 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-2">Documentation</h3>
           <p className="text-slate-400 text-sm">Comprehensive guides and API reference</p>
         </GlassCard>
 
-        <GlassCard className="cursor-pointer group" onClick={() => window.location.href = 'mailto:support@1ai.aff'}>
+        <GlassCard className="cursor-pointer group" onClick={() => window.location.href = `mailto:${supportEmail}`}>
           <MessageCircle className="w-8 h-8 text-green-success mb-4 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-2">Live Chat</h3>
           <p className="text-slate-400 text-sm">Chat with our support team in real-time</p>
@@ -60,7 +66,7 @@ export function Help() {
         <GlassCard className="cursor-pointer group">
           <Mail className="w-8 h-8 text-yellow-warning mb-4 group-hover:scale-110 transition-transform" />
           <h3 className="text-lg font-bold text-white mb-2">Email Support</h3>
-          <p className="text-slate-400 text-sm"><a href="mailto:support@1ai.aff" className="text-yellow-warning hover:underline">support@1ai.aff</a> — 24h response time</p>
+          <p className="text-slate-400 text-sm"><a href={`mailto:${supportEmail}`} className="text-yellow-warning hover:underline">{supportEmail}</a> — 24h response time</p>
         </GlassCard>
       </div>
 
@@ -95,9 +101,9 @@ export function Help() {
         <div className="space-y-2">
           {[
             { label: 'API Documentation', href: '/api-docs' },
-            { label: 'Status Page', href: 'https://status.1ai.aff' },
-            { label: 'Changelog', href: 'https://changelog.1ai.aff' },
-            { label: 'Community Forum', href: 'https://community.1ai.aff' },
+            { label: 'Status Page', href: statusUrl },
+            { label: 'Changelog', href: changelogUrl },
+            { label: 'Community Forum', href: communityUrl },
           ].map(link => (
             <a
               key={link.label}

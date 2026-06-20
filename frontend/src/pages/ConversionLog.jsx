@@ -6,11 +6,12 @@ import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { GlassCard } from '../components/ui/GlassCard';
 import { ShoppingCart, DollarSign, CheckCircle, Clock } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function ConversionLog() {
   const [page, setPage] = useState(1);
 
-  const { data: convData, isLoading } = useSafeQuery({
+  const { data: convData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['conversion-log', page],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/conversions?page=${page}&limit=50`);
@@ -93,6 +94,7 @@ export function ConversionLog() {
     },
   ];
 
+  if (isError && (!convData || (Array.isArray(convData) && !convData.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div>

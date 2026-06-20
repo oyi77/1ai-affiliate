@@ -8,6 +8,7 @@ import {
   Webhook, Plus, Trash2, Send, Loader2, CheckCircle, XCircle,
   ToggleLeft, ToggleRight, ExternalLink, Copy,
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Webhooks() {
   const queryClient = useQueryClient();
@@ -16,7 +17,7 @@ export function Webhooks() {
   const [testResults, setTestResults] = useState({});
   const [createError, setCreateError] = useState(null);
 
-  const { data, isLoading } = useSafeQuery({
+  const { data, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['webhooks'],
     queryFn: async () => {
       const r = await api.get('/api/admin/webhooks');
@@ -74,6 +75,7 @@ export function Webhooks() {
     return new Date(ts * 1000).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   }
 
+  if (isError && (!data || (Array.isArray(data) && !data.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">

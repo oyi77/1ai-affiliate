@@ -7,13 +7,14 @@ import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
+import { ErrorState } from '../components/ErrorState';
 
 export function Earnings() {
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [selectedEarning, setSelectedEarning] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: earningsResponse, isLoading } = useSafeQuery({
+  const { data: earningsResponse, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['earnings'],
     queryFn: async () => {
       const { data } = await api.get('/api/admin/affiliates/earnings?limit=100');
@@ -120,6 +121,7 @@ export function Earnings() {
     }
   ];
 
+  if (isError && (!earningsResponse || (Array.isArray(earningsResponse) && !earningsResponse.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div>

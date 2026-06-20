@@ -6,6 +6,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Modal } from '../components/ui/Modal';
 import { FlaskConical, Plus, Trash2, Loader2, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 const STATUS_STYLES = {
   active: 'bg-emerald-500/20 text-emerald-400',
@@ -17,6 +18,7 @@ const STATUS_STYLES = {
 function BarChart({ results }) {
   const maxConversions = Math.max(...results.map((r) => r.conversions || 0), 1);
 
+  if (isError && (!tests || (Array.isArray(tests) && !tests.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-3">
       {results.map((r, i) => {
@@ -61,7 +63,7 @@ export function ABTests() {
     ],
   });
 
-  const { data: tests = [], isLoading } = useSafeQuery({
+  const { data: tests = [], isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['ab-tests'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/ab-tests');

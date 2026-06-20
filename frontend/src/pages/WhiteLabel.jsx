@@ -3,6 +3,7 @@ import { useSafeQuery } from '../hooks/useSafeQuery';
 import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Palette, Globe, ImageIcon, Save, Loader2, CheckCircle2, Eye } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const defaultConfig = {
   brand_name: '',
@@ -18,7 +19,7 @@ export function WhiteLabel() {
   const [form, setForm] = useState(defaultConfig);
   const [saved, setSaved] = useState(false);
 
-  const { data, isLoading } = useSafeQuery({
+  const { data, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['white-label'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/white-label');
@@ -49,6 +50,7 @@ export function WhiteLabel() {
     mutation.mutate(form);
   };
 
+  if (isError && (!data || (Array.isArray(data) && !data.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

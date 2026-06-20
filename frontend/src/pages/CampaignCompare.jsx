@@ -4,6 +4,7 @@ import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { BarChart3, TrendingUp, TrendingDown, Minus, Search, X } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const METRICS = [
   { key: 'clicks', label: 'Clicks', format: v => Number(v).toLocaleString() },
@@ -20,7 +21,7 @@ export function CampaignCompare() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [inputValue, setInputValue] = useState('');
 
-  const { data: campaigns, isLoading: campaignsLoading } = useSafeQuery({
+  const { data: campaigns, isLoading: campaignsLoading, isError: campErr, error: campError, refetch: refetchCamp } = useSafeQuery({
     queryKey: ['campaigns'],
     queryFn: async () => {
       const res = await api.get('/api/admin/campaigns');
@@ -29,7 +30,7 @@ export function CampaignCompare() {
   });
 
   const idsParam = selectedIds.join(',');
-  const { data: compareResult, isLoading: compareLoading, refetch } = useSafeQuery({
+  const { data: compareResult, isLoading: compareLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['campaign-compare', idsParam],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/compare?ids=${idsParam}`);
@@ -90,6 +91,7 @@ export function CampaignCompare() {
     return '';
   };
 
+  if (isError && (!campaigns || (Array.isArray(campaigns) && !campaigns.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div>

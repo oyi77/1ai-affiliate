@@ -6,6 +6,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Plus, Route, Play, Pause, Trash2, Sliders } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const GEO_OPTIONS = [
   'ID', 'MY', 'TH', 'VN', 'PH', 'SG', 'BN', 'MM', 'KH', 'LA',
@@ -30,6 +31,7 @@ function MultiSelect({ label, options, selected, onChange }) {
     );
   };
 
+  if (isError && (!rules || (Array.isArray(rules) && !rules.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-2">
       <label className="text-xs font-bold text-slate-400 uppercase">{label}</label>
@@ -76,7 +78,7 @@ export function TrafficRules() {
   });
   const queryClient = useQueryClient();
 
-  const { data: rules, isLoading } = useSafeQuery({
+  const { data: rules, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['traffic-rules'],
     queryFn: async () => {
       const res = await api.get('/api/admin/traffic-rules');

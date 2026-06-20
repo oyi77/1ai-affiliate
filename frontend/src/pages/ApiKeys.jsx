@@ -5,6 +5,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Modal } from '../components/ui/Modal';
 import { Key, Plus, Trash2, Copy, Loader2, CheckCircle2 } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 const SCOPE_OPTIONS = [
   { value: 'read', label: 'Read' },
@@ -26,7 +27,7 @@ export function ApiKeys() {
   const [newKey, setNewKey] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const { data: keys = [], isLoading } = useSafeQuery({
+  const { data: keys = [], isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['api-keys'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/api-keys');
@@ -78,6 +79,7 @@ export function ApiKeys() {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  if (isError && (!keys || (Array.isArray(keys) && !keys.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

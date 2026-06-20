@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { SlideOver } from '../components/ui/SlideOver';
 import { Radio, Plus, Globe, Settings, Check, RefreshCw, Link2, Loader2 } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 const TEMPLATES = [
   { id: 'meta', label: 'Meta Ads', icon: '📘', platform_type: 'meta', cost_model: 'CPC', desc: 'Facebook & Instagram ads' },
@@ -28,7 +29,7 @@ export function TrafficSources() {
   const [syncingId, setSyncingId] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: sources, isLoading } = useSafeQuery({
+  const { data: sources, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['traffic-sources'],
     queryFn: async () => {
       const res = await api.get('/api/admin/traffic-sources');
@@ -197,6 +198,7 @@ export function TrafficSources() {
     },
   ];
 
+  if (isError && (!sources || (Array.isArray(sources) && !sources.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

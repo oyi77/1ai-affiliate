@@ -8,6 +8,7 @@ import {
   MousePointerClick, TrendingUp, DollarSign, Clock, CheckCircle,
   Link as LinkIcon, Copy, Loader2,
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const fmt = (v) => formatIDR(v || 0);
 
@@ -33,17 +34,17 @@ const earningColumns = [
 ];
 
 export function AffiliateDashboard() {
-  const { data: stats, isLoading: loadingStats } = useSafeQuery({
+  const { data: stats, isLoading: loadingStats, isError: errorStats, error: statsError, refetch: refetchStats } = useSafeQuery({
     queryKey: ['affiliate-stats'],
     queryFn: async () => { const r = await api.get('/api/affiliate/stats'); return r.data?.data ?? r.data; },
   });
 
-  const { data: links, isLoading: loadingLinks } = useSafeQuery({
+  const { data: links, isLoading: loadingLinks, isError: errorLinks, error: linksError, refetch: refetchLinks } = useSafeQuery({
     queryKey: ['affiliate-links'],
     queryFn: async () => { const r = await api.get('/api/affiliate/links'); return r.data?.data ?? r.data; },
   });
 
-  const { data: earnings, isLoading: loadingEarnings } = useSafeQuery({
+  const { data: earnings, isLoading: loadingEarnings, isError: errorEarnings, error: earningsError, refetch: refetchEarnings } = useSafeQuery({
     queryKey: ['affiliate-earnings'],
     queryFn: async () => { const r = await api.get('/api/affiliate/earnings'); return r.data?.data ?? r.data; },
   });
@@ -53,6 +54,7 @@ export function AffiliateDashboard() {
     navigator.clipboard.writeText(`${base}/go/${slug}`);
   };
 
+  if (isError && (!stats || (Array.isArray(stats) && !stats.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div>

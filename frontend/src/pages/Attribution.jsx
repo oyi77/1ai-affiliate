@@ -3,6 +3,7 @@ import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
 import { BarChart3, Layers, MousePointer, GitBranch } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const MODELS = [
   {
@@ -29,7 +30,7 @@ const MODELS = [
 ];
 
 export function Attribution() {
-  const { data: stats, isLoading } = useSafeQuery({
+  const { data: stats, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['attribution-stats'],
     queryFn: async () => {
       const res = await api.get('/api/admin/stats');
@@ -46,6 +47,7 @@ export function Attribution() {
     return stats.attribution_models.some((m) => m.id === modelId && m.active);
   };
 
+  if (isError && (!stats || (Array.isArray(stats) && !stats.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       {/* Header */}

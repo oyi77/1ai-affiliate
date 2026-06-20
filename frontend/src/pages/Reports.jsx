@@ -5,6 +5,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Calendar, FileText, Download, Filter } from 'lucide-react';
 import { formatCurrency } from '../lib/currency';
+import { ErrorState } from '../components/ErrorState';
 
 const DATE_PRESETS = [
   { label: 'Today', value: 'today' },
@@ -26,7 +27,7 @@ export function Reports() {
   const [reportType, setReportType] = useState('summary');
   const [generated, setGenerated] = useState(false);
 
-  const { data: reportRows = [], isLoading, refetch } = useSafeQuery({
+  const { data: reportRows = [], isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['reports', range, reportType],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports?range=${range}&type=${reportType}`);
@@ -107,6 +108,7 @@ export function Reports() {
     URL.revokeObjectURL(url);
   };
 
+  if (isError && (!reportRows || (Array.isArray(reportRows) && !reportRows.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       {/* Header */}

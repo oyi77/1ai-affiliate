@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const pool = require('../db/mysql');
+const settings = require('../services/settingsService');
 
 const tripayConfig = {
   apiKey: process.env.TRIPAY_API_KEY,
@@ -27,8 +28,7 @@ async function createTransaction(req, res) {
       amount: parseInt(amount),
       customer_name: req.user.email || 'User',
       customer_email: req.user.email,
-      order_items: [{ sku: 'SUB', name: 'Subscription', price: parseInt(amount), quantity: 1 }],
-      return_url: process.env.PAYMENT_RETURN_URL || 'https://1ai-affiliate.fly.dev/payment/success',
+      return_url: process.env.PAYMENT_RETURN_URL || `https://${await settings.get('app_domain')}/payment/success`,
       expired_time: Math.floor(Date.now() / 1000) + 86400,
       signature,
     };

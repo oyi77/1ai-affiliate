@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useSettings } from '../hooks/useSettings';
 import { useMutation, useQueryClient} from '@tanstack/react-query';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -7,8 +8,11 @@ import {
   User, Shield, Key, Bell, Save, Loader2, Copy, Eye, EyeOff,
   Send, DollarSign, MessageCircle, Palette,
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Settings() {
+  const { settings: platformSettings } = useSettings();
+  const appDomain = platformSettings.app_domain || 'affiliate.berkahkarya.org';
   const [activeTab, setActiveTab] = useState('profile');
   const [showApiKey, setShowApiKey] = useState(false);
   const [notifPrefs, setNotifPrefs] = useState({
@@ -82,6 +86,7 @@ export function Settings() {
     { id: 'notifications', name: 'Notifications', icon: Bell },
   ];
 
+  if (isError && (!profile || (Array.isArray(profile) && !profile.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div>
@@ -217,7 +222,7 @@ export function Settings() {
                   <h4 className="text-sm font-bold text-white mb-2">Postback URL</h4>
                   <p className="text-xs text-slate-400 mb-3">Configure this URL in your affiliate network to receive conversion callbacks</p>
                   <code className="block p-3 bg-surface-3 rounded-md text-sm text-green-success font-mono break-all">
-                    https://go.1ai.aff/postback?aff_id={'{affiliate_id}'}&payout={'{payout}'}&status={'{status}'}
+                    https://{appDomain}/postback?aff_id={'{affiliate_id}'}&payout={'{payout}'}&status={'{status}'}
                   </code>
                 </div>
 
@@ -225,7 +230,7 @@ export function Settings() {
                   <h4 className="text-sm font-bold text-white mb-2">Webhook Endpoint</h4>
                   <p className="text-xs text-slate-400 mb-3">Real-time event notifications</p>
                   <code className="block p-3 bg-surface-3 rounded-md text-sm text-blue font-mono break-all">
-                    https://api.1ai.aff/webhooks/incoming
+                    https://{appDomain}/webhooks/incoming
                   </code>
                 </div>
               </div>
@@ -349,7 +354,7 @@ function TelegramSettings() {
   });
   const [testResult, setTestResult] = useState(null);
 
-  const { data: config, isLoading } = useSafeQuery({
+  const { data: config, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['telegram-config'],
     queryFn: async () => { const r = await api.get('/api/settings/telegram'); return r.data?.data ?? r.data; },
   });
@@ -483,7 +488,7 @@ function PayoutSettings() {
     payment_schedule: 'monthly', enabled: true,
   });
 
-  const { data: rules, isLoading } = useSafeQuery({
+  const { data: rules, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['payout-rules'],
     queryFn: async () => { const r = await api.get('/api/settings/payouts/rules'); return r.data?.data ?? r.data; },
   });
@@ -591,7 +596,7 @@ function WhiteLabelSettings() {
     custom_domain: '', hide_branding: false,
   });
 
-  const { data: config, isLoading } = useSafeQuery({
+  const { data: config, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['white-label'],
     queryFn: async () => { const r = await api.get('/api/settings/white-label'); return r.data?.data ?? r.data; },
   });

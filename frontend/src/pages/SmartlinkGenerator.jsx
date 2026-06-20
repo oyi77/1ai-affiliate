@@ -12,6 +12,10 @@ import {
   QrCode,
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
+import api from '../lib/api';
+import { useMutation } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useSettings } from '../hooks/useSettings';
 
 const steps = [
   { id: 1, name: 'Offer', icon: Target },
@@ -21,15 +25,34 @@ const steps = [
 ];
 
 export function SmartlinkGenerator() {
+  const { settings } = useSettings();
+  const smartlinkDomain = settings.smartlink_domain || 'go.berkahkarya.org';
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    offer: '',
+    offerId: '',
+    offerName: '',
     landingPage: '',
     domain: '',
     path: '',
     params: '',
   });
 
+  const { data: offers = [] } = useSafeQuery({
+    queryKey: ['offers-smartlink'],
+    queryFn: async () => {
+      const r = await api.get('/api/admin/offers?limit=50&status=active');
+      return r.data?.data ?? r.data ?? [];
+    },
+  });
+
+  const [qrVisible, setQrVisible] = useState(false);
+
+  const generateMutation = useMutation({
+    mutationFn: () => api.post('/api/smartlink/generate', {
+      offer_id: formData.offerId || null,
+    }),
+    onSuccess: () => setStep(4),
+  });
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
@@ -41,18 +64,24 @@ export function SmartlinkGenerator() {
             <h3 className="text-xl font-semibold text-white">Select Offer</h3>
             <p className="text-slate-400">Choose the offer you want to promote with this smartlink.</p>
             <div className="space-y-3">
-              {['iPhone 15 Pro - Sweepstakes', 'Weight Loss Supplement - VSL', 'Casino Welcome Bonus - EU'].map(offer => (
+              {offers.length === 0 && (
+                <p className="text-slate-500 text-sm">No active offers found. Create an offer first.</p>
+              )}
+              {offers.map(offer => (
                 <button
-                  key={offer}
-                  onClick={() => setFormData({ ...formData, offer })}
+                  key={offer.id}
+                  onClick={() => setFormData({ ...formData, offerId: offer.id, offerName: offer.name })}
                   className={`w-full p-4 rounded-xl border transition-all text-left flex items-center justify-between ${
-                    formData.offer === offer 
-                      ? 'bg-indigo-primary/20 border-indigo-primary text-white shadow-glow' 
+                    formData.offerId === offer.id
+                      ? 'bg-indigo-primary/20 border-indigo-primary text-white shadow-glow'
                       : 'bg-black/20 border-white/5 text-slate-400 hover:border-white/20'
                   }`}
                 >
-                  <span className="font-medium">{offer}</span>
-                  {formData.offer === offer && <CheckCircle2 className="w-5 h-5 text-indigo-light" />}
+                  <div>
+                    <span className="font-medium">{offer.name}</span>
+                    <span className="ml-2 text-xs text-slate-500">{offer.type} · {offer.payout_currency}</span>
+                  </div>
+                  {formData.offerId === offer.id && <CheckCircle2 className="w-5 h-5 text-indigo-light" />}
                 </button>
               ))}
             </div>
@@ -99,8 +128,8 @@ export function SmartlinkGenerator() {
                   value={formData.domain}
                   onChange={e => setFormData({ ...formData, domain: e.target.value })}
                 >
-                  <option value="go.1ai.aff">go.1ai.aff (Default)</option>
-                  <option value="click.mybrand.com">click.mybrand.com</option>
+                  <option value="">{smartlinkDomain} (Default)</option>
+                  <option value={smartlinkDomain}>{smartlinkDomain}</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -120,7 +149,8 @@ export function SmartlinkGenerator() {
           </div>
         );
       case 4: {
-        const finalUrl = `https://${formData.domain || 'go.1ai.aff'}/${formData.path || 'track'}?offer_id=123`;
+        const finalUrl = generateMutation.data?.data?.url || generateMutation.data?.data?.short_url || `https://${formData.domain || smartlinkDomain}/${formData.path || 'track'}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(finalUrl)}`;
         return (
           <div className="space-y-8 py-4 text-center">
             <div className="mx-auto w-16 h-16 rounded-full bg-green-success/20 flex items-center justify-center">
@@ -140,19 +170,24 @@ export function SmartlinkGenerator() {
               </div>
               
               <div className="flex items-center justify-center gap-6">
-                <button disabled title="Coming soon" className="flex flex-col items-center gap-2 text-slate-400 opacity-50 cursor-not-allowed transition-all">
+                <button onClick={() => setQrVisible(!qrVisible)} className="flex flex-col items-center gap-2 text-slate-400 hover:text-white transition-all">
                   <div className="p-3 bg-surface-3 rounded-lg border border-white/5">
                     <QrCode className="w-6 h-6" />
                   </div>
-                  <span className="text-xs font-semibold">Get QR Code</span>
+                  <span className="text-xs font-semibold">{qrVisible ? 'Hide QR Code' : 'Get QR Code'}</span>
                 </button>
-                <button disabled title="Coming soon" className="flex flex-col items-center gap-2 text-slate-400 opacity-50 cursor-not-allowed transition-all">
+                <button onClick={() => window.open(finalUrl, '_blank')} className="flex flex-col items-center gap-2 text-slate-400 hover:text-white transition-all">
                   <div className="p-3 bg-surface-3 rounded-lg border border-white/5">
                     <LinkIcon className="w-6 h-6" />
                   </div>
                   <span className="text-xs font-semibold">Test Link</span>
                 </button>
               </div>
+              {qrVisible && (
+                <div className="flex justify-center pt-2">
+                  <img src={qrUrl} alt="QR Code" width={200} height={200} className="rounded-lg" />
+                </div>
+              )}
             </div>
           </div>
         );
@@ -216,11 +251,11 @@ export function SmartlinkGenerator() {
           </button>
           
           <button
-            onClick={nextStep}
-            disabled={step === 4 || (step === 1 && !formData.offer)}
+            onClick={step === 3 ? () => generateMutation.mutate() : nextStep}
+            disabled={step === 4 || (step === 1 && !formData.offerId) || (step === 3 && generateMutation.isPending)}
             className="flex items-center gap-2 px-8 py-2 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0"
           >
-            {step === 3 ? 'Generate Link' : 'Next Step'}
+            {step === 3 ? (generateMutation.isPending ? 'Generating...' : 'Generate Link') : 'Next Step'}
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>

@@ -3,7 +3,7 @@ import { LayoutDashboard, Target, Layers, Link as LinkIcon, Users,
   Sparkles, BarChart3, Shield, Crown, HelpCircle,
   Globe, Server, TrendingUp, Eye, Clock, FileText,
   Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart, Wallet, CreditCard, Webhook,
-  Route, BarChartHorizontal, FlaskConical, PieChart, Activity } from 'lucide-react';
+  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
@@ -77,6 +77,7 @@ const navigation = [
       { name: 'Settings', icon: Settings, href: '/settings' },
       { name: 'Admin', icon: Shield, href: '/admin' },
       { name: 'Template Manager', icon: FileText, href: '/template-manager' },
+      { name: 'Migration', icon: Database, href: '/migration' },
       { name: 'API Docs', icon: FileText, href: '/api-docs' },
     ],
   },

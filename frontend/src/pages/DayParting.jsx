@@ -4,6 +4,7 @@ import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
 import { Sun, Calendar, Clock } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -28,7 +29,7 @@ function formatHour(h) {
 export function DayParting() {
   const [tooltip, setTooltip] = useState(null);
 
-  const { data: stats, isLoading } = useSafeQuery({
+  const { data: stats, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['dayparting-stats'],
     queryFn: async () => {
       const res = await api.get('/api/admin/stats');
@@ -66,6 +67,7 @@ export function DayParting() {
     });
   };
 
+  if (isError && (!stats || (Array.isArray(stats) && !stats.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       {/* Header */}

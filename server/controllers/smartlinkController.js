@@ -1,6 +1,7 @@
 const pool = require('../db/mysql');
 const { mintSmartlink, shortenUrl } = require('../services/smartlinkService');
 const fraudRuleEngine = require('../services/fraudRuleEngine');
+const settings = require('../services/settingsService');
 
 async function routeTrafficByHash(req, res) {
   const slug = req.params.hash;
@@ -29,11 +30,57 @@ async function routeTrafficByHash(req, res) {
       fraudRuleEngine.autoBlacklist(pool, ip, fraud.score, fraud.rules.map(r => r.reason).join('; '));
     }
 
-    // Determine target URL
-    let targetUrl = process.env.DEFAULT_FALLBACK_URL || 'https://berkahkarya.org';
+    // Determine target URL with geo/device targeting
+    let targetUrl = await settings.get('default_fallback_url');
+    let countryCode = null;
+    let deviceType = null;
+
+    // GeoIP lookup
+    try {
+      const { lookupIp } = require('../routes/geoip');
+      const geo = await lookupIp(ip);
+      countryCode = geo.country_code || null;
+    } catch {}
+
+    // Device detection from UA
+    const ua = (userAgent || '').toLowerCase();
+    if (ua.includes('mobile') || ua.includes('iphone') || ua.includes('android')) deviceType = 'mobile';
+    else if (ua.includes('tablet') || ua.includes('ipad')) deviceType = 'tablet';
+    else deviceType = 'desktop';
+
     if (link.offer_id) {
-      const [offers] = await pool.query('SELECT postback_url FROM 1ai_offers WHERE id = ?', [link.offer_id]);
-      if (offers.length && offers[0].postback_url) targetUrl = offers[0].postback_url;
+      // Check for geo/device-targeted landing pages
+      const [landings] = await pool.query(
+        'SELECT url, geo_targeting, device_targeting, is_default FROM 1ai_offer_landing_pages WHERE offer_id = ? ORDER BY weight DESC, is_default DESC',
+        [link.offer_id]
+      );
+
+      let matchedLanding = null;
+      for (const lp of landings) {
+        let geoMatch = !lp.geo_targeting; // no targeting = matches all
+        if (lp.geo_targeting && countryCode) {
+          try {
+            const allowed = JSON.parse(lp.geo_targeting);
+            geoMatch = Array.isArray(allowed) && allowed.map(c => c.toUpperCase()).includes(countryCode.toUpperCase());
+          } catch { geoMatch = lp.geo_targeting.toUpperCase().includes(countryCode.toUpperCase()); }
+        }
+        let devMatch = !lp.device_targeting;
+        if (lp.device_targeting && deviceType) {
+          try {
+            const allowed = JSON.parse(lp.device_targeting);
+            devMatch = Array.isArray(allowed) && allowed.includes(deviceType);
+          } catch { devMatch = lp.device_targeting.toLowerCase().includes(deviceType); }
+        }
+        if (geoMatch && devMatch) { matchedLanding = lp; break; }
+      }
+
+      if (matchedLanding) {
+        targetUrl = matchedLanding.url;
+      } else {
+        // Fall back to offer's default affiliate_url
+        const [offers] = await pool.query('SELECT affiliate_url FROM 1ai_offers WHERE id = ?', [link.offer_id]);
+        if (offers.length && offers[0].affiliate_url) targetUrl = offers[0].affiliate_url;
+      }
     }
 
     // Campaign override
@@ -43,9 +90,10 @@ async function routeTrafficByHash(req, res) {
     }
 
     // Record click (async, fire-and-forget — don't block redirect)
+    const clickId = `cl_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     pool.query(
-      'INSERT INTO 1ai_clicks (affiliate_id, offer_id, campaign_id, click_ip, user_agent, referer, country, device_type, created_at) VALUES (?,?,?,?,?,?,?,?,NOW())',
-      [link.affiliate_id, link.offer_id, link.campaign_id, req.ip || '', req.get('User-Agent') || '', req.get('Referer') || '', fraud.country || '', fraud.device || '']
+      'INSERT INTO 1ai_click_log (click_id, offer_id, affiliate_id, ip, country_code, device_type, user_agent, clicked_at) VALUES (?,?,?,?,?,?,?,UNIX_TIMESTAMP())',
+      [clickId, link.offer_id, link.affiliate_id, ip, countryCode || null, deviceType || 'unknown', userAgent]
     ).catch(err => console.error('Click insert error:', err));
 
     // Increment link click counter

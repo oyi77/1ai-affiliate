@@ -7,6 +7,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { StatCard } from '../components/ui/StatCard';
 import { DollarSign, ShoppingCart, TrendingUp, Calendar } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 function fmtRp(n) {
   const val = Number(n) || 0;
@@ -40,7 +41,7 @@ export function AnalyticHarian() {
   const dateFrom = daysAgo(range);
   const dateTo = today();
 
-  const { data: dailyData, isLoading } = useSafeQuery({
+  const { data: dailyData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['analytic-harian', dateFrom, dateTo],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/daily?date_from=${dateFrom}&date_to=${dateTo}`);
@@ -91,6 +92,7 @@ export function AnalyticHarian() {
     },
   ];
 
+  if (isError && (!dailyData || (Array.isArray(dailyData) && !dailyData.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

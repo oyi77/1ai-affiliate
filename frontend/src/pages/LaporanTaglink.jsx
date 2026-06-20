@@ -5,6 +5,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Link2 } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 function fmtRp(n) {
   const val = Number(n) || 0;
@@ -32,7 +33,7 @@ export function LaporanTaglink() {
   const [dateFrom, setDateFrom] = useState(daysAgo(30));
   const [dateTo, setDateTo] = useState(today());
 
-  const { data: reportData, isLoading } = useSafeQuery({
+  const { data: reportData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['laporan-taglink', dateFrom, dateTo],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/taglink?date_from=${dateFrom}&date_to=${dateTo}`);
@@ -92,6 +93,7 @@ export function LaporanTaglink() {
     },
   ];
 
+  if (isError && (!reportData || (Array.isArray(reportData) && !reportData.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div>

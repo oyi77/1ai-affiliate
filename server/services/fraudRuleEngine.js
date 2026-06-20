@@ -76,12 +76,21 @@ async function loadRules(pool) {
 // ── Built-in Evaluators ─────────────────────────────────────────────────────
 
 function evaluateBotUA(userAgent) {
-  if (!userAgent) return { matched: true, score: 20, reason: 'Empty user-agent' };
+  if (!userAgent) return { matched: true, score: 30, reason: 'Empty user-agent' };
   const ua = userAgent.toLowerCase();
+  // Scanners/attackers — immediate block
+  const SCANNER_SIGNS = ['nmap', 'nikto', 'nessus', 'openvas', 'sqlmap', 'dirbuster', 'gobuster', 'wfuzz', 'hydra', 'zgrab', 'masscan', 'netcraft'];
+  for (const sig of SCANNER_SIGNS) {
+    if (ua.includes(sig)) return { matched: true, score: 100, reason: `Scanner UA: ${sig}`, forceBlock: true };
+  }
+  // Headless browsers / automation — block
+  const AUTOMATION_SIGNS = ['headlesschrome', 'headless', 'phantomjs', 'selenium', 'puppeteer', 'playwright', 'cypress', 'slimerjs', 'nightmare', 'casperjs'];
+  for (const sig of AUTOMATION_SIGNS) {
+    if (ua.includes(sig)) return { matched: true, score: 90, reason: `Automation UA: ${sig}`, forceBlock: true };
+  }
+  // Generic bots / crawlers — block
   for (const sig of BOT_SIGNATURES) {
-    if (ua.includes(sig)) {
-      return { matched: true, score: 50, reason: `Bot UA signature: ${sig}` };
-    }
+    if (ua.includes(sig)) return { matched: true, score: 80, reason: `Bot UA: ${sig}`, forceBlock: true };
   }
   return { matched: false, score: 0 };
 }
@@ -196,12 +205,14 @@ async function evaluateClick(pool, params) {
 
   const matched = [];
   let totalScore = 0;
+  let forceBlock = false;
 
   // 1. Bot UA check (built-in)
   const botResult = evaluateBotUA(userAgent);
   if (botResult.matched) {
     matched.push({ name: 'bot_ua', score: botResult.score, reason: botResult.reason });
     totalScore += botResult.score;
+    if (botResult.forceBlock) forceBlock = true;
   }
 
   // 2. Empty referrer
@@ -331,7 +342,7 @@ async function evaluateClick(pool, params) {
 
   // Determine action
   let action = 'allow';
-  if (finalScore >= 80) action = 'block';
+  if (forceBlock || finalScore >= 80) action = 'block';
   else if (finalScore >= 40) action = 'review';
 
   return { score: finalScore, action, rules: matched };

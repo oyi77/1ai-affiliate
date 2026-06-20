@@ -5,6 +5,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { Modal } from '../components/ui/Modal';
 import { CalendarClock, Plus, Trash2, Loader2, FileDown, Mail, Clock } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 const REPORT_TYPES = [
   { value: 'clicks', label: 'Clicks' },
@@ -37,7 +38,7 @@ export function ScheduledExports() {
     email: '',
   });
 
-  const { data: exports = [], isLoading } = useSafeQuery({
+  const { data: exports = [], isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['scheduled-exports'],
     queryFn: async () => {
       const { data } = await api.get('/api/enterprise/scheduled-exports');
@@ -74,6 +75,7 @@ export function ScheduledExports() {
   const getReportLabel = (val) => REPORT_TYPES.find((r) => r.value === val)?.label || val;
   const getScheduleLabel = (val) => SCHEDULES.find((s) => s.value === val)?.label || val;
 
+  if (isError && (!exports || (Array.isArray(exports) && !exports.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

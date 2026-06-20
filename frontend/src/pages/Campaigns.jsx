@@ -7,13 +7,14 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Plus, Target, Play, Pause, TrendingUp, Download } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Campaigns() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', status: 'active' });
   const queryClient = useQueryClient();
 
-  const { data: campaigns, isLoading } = useSafeQuery({
+  const { data: campaigns, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['campaigns'],
     queryFn: async () => {
       const response = await api.get('/api/admin/campaigns?limit=100');
@@ -154,6 +155,7 @@ export function Campaigns() {
     a.click();
     URL.revokeObjectURL(url);
   };
+  if (isError && (!campaigns || (Array.isArray(campaigns) && !campaigns.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">

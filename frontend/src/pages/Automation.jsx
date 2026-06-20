@@ -7,6 +7,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { Zap, Plus, Play, Trash2, ToggleLeft, ToggleRight, Settings, Loader2 } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 const RULE_TYPES = [
   { value: 'auto_pause', label: 'Auto Pause', desc: 'Pause campaigns with low performance', icon: '⏸️' },
@@ -154,6 +155,7 @@ function ConfigFields({ ruleType, config, onChange }) {
 }
 
 function Field({ label, children }) {
+  if (isError && (!rules || (Array.isArray(rules) && !rules.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-1.5">
       <label className="text-xs font-bold text-slate-400 uppercase">{label}</label>
@@ -172,7 +174,7 @@ export function Automation() {
   const [formError, setFormError] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: rules, isLoading } = useSafeQuery({
+  const { data: rules, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['automation-rules'],
     queryFn: async () => {
       const res = await api.get('/api/admin/automation');

@@ -1,4 +1,5 @@
 'use strict';
+const settings = require('../services/settingsService');
 
 /**
  * Scheduled Export Service
@@ -111,7 +112,7 @@ async function sendExportEmail(to, subject, body, format) {
       auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
     });
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'noreply@berkahkarya.org',
+      from: await settings.get('noreply_email'),
       to,
       subject: `📊 ${subject}`,
       text: `Scheduled report export attached.\n\nFormat: ${format}\nSize: ${body.length} bytes`,

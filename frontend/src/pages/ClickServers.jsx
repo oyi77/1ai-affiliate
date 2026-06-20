@@ -6,6 +6,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Plus, Server, MousePointerClick, Calendar } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function ClickServers() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -17,7 +18,7 @@ export function ClickServers() {
 
   const queryClient = useQueryClient();
 
-  const { data: servers, isLoading } = useSafeQuery({
+  const { data: servers, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['click-servers'],
     queryFn: async () => {
       const response = await api.get('/api/admin/clickservers');
@@ -98,6 +99,7 @@ export function ClickServers() {
     },
   ];
 
+  if (isError && (!servers || (Array.isArray(servers) && !servers.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">

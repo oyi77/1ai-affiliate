@@ -5,6 +5,7 @@ import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { GlassCard } from '../components/ui/GlassCard';
 import { MousePointer, Radio, ShieldCheck, Filter } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 function maskIP(ip) {
   if (!ip) return '—';
@@ -33,7 +34,7 @@ export function ClickTracker() {
     return p.toString();
   };
 
-  const { data: clickData, isLoading } = useSafeQuery({
+  const { data: clickData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['click-log', page, filters],
     queryFn: async () => {
       const res = await api.get(`/api/admin/reports/clicks?${buildQuery()}`);
@@ -136,6 +137,7 @@ export function ClickTracker() {
     },
   ];
 
+  if (isError && (!clickData || (Array.isArray(clickData) && !clickData.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div>

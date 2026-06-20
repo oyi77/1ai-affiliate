@@ -7,6 +7,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { Wallet, TrendingDown, TrendingUp, Plus, Minus, Loader2, DollarSign, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 function fmtRp(n) {
   return formatIDR(n);
@@ -27,7 +28,7 @@ export function SaldoBudget() {
     },
   });
 
-  const { data: ledger, isLoading } = useSafeQuery({
+  const { data: ledger, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['balance-ledger'],
     queryFn: async () => {
       const res = await api.get('/api/admin/balance');
@@ -129,6 +130,7 @@ export function SaldoBudget() {
     },
   ];
 
+  if (isError && (!summary || (Array.isArray(summary) && !summary.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

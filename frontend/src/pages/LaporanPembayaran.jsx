@@ -7,6 +7,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { CreditCard, Plus, Loader2, DollarSign } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 function fmtRp(n) {
   return formatIDR(n);
@@ -29,7 +30,7 @@ export function LaporanPembayaran() {
   const [formError, setFormError] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: payouts, isLoading } = useSafeQuery({
+  const { data: payouts, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['shopee-payouts'],
     queryFn: async () => {
       const res = await api.get('/api/admin/advertisers/0/payouts');
@@ -115,6 +116,7 @@ export function LaporanPembayaran() {
     },
   ];
 
+  if (isError && (!payouts || (Array.isArray(payouts) && !payouts.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { SlideOver } from '../components/ui/SlideOver';
 import { Building2, Plus, Globe, Settings, Upload, FileSpreadsheet, X } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 const TEMPLATES = [
   { id: 'shopee', label: 'Shopee', icon: '🛒', platform_type: 'shopee', desc: 'Shopee Affiliate Program' },
@@ -27,7 +28,7 @@ export function Advertisers() {
   const [newAccountName, setNewAccountName] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: advertisers, isLoading } = useSafeQuery({
+  const { data: advertisers, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['advertisers'],
     queryFn: async () => {
       const res = await api.get('/api/admin/advertisers');
@@ -181,6 +182,7 @@ export function Advertisers() {
     }
   }, [detailRow, queryClient, selectedShopeeAccount, shopeeAccounts]);
 
+  if (isError && (!advertisers || (Array.isArray(advertisers) && !advertisers.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

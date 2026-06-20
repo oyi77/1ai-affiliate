@@ -13,12 +13,13 @@ import {
   PieChart as PieChartIcon,
   TrendingUp,
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Analytics() {
   const [range, setRange] = useState('7d');
   const [filterType] = useState('all');
 
-  const { data: stats } = useSafeQuery({
+  const { data: stats, isError: statsErr, error: statsError, refetch: refetchStats } = useSafeQuery({
     queryKey: ['analytics-stats', range],
     queryFn: async () => {
       const response = await api.get(`/api/admin/stats?range=${range}`);
@@ -26,7 +27,7 @@ export function Analytics() {
     },
   });
 
-  const { data: report, isLoading: reportLoading } = useSafeQuery({
+  const { data: report, isLoading: reportLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['analytics-report', range, filterType],
     queryFn: async () => {
       const response = await api.get(`/api/admin/reports?range=${range}&type=${filterType}`);
@@ -98,6 +99,7 @@ export function Analytics() {
     URL.revokeObjectURL(url);
   };
 
+  if (isError && (!stats || (Array.isArray(stats) && !stats.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

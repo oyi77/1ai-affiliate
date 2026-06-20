@@ -1,11 +1,20 @@
 import { useState } from 'react';
-import { Link as LinkIcon, Copy, CheckCircle2, QrCode } from 'lucide-react';
+import { Link as LinkIcon, Copy, CheckCircle2, QrCode, Trash2 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
+import api from '../lib/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeQuery } from '../hooks/useSafeQuery';
+import { useSettings } from '../hooks/useSettings';
+import { ErrorState } from '../components/ErrorState';
 
 export function DeepLinkGenerator() {
+  const queryClient = useQueryClient();
+  const { settings } = useSettings();
+  const deeplinkDomain = settings.deeplink_domain || 'go.berkahkarya.org';
   const [form, setForm] = useState({
-    targetUrl: 'https://example.com/offer',
+    targetUrl: 'https://shopee.co.id/product/123',
+    name: '',
     affiliateId: '',
     subid1: '',
     subid2: '',
@@ -14,25 +23,42 @@ export function DeepLinkGenerator() {
   });
   const [generatedLink, setGeneratedLink] = useState('');
   const [copied, setCopied] = useState(false);
-  const [history, setHistory] = useState([]);
   const [showQr, setShowQr] = useState(false);
 
-  const generateLink = () => {
-    const params = new URLSearchParams();
-    if (form.affiliateId) params.append('aff_id', form.affiliateId);
-    if (form.subid1) params.append('subid1', form.subid1);
-    if (form.subid2) params.append('subid2', form.subid2);
-    if (form.subid3) params.append('subid3', form.subid3);
-    if (form.subid4) params.append('subid4', form.subid4);
+  const { data: savedLinks = [] } = useSafeQuery({
+    queryKey: ['deep-links'],
+    queryFn: async () => {
+      const r = await api.get('/api/admin/deep-links?limit=50');
+      return r.data?.data ?? r.data ?? [];
+    },
+  });
 
-    // In a real app, this would be a tracking domain redirect URL
-    const link = `https://track.1ai.aff/dl?target=${encodeURIComponent(form.targetUrl)}&${params.toString()}`;
-    setGeneratedLink(link);
-    
-    setHistory(prev => [
-      { link, url: form.targetUrl, created_at: new Date().toISOString() },
-      ...prev.slice(0, 9) // Keep last 10
-    ]);
+  const createMutation = useMutation({
+    mutationFn: (data) => api.post('/api/admin/deep-links', data),
+    onSuccess: (resp) => {
+      queryClient.invalidateQueries({ queryKey: ['deep-links'] });
+      const slug = resp.data?.data?.slug;
+      if (slug) {
+        const params = new URLSearchParams();
+        if (form.affiliateId) params.append('aff_id', form.affiliateId);
+        if (form.subid1) params.append('subid1', form.subid1);
+        if (form.subid2) params.append('subid2', form.subid2);
+        if (form.subid3) params.append('subid3', form.subid3);
+        if (form.subid4) params.append('subid4', form.subid4);
+        const qs = params.toString();
+        setGeneratedLink(`https://${deeplinkDomain}/dl/${slug}${qs ? '?' + qs : ''}`);
+      }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => api.delete(`/api/admin/deep-links/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deep-links'] }),
+  });
+
+  const generateLink = () => {
+    if (!form.targetUrl) return;
+    createMutation.mutate({ target_url: form.targetUrl, name: form.name || undefined });
   };
 
   const copyToClipboard = () => {
@@ -43,42 +69,58 @@ export function DeepLinkGenerator() {
 
   const columns = [
     {
-      header: 'Target',
-      accessorKey: 'url',
+      header: 'Title',
+      accessorKey: 'title',
       cell: ({ row }) => (
-        <div className="text-slate-300 text-sm max-w-[200px] truncate">{row.original.url}</div>
+        <div className="text-slate-300 text-sm max-w-[200px] truncate">{row.original.title || 'Deep Link'}</div>
       ),
     },
     {
-      header: 'Generated Link',
-      accessorKey: 'link',
+      header: 'Target URL',
+      accessorKey: 'offer_url',
       cell: ({ row }) => (
         <div className="text-indigo-light text-xs font-mono truncate max-w-[300px]">
-          {row.original.link}
+          {row.original.offer_url}
         </div>
+      ),
+    },
+    {
+      header: 'Clicks',
+      accessorKey: 'clicks',
+      cell: ({ row }) => (
+        <div className="text-slate-400 text-xs">{Number(row.original.clicks || 0).toLocaleString()}</div>
       ),
     },
     {
       header: 'Created',
       accessorKey: 'created_at',
-      cell: ({ row }) => (
-        <div className="text-slate-400 text-xs">
-          {new Date(Number(row.original.created_at) * 1000).toLocaleTimeString()}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const ts = row.original.created_at;
+        const d = ts > 1e12 ? new Date(ts) : new Date(ts * 1000);
+        return <div className="text-slate-400 text-xs">{d.toLocaleDateString()}</div>;
+      },
     },
     {
       header: '',
       accessorKey: 'actions',
       cell: ({ row }) => (
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(row.original.link);
-          }}
-          className="text-slate-400 hover:text-white transition-colors"
-        >
-          <Copy className="w-4 h-4" />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              const slug = row.original.slug;
+              navigator.clipboard.writeText(`https://${deeplinkDomain}/dl/${slug}`);
+            }}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => deleteMutation.mutate(row.original.id)}
+            className="text-slate-400 hover:text-red-400 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -101,9 +143,20 @@ export function DeepLinkGenerator() {
               <input
                 type="url"
                 className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white font-mono text-sm"
-                placeholder="https://example.com/offer"
+                placeholder="https://shopee.co.id/product/123"
                 value={form.targetUrl}
                 onChange={(e) => setForm({ ...form, targetUrl: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase">Link Name</label>
+              <input
+                type="text"
+                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white"
+                placeholder="My Campaign Link"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
 
@@ -134,10 +187,11 @@ export function DeepLinkGenerator() {
 
             <button
               onClick={generateLink}
-              className="w-full mt-4 flex items-center justify-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light transition-all"
+              disabled={createMutation.isPending || !form.targetUrl}
+              className="w-full mt-4 flex items-center justify-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light transition-all disabled:opacity-50"
             >
               <LinkIcon className="w-5 h-5" />
-              Generate Link
+              {createMutation.isPending ? 'Creating...' : 'Generate Link'}
             </button>
           </div>
         </GlassCard>
@@ -199,11 +253,11 @@ export function DeepLinkGenerator() {
       </div>
 
       <GlassCard>
-        <h3 className="text-lg font-bold text-white mb-4">Recent History</h3>
-        {history.length > 0 ? (
-          <DataTable data={history} columns={columns} searchable={false} />
+        <h3 className="text-lg font-bold text-white mb-4">Saved Deep Links</h3>
+        {savedLinks.length > 0 ? (
+          <DataTable data={savedLinks} columns={columns} searchable={false} />
         ) : (
-          <div className="text-center py-8 text-slate-500">No links generated yet in this session.</div>
+          <div className="text-center py-8 text-slate-500">No deep links saved yet.</div>
         )}
       </GlassCard>
     </div>

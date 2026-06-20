@@ -1,6 +1,7 @@
 const pool = require('../db/mysql');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const settings = require('../services/settingsService');
 const { parsePostbackHeaders, validatePostbackUrl, normalizeInteger, isIntegerInRange } = require('./postbackController');
 
 /**
@@ -904,7 +905,7 @@ async function testConversionPixel(req, res) {
   if (!offer.id) return res.status(404).json({ error: 'Offer not found' });
 
   const testClickId = `test_${Date.now()}`;
-  const host = req.get('host') || 'localhost:3001';
+  const host = req.get('host') || await settings.get('app_domain');
   const protocol = req.protocol || 'http';
   const baseUrl = `${protocol}://${host}`;
 

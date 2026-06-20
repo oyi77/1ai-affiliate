@@ -6,6 +6,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Plus, Globe, Shield, ShieldOff, Check, Trash2, Edit2, AlertCircle } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Domains() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,7 +24,7 @@ export function Domains() {
 
   const queryClient = useQueryClient();
 
-  const { data: domains, isLoading } = useSafeQuery({
+  const { data: domains, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['domains'],
     queryFn: async () => {
       const response = await api.get('/api/admin/domains');
@@ -170,6 +171,7 @@ export function Domains() {
     },
   ];
 
+  if (isError && (!domains || (Array.isArray(domains) && !domains.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">

@@ -6,6 +6,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { StatCard } from '../components/ui/StatCard';
 import { DollarSign, ShoppingCart, TrendingUp, Target, Download } from 'lucide-react';
 import api from '../lib/api';
+import { ErrorState } from '../components/ErrorState';
 
 function fmtRp(n) {
   const val = Number(n) || 0;
@@ -51,7 +52,7 @@ export function LaporanIklan() {
     },
   });
 
-  const { data: reportData, isLoading } = useSafeQuery({
+  const { data: reportData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['laporan-iklan', dateFrom, dateTo, advertiserId, trafficSourceId],
     queryFn: async () => {
       const params = new URLSearchParams({ date_from: dateFrom, date_to: dateTo });
@@ -124,6 +125,7 @@ export function LaporanIklan() {
     },
   ];
 
+  if (isError && (!advertisers || (Array.isArray(advertisers) && !advertisers.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

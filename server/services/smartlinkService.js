@@ -1,5 +1,6 @@
 const pool = require('../db/mysql');
 const crypto = require('crypto');
+const settings = require('./settingsService');
 
 /**
  * Internal helper to mint a tracked smartlink without an HTTP request context.
@@ -15,6 +16,10 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
   if (!offerId || !affiliateId) {
     throw new Error('offerId and affiliateId are required');
   }
+
+  // Validate offer exists
+  const [offerCheck] = await pool.query('SELECT id FROM 1ai_offers WHERE id = ?', [offerId]);
+  if (!offerCheck.length) throw new Error('Offer not found: ' + offerId);
 
   // Resolve domain
   let domain = null;
@@ -45,7 +50,7 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
     const protocol = domain.ssl_enabled ? 'https' : 'http';
     smartlinkUrl = `${protocol}://${domain.domain}/go/${slug}`;
   } else {
-    const fallbackDomain = process.env.SMARTLINK_FALLBACK_DOMAIN || 'go.berkahkarya.org';
+    const fallbackDomain = await settings.get('smartlink_domain');
     smartlinkUrl = `https://${fallbackDomain}/go/${slug}`;
   }
 
@@ -80,7 +85,7 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
     slug,
     url: smartlinkUrl,
     shortUrl,
-    domain: domain?.domain || process.env.SMARTLINK_FALLBACK_DOMAIN || 'go.berkahkarya.org'
+    domain: domain?.domain || await settings.get('smartlink_domain')
   };
 }
 

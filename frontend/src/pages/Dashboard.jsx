@@ -10,6 +10,7 @@ import { useCampaigns } from '../hooks/useCampaigns';
 import { formatCurrency } from '../lib/currency';
 import { OnboardingWizard } from '../components/OnboardingWizard';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { ErrorState } from '../components/ErrorState';
 
 /**
  * Derives a 7-point sparkline from a current value and a period-over-period
@@ -43,7 +44,7 @@ export function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useStats('admin');
   const { data: clicksResult, isLoading: clicksLoading } = useClicks(5);
   const { data: campaigns, isLoading: campaignsLoading } = useCampaigns(10);
-  const { data: dailyData = [] } = useSafeQuery({
+  const { data: dailyData = [], isError, error, refetch } = useSafeQuery({
     queryKey: ['daily-stats', range],
     queryFn: async () => {
       const res = await api.get(`/api/admin/stats/daily?range=${range}`);
@@ -125,6 +126,7 @@ export function Dashboard() {
     );
   }
 
+  if (isError && (!stats || (Array.isArray(stats) && !stats.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <OnboardingWizard />

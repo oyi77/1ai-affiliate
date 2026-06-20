@@ -17,6 +17,7 @@ const cron = require('node-cron');
 const { sendDailySummaryForAllUsers } = require('./cron/telegramDailySummary');
 
 const app = express();
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 3001;
 
 // Security + observability middleware
@@ -124,10 +125,38 @@ app.use('/api/admin/automation', require('./routes/automation'));
 app.use('/api/admin/traffic-rules', require('./routes/trafficRules'));
 app.use('/api/admin/webhooks', require('./routes/webhooks'));
 app.use('/api/admin/payouts', require('./routes/payouts'));
+app.use('/api/migration', require('./routes/migration'));
+app.use('/api/admin/deep-links', require('./routes/deepLinks'));
+app.use('/api/platform', require('./routes/settingsApi'));
 // Honeypot trap — invisible link that only bots follow
 app.get('/go/honeypot/:campaignId', require('./services/fraudRuleEngine').honeypotHandler);
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
+// Deep link redirect
+app.get('/dl/:slug', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT offer_url, is_active FROM deep_link_pages WHERE slug = ? LIMIT 1',
+      [req.params.slug]
+    );
+    if (!rows.length || !rows[0].is_active) return res.status(404).send('Link not found');
+
+    // Fraud check
+    const fraudRuleEngine = require('./services/fraudRuleEngine');
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    const userAgent = req.get('User-Agent') || '';
+    const referer = req.get('Referer') || '';
+    const fraud = await fraudRuleEngine.evaluateClick(pool, { ip, userAgent, referer });
+    if (fraud.action === 'block') return res.status(403).send('Blocked');
+
+    // Record click (fire-and-forget)
+    pool.query('UPDATE deep_link_pages SET clicks = clicks + 1 WHERE slug = ?', [req.params.slug]).catch(() => {});
+    return res.redirect(302, rows[0].offer_url);
+  } catch (err) {
+    console.error('Deep link redirect error:', err);
+    return res.status(500).send('Server error');
+  }
+});
 // Health check — deep probe: checks DB connectivity + queue status
 app.get('/health', async (req, res) => {
   const checks = { status: 'ok', service: '1ai-affiliate-tracker', port: String(PORT), timestamp: new Date().toISOString(), uptime: Math.floor(process.uptime()), request_id: req.id, components: {} };

@@ -13,11 +13,12 @@ import {
   Clock,
   TrendingUp
 } from 'lucide-react';
+import { ErrorState } from '../components/ErrorState';
 
 export function Pipeline() {
   const queryClient = useQueryClient();
 
-  const { data: jobsData, isLoading } = useSafeQuery({
+  const { data: jobsData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['pipeline-jobs'],
     queryFn: async () => {
       const r = await api.get('/api/pipeline/jobs?limit=50');
@@ -126,6 +127,7 @@ export function Pipeline() {
     },
   ];
 
+  if (isError && (!jobsData || (Array.isArray(jobsData) && !jobsData.length))) return <ErrorState error={error} onRetry={refetch} />;
   return (
     <div className="space-y-8">
       <div className="p-3 bg-yellow-warning/10 border border-yellow-warning/20 rounded-lg text-yellow-warning text-sm">
