@@ -38,8 +38,11 @@ const navigation = [
   {
     label: 'Analytics',
     items: [
-      { name: 'Analytics', icon: BarChart3, href: '/analytics' },
+      { name: 'Overview', icon: BarChart3, href: '/analytics' },
       { name: 'Reports', icon: FileText, href: '/reports' },
+      { name: 'Ad Performance', icon: BarChart2, href: '/laporan-iklan' },
+      { name: 'Daily Analytics', icon: TrendingUp, href: '/analytic-harian' },
+      { name: 'Link Performance', icon: LinkIcon, href: '/laporan-taglink' },
       { name: 'Attribution', icon: TrendingUp, href: '/attribution' },
       { name: 'Click Tracker', icon: Eye, href: '/click-tracker' },
       { name: 'A/B Tests', icon: FlaskConical, href: '/ab-tests' },
@@ -51,17 +54,9 @@ const navigation = [
       { name: 'Earnings', icon: DollarSign, href: '/earnings' },
       { name: 'Commissions', icon: DollarSign, href: '/commissions' },
       { name: 'Conversion Log', icon: ShoppingCart, href: '/conversion-log' },
-    ],
-  },
-  {
-    label: 'Indonesian Reports',
-    items: [
-      { name: 'Laporan Iklan', icon: BarChart2, href: '/laporan-iklan' },
-      { name: 'Analytic Harian', icon: TrendingUp, href: '/analytic-harian' },
-      { name: 'Laporan Taglink', icon: LinkIcon, href: '/laporan-taglink' },
-      { name: 'Laporan Order', icon: ShoppingCart, href: '/laporan-order' },
-      { name: 'Laporan Pembayaran', icon: CreditCard, href: '/laporan-pembayaran' },
-      { name: 'Saldo & Budget', icon: Wallet, href: '/saldo-budget' },
+      { name: 'Orders', icon: ShoppingCart, href: '/laporan-order' },
+      { name: 'Payments', icon: CreditCard, href: '/laporan-pembayaran' },
+      { name: 'Balance & Budget', icon: Wallet, href: '/saldo-budget' },
     ],
   },
   {
