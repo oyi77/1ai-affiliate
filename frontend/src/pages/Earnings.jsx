@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, Clock, Wallet, CreditCard } from 'lucide-react';
@@ -32,13 +33,7 @@ export function Earnings() {
     },
   });
 
-  const formatRp = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const formatRp = (amount) => formatIDR(amount);
 
   const stats = {
     total: earnings.reduce((sum, e) => sum + (e.payout_amount || 0), 0),

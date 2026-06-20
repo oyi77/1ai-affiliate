@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -7,7 +8,7 @@ import { CreditCard, Plus, Loader2, DollarSign } from 'lucide-react';
 import api from '../lib/api';
 
 function fmtRp(n) {
-  return 'Rp ' + (Number(n) || 0).toLocaleString('id-ID');
+  return formatIDR(n);
 }
 
 function today() {

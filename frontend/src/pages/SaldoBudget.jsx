@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -7,7 +8,7 @@ import { Wallet, TrendingDown, TrendingUp, Plus, Minus, Loader2, DollarSign, Arr
 import api from '../lib/api';
 
 function fmtRp(n) {
-  return 'Rp ' + (Number(n) || 0).toLocaleString('id-ID');
+  return formatIDR(n);
 }
 
 export function SaldoBudget() {

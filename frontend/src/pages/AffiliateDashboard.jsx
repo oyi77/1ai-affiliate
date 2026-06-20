@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -8,7 +9,7 @@ import {
   Link as LinkIcon, Copy, Loader2,
 } from 'lucide-react';
 
-const fmt = (v) => `Rp ${Number(v || 0).toLocaleString('id-ID')}`;
+const fmt = (v) => formatIDR(v || 0);
 
 const linkColumns = [
   { accessorKey: 'slug', header: 'Slug', cell: ({ getValue }) => <code className="text-indigo-light text-sm">{getValue()}</code> },

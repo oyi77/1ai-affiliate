@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -37,7 +38,7 @@ export function RealtimeDashboard() {
   }, []);
 
   const formatNum = (n) => Number(n || 0).toLocaleString();
-  const formatRp = (n) => `Rp ${Number(n || 0).toLocaleString('id-ID')}`;
+  const formatRp = (n) => formatIDR(n || 0);
 
   // Simple sparkline from history
   const sparkline = (key, color) => {
@@ -66,7 +67,7 @@ export function RealtimeDashboard() {
         {[
           { label: 'Clicks (1h)', key: 'clicks_1h', color: '#6366f1', format: formatNum },
           { label: 'Conversions (1h)', key: 'conversions_1h', color: '#10b981', format: formatNum },
-          { label: 'Revenue (1h)', key: 'revenue_1h', color: '#f59e0b', format: formatRp },
+          { label: 'Revenue (1h)', key: 'revenue_1h', color: '#f59e0b', format: formatIDR },
           { label: 'Active Affiliates', key: 'active_affiliates', color: '#8b5cf6', format: formatNum },
         ].map(({ label, key, color, format }) => (
           <GlassCard key={key}>

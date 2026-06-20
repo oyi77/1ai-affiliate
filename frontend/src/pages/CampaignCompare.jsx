@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
@@ -7,9 +8,9 @@ import { BarChart3, TrendingUp, TrendingDown, Minus, Search, X } from 'lucide-re
 const METRICS = [
   { key: 'clicks', label: 'Clicks', format: v => Number(v).toLocaleString() },
   { key: 'conversions', label: 'Conversions', format: v => Number(v).toLocaleString() },
-  { key: 'revenue', label: 'Revenue', format: v => `Rp ${Number(v).toLocaleString('id-ID')}` },
-  { key: 'spend', label: 'Spend', format: v => `Rp ${Number(v).toLocaleString('id-ID')}` },
-  { key: 'epc', label: 'EPC', format: v => `Rp ${Number(v).toFixed(2)}` },
+  { key: 'revenue', label: 'Revenue', format: v => formatIDR(v) },
+  { key: 'spend', label: 'Spend', format: v => formatIDR(v) },
+  { key: 'epc', label: 'EPC', format: v => formatCurrency(v, 'IDR') },
   { key: 'cr', label: 'CR %', format: v => `${Number(v).toFixed(2)}%` },
   { key: 'roi', label: 'ROI %', format: v => `${Number(v).toFixed(2)}%` },
   { key: 'roas', label: 'ROAS', format: v => `${Number(v).toFixed(2)}x` },

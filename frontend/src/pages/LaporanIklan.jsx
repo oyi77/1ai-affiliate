@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -8,7 +9,7 @@ import api from '../lib/api';
 
 function fmtRp(n) {
   const val = Number(n) || 0;
-  return 'Rp ' + val.toLocaleString('id-ID');
+  return formatIDR(val);
 }
 
 function roasColor(roas) {

@@ -1,3 +1,4 @@
+import { formatCurrency, formatIDR } from "../lib/currency";
 import { useQuery } from '@tanstack/react-query';
 import { DollarSign, Calendar, TrendingUp } from 'lucide-react';
 import api from '../lib/api';
@@ -13,13 +14,7 @@ export function Commissions() {
     },
   });
 
-  const formatRp = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const formatRp = (amount) => formatIDR(amount);
 
   const totalCommissions = commissions?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0;
   
