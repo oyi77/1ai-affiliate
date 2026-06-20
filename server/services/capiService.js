@@ -43,7 +43,7 @@ async function sendMetaConversion(accessToken, pixelId, event) {
       },
       custom_data: {
         value: event.custom_data?.value || 0,
-        currency: event.custom_data?.currency || 'IDR',
+        currency: event.custom_data?.currency || 'IDR', // ponytail: ultimate fallback, overridden by traffic source config
         content_ids: event.custom_data?.content_ids || [],
       },
     }],
@@ -89,7 +89,7 @@ async function sendGoogleConversion(accessToken, customerId, conversionAction, c
       conversion_action: conversionAction,
       gclid: conversion.gclid,
       conversion_value: conversion.conversion_value || 0,
-      currency_code: conversion.currency_code || 'IDR',
+      currency_code: conversion.currency_code || 'IDR', // ponytail: ultimate fallback, overridden by traffic source config
       conversion_date_time: conversion.conversion_date_time || null,
     }],
     partial_failure: true,
@@ -202,7 +202,7 @@ async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
       },
       custom_data: {
         value: conversionData.payout || 0,
-        currency: conversionData.currency || 'IDR',
+        currency: conversionData.currency || config.currency || 'IDR',
       },
     });
   } else if (config.capi_platform === 'google' && config.customer_id && config.access_token && config.conversion_action) {
@@ -213,7 +213,7 @@ async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
       {
         gclid: conversionData.gclid || '',  // Fixed: was incorrectly mapped from fbc
         conversion_value: conversionData.payout || 0,
-        currency_code: conversionData.currency || 'IDR',
+        currency_code: conversionData.currency || config.currency || 'IDR',
       }
     );
   } else {

@@ -59,15 +59,16 @@ async function sendDailySummary(pool, userId) {
     [userId, todayStart]
   );
 
+  const { formatIDR } = require('../utils/currency');
   const msg = [
     '📊 <b>1AI Affiliate — Daily Summary</b>',
     '',
     `📅 ${new Date().toISOString().slice(0, 10)}`,
     `👆 Clicks: <b>${clicks?.total_clicks || 0}</b>`,
     `💰 Conversions: <b>${stats?.total_conversions || 0}</b>`,
-    `💵 Earnings: <b>Rp ${Number(stats?.total_earnings || 0).toLocaleString('id-ID')}</b>`,
-    `⏳ Pending: <b>Rp ${Number(stats?.pending_earnings || 0).toLocaleString('id-ID')}</b>`,
-    `✅ Approved: <b>Rp ${Number(stats?.approved_earnings || 0).toLocaleString('id-ID')}</b>`,
+    `💵 Earnings: <b>${formatIDR(stats?.total_earnings)}</b>`,
+    `⏳ Pending: <b>${formatIDR(stats?.pending_earnings)}</b>`,
+    `✅ Approved: <b>${formatIDR(stats?.approved_earnings)}</b>`,
   ].join('\n');
 
   await sendTelegramMessage(config.bot_token, config.chat_id, msg);
@@ -94,10 +95,11 @@ async function sendBalanceAlert(pool, userId, balance) {
     return { sent: false, reason: 'Balance above threshold' };
   }
 
+  const { formatIDR } = require('../utils/currency');
   const msg = [
     '⚠️ <b>Balance Alert</b>',
     '',
-    `Your balance (Rp ${Number(balance).toLocaleString('id-ID')}) is below the threshold of Rp ${threshold.toLocaleString('id-ID')}.`,
+    `Your balance (${formatIDR(balance)}) is below the threshold of ${formatIDR(threshold)}.`,
   ].join('\n');
 
   await sendTelegramMessage(config.bot_token, config.chat_id, msg);

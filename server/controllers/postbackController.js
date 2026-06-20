@@ -108,7 +108,7 @@ async function receivePostback(req, res) {
       fbc: params.fbc || '',
       fbp: params.fbp || '',
       gclid: params.gclid || params.GCLID || '',
-      currency: params.currency || 'IDR',
+      currency: params.currency || 'IDR', // ponytail: overridden by traffic source api_config.currency via capiService
     }).catch(err => console.error('CAPI handleConversion error:', err.message));
 
     // Fire registered webhooks for the 'conversion' event

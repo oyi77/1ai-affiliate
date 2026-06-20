@@ -30,7 +30,7 @@ async function routeTrafficByHash(req, res) {
     }
 
     // Determine target URL
-    let targetUrl = 'https://example.com/fallback';
+    let targetUrl = process.env.DEFAULT_FALLBACK_URL || 'https://berkahkarya.org';
     if (link.offer_id) {
       const [offers] = await pool.query('SELECT postback_url FROM 1ai_offers WHERE id = ?', [link.offer_id]);
       if (offers.length && offers[0].postback_url) targetUrl = offers[0].postback_url;

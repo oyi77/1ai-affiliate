@@ -320,9 +320,10 @@ async function executeAction(pool, rule, matchedData) {
 }
 
 function formatAlertMessage(ruleType, data) {
+  const { formatIDR } = require('../utils/currency');
   switch (ruleType) {
     case 'balance_alert':
-      return `⚠️ <b>Balance Alert</b>\nBalance: Rp ${Number(data.balance).toLocaleString('id-ID')}\nThreshold: Rp ${Number(data.threshold).toLocaleString('id-ID')}`;
+      return `⚠️ <b>Balance Alert</b>\nBalance: ${formatIDR(data.balance)}\nThreshold: ${formatIDR(data.threshold)}`;
     case 'performance_alert':
       return `📊 <b>Performance Alert</b>\nMetric: ${data.metric}\nCurrent: ${Number(data.currentValue).toFixed(2)}\nThreshold: ${data.threshold}`;
     case 'auto_pause':

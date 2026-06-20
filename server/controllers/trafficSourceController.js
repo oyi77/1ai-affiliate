@@ -55,7 +55,7 @@ const createTrafficSource = asyncHandler(async (req, res) => {
       data.name,
       data.platform_type || null,
       data.cost_model || 'CPC',
-      data.currency || 'IDR',
+      data.currency || 'IDR', // ponytail: Indonesia-focused default, user overrides via API
       data.tracking_domain || null,
       data.postback_url_template || null,
       req.user.id,

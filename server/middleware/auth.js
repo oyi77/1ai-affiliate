@@ -24,7 +24,7 @@ async function authenticate(req, res, next) {
   // API key mode — delegate to PHP V3 Auth
   if (apiKey && !authHeader) {
     try {
-      const V3_API_URL = process.env.V3_API_URL || 'http://localhost/api/v3';
+      const V3_API_URL = process.env.V3_API_URL || 'http://localhost/api/v3'; // ponytail: dev default, set V3_API_URL in production
       const resp = await fetch(`${V3_API_URL}/system/health`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
       });

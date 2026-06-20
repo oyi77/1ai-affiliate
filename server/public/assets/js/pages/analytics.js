@@ -33,7 +33,7 @@ PageRenderers.clicks = async function(el) {
             clicks.rows.map(c => [
               c.campaign_id||'-',
               `<code>${c.ip||'-'}</code>`,
-              c.payout ? 'Rp '+(Number(c.payout)||0).toLocaleString() : '-',
+              c.payout ? formatRp(c.payout) : '-',
               new Date(c.timestamp*1000).toLocaleString()
             ])
           )
@@ -47,9 +47,9 @@ PageRenderers.reports = async function(el) {
     const s = await API.get('/api/admin/stats');
     el.innerHTML = `${DOM.pageHeader('Reports', 'Generate and export performance reports')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Revenue MTD', value:'Rp '+(s.revenue_mtd||0).toLocaleString() })}
+        ${DOM.statCard({ label:'Revenue MTD', value:formatRp(s.revenue_mtd) })}
         ${DOM.statCard({ label:'Total Clicks', value: (s.total_clicks||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Avg EPC', value:'Rp '+(s.avg_epc||0).toFixed(2), accent:'yellow' })}
+        ${DOM.statCard({ label:'Avg EPC', value:formatRp(s.avg_epc), accent:'yellow' })}
       </div>
       <div class="card"><h3>Report Generator</h3>
         <div class="form-row">
@@ -90,7 +90,7 @@ PageRenderers.loadReport = async () => {
         DOM.table(d.headers, d.rows.map(r => d.headers.map(h => {
           const v = r[h];
           if (h === 'timestamp') return new Date(v * 1000).toLocaleString();
-          if (h === 'payout' || h === 'amount') return 'Rp ' + (Number(v)||0).toLocaleString();
+          if (h === 'payout' || h === 'amount') return formatRp(v);
           return v;
         }))) +
         '</div>';
