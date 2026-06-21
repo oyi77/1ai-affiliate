@@ -16,29 +16,103 @@ PageRenderers.attribution = async function(el) {
 
 PageRenderers.clicks = async function(el) {
   try {
-    const [s, clicks] = await Promise.all([
-      API.get('/api/admin/stats'),
-      API.get('/api/admin/reports?type=clicks&range=1d'),
-    ]);
-    el.innerHTML = `${DOM.pageHeader('Click Tracker', 'Real-time click monitoring')}
+    const s = await API.get('/api/admin/stats');
+    el.innerHTML = `${DOM.pageHeader('Live Click Tracker', 'Real-time monitoring via SSE stream')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Clicks Today', value: (s.clicks_today||s.active_clicks_24h||0).toLocaleString() })}
-        ${DOM.statCard({ label:'Unique IPs', value: (s.unique_ips||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Avg CTR', value: (s.avg_ctr||0)+'%', accent:'yellow' })}
+        ${DOM.statCard({ label:'Clicks 1H', value: '—', accent:'blue', id:'rt-clicks-1h' })}
+        ${DOM.statCard({ label:'Conversions 1H', value: '—', accent:'green', id:'rt-conv-1h' })}
+        ${DOM.statCard({ label:'Revenue 1H', value: '—', accent:'yellow', id:'rt-rev-1h' })}
+        ${DOM.statCard({ label:'Active Affiliates', value: '—', accent:'indigo', id:'rt-active-aff' })}
+        ${DOM.statCard({ label:'Pending Postbacks', value: '—', accent:'red', id:'rt-pending-pb' })}
+        ${DOM.statCard({ label:'Clicks Today', value: (s.clicks_today||s.active_clicks_24h||0).toLocaleString(), accent:'blue' })}
       </div>
-      <div class="card"><h3>Recent Clicks</h3>
-        ${(clicks.rows||[]).length
-          ? DOM.table(
-            ['Campaign','IP','Payout','Time'],
-            clicks.rows.map(c => [
-              c.campaign_id||'-',
-              `<code>${c.ip||'-'}</code>`,
-              c.payout ? 'Rp '+(Number(c.payout)||0).toLocaleString() : '-',
-              new Date(c.timestamp*1000).toLocaleString()
-            ])
-          )
-          : DOM.emptyState('No clicks yet', 'Click data populates as traffic flows through your tracking links.')}
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="margin:0">Live Feed</h3>
+          <div id="sse-status" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)">
+            <span id="sse-dot" style="width:8px;height:8px;border-radius:50%;background:var(--red)"></span>
+            <span id="sse-label">Connecting...</span>
+          </div>
+        </div>
+        <div id="rt-feed" style="max-height:400px;overflow-y:auto;font-size:13px;color:var(--text2)">
+          <div class="skeleton" style="height:60px"></div>
+        </div>
       </div>`;
+
+    // Connect to SSE stream
+    const token = Auth.token();
+    const evtSource = new EventSource('/api/admin/stats/stream', { withCredentials: false });
+    // EventSource doesn't support custom headers, so we pass token as query param
+    // The SSE endpoint uses authenticate middleware which checks Bearer token
+    // Workaround: use fetch with ReadableStream instead
+    const feed = document.getElementById('rt-feed');
+    const dot = document.getElementById('sse-dot');
+    const label = document.getElementById('sse-label');
+    let eventCount = 0;
+
+    // Use fetch SSE polyfill to send auth header
+    const response = await fetch('/api/admin/stats/stream', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    dot.style.background = 'var(--green)';
+    label.textContent = 'Live';
+
+    function processChunk(chunk) {
+      buffer += chunk;
+      const lines = buffer.split('\n\n');
+      buffer = lines.pop(); // keep incomplete chunk
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const d = JSON.parse(line.substring(6));
+          if (d.error) continue;
+          eventCount++;
+
+          // Update stat cards
+          const el1 = document.getElementById('rt-clicks-1h');
+          const el2 = document.getElementById('rt-conv-1h');
+          const el3 = document.getElementById('rt-rev-1h');
+          const el4 = document.getElementById('rt-active-aff');
+          const el5 = document.getElementById('rt-pending-pb');
+          if (el1) el1.textContent = (d.clicks_1h||0).toLocaleString();
+          if (el2) el2.textContent = (d.conversions_1h||0).toLocaleString();
+          if (el3) el3.textContent = '$' + parseFloat(d.revenue_1h||0).toFixed(2);
+          if (el4) el4.textContent = (d.active_affiliates||0).toLocaleString();
+          if (el5) el5.textContent = (d.pending_postbacks||0).toLocaleString();
+
+          // Add to feed
+          if (feed && eventCount <= 50) {
+            const time = new Date(d.timestamp).toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.style.cssText = 'padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;';
+            entry.innerHTML = `<span>🟢 Update #${eventCount}</span><span>Clicks:${d.clicks_1h} Conv:${d.conversions_1h} Rev:$${parseFloat(d.revenue_1h||0).toFixed(2)}</span><span style="color:var(--text2)">${time}</span>`;
+            feed.prepend(entry);
+          }
+        } catch(e) { /* ignore parse errors */ }
+      }
+    }
+
+    // Read stream
+    (async () => {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          processChunk(decoder.decode(value, { stream: true }));
+        }
+      } catch(e) {
+        dot.style.background = 'var(--red)';
+        label.textContent = 'Disconnected';
+      }
+    })();
+
+    // Cleanup on page change
+    window._sseCleanup = () => { reader.cancel(); };
+
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load click data.</p></div>'; }
 };
 

@@ -8,7 +8,7 @@ const DOM = (function() {
       <div class="skeleton" style="height:150px;border-radius:12px"></div>`;
   }
 
-  function statCard({ label, value, sub, accent = 'indigo' }) {
+  function statCard({ label, value, sub, accent = 'indigo', id }) {
     const colors = {
       indigo: { line: 'var(--indigo)', bg: 'rgba(99,102,241,0.1)' },
       green:  { line: 'var(--green)', bg: 'rgba(16,185,129,0.1)' },
@@ -25,7 +25,7 @@ const DOM = (function() {
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.line};box-shadow:0 0 6px ${c.line}"></span>
           ${label}
         </div>
-        <div class="value">${value}</div>
+        <div class="value"${id ? ` id="${id}"` : ''}>${value}</div>
         ${sub ? `<div style="font-size:12px;color:var(--text2);margin-top:8px;font-weight:500;display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:${c.bg};border-radius:6px">${sub}</div>` : ''}
       </div>`;
   }
