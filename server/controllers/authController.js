@@ -54,7 +54,7 @@ async function login(req, res) {
     if (!apiKey) {
       apiKey = crypto.randomBytes(32).toString('hex');
       await pool.query(
-        "INSERT INTO 1ai_api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
+        "INSERT INTO 1ai_api_keys (api_key, user_id, scope, created_at) VALUES (?, ?, '[*]', UNIX_TIMESTAMP())",
         [apiKey, user.user_id]
       );
     }
