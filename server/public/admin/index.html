@@ -7,7 +7,361 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/shared-styles.css">
+  <style>
+    :root {
+      /* Premium Dark Mode Palette */
+      --bg: #090a0f;
+      --panel: rgba(22, 27, 34, 0.7);
+      --panel2: rgba(28, 35, 51, 0.8);
+      --panel-hover: rgba(40, 48, 68, 0.9);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(99, 102, 241, 0.3);
+      --text: #f8fafc;
+      --text2: #94a3b8;
+      
+      /* Accents */
+      --indigo: #6366f1;
+      --indigo2: #818cf8;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+      
+      /* Glassmorphism */
+      --blur: blur(12px);
+    }
+    
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      min-height: 100vh; 
+      display: block; 
+      overflow-x: hidden;
+    }
+    
+    /* Background animated gradients */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 50% 50%, rgba(99,102,241,0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(139,92,246,0.05) 0%, transparent 40%);
+      z-index: -1;
+      pointer-events: none;
+      animation: bgPulse 15s ease-in-out infinite alternate;
+    }
+    @keyframes bgPulse {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.1) translate(-2%, 2%); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* Sidebar */
+    .sidebar { 
+      width: 260px; 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border-right: 1px solid var(--border); 
+      display: flex; 
+      flex-direction: column; 
+      position: fixed; 
+      top: 0; left: 0; bottom: 0; 
+      z-index: 50; 
+      transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1); 
+      overflow-y: auto; 
+    }
+    .sidebar-header { 
+      padding: 24px 20px; 
+      border-bottom: 1px solid var(--border); 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      position: sticky;
+      top: 0;
+      background: var(--panel);
+      backdrop-filter: var(--blur);
+      z-index: 2;
+    }
+    .sidebar-header .logo { 
+      width: 40px; height: 40px; 
+      border-radius: 10px; 
+      background: linear-gradient(135deg, var(--indigo), var(--purple)); 
+      display: flex; align-items: center; justify-content: center; 
+      font-weight: 700; font-size: 16px; color: #fff; 
+      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+    .sidebar-header h1 { font-size: 16px; font-weight: 700; white-space: nowrap; letter-spacing: -0.02em; }
+    .status-dot { 
+      width: 8px; height: 8px; 
+      border-radius: 50%; 
+      background: var(--green); 
+      margin-left: auto; 
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite; 
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    
+    .nav-section { padding: 12px 0; }
+    .nav-section-label { 
+      padding: 12px 20px 8px; 
+      font-size: 11px; font-weight: 600; 
+      color: var(--text2); 
+      text-transform: uppercase; letter-spacing: 1px; 
+    }
+    .nav-item { 
+      display: flex; align-items: center; gap: 12px; 
+      padding: 10px 20px; 
+      margin: 2px 12px;
+      border-radius: 8px;
+      cursor: pointer; 
+      transition: all .2s ease; 
+      color: var(--text2); font-size: 13px; font-weight: 500; text-decoration: none; 
+    }
+    .nav-item:hover { 
+      background: rgba(255,255,255,0.05); 
+      color: var(--text); 
+      transform: translateX(4px);
+    }
+    .nav-item.active { 
+      background: linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%);
+      color: var(--indigo2); 
+      border-left: 3px solid var(--indigo);
+      padding-left: 17px;
+    }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; transition: color .2s; }
+    .nav-item.active svg { color: var(--indigo); }
+    
+    /* Main Content */
+    .main { 
+      margin-left: 260px; 
+      width: calc(100% - 260px); 
+      min-height: 100vh; 
+      display: flex; flex-direction: column; 
+    }
+    .topbar { 
+      padding: 16px 32px; 
+      border-bottom: 1px solid var(--border); 
+      background: rgba(9, 10, 15, 0.8); 
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      display: flex; align-items: center; justify-content: space-between; 
+      position: sticky; top: 0; z-index: 40; 
+    }
+    .topbar h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-right span { font-size: 13px; font-weight: 500; color: var(--text2); }
+    
+    .content { padding: 32px; flex: 1; width: 100%; }
+    
+    /* Buttons */
+    .btn { 
+      padding: 10px 18px; 
+      border: 1px solid transparent; 
+      border-radius: 8px; 
+      cursor: pointer; font-size: 13px; font-weight: 600; 
+      transition: all .2s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--indigo), var(--purple)); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+    }
+    .btn-primary:hover { 
+      box-shadow: 0 6px 16px rgba(99,102,241,0.4);
+      filter: brightness(1.1);
+    }
+    .btn-block { width: 100%; }
+    .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 6px; }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-outline { 
+      background: rgba(255,255,255,0.03); 
+      border: 1px solid var(--border); 
+      color: var(--text); 
+    }
+    .btn-outline:hover { 
+      background: rgba(255,255,255,0.08); 
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    /* Login */
+    .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); position: fixed; inset: 0; z-index: 100; }
+    .login-card { 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border); 
+      border-radius: 16px; 
+      padding: 40px; 
+      width: min(400px, 90vw); 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+      background: linear-gradient(90deg, var(--indigo), var(--purple), var(--pink));
+    }
+    .login-card h2 { text-align: center; margin-bottom: 32px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+    
+    /* Forms */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select, .form-group textarea { 
+      width: 100%; padding: 12px 16px; 
+      background: rgba(0,0,0,0.2); 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      color: var(--text); font-size: 14px; 
+      transition: all .2s; 
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
+      outline: none; 
+      border-color: var(--indigo); 
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15); 
+      background: rgba(0,0,0,0.4);
+    }
+    .form-row { display: flex; gap: 16px; margin-bottom: 20px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+    
+    /* Messages */
+    .error-msg { color: var(--red); font-size: 13px; text-align: center; margin-top: 12px; display: none; font-weight: 500; }
+    .success-msg { color: var(--green); font-size: 13px; text-align: center; margin-top: 12px; display: none; font-weight: 500; }
+    
+    /* Cards */
+    .card { 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 24px; 
+      margin-bottom: 24px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      transition: transform .2s, border-color .2s;
+    }
+    .card:hover { border-color: var(--border-glow); }
+    .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+    
+    /* Stats Grid */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
+    .stat-card { 
+      background: var(--panel); 
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 20px; 
+      position: relative; overflow: hidden; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+    .stat-card::after { 
+      content: ''; position: absolute; top: 0; right: 0; width: 60px; height: 100%; 
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03)); 
+      transform: skewX(-20deg) translateX(100%); transition: transform .5s;
+    }
+    .stat-card:hover::after { transform: skewX(-20deg) translateX(-100%); }
+    .stat-card .label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 8px; position: relative; }
+    .stat-card .value { font-size: 28px; font-weight: 700; position: relative; letter-spacing: -0.03em; }
+    
+    /* Tables */
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+    th { 
+      color: var(--text2); font-weight: 600; font-size: 11px; 
+      text-transform: uppercase; letter-spacing: 0.5px; 
+      background: rgba(255,255,255,0.02);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    
+    /* Pills/Badges */
+    .pill { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+    .pill-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+    .pill-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.2); }
+    .pill-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+    .pill-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+    .pill-indigo { background: rgba(99,102,241,0.15); color: var(--indigo2); border: 1px solid rgba(99,102,241,0.2); }
+    .pill-purple { background: rgba(139,92,246,0.15); color: var(--purple); border: 1px solid rgba(139,92,246,0.2); }
+    
+    /* Skeletons */
+    .skeleton { 
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); 
+      background-size: 200% 100%; 
+      animation: shimmer 1.5s infinite; 
+      border-radius: 8px; 
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    
+    /* Mobile nav */
+    .hamburger { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 8px; border-radius: 6px; }
+    .hamburger:hover { background: rgba(255,255,255,0.1); }
+    .hamburger svg { width: 24px; height: 24px; }
+    .scrim { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 40; opacity: 0; transition: opacity .3s; }
+    
+    @media(max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); } 
+      .sidebar.open { transform: translateX(0); } 
+      .main { margin-left: 0; width: 100%; }
+      .hamburger { display: block; } 
+      .scrim.open { display: block; opacity: 1; }
+      .topbar { padding: 12px 20px; } 
+      .content { padding: 20px; }
+      .stat-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+      .overview-split { grid-template-columns: 1fr !important; }
+    }
+    @media(max-width: 600px) {
+      .content { padding: 16px; }
+      .stat-grid { grid-template-columns: 1fr; gap: 12px; }
+      .form-row { flex-direction: column; gap: 12px; }
+      th, td { padding: 12px 10px; font-size: 12px; }
+    }
+    
+    .link { color: var(--indigo2); text-decoration: none; cursor: pointer; font-weight: 500; transition: color .2s; }
+    .link:hover { color: var(--text); text-decoration: underline; }
+    
+    code { 
+      background: rgba(255,255,255,0.05); 
+      padding: 4px 8px; 
+      border-radius: 6px; 
+      font-size: 12px; 
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; 
+      color: var(--pink);
+    }
+    
+    /* Toasts */
+    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; }
+    .toast { 
+      background: var(--panel2); 
+      border: 1px solid var(--border); 
+      color: var(--text); 
+      padding: 16px 20px; 
+      border-radius: 8px; 
+      font-size: 13px; font-weight: 500; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 12px;
+      transform: translateX(120%); transition: transform .3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .toast.show { transform: translateX(0); }
+    .toast-icon { width: 20px; height: 20px; flex-shrink: 0; }
+    .toast.success .toast-icon { color: var(--green); }
+    .toast.error .toast-icon { color: var(--red); }
+    .toast.info .toast-icon { color: var(--blue); }
+  </style>
 </head>
 <body>
   <!-- TOASTS -->
@@ -62,22 +416,17 @@
         <div class="nav-item active" data-page="overview" data-roles="admin,affiliate,advertiser" onclick="Router.navigate('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</div>
         <div class="nav-item" data-page="attribution" data-roles="admin" onclick="Router.navigate('attribution')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Attribution</div>
         <div class="nav-item" data-page="clicks" data-roles="admin" onclick="Router.navigate('clicks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>Live Clicks</div>
-        <div class="nav-item" data-page="traffic-sources" data-roles="admin" onclick="Router.navigate('traffic-sources')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Traffic Sources</div>
-        <div class="nav-item" data-page="deep-links" data-roles="admin,affiliate" onclick="Router.navigate('deep-links')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Deep Links</div>
-        <div class="nav-item" data-page="landing-pages" data-roles="admin" onclick="Router.navigate('landing-pages')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Landing Pages</div>
-        <div class="nav-item" data-page="conversion-log" data-roles="admin" onclick="Router.navigate('conversion-log')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Conversion Log</div>
-        <div class="nav-item" data-page="postback-builder" data-roles="admin" onclick="Router.navigate('postback-builder')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Postback Builder</div>
         <div class="nav-item" data-page="campaigns" data-roles="admin,advertiser" onclick="Router.navigate('campaigns')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Campaigns</div>
         <div class="nav-item" data-page="offers" data-roles="admin,affiliate,advertiser" onclick="Router.navigate('offers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Offers</div>
         <div class="nav-item" data-page="reports" data-roles="admin" onclick="Router.navigate('reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports</div>
       </div>
       <div class="nav-section" data-roles="admin">
-        <div class="nav-section-label">Reports (ID)</div>
-        <div class="nav-item" data-page="laporan-iklan" data-roles="admin" onclick="Router.navigate('laporan-iklan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Laporan Iklan</div>
-        <div class="nav-item" data-page="analytic-harian" data-roles="admin" onclick="Router.navigate('analytic-harian')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Analytic Harian</div>
-        <div class="nav-item" data-page="laporan-taglink" data-roles="admin" onclick="Router.navigate('laporan-taglink')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Laporan Taglink</div>
-        <div class="nav-item" data-page="laporan-order" data-roles="admin" onclick="Router.navigate('laporan-order')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Laporan Order</div>
-        <div class="nav-item" data-page="laporan-pembayaran" data-roles="admin" onclick="Router.navigate('laporan-pembayaran')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Laporan Pembayaran</div>
+        <div class="nav-section-label">Tracking</div>
+        <div class="nav-item" data-page="traffic-sources" data-roles="admin" onclick="Router.navigate('traffic-sources')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Traffic Sources</div>
+        <div class="nav-item" data-page="deep-links" data-roles="admin,affiliate" onclick="Router.navigate('deep-links')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Deep Links</div>
+        <div class="nav-item" data-page="landing-pages" data-roles="admin" onclick="Router.navigate('landing-pages')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Landing Pages</div>
+        <div class="nav-item" data-page="conversion-log" data-roles="admin" onclick="Router.navigate('conversion-log')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Conversion Log</div>
+        <div class="nav-item" data-page="postback-builder" data-roles="admin" onclick="Router.navigate('postback-builder')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>Postback Builder</div>
       </div>
       <div class="nav-section" data-roles="admin,affiliate">
         <div class="nav-section-label">Affiliate Hub</div>
@@ -86,6 +435,14 @@
         <div class="nav-item" data-page="affiliates" data-roles="admin" onclick="Router.navigate('affiliates')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Manage Affiliates</div>
         <div class="nav-item" data-page="commissions" data-roles="admin" onclick="Router.navigate('commissions')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Commissions Ledger</div>
         <div class="nav-item" data-page="payments" data-roles="admin" onclick="Router.navigate('payments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Payments</div>
+      </div>
+      <div class="nav-section" data-roles="admin">
+        <div class="nav-section-label">Reports (ID)</div>
+        <div class="nav-item" data-page="laporan-iklan" data-roles="admin" onclick="Router.navigate('laporan-iklan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Laporan Iklan</div>
+        <div class="nav-item" data-page="analytic-harian" data-roles="admin" onclick="Router.navigate('analytic-harian')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Analytic Harian</div>
+        <div class="nav-item" data-page="laporan-taglink" data-roles="admin" onclick="Router.navigate('laporan-taglink')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Laporan Taglink</div>
+        <div class="nav-item" data-page="laporan-order" data-roles="admin" onclick="Router.navigate('laporan-order')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Laporan Order</div>
+        <div class="nav-item" data-page="laporan-pembayaran" data-roles="admin" onclick="Router.navigate('laporan-pembayaran')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Laporan Pembayaran</div>
       </div>
       <div class="nav-section" style="margin-bottom:24px" data-roles="admin">
         <div class="nav-section-label">Tools</div>
@@ -100,11 +457,11 @@
         <div class="nav-item" data-page="domains" data-roles="admin" onclick="Router.navigate('domains')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Domains</div>
         <div class="nav-item" data-page="shorteners" data-roles="admin" onclick="Router.navigate('shorteners')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>URL Shorteners</div>
         <div class="nav-item" data-page="admin" onclick="Router.navigate('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Admin Users</div>
-        <div class="nav-item" data-page="ab-tests" data-roles="admin" onclick="Router.navigate('ab-tests')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>A/B Tests</div>
-        <div class="nav-item" data-page="automation" data-roles="admin" onclick="Router.navigate('automation')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Automation</div>
+        <div class="nav-item" data-page="ab-tests" data-roles="admin" onclick="Router.navigate('ab-tests')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>A/B Tests</div>
+        <div class="nav-item" data-page="automation" data-roles="admin" onclick="Router.navigate('automation')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Automation</div>
         <div class="nav-item" data-page="day-parting" data-roles="admin" onclick="Router.navigate('day-parting')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Day Parting</div>
-        <div class="nav-item" data-page="webhooks" data-roles="admin" onclick="Router.navigate('webhooks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Webhooks</div>
-        <div class="nav-item" data-page="saldo-budget" data-roles="admin" onclick="Router.navigate('saldo-budget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Saldo &amp; Budget</div>
+        <div class="nav-item" data-page="webhooks" data-roles="admin" onclick="Router.navigate('webhooks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Webhooks</div>
+        <div class="nav-item" data-page="saldo-budget" data-roles="admin" onclick="Router.navigate('saldo-budget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Saldo & Budget</div>
       </div>
     </nav>
     <div class="main">
