@@ -17,7 +17,6 @@ type ConsumerGroup struct {
 	logger  zerolog.Logger
 }
 
-// NewConsumerGroup creates a new Kafka consumer group.
 func NewConsumerGroup(brokers []string, groupID, topic string, handler sarama.ConsumerGroupHandler, logger zerolog.Logger) (*ConsumerGroup, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
@@ -55,7 +54,6 @@ func (cg *ConsumerGroup) Run(ctx context.Context) error {
 	}
 }
 
-// Close shuts down the consumer group.
 func (cg *ConsumerGroup) Close() error {
 	return cg.group.Close()
 }

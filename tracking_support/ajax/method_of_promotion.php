@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-include_once(substr(__DIR__, 0, -17) . '/config/connect.php');
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 //switch method of promotion based on if users is on a page with the refine box or not

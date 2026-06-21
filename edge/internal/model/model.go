@@ -1,11 +1,9 @@
 package model
 
 import (
-	"encoding/json"
 	"github.com/google/uuid"
 )
 
-// ClickEvent is the immutable payload sent to Kafka on every redirect.
 type ClickEvent struct {
 	ClickID       string            `json:"click_id"`
 	Timestamp     int64             `json:"ts"`
@@ -44,15 +42,6 @@ type ClickEvent struct {
 	RouteRuleID   int64             `json:"route_rule_id,omitempty"`
 }
 
-func (c *ClickEvent) Marshal() ([]byte, error) {
-	return json.Marshal(c)
-}
-
-func (c *ClickEvent) Unmarshal(data []byte) error {
-	return json.Unmarshal(data, c)
-}
-
-// ConversionEvent is the immutable payload for postback/conversion events.
 type ConversionEvent struct {
 	ConversionID  string `json:"conversion_id"`
 	ClickID       string `json:"click_id"`
@@ -67,11 +56,7 @@ type ConversionEvent struct {
 	UserAgent     string `json:"ua,omitempty"`
 }
 
-func (c *ConversionEvent) Marshal() ([]byte, error) {
-	return json.Marshal(c)
-}
 
-// RouteRule defines a traffic distribution rule.
 type RouteRule struct {
 	ID            int64             `json:"id"`
 	CampaignID    int64             `json:"campaign_id"`
@@ -101,7 +86,6 @@ type RouteRule struct {
 	DailyCap      int               `json:"daily_cap,omitempty"`
 }
 
-// CampaignState is the in-memory representation of an active campaign.
 type CampaignState struct {
 	ID            int64             `json:"id"`
 	UserID        int64             `json:"user_id"`
@@ -115,7 +99,6 @@ type CampaignState struct {
 	UpdatedAt     int64             `json:"updated_at"`
 }
 
-// ClickRecord is the ephemeral click state stored in Redis for attribution.
 type ClickRecord struct {
 	ClickID       string    `json:"click_id"`
 	CampaignID    int64     `json:"campaign_id"`
@@ -129,7 +112,6 @@ type ClickRecord struct {
 	TTL           int       `json:"ttl"` // seconds until expiry
 }
 
-// NewClickID generates a UUID-based click identifier.
 func NewClickID() string {
 	return uuid.New().String()
 }

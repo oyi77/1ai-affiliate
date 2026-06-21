@@ -10,7 +10,6 @@ import (
 	"github.com/1ai-affiliate/edge/internal/config"
 	"github.com/1ai-affiliate/edge/internal/redis"
 	"github.com/1ai-affiliate/edge/internal/model"
-	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v2"
 )
 
@@ -152,7 +151,6 @@ func listCampaigns(c *cli.Context) error {
 func getCampaign(c *cli.Context) error {
 	token := c.String("token")
 	cfg := config.Load()
-	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 
 	rdb, err := redis.NewClient(cfg.RedisAddrs, cfg.RedisPassword, cfg.RedisDB)
 	if err != nil {
@@ -180,7 +178,6 @@ func getCampaign(c *cli.Context) error {
 func pushCampaign(c *cli.Context) error {
 	campaignID := c.Int64("id")
 	cfg := config.Load()
-	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 
 	rdb, err := redis.NewClient(cfg.RedisAddrs, cfg.RedisPassword, cfg.RedisDB)
 	if err != nil {

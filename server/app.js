@@ -128,6 +128,9 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
+  const postbackQueue = require('./services/postbackQueue');
+  const posterWorker = require('./services/posterWorker');
+  const pipelineWorker = require('./services/pipelineWorker');
   postbackQueue.start();
   posterWorker.start();
   pipelineWorker.start();

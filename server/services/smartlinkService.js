@@ -1,6 +1,6 @@
 const pool = require('../db/mysql');
 const crypto = require('crypto');
-const { shortenUrl } = require('../controllers/smartlinkController');
+
 
 /**
  * Internal helper to mint a tracked smartlink without an HTTP request context.
@@ -34,9 +34,10 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
 
   const slug = crypto.randomBytes(6).toString('hex');
 
+  const linkToken = crypto.randomBytes(16).toString('hex');
   await pool.query(
-    'INSERT INTO 1ai_affiliate_links (affiliate_id, offer_id, slug, domain_id, shortener_service_id, created_at) VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP())',
-    [affiliateId, offerId, slug, domain?.id || null, shortenerServiceId || null]
+    'INSERT INTO 1ai_affiliate_links (affiliate_id, offer_id, link_token, slug, domain_id, shortener_service_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())',
+    [affiliateId, offerId, linkToken, slug, domain?.id || null, shortenerServiceId || null]
   );
 
   let smartlinkUrl;

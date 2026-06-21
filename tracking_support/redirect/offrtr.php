@@ -2,8 +2,8 @@
 declare(strict_types=1);
 use UAParser\Parser;
 
-error_reporting(E_ALL);
-ini_set("display_errors", true);
+error_reporting(E_ERROR | E_PARSE);
+ini_set("display_errors", false);
 ob_start();
 
 $urlvarslist = $_GET;
@@ -13,8 +13,8 @@ if(!isset($_COOKIE['tracking1aisubid']) || !is_numeric($_COOKIE['tracking1aisubi
     die();
 } 
 
-include_once (substr(__DIR__, 0,-21) . '/config/connect2.php');
-include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
+include_once (dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 $mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking1aisubid']);
 $mysql['rpi'] = $db->real_escape_string((string)$_GET['rpi']);

@@ -12,6 +12,7 @@ async function queryRows(sql, params = []) {
     const [rows] = await pool.query(sql, params);
     return rows;
   } catch (err) {
+    console.error('queryRows error:', err.message, 'SQL:', sql.substring(0, 120));
     return [];
   }
 }
@@ -1107,6 +1108,9 @@ async function shortenUrl(longUrl, service) {
 }
 
 module.exports = {
+  toNumber,
+  queryRows,
+  queryOne,
   getUsers,
   createUser,
   getAffiliates,
@@ -1141,4 +1145,5 @@ module.exports = {
   saveShortenerService,
   deleteShortenerService,
   testShortenerService,
+  shortenUrl,
 };

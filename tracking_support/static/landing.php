@@ -5,7 +5,7 @@ header('Content-type: application/javascript');
 header('Cache-Control: no-cache, no-store, max-age=0, must-revalidate');
 header('Expires: Sun, 03 Feb 2008 05:00:00 GMT'); // Date in the past
 header("Pragma: no-cache");
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
 if ( isset( $_SERVER["HTTPS"] ) && strtolower( (string) $_SERVER["HTTPS"] ) == "on" ) {
 $strProtocol = 'https';
 } else {

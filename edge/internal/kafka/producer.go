@@ -11,13 +11,13 @@ import (
 
 // Producer sends click and conversion events to Kafka.
 type Producer struct {
-	producer sarama.AsyncProducer
-	topic    string
-	logger   zerolog.Logger
+	producer       sarama.AsyncProducer
+	topic          string
+	conversionTopic string
+	logger         zerolog.Logger
 }
 
-// NewProducer creates a new Kafka async producer.
-func NewProducer(brokers []string, topic string, logger zerolog.Logger) (*Producer, error) {
+func NewProducer(brokers []string, topic, conversionTopic string, logger zerolog.Logger) (*Producer, error) {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForLocal       // fast ack
 	config.Producer.Compression = sarama.CompressionSnappy   // reduce bandwidth
@@ -35,9 +35,10 @@ func NewProducer(brokers []string, topic string, logger zerolog.Logger) (*Produc
 	}
 
 	p := &Producer{
-		producer: producer,
-		topic:    topic,
-		logger:   logger,
+		producer:       producer,
+		topic:          topic,
+		conversionTopic: conversionTopic,
+		logger:         logger,
 	}
 
 	// Background error collector
@@ -48,30 +49,23 @@ func NewProducer(brokers []string, topic string, logger zerolog.Logger) (*Produc
 
 func (p *Producer) collectErrors() {
 	for err := range p.producer.Errors() {
-		p.logger.Error().Err(err).Str("topic", p.topic).Msg("kafka produce error")
+		p.logger.Error().Err(err).Str("topic", err.Msg.Topic).Msg("kafka produce error")
 	}
 }
 
 // SendClick publishes a click event to Kafka asynchronously.
 func (p *Producer) SendClick(ctx context.Context, key string, value []byte) error {
-	msg := &sarama.ProducerMessage{
-		Topic: p.topic,
-		Key:   sarama.StringEncoder(key),
-		Value: sarama.ByteEncoder(value),
-	}
-
-	select {
-	case p.producer.Input() <- msg:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+	return p.send(ctx, p.topic, key, value)
 }
 
-// SendConversion publishes a conversion event to Kafka.
+// SendConversion publishes a conversion event to Kafka asynchronously.
 func (p *Producer) SendConversion(ctx context.Context, key string, value []byte) error {
+	return p.send(ctx, p.conversionTopic, key, value)
+}
+
+func (p *Producer) send(ctx context.Context, topic, key string, value []byte) error {
 	msg := &sarama.ProducerMessage{
-		Topic: "1ai-conversions",
+		Topic: topic,
 		Key:   sarama.StringEncoder(key),
 		Value: sarama.ByteEncoder(value),
 	}
@@ -84,7 +78,6 @@ func (p *Producer) SendConversion(ctx context.Context, key string, value []byte)
 	}
 }
 
-// Close shuts down the producer.
 func (p *Producer) Close() error {
 	return p.producer.Close()
 }

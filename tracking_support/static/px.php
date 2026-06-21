@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
-include_once(substr(__DIR__, 0,-19) . '/config/class-dataengine-slim.php');
-include_once(substr(__DIR__, 0,-19) . '/config/static-endpoint-helpers.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
+include_once(dirname(__DIR__, 2) . '/config/static-endpoint-helpers.php');
 	
 //get the aff_camapaign_id
 $mysql['aff_campaign_id_public'] = $db->real_escape_string((string)$_GET['acip']);

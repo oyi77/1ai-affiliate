@@ -49,14 +49,6 @@ async function pickTrackedAffiliateLink(niche, affiliateId = 1) {
     return pickAffiliateLink(niche);
   }
 }
-const NICHES = ['hijab', 'sepatu', 'tas', 'atasan_pria', 'general'];
-const TIKTOK_API = process.env.TIKTOK_API_URL || 'https://www.tikwm.com/api/';
-const MAX_POSTS_PER_ACCOUNT_PER_DAY = 4;
-const MIN_DELAY_MS = 45 * 60 * 1000;
-const MAX_DELAY_MS = 120 * 60 * 1000;
-
-// In-memory rate limit tracking: { accountId: [timestamp, ...] }
-const rateLimitMap = new Map();
 
 /**
  * Fetch TikTok video info (no watermark) via tikwm.com API.

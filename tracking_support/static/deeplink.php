@@ -12,9 +12,14 @@ declare(strict_types=1);
  * Server-side redirects (302, meta refresh, JS redirect) do NOT trigger deep links.
  */
 
-// Direct DB connection (bypasses broken connect2.php vendor dependency)
-require_once substr(__DIR__, 0, -23) . '/config.php';
-if (!$db) {
+// Direct DB connection via env vars (Docker-compatible, standalone)
+$db = @new mysqli(
+    getenv('DB_HOST') ?: 'localhost',
+    getenv('DB_USER') ?: 'affiliate',
+    getenv('DB_PASS') ?: 'affiliate_pass',
+    getenv('DB_NAME') ?: 'Prosper1ai'
+);
+if ($db->connect_error) {
     http_response_code(503);
     echo '<!DOCTYPE html><html><head><title>503</title></head><body><h1>Service unavailable</h1></body></html>';
     exit;

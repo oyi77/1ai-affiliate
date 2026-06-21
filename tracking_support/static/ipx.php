@@ -7,7 +7,7 @@ header('Expires: Sun, 03 Feb 2008 05:00:00 GMT'); // Date in the past
 header("Pragma: no-cache");
 header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
 
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php'); 
+include_once(dirname(__DIR__, 2) . '/config/connect2.php'); 
 
 $t1aiid = $_GET['t1aiid'] ?? '';
 if (!is_numeric($t1aiid)) die();

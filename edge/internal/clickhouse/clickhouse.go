@@ -17,7 +17,6 @@ type Client struct {
 	logger zerolog.Logger
 }
 
-// NewClient creates a new ClickHouse connection.
 func NewClient(dsn string, logger zerolog.Logger) (*Client, error) {
 	opts, err := clickhouse.ParseDSN(dsn)
 	if err != nil {
@@ -38,7 +37,6 @@ func NewClient(dsn string, logger zerolog.Logger) (*Client, error) {
 	return &Client{conn: conn, logger: logger}, nil
 }
 
-// EnsureSchema creates the analytics tables if they don't exist.
 func (c *Client) EnsureSchema(ctx context.Context) error {
 	schema := `
 	CREATE TABLE IF NOT EXISTS 1ai_clicks (
@@ -109,7 +107,6 @@ func (c *Client) EnsureSchema(ctx context.Context) error {
 	return nil
 }
 
-// BatchInsertClicks inserts a batch of click events.
 func (c *Client) BatchInsertClicks(ctx context.Context, batch []ClickRow) error {
 	if len(batch) == 0 {
 		return nil
@@ -145,7 +142,6 @@ func (c *Client) BatchInsertClicks(ctx context.Context, batch []ClickRow) error 
 	return stmt.Send()
 }
 
-// BatchInsertConversions inserts a batch of conversion events.
 func (c *Client) BatchInsertConversions(ctx context.Context, batch []ConversionRow) error {
 	if len(batch) == 0 {
 		return nil
@@ -172,7 +168,6 @@ func (c *Client) BatchInsertConversions(ctx context.Context, batch []ConversionR
 	return stmt.Send()
 }
 
-// ClickRow is a batch insert row for clicks.
 type ClickRow struct {
 	ClickID       string
 	Timestamp     time.Time
@@ -196,7 +191,6 @@ type ClickRow struct {
 	RouteRuleID   uint64
 }
 
-// ConversionRow is a batch insert row for conversions.
 type ConversionRow struct {
 	ConversionID string
 	ClickID      string

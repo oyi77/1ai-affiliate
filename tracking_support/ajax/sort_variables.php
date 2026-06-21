@@ -1,8 +1,8 @@
 <?php
 
 declare(strict_types=1);
-include_once(substr(__DIR__, 0, -17) . '/config/connect.php');
-include_once(substr(__DIR__, 0, -17) . '/config/class-dataengine.php');
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine.php');
 
 AUTH::require_user();
 

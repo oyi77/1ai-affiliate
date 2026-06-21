@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate, requireAdmin } = require('../middleware/auth');
-const { requireRole } = require('../middleware/roleMiddleware');
+const { authenticate, requireAdmin, requireRole } = require('../middleware/auth');
 const { rateLimitWrite, rateLimitRead } = require('../middleware/rateLimit');
 const {
   getUsers,

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-$dbname = 'prosper1ai_test';
+$dbname = '1ai_affiliate';
 $dbuser = 'affiliate';
 $dbpass = 'testpass';
 $dbhost = 'localhost';

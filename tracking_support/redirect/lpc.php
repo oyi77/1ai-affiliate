@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 use OneAIAffiliate\Redirect\RedirectHelper;
 
-require_once substr(__DIR__, 0, -21) . '/config/connect2.php';
-require_once substr(__DIR__, 0, -21) . '/config/class-dataengine-slim.php';
+require_once dirname(__DIR__, 2) . '/config/connect2.php';
+require_once dirname(__DIR__, 2) . '/config/class-dataengine-slim.php';
 
 // Validate landing page id
 $landingId = RedirectHelper::getIntParam('lpip');

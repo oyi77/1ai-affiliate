@@ -20,7 +20,7 @@ if (isset($_GET['lpip']) && is_numeric($_GET['lpip'])) {
     if (isset($_COOKIE['tracking1aioutbound'])) {
         $tracking1aioutbound = $_COOKIE['tracking1aioutbound'];
     } else {
-        require_once substr(__DIR__, 0, -21) . '/tracking_support/redirect/lp.php';
+        require_once dirname(__DIR__) . '/tracking_support/redirect/lp.php';
     }
 
     RedirectHelper::redirect($tracking1aioutbound);
@@ -28,12 +28,12 @@ if (isset($_GET['lpip']) && is_numeric($_GET['lpip'])) {
 
 // Advanced LP redirect
 if (isset($_GET['acip']) && is_numeric($_GET['acip'])) {
-    include_once substr(__DIR__, 0, -21) . '/tracking_support/redirect/off.php';
+    include_once dirname(__DIR__) . '/tracking_support/redirect/off.php';
 }
 
 // Rotator redirect on ALP
 if (isset($_GET['rpi']) && is_numeric($_GET['rpi'])) {
-    include_once substr(__DIR__, 0, -21) . '/tracking_support/redirect/offrtr.php';
+    include_once dirname(__DIR__) . '/tracking_support/redirect/offrtr.php';
 }
 
   die("Missing LPIP, ACIP or RPI variable!");

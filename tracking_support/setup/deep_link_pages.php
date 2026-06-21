@@ -8,7 +8,7 @@ declare(strict_types=1);
  * Access: affiliate.berkahkarya.org/tracking_support/setup/deep_link_pages.php
  */
 
-include_once(substr(__DIR__, 0, -21) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
 AUTH::require_user();
 
 $user_id = $_SESSION['user_id'] ?? 0;

@@ -67,7 +67,7 @@ if ($_SERVER['SERVER_NAME'] == '_') {
     $_SERVER['SERVER_NAME'] = $_SERVER['HTTP_HOST'];
 }
 
-DEFINE('ROOT_PATH', substr(__DIR__, 0, -10));
+DEFINE('ROOT_PATH', substr(__DIR__, 0, -10) . '/');
 DEFINE('CONFIG_PATH', __DIR__);
 @ini_set('auto_detect_line_endings', '1');
 // Deprecated in PHP 5.4

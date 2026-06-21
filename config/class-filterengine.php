@@ -85,61 +85,27 @@ class FilterEngine
 
     function getFilterCheck($val, $filter_id)
     {
-        if (self::getFilter('filter_name', $filter_id) == '' || self::getFilter('filter_condition', $filter_id) == '' || self::getFilter('filter_value', $filter_id) == '')
+        $filterName = self::getFilter('filter_name', $filter_id);
+        $filterCondition = self::getFilter('filter_condition', $filter_id);
+        $filterValue = self::getFilter('filter_value', $filter_id);
+
+        if ($filterName === '' || $filterCondition === '' || $filterValue === '') {
             return true;
-        switch (self::getFilter('filter_name', $filter_id)) {
-            case "S/U":
-                $val=number_format($val*100,2, '.', '');
-                $percenter = 1;
-                
-                break;
-            case "LP CTR":
-            
-            case "ROI":
-                $val=number_format($val,0, '.', '');
-                $percenter = 1;
-                
-                break;
-            default:
-                $percenter = 1;
-        }
-        
-        switch (self::getFilter('filter_condition', $filter_id)) {
-            case "<":
-                if ($val < self::getFilter('filter_value', $filter_id))
-                    return true;
-                else
-                    return false;
-            case ">":
-                if ($val > self::getFilter('filter_value', $filter_id))
-                    return true;
-                else
-                    return false;
-            case "=":
-               
-                if ($val == (self::getFilter('filter_value', $filter_id))){
-                   
-                    return true;}
-                else
-                    return false;
-            
-            case ">=":
-                if ($val >= self::getFilter('filter_value', $filter_id))
-                    return true;
-                else
-                    return false;
-            case "<=":
-                if ($val <= self::getFilter('filter_value', $filter_id))
-                    return true;
-                else
-                    return false;
-            case "!=":
-                if ($val != self::getFilter('filter_value', $filter_id)){
-                    return true;}
-                else
-                    return false;
         }
 
+        if (in_array($filterName, ['S/U', 'LP CTR', 'ROI'], true)) {
+            $val = $filterName === 'S/U' ? number_format($val * 100, 2, '.', '') : number_format($val, 0, '.', '');
+        }
+
+        return match ($filterCondition) {
+            '<'  => $val < $filterValue,
+            '>'  => $val > $filterValue,
+            '='  => $val == $filterValue,
+            '>=' => $val >= $filterValue,
+            '<=' => $val <= $filterValue,
+            '!=' => $val != $filterValue,
+            default => true,
+        };
     }
 
     function getFilterNameMapping($filter_id)

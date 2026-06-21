@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 header('Content-Type: application/json');
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
 $data = [];
 $tracker_id_public = $db->real_escape_string((string)($_GET['t1aiid'] ?? ''));
 $sql = "SELECT

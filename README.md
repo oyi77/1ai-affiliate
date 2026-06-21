@@ -90,10 +90,10 @@ cf-router zone:discover --account <account_id>
 # 3. Add your domain zone
 cf-router zone:add --account <account_id> --zone-id <zone_id> --domain berkahkarya.org
 
-# 4. Add mapping for affiliate subdomains
 cf-router mapping:add --domain berkahkarya.org --subdomain affiliate --port 80 --host php
 cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-api --port 3001 --host node
 cf-router mapping:add --domain berkahkarya.org --subdomain affiliate-tools --port 80 --host phpmyadmin
+cf-router mapping:add --domain berkahkarya.org --subdomain l --port 80 --host php
 cf-router mapping:add --domain berkahkarya.org --subdomain docs --port 3000 --host playbook
 ```
 
@@ -104,11 +104,12 @@ cf-router mapping:add --domain berkahkarya.org --subdomain docs --port 3000 --ho
 > 4. SSL handled by Cloudflare proxy (orange cloud)
 
 ### Resulting URLs
-| Subdomain | Proxies To | Purpose |
+| Subdomain | Backend | Purpose |
 |-----------|------------|---------|
 | `affiliate.berkahkarya.org` | `php:80` | Main PHP app (tracking, admin, API v2/v3) |
 | `affiliate-api.berkahkarya.org` | `node:3001` | Node companion (smartlinks, poster, pipeline, auth) |
 | `affiliate-tools.berkahkarya.org` | `phpmyadmin:80` | phpMyAdmin (optional, `tools` profile) |
+| `l.berkahkarya.org` | `php:80` | Deep link landing pages (`/{slug}` → deeplink.php) |
 
 ### SSL/TLS
 - **Terminated at Cloudflare** (orange cloud = proxied)
@@ -140,7 +141,6 @@ All configuration via `.env` file (copy from `.env.example`):
 | `DB_NAME` | Database name | `Prosper1ai` |
 | `DB_USER` | DB user | `affiliate` |
 | `DB_PASSWORD` | DB password | `affiliate_pass` |
-| `DB_ROOT_PASSWORD` | MySQL root | `root_password` |
 | `JWT_SECRET` | Shared JWT secret (PHP + Node) | `long_random_string` |
 | `CF_DOMAIN` | Base domain for smartlinks | `affiliate.berkahkarya.org` |
 | `TG_BOT_TOKEN` | Telegram bot token (for poster) | `123:ABC...` |
@@ -149,15 +149,7 @@ All configuration via `.env` file (copy from `.env.example`):
 | `FB_PAGES_JSON` | Facebook pages config | `'[{"id":"...","token":"...","niche":"hijab"}]'` |
 | `IG_ACCOUNTS_JSON` | Instagram accounts | `'[{"id":"...","token":"...","niche":"hijab"}]'` |
 | `SHOPEE_LINKS_JSON` | Shopee affiliate links per niche | `'{"hijab":"https://lynk.id/..."}'` |
-| `EBOOK_API_URL` | Ebook service URL | `http://ebook:8765` |
 
-### Manual Installation (Legacy)
-### Docker Compose Profiles
-
-| Profile | Services | Use Case |
-|---------|----------|----------|
-| `default` | db, redis, php, node | Production |
-| `tools` | + phpmyadmin, mailhog | Development/debug |
 ## API v3
 
 REST API under `/api/v3/` with bearer token authentication. Covers all 1ai-Affiliate entities: campaigns, networks, traffic sources, trackers, landing pages, text ads, clicks, conversions, rotators, attribution models, users, and system operations.
@@ -289,7 +281,6 @@ Configure URL shorteners (Bitly, TinyURL, Rebrandly, Cutt.ly, Short.io, or custo
 - `1ai_short_url_logs` — Analytics for shortened URLs
 - `1ai_affiliate_links` — Extended with `domain_id`, `short_url`, `shortener_service_id`
 
-## Directory Structure
 ## License
 
 Business Source License 1.1 (BUSL-1.1) — see [LICENSE](LICENSE) for the full text.

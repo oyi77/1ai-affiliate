@@ -4,11 +4,11 @@ declare(strict_types=1);
 use OneAIAffiliate\Attribution\AttributionServiceFactory;
 use OneAIAffiliate\Attribution\Repository\Mysql\ConversionJourneyRepository;
 header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
-include_once(substr(__DIR__, 0,-19) . '/config/class-dataengine-slim.php');
-include_once(substr(__DIR__, 0,-19) . '/config/static-endpoint-helpers.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
+include_once(dirname(__DIR__, 2) . '/config/static-endpoint-helpers.php');
 // getUrl() for server-side postback pixels (not pulled in by connect2.php)
-include_once(substr(__DIR__, 0,-19) . '/config/functions-tracking1aiapi.php');
+include_once(dirname(__DIR__, 2) . '/config/functions-tracking1aiapi.php');
 
 $settingsService = AttributionServiceFactory::createSettingsService();
 

@@ -81,7 +81,7 @@ PageRenderers.offers = async function(el) {
 
     el.innerHTML = `${DOM.pageHeader('Offers', 'Offer management')}
       <div class="card">
-        ${(role === 'admin' || role === 'advertiser') ? '<button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="alert(\'Add Offer UI goes here\')">+ Add Offer</button>' : ''}
+        ${(role === 'admin' || role === 'advertiser') ? '<button class="btn btn-primary btn-sm" style="margin-bottom:16px" disabled title="Coming soon">+ Add Offer</button>' : ''}
         ${items.length ? DOM.table(headers, items.map(mapFn)) : DOM.emptyState('No data', 'No offers found.')}
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load offers.</p></div>'; }
@@ -93,7 +93,7 @@ PageRenderers.networks = async function(el) {
     const items = r.data || [];
     el.innerHTML = `${DOM.pageHeader('Ad Networks', 'Manage external CPA networks')}
       <div class="card">
-        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="alert(\'Add Network UI goes here\')">+ Add Network</button>
+        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" disabled title="Coming soon">+ Add Network</button>
         ${items.length ? DOM.table(['ID', 'Name', 'Status', 'Added'], items.map(d => [
           d.id, d.name, DOM.pill(d.status, d.status==='active'?'green':'yellow'), new Date(d.created_at * 1000).toLocaleDateString()
         ])) : DOM.emptyState('No networks', 'You have not added any CPA networks yet.')}

@@ -15,25 +15,18 @@ const { Supervisor } = require('../agents/supervisor');
 const { FraudDetectionAgent } = require('../agents/fraudDetectionAgent');
 const { PostbackTriageAgent } = require('../agents/postbackTriageAgent');
 const { ContentGenAgent, TOOL_DEFS } = require('../agents/contentGenAgent');
-const { InMemoryClicksProvider } = require('../agents/clicksProvider');
-const { InMemoryPostbackRepository } = require('../agents/postbackRepository');
-const { InMemoryRunRepository } = require('../agents/runRepository');
+const { MysqlClicksProvider } = require('../agents/mysqlClicksProvider');
+const { MysqlPostbackRepository } = require('../agents/mysqlPostbackRepository');
+const { MysqlRunRepository } = require('../agents/mysqlRunRepository');
 const { AgentGuardrails } = require('../agents/agentGuardrails');
-const { MockAIProvider } = require('../agents/mockProvider');
-const { createProvider } = require('../agents/aiProvider');
-const { TOOL_BUS_PROTOCOL_VERSION } = require('../agents/aiProvider');
+const { createProvider, TOOL_BUS_PROTOCOL_VERSION } = require('../agents/aiProvider');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
-const runRepository = new InMemoryRunRepository();
+const runRepository = new MysqlRunRepository();
 const guardrails = new AgentGuardrails();
 
 function getProvider() {
-  try {
-    return createProvider();
-  } catch (err) {
-    console.warn('[ai] live provider unavailable, falling back to mock:', err.message);
-    return new MockAIProvider();
-  }
+  return createProvider();
 }
 
 function getContentExecutors() {
@@ -56,13 +49,13 @@ function buildSupervisor() {
     agents: {
       'fraud-detection': new FraudDetectionAgent({
         provider: getProvider(),
-        clicksProvider: new InMemoryClicksProvider(),
+        clicksProvider: new MysqlClicksProvider(),
         runRepository,
         guardrails,
       }),
       'postback-triage': new PostbackTriageAgent({
         provider: getProvider(),
-        postbackRepository: new InMemoryPostbackRepository(),
+        postbackRepository: new MysqlPostbackRepository(),
         runRepository,
         guardrails,
       }),
@@ -115,14 +108,15 @@ router.post('/run', async (req, res) => {
   }
 });
 
-router.get('/runs', (req, res) => {
+router.get('/runs', async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit, 10) || 50, 500);
   const agent = req.query.agent || null;
-  res.json({ runs: runRepository.recent(limit, agent) });
+  const runs = await runRepository.recent(limit, agent);
+  res.json({ runs });
 });
 
-router.get('/runs/:runId', (req, res) => {
-  const run = runRepository.findByRunId(req.params.runId);
+router.get('/runs/:runId', async (req, res) => {
+  const run = await runRepository.findByRunId(req.params.runId);
   if (!run) return res.status(404).json({ error: 'run not found' });
   res.json(run);
 });

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-30) . '/config/connect.php');
+include_once(dirname(__DIR__, 3) . '/config/connect.php');
 	
 //make sure user is logged in or die
 	AUTH::require_user();

@@ -1,5 +1,6 @@
 const pool = require('../db/mysql');
 const { mintSmartlink, shortenUrl } = require('../services/smartlinkService');
+const { toNumber } = require('./adminController');
 
 async function routeTrafficByHash(req, res) {
   const slug = req.params.hash;
@@ -193,6 +194,5 @@ async function getSmartlinkStats(req, res) {
   }
 }
 
-function toNumber(v) { return Number(v || 0); }
 
 module.exports = { routeTrafficByHash, generateSmartlink, listSmartlinks, recordConversion, getSmartlinkStats };

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-12) . '/config/connect.php');
+include_once(dirname(__DIR__) . '/config/connect.php');
 
 AUTH::require_user();
 

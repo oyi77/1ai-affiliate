@@ -144,13 +144,7 @@ async function forgotPassword(req, res) {
     );
 
     // In production: send email with reset link containing the key
-    // For now: return the key directly for testing
-    res.json({
-      message: 'Reset key generated.',
-      key: resetKey,
-      // Remove in production:
-      user_id: user.user_id
-    });
+    res.json({ message: 'If the account exists, a reset key has been generated.' });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ error: 'Internal server error' });

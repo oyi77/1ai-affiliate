@@ -6,8 +6,8 @@ $lpip = $_GET['lpip'];
 if (!is_numeric($lpip)) die();
 
 # check to see if mysql connection works, if not fail over to cached stored redirect urls
-include_once(substr(__DIR__, 0,-21) . '/config/connect2.php'); 
-include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php'); 
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 $usedCachedRedirect = false; 
 if (!$db) $usedCachedRedirect = true;

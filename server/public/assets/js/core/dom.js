@@ -98,3 +98,39 @@ window.AppUI.toast = function(message, type = 'info') {
     setTimeout(() => toast.remove(), 300);
   }, 4000);
 };
+
+window.AppUI.modal = function({ title, content, body, actions, footer }) {
+  const bodyHtml = content || body || '';
+  let footerHtml = '';
+  if (actions && actions.length) {
+    footerHtml = '<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">' +
+      actions.map((a, i) => `<button class="btn ${a.class || 'btn-outline'}" data-modal-btn="${i}">${a.label}</button>`).join('') +
+      '</div>';
+  } else if (footer) {
+    footerHtml = `<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">${footer}</div>`;
+  }
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10000;';
+  overlay.innerHTML = `
+    <div class="card" style="max-width:520px;width:90%;max-height:80vh;overflow:auto;padding:24px;">
+      <h3 style="margin-bottom:16px;">${title}</h3>
+      <div>${bodyHtml}</div>
+      ${footerHtml}
+    </div>
+  `;
+  overlay.id = 'app-modal';
+  overlay.addEventListener('click', e => { if (e.target === overlay) AppUI.closeModal(); });
+  document.body.appendChild(overlay);
+  if (actions && actions.length) {
+    overlay.querySelectorAll('[data-modal-btn]').forEach(btn => {
+      const idx = parseInt(btn.getAttribute('data-modal-btn'), 10);
+      if (actions[idx] && actions[idx].onClick) btn.addEventListener('click', actions[idx].onClick);
+    });
+  }
+};
+
+window.AppUI.closeModal = function() {
+  const el = document.getElementById('app-modal');
+  if (el) el.remove();
+};

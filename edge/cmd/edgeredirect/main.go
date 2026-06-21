@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -46,7 +47,7 @@ func main() {
 	if !cfg.LogJSON {
 		logger = logger.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-	zerolog.SetGlobalLevel(parseLogLevel(cfg.LogLevel))
+	zerolog.SetGlobalLevel(config.ParseLogLevel(cfg.LogLevel))
 
 	logger.Info().Msg("starting 1ai-affiliate edge redirect server")
 
@@ -59,7 +60,7 @@ func main() {
 
 	// Kafka producer (optional)
 	var producer *kafka.Producer
-	producer, kafkaErr := kafka.NewProducer(cfg.KafkaBrokers, cfg.KafkaTopic, logger)
+	producer, kafkaErr := kafka.NewProducer(cfg.KafkaBrokers, cfg.KafkaTopic, cfg.KafkaConversionTopic, logger)
 	if kafkaErr != nil {
 		logger.Warn().Err(kafkaErr).Msg("kafka not available, event streaming disabled")
 		producer = nil
@@ -112,7 +113,6 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(5 * time.Second))
-	r.Use(prometheusMiddleware)
 
 	// Health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -262,7 +262,7 @@ func (s *Server) handleClick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 9. Publish click event to Kafka (async, non-blocking)
-	data, err := event.Marshal()
+	data, err := json.Marshal(event)
 	if err == nil {
 		if err := s.kafka.SendClick(r.Context(), clickID, data); err != nil {
 			s.logger.Error().Err(err).Msg("failed to publish click event")
@@ -315,7 +315,7 @@ func (s *Server) handlePostback(w http.ResponseWriter, r *http.Request) {
 		IP:           realIP(r),
 	}
 
-	data, err := conv.Marshal()
+	data, err := json.Marshal(conv)
 	if err == nil {
 		if err := s.kafka.SendConversion(r.Context(), conv.ConversionID, data); err != nil {
 			s.logger.Error().Err(err).Msg("failed to publish conversion event")
@@ -367,24 +367,3 @@ func realIP(r *http.Request) string {
 	return host
 }
 
-func parseLogLevel(level string) zerolog.Level {
-	switch strings.ToLower(level) {
-	case "debug":
-		return zerolog.DebugLevel
-	case "info":
-		return zerolog.InfoLevel
-	case "warn":
-		return zerolog.WarnLevel
-	case "error":
-		return zerolog.ErrorLevel
-	default:
-		return zerolog.InfoLevel
-	}
-}
-
-func prometheusMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: record request count and latency
-		next.ServeHTTP(w, r)
-	})
-}

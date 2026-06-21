@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-error_reporting(E_ALL);
-ini_set("display_errors", true);
+error_reporting(E_ERROR | E_PARSE);
+ini_set("display_errors", false);
 ob_start();
 // only allow numeric acip's
 
@@ -20,8 +20,8 @@ elseif (isset($_COOKIE['tracking1aipci']))
 
 if (! is_numeric($acip))
     die();
-include_once (substr(__DIR__, 0,-21) . '/config/connect2.php');
-include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
+include_once (dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 if(isset($_COOKIE['tracking1aisubid'])) { //if there's a cookie use it
     $click_id = $_COOKIE['tracking1aisubid'];

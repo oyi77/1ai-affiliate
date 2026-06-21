@@ -51,7 +51,6 @@ type Manager struct {
 	logger   zerolog.Logger
 }
 
-// NewManager creates a new webhook manager.
 func NewManager(logger zerolog.Logger) *Manager {
 	return &Manager{
 		webhooks: make(map[int64][]*Webhook),
@@ -68,14 +67,12 @@ func NewManager(logger zerolog.Logger) *Manager {
 	}
 }
 
-// Register adds a webhook for a user.
 func (m *Manager) Register(wh *Webhook) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.webhooks[wh.UserID] = append(m.webhooks[wh.UserID], wh)
 }
 
-// Unregister removes a webhook by ID.
 func (m *Manager) Unregister(userID, webhookID int64) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -119,18 +116,18 @@ func (m *Manager) Dispatch(userID int64, event EventType, data interface{}) {
 			continue
 		}
 
-		go m.send(wh, body)
+		go m.send(wh, body, event)
 	}
 }
 
-func (m *Manager) send(wh *Webhook, body []byte) {
+func (m *Manager) send(wh *Webhook, body []byte, eventType EventType) {
 	req, err := http.NewRequest("POST", wh.URL, bytes.NewReader(body))
 	if err != nil {
 		m.logger.Error().Err(err).Str("url", wh.URL).Msg("webhook: failed to create request")
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-1AI-Event", string(wh.Events[0]))
+	req.Header.Set("X-1AI-Event", string(eventType))
 
 	// Sign the payload if secret is configured
 	if wh.Secret != "" {

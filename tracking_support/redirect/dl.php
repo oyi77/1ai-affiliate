@@ -6,8 +6,8 @@ $t1aiid = $_GET['t1aiid'] ?? '';
 if (!is_numeric($t1aiid) || (int)$t1aiid <= 0) die();
 
 # check to see if mysql connection works, if not fail over to cached stored redirect urls
-include_once(substr(__DIR__, 0, -21) . '/config/connect2.php');
-include_once(substr(__DIR__, 0, -21) . '/config/class-dataengine-slim.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 $locationRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::location($db);
 $trackingRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::tracking($db);

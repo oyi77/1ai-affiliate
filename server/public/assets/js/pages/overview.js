@@ -16,14 +16,15 @@ PageRenderers.overview = async function(el) {
       
       <!-- Voluum-style metrics row -->
       <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-        ${DOM.statCard({ label:'Visits', value: ((stats.clicks24h||0)*5000).toLocaleString(), accent:'blue' })}
-        ${DOM.statCard({ label:'Clicks', value: ((stats.total_clicks||0)*1500).toLocaleString(), accent:'indigo' })}
-        ${DOM.statCard({ label:'Conversions', value: ((stats.attributed_conversions||0)*120).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Revenue', value: '$' + ((stats.revenueMtd||0)*4500).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Cost', value: '$' + ((stats.cost||0)*1500).toLocaleString(), accent:'red' })}
-        ${DOM.statCard({ label:'Profit', value: '$' + ((stats.profit||0)*3000).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Visits', value: (stats.clicks24h||0).toLocaleString(), accent:'blue' })}
+        ${DOM.statCard({ label:'Clicks', value: (stats.total_clicks||0).toLocaleString(), accent:'indigo' })}
+        ${DOM.statCard({ label:'Conversions', value: (stats.attributed_conversions||0).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Revenue', value: '$' + (stats.revenueMtd||0).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Cost', value: '$' + (stats.cost||0).toLocaleString(), accent:'red' })}
+        ${DOM.statCard({ label:'Profit', value: '$' + (stats.profit||0).toLocaleString(), accent:'yellow' })}
       </div>
 
+      ${stats.chartData ? `
       <!-- Chart Row -->
       <div class="card" style="margin-bottom: 24px; padding: 24px;">
         <h3 style="display:flex; justify-content:space-between; align-items:center;">
@@ -38,62 +39,38 @@ PageRenderers.overview = async function(el) {
           <canvas id="mainChart"></canvas>
         </div>
       </div>
+      ` : ''}
 
       <!-- Data Table -->
       <div class="card">
         <h3>Campaign Performance</h3>
-        ${DOM.table(
-          ['Campaign', 'Visits', 'Clicks', 'CTR', 'Conversions', 'CR', 'EPC', 'Revenue', 'ROI'],
-          [
-            ['Smartlink - US Dating', '2,401', '840', '34.9%', '42', '5.0%', '$0.85', '$714.00', DOM.badge('+142%', 'green')],
-            ['Sweepstakes WW - Main', '8,102', '1,200', '14.8%', '105', '8.7%', '$0.21', '$252.00', DOM.badge('+45%', 'green')],
-            ['Nutra - EU Direct', '450', '210', '46.6%', '8', '3.8%', '$1.45', '$304.50', DOM.badge('-12%', 'red')],
-          ]
-        )}
+        ${DOM.emptyState('No campaign data yet', 'Campaign performance will appear here once tracking begins.')}
       </div>
     `;
 
-    // Initialize Chart.js
-    setTimeout(() => {
-      const ctx = document.getElementById('mainChart');
-      if (ctx && window.Chart) {
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [
-              {
-                label: 'Visits',
-                data: [1200, 1900, 1500, 2200, 1800, 2900, 3100],
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59,130,246,0.1)',
-                tension: 0.4,
-                fill: true
+    // Initialize Chart.js only if real chart data exists
+    if (stats.chartData) {
+      setTimeout(() => {
+        const ctx = document.getElementById('mainChart');
+        if (ctx && window.Chart) {
+          new Chart(ctx, {
+            type: 'line',
+            data: stats.chartData,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { labels: { color: '#94a3b8' } }
               },
-              {
-                label: 'Revenue ($)',
-                data: [300, 450, 380, 500, 420, 750, 800],
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16,185,129,0.1)',
-                tension: 0.4,
-                fill: true
+              scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
               }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { labels: { color: '#94a3b8' } }
-            },
-            scales: {
-              y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-              x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
             }
-          }
-        });
-      }
-    }, 100);
+          });
+        }
+      }, 100);
+    }
 
   } catch(e) { 
     el.innerHTML = '<div class="card"><p>Unable to load dashboard.</p></div>'; 

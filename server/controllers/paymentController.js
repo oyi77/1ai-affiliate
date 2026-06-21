@@ -13,7 +13,9 @@ async function createTransaction(req, res) {
   if (!amount || !paymentMethod) {
     return res.status(400).json({ error: 'Amount and payment method required' });
   }
-
+  if (!tripayConfig.apiKey || !tripayConfig.privateKey || !tripayConfig.merchantCode) {
+    return res.status(503).json({ error: 'Payment gateway not configured. Set TRIPAY_API_KEY, TRIPAY_PRIVATE_KEY, TRIPAY_MERCHANT_CODE in .env' });
+  }
   try {
     const merchantRef = 'PAY-' + Date.now() + '-' + crypto.randomBytes(4).toString('hex');
     const rawSignature = tripayConfig.merchantCode + merchantRef + parseInt(amount);
