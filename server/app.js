@@ -80,6 +80,7 @@ app.use('/api/admin/stats', require('./routes/statsSSE'));
 app.use('/api/poster', require('./routes/poster'));
 app.use('/api/pipeline', require('./routes/pipeline'));
 app.use('/api/admin', require('./routes/gapfill'));
+app.use('/api/admin/services', require('./routes/services'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
