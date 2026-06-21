@@ -306,6 +306,13 @@
       border-radius: 8px; 
     }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* Collapsible sidebar sections */
+    .nav-section.collapsed .nav-item { display: none; }
+    .nav-section.collapsed { padding-bottom: 4px; }
+    .nav-section-label:hover { color: var(--text); }
+    .section-chevron svg { width: 12px; height: 12px; opacity: 0.5; }
+    .nav-section-label:hover .section-chevron svg { opacity: 1; }
     
     /* Mobile nav */
     .hamburger { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 8px; border-radius: 6px; }
