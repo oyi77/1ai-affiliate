@@ -125,6 +125,7 @@ PageRenderers.admin = async function(el) {
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load system information.</p></div>'; }
 };
+PageRenderers.system = PageRenderers.admin;
 
 PageRenderers.clickservers = async function(el) {
   try {
