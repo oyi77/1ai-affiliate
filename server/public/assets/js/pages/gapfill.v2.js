@@ -9,6 +9,7 @@ window.PageRenderers = window.PageRenderers || {};
 PageRenderers['realtime']       = function(el) { Router.navigate('clicks'); };
 PageRenderers['click-tracker']  = function(el) { Router.navigate('clicks'); };
 PageRenderers['api-docs']       = function(el) { Router.navigate('docs'); };
+PageRenderers['settings']       = function(el) { Router.navigate('profile'); };
 
 /* ── 1. Traffic Sources ──────────────────────────────────────────── */
 PageRenderers['traffic-sources'] = async function(el) {

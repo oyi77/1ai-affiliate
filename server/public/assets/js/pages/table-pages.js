@@ -113,6 +113,12 @@ function makeTablePage(url, title, subtitle, mapFn, headers) {
       const items = r.data || [];
       el.innerHTML = `${DOM.pageHeader(title, subtitle)}
         <div class="card">${items.length ? DOM.table(headers, items.map(mapFn)) : DOM.emptyState('No data', `No ${slug} found. Data will appear here as it is collected.`)}</div>`;
-    } catch(e) { el.innerHTML = `<div class="card"><p>Unable to load ${slug}.</p></div>`; }
+    } catch(e) {
+      if (e.status === 403) {
+        el.innerHTML = `<div class="card"><p style="color:var(--red)">🔒 Access denied. You don't have permission to view ${slug}.</p></div>`;
+      } else {
+        el.innerHTML = `<div class="card"><p>Unable to load ${slug}.</p></div>`;
+      }
+    }
   };
 }
