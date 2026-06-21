@@ -395,7 +395,7 @@ router.get('/notifications', async (req, res) => {
 // ── POST /notifications/read-all ────────────────────────────────────
 router.post('/notifications/read-all', async (req, res) => {
   try {
-    await pool.query('UPDATE 1ai_notifications SET is_read = 1 WHERE user_id = ?', [req.user.id]);
+    await pool.query('UPDATE 1ai_notifications SET read_at = UNIX_TIMESTAMP() WHERE user_id = ?', [req.user.id]);
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
