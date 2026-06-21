@@ -273,4 +273,36 @@ async function regenerateApiKey(req, res) {
   }
 }
 
-module.exports = { login, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey };
+async function register(req, res) {
+  const { username, email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+  try {
+    const [existing] = await pool.query('SELECT user_id FROM 1ai_users WHERE user_email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(409).json({ error: 'Email already registered' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await pool.query(
+      `INSERT INTO 1ai_users (user_name, user_email, user_pass, user_role, user_date_added)
+       VALUES (?, ?, ?, 'affiliate', UNIX_TIMESTAMP())`,
+      [username || email.split('@')[0], email, hashedPassword]
+    );
+    const userId = result.insertId;
+    const affiliateCode = 'AFF' + userId.toString().padStart(6, '0');
+    await pool.query(
+      `INSERT INTO 1ai_affiliates (user_id, affiliate_code, tier, created_at, updated_at)
+       VALUES (?, ?, 'starter', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+      [userId, affiliateCode]
+    );
+    const user = { user_id: userId, user_email: email, user_role: 'affiliate' };
+    const token = await generateToken(user);
+    res.json({ token, user: { id: userId, email, role: 'affiliate' } });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+module.exports = { login, register, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey };

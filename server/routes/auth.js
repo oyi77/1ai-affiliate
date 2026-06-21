@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { login, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey } = require('../controllers/authController');
+const { login, register, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey } = require('../controllers/authController');
 const { authenticate } = require('../middleware/auth');
 const { rateLimitAuth } = require('../middleware/rateLimit');
 
 router.post('/login', rateLimitAuth, login);
+router.post('/register', rateLimitAuth, register);
 router.get('/me', authenticate, getMe);
 router.post('/forgot-password', rateLimitAuth, forgotPassword);
 router.post('/reset-password', rateLimitAuth, resetPassword);

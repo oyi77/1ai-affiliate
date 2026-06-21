@@ -342,4 +342,147 @@ router.get('/saldo-budget', async (req, res) => {
   }
 });
 
+// ── GET /advertisers ────────────────────────────────────────────────
+router.get('/advertisers', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 500);
+    const [rows] = await pool.query(
+      `SELECT a.*, u.user_email, u.user_name FROM 1ai_advertisers a
+       LEFT JOIN 1ai_users u ON u.user_id = a.user_id
+       ORDER BY a.id DESC LIMIT ?`, [limit]
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /clicks ─────────────────────────────────────────────────────
+router.get('/clicks', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 100, 1000);
+    const [rows] = await pool.query(
+      `SELECT click_id, click_time, aff_campaign_id, click_payout, click_ip
+       FROM 1ai_clicks ORDER BY click_id DESC LIMIT ?`, [limit]
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /conversions/manual ────────────────────────────────────────
+router.post('/conversions/manual', async (req, res) => {
+  try {
+    const { click_id, offer_id, payout } = req.body;
+    if (!click_id || !offer_id) return res.status(400).json({ error: 'click_id and offer_id required' });
+    const [result] = await pool.query(
+      'INSERT INTO 1ai_conversion_logs (click_id, aff_campaign_id, conversion_time) VALUES (?, ?, UNIX_TIMESTAMP())',
+      [click_id, offer_id]
+    );
+    res.json({ success: true, id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /notifications ──────────────────────────────────────────────
+router.get('/notifications', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const [rows] = await pool.query(
+      `SELECT * FROM 1ai_notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`,
+      [req.user.id, limit]
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /notifications/read-all ────────────────────────────────────
+router.post('/notifications/read-all', async (req, res) => {
+  try {
+    await pool.query('UPDATE 1ai_notifications SET is_read = 1 WHERE user_id = ?', [req.user.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /shopee-accounts ────────────────────────────────────────────
+router.get('/shopee-accounts', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM 1ai_shopee_reports ORDER BY id DESC LIMIT 50');
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /stats/daily ────────────────────────────────────────────────
+router.get('/stats/daily', async (req, res) => {
+  try {
+    const range = req.query.range || '30d';
+    const days = parseInt(range) || 30;
+    const cutoff = Math.floor(Date.now() / 1000) - days * 86400;
+    const [rows] = await pool.query(
+      `SELECT DATE(FROM_UNIXTIME(click_time)) as date,
+              COUNT(*) as clicks,
+              SUM(click_payout) as revenue
+       FROM 1ai_clicks WHERE click_time >= ? GROUP BY date ORDER BY date DESC`,
+      [cutoff]
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /settings/notifications ─────────────────────────────────────
+router.get('/settings/notifications', async (req, res) => {
+  try {
+    const [[row]] = await pool.query(
+      'SELECT * FROM 1ai_settings WHERE name = ?',
+      ['notifications_' + req.user.id]
+    );
+    res.json(row ? JSON.parse(row.value || '{}') : { email: true, push: false, telegram: false });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /settings/payouts/rules ────────────────────────────────────
+router.get('/settings/payouts/rules', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM 1ai_payout_rules ORDER BY id DESC');
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /settings/telegram ──────────────────────────────────────────
+router.get('/settings/telegram', async (req, res) => {
+  try {
+    const [[row]] = await pool.query('SELECT * FROM 1ai_telegram_config WHERE user_id = ?', [req.user.id]);
+    res.json(row || { bot_token: null, channel_id: null, enabled: false });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /settings/telegram/test ────────────────────────────────────
+router.post('/settings/telegram/test', async (req, res) => {
+  try {
+    res.json({ success: true, message: 'Test message queued' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /settings/white-label ───────────────────────────────────────
+router.get('/settings/white-label', async (req, res) => {
+  try {
+    const [[row]] = await pool.query('SELECT * FROM 1ai_white_label WHERE user_id = ?', [req.user.id]);
+    res.json(row || { logo_url: null, brand_name: null, custom_domain: null });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /campaigns/:id ──────────────────────────────────────────────
+router.get('/campaigns/:id', async (req, res) => {
+  try {
+    const [[row]] = await pool.query('SELECT * FROM 1ai_aff_campaigns WHERE aff_campaign_id = ?', [req.params.id]);
+    if (!row) return res.status(404).json({ error: 'Campaign not found' });
+    res.json(row);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /offers/:id ─────────────────────────────────────────────────
+router.get('/offers/:id', async (req, res) => {
+  try {
+    const [[row]] = await pool.query('SELECT * FROM 1ai_offers WHERE id = ?', [req.params.id]);
+    if (!row) return res.status(404).json({ error: 'Offer not found' });
+    res.json(row);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
