@@ -41,10 +41,6 @@ PageRenderers.clicks = async function(el) {
 
     // Connect to SSE stream
     const token = Auth.token();
-    const evtSource = new EventSource('/api/admin/stats/stream', { withCredentials: false });
-    // EventSource doesn't support custom headers, so we pass token as query param
-    // The SSE endpoint uses authenticate middleware which checks Bearer token
-    // Workaround: use fetch with ReadableStream instead
     const feed = document.getElementById('rt-feed');
     const dot = document.getElementById('sse-dot');
     const label = document.getElementById('sse-label');
