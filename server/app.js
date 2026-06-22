@@ -56,7 +56,15 @@ app.use((req, res, next) => {
 });
 
 // Static files — shared with PHP public dir
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    // Never cache HTML/JS/CSS — always fetch latest on deploy
+    if (/\.(html|js|css)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      res.setHeader('CDN-Cache-Control', 'no-cache');
+    }
+  }
+}));
 
 // API documentation
 app.get('/api-docs', (req, res) => {
