@@ -29,12 +29,15 @@ async function routeTrafficByHash(req, res) {
     const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : offer.id;
     const clickId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 
-    await pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]);
+    // Update link click count + log to analytics table
+    await Promise.all([
+      pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]),
+      pool.query(
+        'INSERT INTO 1ai_clicks (click_time, aff_campaign_id, click_payout, click_ip) VALUES (UNIX_TIMESTAMP(), ?, ?, ?)',
+        [campaignId, offer.payout || 0, req.ip || req.connection?.remoteAddress || '']
+      )
+    ]);
 
-    const offerBase = process.env.OFFER_BASE_URL || 'https://example.com/affiliate';
-    const redirectUrl = `${offerBase}/offer/${offer.id}?aid=${link.affiliate_id}&cid=${campaignId}&click=${clickId}&subid=${subid}`;
-
-    res.redirect(redirectUrl);
   } catch (err) {
     console.error('Smartlink route error:', err);
     res.status(500).send('Routing error');

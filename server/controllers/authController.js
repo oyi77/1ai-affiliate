@@ -239,7 +239,7 @@ async function changePassword(req, res) {
 async function getApiKey(req, res) {
   try {
     const [rows] = await pool.query(
-      'SELECT api_key, scope FROM api_keys WHERE user_id = ? LIMIT 1',
+      'SELECT api_key, scope FROM 1ai_api_keys WHERE user_id = ? LIMIT 1',
       [req.user.id]
     );
     if (rows.length === 0) {
@@ -259,11 +259,11 @@ async function regenerateApiKey(req, res) {
   try {
     const apiKey = crypto.randomBytes(32).toString('hex');
     await pool.query(
-      'DELETE FROM api_keys WHERE user_id = ?',
+      'DELETE FROM 1ai_api_keys WHERE user_id = ?',
       [req.user.id]
     );
     await pool.query(
-      "INSERT INTO api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
+      "INSERT INTO 1ai_api_keys (api_key, user_id, scope, created_at) VALUES (?, ?, '[*]', UNIX_TIMESTAMP())",
       [apiKey, req.user.id]
     );
     res.json({ api_key: apiKey, message: 'API key regenerated.' });
