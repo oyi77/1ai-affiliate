@@ -117,12 +117,18 @@ app.get('/health', async (req, res) => {
 app.get('/admin', (req, res) => res.redirect('/admin/'));
 app.get('/client', (req, res) => res.redirect('/client/'));
 app.get('/admin/*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public/admin/index.html'));
 });
 app.get('/client/*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
 app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public/admin/index.html'));
 });
 
