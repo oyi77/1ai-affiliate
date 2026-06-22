@@ -46,6 +46,13 @@ async function generateSmartlink(req, res) {
   if (!offer_id) return res.status(400).json({ error: 'offer_id required' });
 
   try {
+    // Validate offer exists and is active
+    const [offerCheck] = await pool.query(
+      'SELECT id FROM 1ai_offers WHERE id = ? AND status = ?',
+      [offer_id, 'active']
+    );
+    if (!offerCheck.length) return res.status(404).json({ error: 'Offer not found or inactive' });
+
     const [aff] = await pool.query(
       'SELECT id FROM 1ai_affiliates WHERE user_id = ?',
       [req.user.id]

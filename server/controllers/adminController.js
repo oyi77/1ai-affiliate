@@ -423,7 +423,9 @@ async function createOffer(req, res) {
     const role = req.user.role;
     if (role === 'affiliate') return res.status(403).json({ error: 'Unauthorized' });
 
-    const { name, payout_amount, network_payout, network_id } = req.body;
+    const { name, network_id } = req.body;
+    const payoutAmount = req.body.payout_amount || req.body.payout || 0;
+    const networkPayout = req.body.network_payout || payoutAmount;
     let adv_id = req.body.advertiser_id || null;
     
     // Admin can explicitly set advertiser_id; advertisers always self-assign
@@ -434,7 +436,7 @@ async function createOffer(req, res) {
     await pool.query(
       `INSERT INTO 1ai_offers (name, payout, network_payout, advertiser_id, network_id, created_at, status) 
        VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP(), 'active')`,
-      [name, payout_amount || 0, network_payout || payout_amount || 0, adv_id, network_id || null]
+      [name, payoutAmount, networkPayout, adv_id, network_id || null]
     );
     const offerId = (await queryOne('SELECT LAST_INSERT_ID() AS id')).id;
 
