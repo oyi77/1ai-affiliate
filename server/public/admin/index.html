@@ -382,25 +382,25 @@
       </div>
       <h2>1AI Affiliate Hub</h2>
       <div id="login-form">
-        <div class="form-group"><label>Username or Email</label><input type="text" id="login-user" placeholder="admin"></div>
-        <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+        <div class="form-group"><label>Username or Email</label><input type="text" id="login-user" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
         <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-top:8px">Sign In to Dashboard</button>
         <div id="login-err" class="error-msg"></div>
         <div style="text-align:center;margin-top:20px"><a class="link" onclick="showForgotPassword()">Forgot your password?</a></div>
       </div>
       <div id="forgot-form" style="display:none">
         <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5;text-align:center">Enter your username and email to receive a secure reset key.</p>
-        <div class="form-group"><label>Username</label><input type="text" id="forgot-user" placeholder="admin"></div>
-        <div class="form-group"><label>Email</label><input type="email" id="forgot-email" placeholder="admin@example.com"></div>
+        <div class="form-group"><label>Username</label><input type="text" id="forgot-user" placeholder="admin" onkeydown="if(event.key==='Enter')doForgotPassword()"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="forgot-email" placeholder="admin@example.com" onkeydown="if(event.key==='Enter')doForgotPassword()"></div>
         <button class="btn btn-primary btn-block" onclick="doForgotPassword()">Send Reset Key</button>
         <div id="forgot-msg" class="error-msg"></div>
         <div style="text-align:center;margin-top:20px"><a class="link" onclick="showLoginForm()">← Back to login</a></div>
       </div>
       <div id="reset-form" style="display:none">
         <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5;text-align:center">Enter the reset key sent to your email and your new password.</p>
-        <div class="form-group"><label>Reset Key</label><input type="text" id="reset-key" placeholder="abc123..."></div>
-        <div class="form-group"><label>New Password</label><input type="password" id="reset-pass" placeholder="Min 6 characters"></div>
-        <div class="form-group"><label>Confirm Password</label><input type="password" id="reset-confirm" placeholder="Re-enter password"></div>
+        <div class="form-group"><label>Reset Key</label><input type="text" id="reset-key" placeholder="abc123..." onkeydown="if(event.key==='Enter')doResetPassword()"></div>
+        <div class="form-group"><label>New Password</label><input type="password" id="reset-pass" placeholder="Min 6 characters" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
+        <div class="form-group"><label>Confirm Password</label><input type="password" id="reset-confirm" placeholder="Re-enter password" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
         <button class="btn btn-primary btn-block" onclick="doResetPassword()">Reset Password</button>
         <div id="reset-msg" class="error-msg"></div>
         <div id="reset-success" class="success-msg"></div>
