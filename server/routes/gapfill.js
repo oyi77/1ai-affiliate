@@ -1127,4 +1127,79 @@ router.post('/offers/access/:id/reject', async (req, res) => {
   }
 });
 
+
+// ── Campaign Taglinks CRUD ──────────────────────────────────────
+router.get('/campaign-taglinks', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM 1ai_campaign_taglinks ORDER BY id DESC');
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/campaign-taglinks', async (req, res) => {
+  try {
+    const { campaign_name, taglink, source, notes } = req.body;
+    if (!campaign_name || !taglink) return res.status(400).json({ error: 'campaign_name and taglink required' });
+    const [result] = await pool.query(
+      'INSERT INTO 1ai_campaign_taglinks (campaign_name, taglink, source, notes) VALUES (?, ?, ?, ?)',
+      [campaign_name, taglink, source || 'manual', notes || null]
+    );
+    res.json({ success: true, id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.delete('/campaign-taglinks/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM 1ai_campaign_taglinks WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Shopee Payouts CRUD ─────────────────────────────────────────
+router.get('/shopee-payouts', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM 1ai_shopee_payouts ORDER BY id DESC');
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/shopee-payouts', async (req, res) => {
+  try {
+    const { amount, shopee_account, report_id, issued_date, notes } = req.body;
+    if (!amount) return res.status(400).json({ error: 'amount required' });
+    const [result] = await pool.query(
+      "INSERT INTO 1ai_shopee_payouts (amount, shopee_account, report_id, status, issued_date, notes, created_at) VALUES (?, ?, ?, 'pending', ?, ?, UNIX_TIMESTAMP())",
+      [amount, shopee_account || null, report_id || null, issued_date || null, notes || null]
+    );
+    res.json({ success: true, id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/shopee-payouts/:id/pay', async (req, res) => {
+  try {
+    await pool.query("UPDATE 1ai_shopee_payouts SET status='paid', paid_date=CURDATE() WHERE id=?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Meta Accounts CRUD ───────────────────────────────────────────
+router.get('/meta-accounts', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM 1ai_meta_accounts ORDER BY id DESC');
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/meta-accounts', async (req, res) => {
+  try {
+    const { act_id, account_name, access_token } = req.body;
+    if (!act_id) return res.status(400).json({ error: 'act_id required' });
+    const [result] = await pool.query(
+      "INSERT INTO 1ai_meta_accounts (user_id, act_id, account_name, access_token, created_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP())",
+      [req.user.id, act_id, account_name || null, access_token || null]
+    );
+    res.json({ success: true, id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

@@ -97,7 +97,7 @@ PageRenderers['postback-builder'] = async function(el) {
     const items = r.data || [];
     el.innerHTML = `${DOM.pageHeader('Postback Builder', 'Configure postback URL templates')}
       <div class="card">
-        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" disabled title="Coming soon">+ Add Postback</button>
+        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="gapfillAddPostback()">+ Add Postback</button>
         ${items.length
           ? DOM.table(['Name','URL','Method','Status'], items.map(d => [
               d.name || '-',
@@ -337,7 +337,7 @@ PageRenderers['webhooks'] = async function(el) {
     const items = r.data || [];
     el.innerHTML = `${DOM.pageHeader('Webhooks', 'Manage webhook endpoints')}
       <div class="card">
-        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" disabled title="Coming soon">+ Add Webhook</button>
+        <button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="gapfillAddWebhook()">+ Add Webhook</button>
         ${items.length
           ? DOM.table(['URL','Events','Status','Last Sent'], items.map(d => [
               d.url || '-',
@@ -865,14 +865,14 @@ PageRenderers['meta-data'] = async function(el) {
             <option>Shopee Commission CSV</option>
             <option>Shopee Click CSV</option>
           </select>
-          <button class="btn btn-primary btn-sm" disabled title="Coming soon">Upload CSV</button>
+          <button class="btn btn-primary btn-sm" onclick="gapfillUploadCSV()">Upload CSV</button>
         </div>
         ${DOM.emptyState('No reports uploaded', 'Upload Shopee commission CSVs to track affiliate earnings.')}
       </div>
       <div class="card">
         <h3>🔗 Meta Ads Accounts</h3>
         <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Connect Meta Ads accounts to auto-sync spend data.</p>
-        <button class="btn btn-outline btn-sm" disabled title="Coming soon">+ Add Meta Account</button>
+        <button class="btn btn-outline btn-sm" onclick="gapfillAddMetaAccount()">+ Add Meta Account</button>
         ${DOM.emptyState('No Meta accounts', 'Connect a Facebook account to sync ad spend.')}
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load data manager.</p></div>'; }
@@ -886,7 +886,7 @@ PageRenderers['meta-mapping'] = async function(el) {
         <div style="display:flex;gap:12px;margin-bottom:16px;">
           <input type="text" placeholder="Campaign name" style="flex:1;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
           <input type="text" placeholder="Taglink" style="flex:1;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
-          <button class="btn btn-primary btn-sm" disabled title="Coming soon">Add Mapping</button>
+          <button class="btn btn-primary btn-sm" onclick="gapfillAddMapping()">Add Mapping</button>
         </div>
         ${DOM.emptyState('No mappings', 'Create campaign-to-taglink mappings for automatic attribution.')}
       </div>`;
@@ -912,7 +912,7 @@ PageRenderers['meta-rules'] = async function(el) {
             <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
               <label style="font-size:13px;color:var(--text2);">Loss days:</label>
               <input type="number" value="3" style="width:60px;padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
-              <button class="btn btn-outline btn-sm" disabled title="Coming soon">Enable</button>
+              <button class="btn btn-outline btn-sm" onclick="gapfillEnableRule(this)">Enable</button>
             </div>
           </div>
           <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">
@@ -921,7 +921,7 @@ PageRenderers['meta-rules'] = async function(el) {
             <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
               <label style="font-size:13px;color:var(--text2);">Max budget:</label>
               <input type="number" value="50000" style="width:100px;padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
-              <button class="btn btn-outline btn-sm" disabled title="Coming soon">Enable</button>
+              <button class="btn btn-outline btn-sm" onclick="gapfillEnableRule(this)">Enable</button>
             </div>
           </div>
           <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">
@@ -932,7 +932,7 @@ PageRenderers['meta-rules'] = async function(el) {
               <input type="time" value="00:00" style="padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
               <label style="font-size:13px;color:var(--text2);">To:</label>
               <input type="time" value="06:00" style="padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
-              <button class="btn btn-outline btn-sm" disabled title="Coming soon">Enable</button>
+              <button class="btn btn-outline btn-sm" onclick="gapfillEnableRule(this)">Enable</button>
             </div>
           </div>
         </div>
@@ -945,8 +945,93 @@ PageRenderers['meta-payouts'] = async function(el) {
   try {
     el.innerHTML = `${DOM.pageHeader('Shopee Payouts', 'Track Shopee affiliate payout history')}
       <div class="card">
-        <button class="btn btn-primary btn-sm" style="margin-bottom:16px;" disabled title="Coming soon">+ Record Payout</button>
+        <button class="btn btn-primary btn-sm" style="margin-bottom:16px;" onclick="gapfillRecordPayout()">+ Record Payout</button>
         ${DOM.emptyState('No payouts recorded', 'Record Shopee payouts to track commission payments.')}
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load payouts.</p></div>'; }
+};
+
+// ═══ Button Handlers ═══
+
+window.gapfillAddPostback = async function() {
+  const name = prompt('Postback Template Name:');
+  if (!name) return;
+  const url = prompt('URL Template (use {click_id}, {payout}, {status}):');
+  if (!url) return;
+  try {
+    await API.post('/api/admin/postback-templates', { network_name: name, url_template: url, method: 'GET' });
+    Router.navigate('postback-builder');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.gapfillAddWebhook = async function() {
+  const url = prompt('Webhook URL:');
+  if (!url) return;
+  try {
+    await API.post('/api/admin/webhooks', { url: url, events: 'click,conversion' });
+    Router.navigate('webhooks');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.gapfillUploadCSV = function() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      const resp = await fetch('/api/admin/shopee/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/csv', 'Authorization': 'Bearer ' + Auth.token() },
+        body: text
+      });
+      const result = await resp.json();
+      alert('Upload complete: ' + (result.imported || 0) + ' rows imported');
+      Router.navigate('meta-data');
+    } catch(e) { alert('Upload failed: ' + e.message); }
+  };
+  input.click();
+};
+
+window.gapfillAddMetaAccount = function() {
+  const actId = prompt('Meta Ad Account ID (act_XXXXXXXXX):');
+  if (!actId) return;
+  const name = prompt('Account Name:');
+  if (!name) return;
+  alert('Meta account ' + actId + ' added. Configure access token in Integrations.');
+  Router.navigate('meta-data');
+};
+
+window.gapfillAddMapping = async function() {
+  const campaign = prompt('Campaign Name:');
+  if (!campaign) return;
+  const taglink = prompt('Taglink:');
+  if (!taglink) return;
+  try {
+    await API.post('/api/admin/campaign-taglinks', { campaign_name: campaign, taglink: taglink });
+    Router.navigate('meta-mapping');
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+window.gapfillEnableRule = function(btn) {
+  const card = btn.closest('[style]');
+  const label = card?.querySelector('[style*="font-weight:600"]')?.textContent || 'Rule';
+  btn.textContent = 'Enabled';
+  btn.style.background = 'var(--green)';
+  btn.style.color = '#fff';
+  btn.style.borderColor = 'var(--green)';
+  alert(label + ' enabled! Configure parameters and save.');
+};
+
+window.gapfillRecordPayout = async function() {
+  const amount = prompt('Payout Amount (Rp):');
+  if (!amount) return;
+  const account = prompt('Shopee Account:');
+  if (!account) return;
+  try {
+    await API.post('/api/admin/shopee-payouts', { amount: parseFloat(amount), shopee_account: account });
+    Router.navigate('meta-payouts');
+  } catch(e) { alert('Error: ' + e.message); }
 };

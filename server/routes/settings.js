@@ -67,4 +67,31 @@ router.get('/white-label', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// Feature toggles
+router.get('/features', async (req, res) => {
+  try {
+    const pool = require('../db/mysql');
+    const [rows] = await pool.query("SELECT name, value FROM 1ai_settings WHERE name LIKE 'feature_%'");
+    const features = {};
+    rows.forEach(r => {
+      try { features[r.name] = JSON.parse(r.value); } catch { features[r.name] = { enabled: false }; }
+    });
+    res.json({ data: features });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/features/:name', async (req, res) => {
+  try {
+    const pool = require('../db/mysql');
+    const { enabled, config } = req.body;
+    const value = JSON.stringify({ enabled: !!enabled, ...(config || {}) });
+    await pool.query(
+      "INSERT INTO 1ai_settings (name, value, updated_at) VALUES (?, ?, UNIX_TIMESTAMP()) ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = VALUES(updated_at)",
+      ['feature_' + req.params.name, value]
+    );
+    res.json({ success: true, feature: req.params.name, enabled: !!enabled });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
