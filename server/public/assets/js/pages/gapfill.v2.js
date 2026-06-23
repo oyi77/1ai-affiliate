@@ -812,3 +812,141 @@ PageRenderers['management'] = async function(el) {
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load management overview.</p></div>'; }
 };
+/* ── META × SHOPEE PAGES ──────────────────────────────────────── */
+
+// Meta × Shopee: Performance Dashboard
+PageRenderers['meta-performance'] = async function(el) {
+  try {
+    const [stats, spend] = await Promise.all([
+      API.get('/api/admin/stats'),
+      API.get('/api/admin/stats/daily').catch(() => ({ data: [] }))
+    ]);
+    const dailyData = spend.data || [];
+    const totalSpend = dailyData.reduce((s, d) => s + (d.spend || 0), 0);
+    const totalComm = dailyData.reduce((s, d) => s + (d.commission || 0), 0);
+    const roi = totalSpend > 0 ? ((totalComm - totalSpend) / totalSpend * 100).toFixed(1) : '0.0';
+    const roas = totalSpend > 0 ? (totalComm / totalSpend).toFixed(2) : '0.00';
+
+    el.innerHTML = `${DOM.pageHeader('Meta × Shopee Performance', 'Track ad spend vs Shopee commission — ROAS, ROI, profit')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Ad Spend', value: AppConfig.formatCurrency(totalSpend), accent:'red' })}
+        ${DOM.statCard({ label:'Commission', value: AppConfig.formatCurrency(totalComm), accent:'green' })}
+        ${DOM.statCard({ label:'Net Profit', value: AppConfig.formatCurrency(totalComm - totalSpend), accent: totalComm > totalSpend ? 'green' : 'red' })}
+        ${DOM.statCard({ label:'ROAS', value: roas + 'x', accent: parseFloat(roas) >= 1 ? 'green' : 'red' })}
+        ${DOM.statCard({ label:'ROI', value: roi + '%', accent: parseFloat(roi) >= 0 ? 'green' : 'red' })}
+      </div>
+      <div class="card">
+        <h3>Daily Breakdown</h3>
+        ${dailyData.length
+          ? DOM.table(['Date','Spend','Commission','Profit','ROAS','Orders'], dailyData.map(d => {
+              const sp = d.spend || 0;
+              const cm = d.commission || 0;
+              const r = sp > 0 ? (cm / sp).toFixed(2) : '-';
+              return [d.date || '-', AppConfig.formatCurrency(sp), AppConfig.formatCurrency(cm), AppConfig.formatCurrency(cm - sp), r + 'x', d.orders || 0];
+            }))
+          : DOM.emptyState('No daily data', 'Upload Shopee reports and sync Meta to see daily breakdown.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load Meta × Shopee performance.</p></div>'; }
+};
+
+// Meta × Shopee: Data Manager (upload Shopee CSV, sync Meta)
+PageRenderers['meta-data'] = async function(el) {
+  try {
+    const [meta, shopee] = await Promise.all([
+      API.get('/api/settings/features').catch(() => ({ data: {} })),
+      API.get('/api/admin/creatives?offer_id=0').catch(() => ({ data: [] }))
+    ]);
+    el.innerHTML = `${DOM.pageHeader('Data Manager', 'Upload Shopee reports and sync Meta Ads data')}
+      <div class="card">
+        <h3>📊 Shopee Affiliate Reports</h3>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Upload CSV exports from Shopee Affiliate dashboard. Commission + click data will be merged into reports.</p>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+          <select style="padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+            <option>Shopee Commission CSV</option>
+            <option>Shopee Click CSV</option>
+          </select>
+          <button class="btn btn-primary btn-sm" disabled title="Coming soon">Upload CSV</button>
+        </div>
+        ${DOM.emptyState('No reports uploaded', 'Upload Shopee commission CSVs to track affiliate earnings.')}
+      </div>
+      <div class="card">
+        <h3>🔗 Meta Ads Accounts</h3>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Connect Meta Ads accounts to auto-sync spend data.</p>
+        <button class="btn btn-outline btn-sm" disabled title="Coming soon">+ Add Meta Account</button>
+        ${DOM.emptyState('No Meta accounts', 'Connect a Facebook account to sync ad spend.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load data manager.</p></div>'; }
+};
+
+// Meta × Shopee: Tag Mapping
+PageRenderers['meta-mapping'] = async function(el) {
+  try {
+    el.innerHTML = `${DOM.pageHeader('Tag Mapping', 'Map Meta campaign names to Shopee taglinks')}
+      <div class="card">
+        <div style="display:flex;gap:12px;margin-bottom:16px;">
+          <input type="text" placeholder="Campaign name" style="flex:1;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+          <input type="text" placeholder="Taglink" style="flex:1;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+          <button class="btn btn-primary btn-sm" disabled title="Coming soon">Add Mapping</button>
+        </div>
+        ${DOM.emptyState('No mappings', 'Create campaign-to-taglink mappings for automatic attribution.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load tag mapping.</p></div>'; }
+};
+
+// Meta × Shopee: Auto Rules
+PageRenderers['meta-rules'] = async function(el) {
+  try {
+    el.innerHTML = `${DOM.pageHeader('Auto Rules', 'Automated campaign management for Meta × Shopee')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Auto Pause', value: 'OFF', accent:'yellow' })}
+        ${DOM.statCard({ label:'Auto Scale', value: 'OFF', accent:'yellow' })}
+        ${DOM.statCard({ label:'Sleep Schedule', value: 'OFF', accent:'yellow' })}
+        ${DOM.statCard({ label:'Budget Guard', value: 'OFF', accent:'yellow' })}
+      </div>
+      <div class="card">
+        <h3>⚙️ Rule Configuration</h3>
+        <div style="display:grid;gap:16px;margin-top:16px;">
+          <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">
+            <div style="font-weight:600;margin-bottom:8px;">Auto Pause</div>
+            <div style="color:var(--text2);font-size:13px;">Pause campaigns automatically if loss for N consecutive days.</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
+              <label style="font-size:13px;color:var(--text2);">Loss days:</label>
+              <input type="number" value="3" style="width:60px;padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+              <button class="btn btn-outline btn-sm" disabled title="Coming soon">Enable</button>
+            </div>
+          </div>
+          <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">
+            <div style="font-weight:600;margin-bottom:8px;">Auto Scale Budget</div>
+            <div style="color:var(--text2);font-size:13px;">Increase budget by 20% if ROAS ≥ 1.5x for 3 consecutive days.</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
+              <label style="font-size:13px;color:var(--text2);">Max budget:</label>
+              <input type="number" value="50000" style="width:100px;padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+              <button class="btn btn-outline btn-sm" disabled title="Coming soon">Enable</button>
+            </div>
+          </div>
+          <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">
+            <div style="font-weight:600;margin-bottom:8px;">Sleep Schedule</div>
+            <div style="color:var(--text2);font-size:13px;">Pause ads during specific hours (e.g., midnight–6am).</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:12px;">
+              <label style="font-size:13px;color:var(--text2);">From:</label>
+              <input type="time" value="00:00" style="padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+              <label style="font-size:13px;color:var(--text2);">To:</label>
+              <input type="time" value="06:00" style="padding:6px 10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+              <button class="btn btn-outline btn-sm" disabled title="Coming soon">Enable</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load auto rules.</p></div>'; }
+};
+
+// Meta × Shopee: Payouts
+PageRenderers['meta-payouts'] = async function(el) {
+  try {
+    el.innerHTML = `${DOM.pageHeader('Shopee Payouts', 'Track Shopee affiliate payout history')}
+      <div class="card">
+        <button class="btn btn-primary btn-sm" style="margin-bottom:16px;" disabled title="Coming soon">+ Record Payout</button>
+        ${DOM.emptyState('No payouts recorded', 'Record Shopee payouts to track commission payments.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load payouts.</p></div>'; }
+};
