@@ -442,7 +442,7 @@ PageRenderers['multimodel'] = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Total Clicks', value: (s.total_clicks||0).toLocaleString(), accent:'blue' })}
         ${DOM.statCard({ label:'Conversions', value: (s.attributed_conversions||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Revenue MTD', value: '$' + (s.revenueMtd||0).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Revenue MTD', value: 'Rp ' + (s.revenueMtd||0).toLocaleString(), accent:'yellow' })}
       </div>
       <div class="card"><h3>Payout Models</h3>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">

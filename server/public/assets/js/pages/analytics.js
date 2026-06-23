@@ -76,7 +76,7 @@ PageRenderers.clicks = async function(el) {
           const el5 = document.getElementById('rt-pending-pb');
           if (el1) el1.textContent = (d.clicks_1h||0).toLocaleString();
           if (el2) el2.textContent = (d.conversions_1h||0).toLocaleString();
-          if (el3) el3.textContent = '$' + parseFloat(d.revenue_1h||0).toFixed(2);
+          if (el3) el3.textContent = 'Rp ' + parseFloat(d.revenue_1h||0).toFixed(2);
           if (el4) el4.textContent = (d.active_affiliates||0).toLocaleString();
           if (el5) el5.textContent = (d.pending_postbacks||0).toLocaleString();
 

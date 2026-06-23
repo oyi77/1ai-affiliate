@@ -442,7 +442,7 @@ PageRenderers['multimodel'] = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Total Clicks', value: (s.total_clicks||0).toLocaleString(), accent:'blue' })}
         ${DOM.statCard({ label:'Conversions', value: (s.attributed_conversions||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Revenue MTD', value: '$' + (s.revenueMtd||0).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Revenue MTD', value: 'Rp ' + (s.revenueMtd||0).toLocaleString(), accent:'yellow' })}
       </div>
       <div class="card"><h3>Payout Models</h3>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
@@ -480,7 +480,7 @@ PageRenderers['conversion-approval'] = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Pending', value: counts.pending, accent:'yellow' })}
         ${DOM.statCard({ label:'Approved', value: counts.approved, accent:'green' })}
-        ${DOM.statCard({ label:'Total Revenue', value: '$' + totalRev.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}), accent:'blue' })}
+        ${DOM.statCard({ label:'Total Revenue', value: 'Rp ' + totalRev.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}), accent:'blue' })}
       </div>
       <div class="card">
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
@@ -493,7 +493,7 @@ PageRenderers['conversion-approval'] = async function(el) {
               d.id || '-',
               d.click_id || '-',
               d.campaign_name || d.campaign_id || '-',
-              '$' + parseFloat(d.payout || 0).toFixed(2),
+              'Rp ' + parseFloat(d.payout || 0).toFixed(2),
               DOM.pill(d.status || 'pending', {pending:'yellow',approved:'green',rejected:'red',paid:'blue'}[d.status] || 'yellow'),
               d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
               d.status === 'pending'
@@ -568,7 +568,7 @@ PageRenderers['payout-processing'] = async function(el) {
         ${batches.length
           ? DOM.table(['Batch ID','Total','Status','Created','Actions'], batches.map(d => [
               d.id || d.batch_id || '-',
-              '$' + parseFloat(d.total || d.amount || 0).toLocaleString(undefined,{minimumFractionDigits:2}),
+              'Rp ' + parseFloat(d.total || d.amount || 0).toLocaleString(undefined,{minimumFractionDigits:2}),
               DOM.pill(d.status || 'pending', {pending:'yellow',processing:'blue',paid:'green',failed:'red'}[d.status] || 'yellow'),
               d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
               d.status === 'processing'
@@ -599,8 +599,8 @@ PageRenderers['offer-applications'] = async function(el) {
           ? DOM.table(['Offer','Affiliate','Current Payout','Proposed','Status','Date','Actions'], items.map(d => [
               d.offer_id || d.offer_name || '-',
               d.affiliate_id || d.affiliate_name || '-',
-              '$' + parseFloat(d.current_payout || 0).toLocaleString(),
-              '$' + parseFloat(d.proposed_payout || 0).toLocaleString(),
+              'Rp ' + parseFloat(d.current_payout || 0).toLocaleString(),
+              'Rp ' + parseFloat(d.proposed_payout || 0).toLocaleString(),
               DOM.pill(d.status || 'pending', {pending:'yellow',approved:'green',rejected:'red'}[d.status] || 'yellow'),
               d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
               d.status === 'pending'
