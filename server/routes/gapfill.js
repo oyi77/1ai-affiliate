@@ -1202,4 +1202,38 @@ router.post('/meta-accounts', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── TrackPro Sync ─────────────────────────────────────────────────
+router.get('/trackpro/status', async (req, res) => {
+  try {
+    const trackproService = require('../services/trackproService');
+    const status = await trackproService.getSyncStatus();
+    res.json({ data: status });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/trackpro/sync', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'TrackPro credentials required' });
+    const trackproService = require('../services/trackproService');
+    const scraped = await trackproService.scrapeTrackPro({ username, password });
+    const imported = await trackproService.importTrackProData(scraped);
+    res.json({ success: true, dashboard: scraped.dashboard, imported, scrapedAt: scraped.scrapedAt });
+  } catch (err) {
+    console.error('TrackPro sync error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/trackpro/data', async (req, res) => {
+  try {
+    const [spend] = await pool.query('SELECT date, campaign_name, spend, clicks FROM 1ai_daily_spend ORDER BY date DESC LIMIT 30');
+    const [payouts] = await pool.query('SELECT * FROM 1ai_shopee_payouts ORDER BY id DESC LIMIT 20');
+    const [meta] = await pool.query('SELECT act_id, account_name, balance, status FROM 1ai_meta_accounts ORDER BY id DESC');
+    const [taglinks] = await pool.query('SELECT * FROM 1ai_campaign_taglinks ORDER BY id DESC LIMIT 20');
+    res.json({ data: { spend, payouts, metaAccounts: meta, taglinks } });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

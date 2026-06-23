@@ -1035,3 +1035,119 @@ window.gapfillRecordPayout = async function() {
     Router.navigate('meta-payouts');
   } catch(e) { alert('Error: ' + e.message); }
 };
+
+/* ── TRACKPRO SYNC PAGE ──────────────────────────────────────── */
+PageRenderers['trackpro-sync'] = async function(el) {
+  try {
+    const [status, data] = await Promise.all([
+      API.get('/api/admin/trackpro/status').catch(() => ({ data: {} })),
+      API.get('/api/admin/trackpro/data').catch(() => ({ data: {} }))
+    ]);
+    const s = status.data || {};
+    const d = data.data || {};
+    const spendRows = d.spend || [];
+    const payoutRows = d.payouts || [];
+    const metaRows = d.metaAccounts || [];
+
+    el.innerHTML = `${DOM.pageHeader('TrackPro Sync', 'Import Shopee commissions and Meta Ads spend from TrackPro')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Daily Spend Records', value: s.dailySpend?.rows || 0, accent:'blue' })}
+        ${DOM.statCard({ label:'Total Spend', value: AppConfig.formatCurrency(s.dailySpend?.total || 0), accent:'red' })}
+        ${DOM.statCard({ label:'Shopee Payouts', value: s.payouts?.rows || 0, accent:'green' })}
+        ${DOM.statCard({ label:'Total Payouts', value: AppConfig.formatCurrency(s.payouts?.total || 0), accent:'green' })}
+        ${DOM.statCard({ label:'Meta Accounts', value: s.metaAccounts?.rows || 0, accent:'indigo' })}
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <h3>🔄 Sync from TrackPro</h3>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">
+          Connect your TrackPro account to automatically import Shopee commission data and Meta Ads spend.
+        </p>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-group" style="margin:0;">
+            <label style="font-size:11px;">TrackPro Username</label>
+            <input type="text" id="tp-username" placeholder="your username" style="width:180px;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label style="font-size:11px;">TrackPro Password</label>
+            <input type="password" id="tp-password" placeholder="password" style="width:180px;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+          </div>
+          <button class="btn btn-primary" onclick="trackproSync()" id="tp-sync-btn">🔄 Sync Now</button>
+        </div>
+        <div id="tp-sync-status" style="margin-top:12px;font-size:13px;color:var(--text2);"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <h3>📊 Daily Spend & Commission</h3>
+        ${spendRows.length
+          ? DOM.table(['Date','Campaign','Spend','Clicks'], spendRows.map(d => [
+              d.date ? new Date(d.date).toLocaleDateString('id-ID') : '-',
+              d.campaign_name || '-',
+              AppConfig.formatCurrency(d.spend || 0),
+              d.clicks || 0
+            ]))
+          : DOM.emptyState('No spend data', 'Sync from TrackPro to import daily spend and commission data.')}
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <h3>💰 Shopee Payouts</h3>
+        ${payoutRows.length
+          ? DOM.table(['Report ID','Account','Amount','Status','Date'], payoutRows.map(d => [
+              d.report_id || '-',
+              d.shopee_account || '-',
+              AppConfig.formatCurrency(d.amount || 0),
+              DOM.pill(d.status || 'pending', {paid:'green',pending:'yellow',cancelled:'red'}[d.status] || 'blue'),
+              d.created_at ? new Date(d.created_at * 1000).toLocaleDateString('id-ID') : '-'
+            ]))
+          : DOM.emptyState('No payouts', 'Shopee payout records will appear here after sync.')}
+      </div>
+
+      <div class="card">
+        <h3>📘 Meta Ads Accounts</h3>
+        ${metaRows.length
+          ? DOM.table(['Account ID','Name','Balance','Status'], metaRows.map(d => [
+              d.act_id || '-',
+              d.account_name || '-',
+              AppConfig.formatCurrency(d.balance || 0),
+              DOM.pill(d.status || 'active', {active:'green',inactive:'yellow'}[d.status] || 'blue')
+            ]))
+          : DOM.emptyState('No Meta accounts', 'Meta ad account data will appear here after sync.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load TrackPro sync page.</p></div>'; }
+};
+
+window.trackproSync = async function() {
+  const username = document.getElementById('tp-username')?.value;
+  const password = document.getElementById('tp-password')?.value;
+  const status = document.getElementById('tp-sync-status');
+  const btn = document.getElementById('tp-sync-btn');
+  
+  if (!username || !password) {
+    status.innerHTML = '<span style="color:var(--red);">Please enter TrackPro credentials</span>';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing...';
+  status.innerHTML = '<span style="color:var(--text2);">Connecting to TrackPro and scraping data...</span>';
+  
+  try {
+    const r = await API.post('/api/admin/trackpro/sync', { username, password });
+    if (r.success) {
+      const imp = r.imported || {};
+      status.innerHTML = '<span style="color:var(--green);">✅ Sync complete! Imported ' + 
+        (imp.dailySpend || 0) + ' daily records, ' + 
+        (imp.payouts || 0) + ' payouts, ' + 
+        (imp.metaAccounts || 0) + ' Meta accounts.</span>';
+      // Refresh page after 1s
+      setTimeout(() => Router.navigate('trackpro-sync'), 1000);
+    } else {
+      status.innerHTML = '<span style="color:var(--red);">❌ ' + (r.error || 'Sync failed') + '</span>';
+    }
+  } catch(e) {
+    status.innerHTML = '<span style="color:var(--red);">❌ ' + (e.message || 'Sync failed') + '</span>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 Sync Now';
+  }
+};
