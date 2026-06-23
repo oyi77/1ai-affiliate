@@ -273,6 +273,25 @@ async function getStats(req, res) {
     const avgEpc = totalClickCount > 0 ? revenueMtd / totalClickCount : 0;
     const avgCtr = totalClickCount > 0 ? (conversionCount / totalClickCount) * 100 : 0;
 
+    // Daily chart data (last 30 days)
+    const [dailyData] = await pool.query(`
+      SELECT DATE(FROM_UNIXTIME(click_time)) AS date,
+             COUNT(*) AS clicks,
+             COALESCE(SUM(click_payout), 0) AS revenue
+      FROM 1ai_clicks
+      WHERE click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))
+      GROUP BY DATE(FROM_UNIXTIME(click_time))
+      ORDER BY date ASC
+    `).catch(() => [[]]);
+
+    // Iklan vs Organik (based on traffic source)
+    const adRevenue = await queryOne(`
+      SELECT COALESCE(SUM(e.payout_amount), 0) AS total
+      FROM 1ai_affiliate_earnings e
+      JOIN 1ai_affiliates a ON a.id = e.affiliate_id
+      WHERE e.created_at >= UNIX_TIMESTAMP(DATE_FORMAT(NOW(), '%Y-%m-01'))
+    `);
+
     res.json({
       totalAffiliates: toNumber(affCount.total),
       newAffiliates7d: toNumber(newAff7d.total),
@@ -296,6 +315,17 @@ async function getStats(req, res) {
       revenue_growth: revenueGrowth,
       totalPaid: toNumber(paidTotal.total_paid),
       total_paid: toNumber(paidTotal.total_paid),
+      // Chart data
+      dailyData: dailyData.map(d => ({
+        date: d.date,
+        clicks: d.clicks,
+        revenue: Number(d.revenue)
+      })),
+      // Iklan vs Organik
+      ad_revenue: toNumber(adRevenue.total),
+      organic_revenue: 0, // TODO: separate when traffic source tracking is complete
+      cost: 0, // TODO: integrate Meta Ads spend
+      profit: revenueMtd,
     });
   } catch (err) {
     console.error('getStats error:', err);
