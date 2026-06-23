@@ -78,13 +78,15 @@ PageRenderers.integrations = async function(el) {
     ];
 
     const apiKeys = [
-      { key:'meta_access_token', label:'Meta Access Token', desc:'Facebook Marketing API token', icon:'\ud83d\udcd8' },
-      { key:'meta_act_id', label:'Meta Ad Account ID', desc:'act_XXXXXXXXX format', icon:'\ud83d\udcd8' },
-      { key:'shopee_affiliate_id', label:'Shopee Affiliate ID', desc:'Shopee affiliate program ID', icon:'\ud83d\uded2' },
-      { key:'telegram_bot_token', label:'Telegram Bot Token', desc:'From @BotFather', icon:'\ud83d\udcf1' },
-      { key:'telegram_chat_id', label:'Telegram Chat ID', desc:'Your chat ID for notifications', icon:'\ud83d\udcf1' },
-      { key:'ipqs_api_key', label:'IPQualityScore Key', desc:'Fraud detection', icon:'\ud83d\udee1\ufe0f' },
-      { key:'slack_webhook', label:'Slack Webhook', desc:'Slack notifications', icon:'\ud83d\udcac' },
+      { key:'trackpro_username', label:'TrackPro Username', desc:'tracker.getflashsale.xyz login', icon:'📊', category:'TrackPro' },
+      { key:'trackpro_password', label:'TrackPro Password', desc:'TrackPro account password', icon:'📊', category:'TrackPro' },
+      { key:'meta_access_token', label:'Meta Access Token', desc:'Facebook Marketing API token', icon:'📘', category:'Meta Ads' },
+      { key:'meta_act_id', label:'Meta Ad Account ID', desc:'act_XXXXXXXXX format', icon:'📘', category:'Meta Ads' },
+      { key:'shopee_affiliate_id', label:'Shopee Affiliate ID', desc:'Shopee affiliate program ID', icon:'🛒', category:'Shopee' },
+      { key:'telegram_bot_token', label:'Telegram Bot Token', desc:'From @BotFather', icon:'📱', category:'Telegram' },
+      { key:'telegram_chat_id', label:'Telegram Chat ID', desc:'Your chat ID for notifications', icon:'📱', category:'Telegram' },
+      { key:'ipqs_api_key', label:'IPQualityScore Key', desc:'Fraud detection', icon:'🛡️', category:'Security' },
+      { key:'slack_webhook', label:'Slack Webhook', desc:'Slack notifications', icon:'💬', category:'Notifications' },
     ];
 
     el.innerHTML = DOM.pageHeader('Integrations', 'Connect platforms, toggle features, manage API keys') +

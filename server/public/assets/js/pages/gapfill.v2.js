@@ -1039,15 +1039,27 @@ window.gapfillRecordPayout = async function() {
 /* ── TRACKPRO SYNC PAGE ──────────────────────────────────────── */
 PageRenderers['trackpro-sync'] = async function(el) {
   try {
-    const [status, data] = await Promise.all([
+    const [status, data, settings] = await Promise.all([
       API.get('/api/admin/trackpro/status').catch(() => ({ data: {} })),
-      API.get('/api/admin/trackpro/data').catch(() => ({ data: {} }))
+      API.get('/api/admin/trackpro/data').catch(() => ({ data: {} })),
+      API.get('/api/settings/integrations').catch(() => ({}))
     ]);
+    const hasCredentials = settings.trackpro_username && settings.trackpro_password;
     const s = status.data || {};
     const d = data.data || {};
     const spendRows = d.spend || [];
     const payoutRows = d.payouts || [];
     const metaRows = d.metaAccounts || [];
+
+      // Show credential status
+  const credStatus = document.getElementById('tp-credential-status');
+  if (credStatus) {
+    if (hasCredentials) {
+      credStatus.innerHTML = '<span style="color:var(--green);">✅ Credentials configured</span>';
+    } else {
+      credStatus.innerHTML = '<span style="color:var(--red);">❌ Not configured — <a class="link" onclick="Router.navigate('settings'); window._settingsTab='integrations'; Router.navigate('settings')">Set up in Settings</a></span>';
+    }
+  }
 
     el.innerHTML = `${DOM.pageHeader('TrackPro Sync', 'Import Shopee commissions and Meta Ads spend from TrackPro')}
       <div class="stat-grid">
@@ -1063,16 +1075,17 @@ PageRenderers['trackpro-sync'] = async function(el) {
         <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">
           Connect your TrackPro account to automatically import Shopee commission data and Meta Ads spend.
         </p>
-        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
-          <div class="form-group" style="margin:0;">
-            <label style="font-size:11px;">TrackPro Username</label>
-            <input type="text" id="tp-username" placeholder="your username" style="width:180px;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">
+            <span style="font-size:16px;">📊</span>
+            <div>
+              <div style="font-weight:600;font-size:13px;">TrackPro</div>
+              <div style="color:var(--text2);font-size:11px;">tracker.getflashsale.xyz</div>
+            </div>
           </div>
-          <div class="form-group" style="margin:0;">
-            <label style="font-size:11px;">TrackPro Password</label>
-            <input type="password" id="tp-password" placeholder="password" style="width:180px;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
-          </div>
+          <div id="tp-credential-status" style="font-size:13px;"></div>
           <button class="btn btn-primary" onclick="trackproSync()" id="tp-sync-btn">🔄 Sync Now</button>
+          <a class="link" style="font-size:12px;" onclick="Router.navigate('settings'); window._settingsTab='integrations'; Router.navigate('settings')">Configure in Settings →</a>
         </div>
         <div id="tp-sync-status" style="margin-top:12px;font-size:13px;color:var(--text2);"></div>
       </div>
@@ -1117,13 +1130,20 @@ PageRenderers['trackpro-sync'] = async function(el) {
 };
 
 window.trackproSync = async function() {
-  const username = document.getElementById('tp-username')?.value;
-  const password = document.getElementById('tp-password')?.value;
   const status = document.getElementById('tp-sync-status');
   const btn = document.getElementById('tp-sync-btn');
   
+  // Read credentials from settings
+  let settings;
+  try {
+    settings = await API.get('/api/settings/integrations');
+  } catch(e) { settings = {}; }
+  
+  const username = settings.trackpro_username;
+  const password = settings.trackpro_password;
+  
   if (!username || !password) {
-    status.innerHTML = '<span style="color:var(--red);">Please enter TrackPro credentials</span>';
+    status.innerHTML = '<span style="color:var(--red);">❌ TrackPro credentials not configured. <a class="link" onclick="Router.navigate('settings'); window._settingsTab='integrations'; Router.navigate('settings')">Go to Settings → Integrations</a></span>';
     return;
   }
   
