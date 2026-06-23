@@ -14,16 +14,16 @@ PageRenderers.earnings = async function(el) {
     el.innerHTML = `
       ${DOM.pageHeader('Earnings', 'Commission earnings and payouts')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Total', value: 'Rp '+total.toLocaleString() })}
-        ${DOM.statCard({ label:'Pending', value: 'Rp '+pending.toLocaleString(), accent:'yellow' })}
-        ${DOM.statCard({ label:'Approved', value: 'Rp '+(total-pending).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Total', value: AppConfig.formatCurrency(total) })}
+        ${DOM.statCard({ label:'Pending', value: AppConfig.formatCurrency(pending), accent:'yellow' })}
+        ${DOM.statCard({ label:'Approved', value: AppConfig.formatCurrency(total-pending), accent:'green' })}
       </div>
       <div class="card">
         ${DOM.table(
           ['Affiliate','Payout','Status','Date','Action'],
           items.map(e => [
             e.user_email||e.affiliate_id,
-            'Rp '+parseFloat(e.payout_amount||0).toLocaleString(),
+            AppConfig.formatCurrency(e.payout_amount||0),
             DOM.pill(e.status, {pending:'yellow',approved:'green',paid:'blue'}[e.status]||'blue'),
             new Date(e.created_at).toLocaleDateString(),
             e.status==='pending' ? `<button class="btn btn-sm btn-success" onclick="Approve.approveEarning(${e.id})">Approve</button>` : '-'
@@ -34,15 +34,15 @@ PageRenderers.earnings = async function(el) {
 };
 
 PageRenderers.commissions = makeTablePage('/api/admin/commissions?limit=50', 'Commissions', 'Commission tracking', d => [
-  d.affiliate_id||'-', d.source||'-', 'Rp '+parseFloat(d.amount||0).toLocaleString(), new Date(d.created_at).toLocaleDateString()
+  d.affiliate_id||'-', d.source||'-', AppConfig.formatCurrency(d.amount||0), new Date(d.created_at).toLocaleDateString()
 ], ['Affiliate','Source','Amount','Date']);
 
 PageRenderers.payments = makeTablePage('/api/admin/payments?limit=50', 'Payments', 'Payment history', d => [
-  d.reference||d.id, '#'+d.user_id, 'Rp '+parseFloat(d.amount||0).toLocaleString(), DOM.pill(d.status,{pending:'yellow',paid:'green',failed:'red'}[d.status]||'blue'), d.paid_at?new Date(d.paid_at).toLocaleDateString():'-'
+  d.reference||d.id, '#'+d.user_id, AppConfig.formatCurrency(d.amount||0), DOM.pill(d.status,{pending:'yellow',paid:'green',failed:'red'}[d.status]||'blue'), d.paid_at?new Date(d.paid_at).toLocaleDateString():'-'
 ], ['Reference','User','Amount','Status','Paid']);
 
 PageRenderers.campaigns = makeTablePage('/api/admin/campaigns?limit=50', 'Campaigns', 'Active campaigns', d => [
-  d.name, DOM.pill(d.active?'Active':'Paused', d.active?'green':'yellow'), 'Rp '+(d.payout_amount||0).toLocaleString(), d.clicks||0, d.conversions||0
+  d.name, DOM.pill(d.active?'Active':'Paused', d.active?'green':'yellow'), AppConfig.formatCurrency(d.payout_amount||0), d.clicks||0, d.conversions||0
 ], ['Name','Status','Payout','Clicks','Conversions']);
 
 PageRenderers.offers = async function(el) {
@@ -62,8 +62,8 @@ PageRenderers.offers = async function(el) {
         return [
           d.name,
           d.network_name || '-',
-          'Rp '+(d.network_payout||0).toLocaleString(),
-          'Rp '+(d.payout_amount||0).toLocaleString(),
+          AppConfig.formatCurrency(d.network_payout||0),
+          AppConfig.formatCurrency(d.payout_amount||0),
           '<span style="color:var(--green)">Rp '+margin.toLocaleString()+'</span>',
           DOM.pill(d.active?'Active':'Paused', d.active?'green':'yellow'),
           d.clicks||0,
@@ -72,7 +72,7 @@ PageRenderers.offers = async function(el) {
       }
       return [
         d.name,
-        'Rp '+(d.payout_amount||0).toLocaleString(),
+        AppConfig.formatCurrency(d.payout_amount||0),
         DOM.pill(d.active?'Active':'Paused', d.active?'green':'yellow'),
         d.clicks||0,
         d.conversions||0

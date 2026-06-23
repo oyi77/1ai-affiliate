@@ -80,8 +80,8 @@ PageRenderers['conversion-log'] = async function(el) {
               d.id || '-',
               d.click_id || '-',
               d.campaign_name || d.campaign_id || '-',
-              'Rp ' + parseFloat(d.payout || 0).toLocaleString(),
-              'Rp ' + parseFloat(d.revenue || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.payout || 0),
+              AppConfig.formatCurrency(d.revenue || 0),
               DOM.pill(d.status || 'pending', {approved:'green',pending:'yellow',rejected:'red'}[d.status] || 'blue'),
               d.created_at ? new Date(d.created_at).toLocaleString() : '-'
             ]))
@@ -127,7 +127,7 @@ PageRenderers['laporan-iklan'] = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Total Klik', value: totalKlik.toLocaleString() })}
         ${DOM.statCard({ label:'Total Konversi', value: totalKonversi.toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Total Revenue', value: 'Rp ' + totalRevenue.toLocaleString() })}
+        ${DOM.statCard({ label:'Total Revenue', value: AppConfig.formatCurrency(totalRevenue) })}
         ${DOM.statCard({ label:'ROI', value: roi + '%', accent: parseFloat(roi) >= 0 ? 'green' : 'red' })}
       </div>
       <div class="card">
@@ -140,8 +140,8 @@ PageRenderers['laporan-iklan'] = async function(el) {
                 d.name || '-',
                 d.clicks || 0,
                 d.conversions || 0,
-                'Rp ' + rv.toLocaleString(),
-                'Rp ' + po.toLocaleString(),
+                AppConfig.formatCurrency(rv),
+                AppConfig.formatCurrency(po),
                 r + '%'
               ];
             }))
@@ -165,7 +165,7 @@ PageRenderers['analytic-harian'] = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Total Klik', value: totalKlik.toLocaleString() })}
         ${DOM.statCard({ label:'Total Konversi', value: totalKonversi.toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Total Revenue', value: 'Rp ' + totalRevenue.toLocaleString() })}
+        ${DOM.statCard({ label:'Total Revenue', value: AppConfig.formatCurrency(totalRevenue) })}
       </div>
       <div class="card">
         ${days.length
@@ -173,7 +173,7 @@ PageRenderers['analytic-harian'] = async function(el) {
               d.date || d.tanggal || '-',
               d.clicks || d.klik || 0,
               d.conversions || d.konversi || 0,
-              'Rp ' + parseFloat(d.revenue || 0).toLocaleString()
+              AppConfig.formatCurrency(d.revenue || 0)
             ]))
           : DOM.emptyState('No daily data', 'No daily statistics available yet. Data will appear here as tracking collects daily aggregates.')}
       </div>`;
@@ -210,8 +210,8 @@ PageRenderers['laporan-order'] = async function(el) {
           ? DOM.table(['Order ID','Kampanye','Payout','Revenue','Status','Waktu'], items.map(d => [
               d.order_id || d.id || '-',
               d.campaign_name || d.campaign_id || '-',
-              'Rp ' + parseFloat(d.payout || 0).toLocaleString(),
-              'Rp ' + parseFloat(d.revenue || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.payout || 0),
+              AppConfig.formatCurrency(d.revenue || 0),
               DOM.pill(d.status || 'pending', {approved:'green',pending:'yellow',rejected:'red',paid:'blue'}[d.status] || 'blue'),
               d.created_at ? new Date(d.created_at).toLocaleString() : '-'
             ]))
@@ -233,10 +233,10 @@ PageRenderers['saldo-budget'] = async function(el) {
     const items = r.data || [];
     el.innerHTML = `${DOM.pageHeader('Saldo & Budget', 'Kelola saldo dan budget')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Saldo', value: 'Rp ' + balance.toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Terpakai', value: 'Rp ' + spent.toLocaleString(), accent:'red' })}
-        ${DOM.statCard({ label:'Budget', value: 'Rp ' + budget.toLocaleString(), accent:'yellow' })}
-        ${DOM.statCard({ label:'Sisa Budget', value: 'Rp ' + Math.max(0, budget - spent).toLocaleString() })}
+        ${DOM.statCard({ label:'Saldo', value: AppConfig.formatCurrency(balance), accent:'green' })}
+        ${DOM.statCard({ label:'Terpakai', value: AppConfig.formatCurrency(spent), accent:'red' })}
+        ${DOM.statCard({ label:'Budget', value: AppConfig.formatCurrency(budget), accent:'yellow' })}
+        ${DOM.statCard({ label:'Sisa Budget', value: AppConfig.formatCurrency(Math.max)(0, budget - spent).toLocaleString() })}
       </div>
       <div class="card">
         <h3>Riwayat Transaksi</h3>
@@ -244,7 +244,7 @@ PageRenderers['saldo-budget'] = async function(el) {
           ? DOM.table(['Reference','User','Amount','Status','Date'], items.map(d => [
               d.reference || d.id || '-',
               '#'+d.user_id,
-              'Rp ' + parseFloat(d.amount || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.amount || 0),
               DOM.pill(d.status, {pending:'yellow',paid:'green',failed:'red'}[d.status] || 'blue'),
               d.paid_at ? new Date(d.paid_at).toLocaleDateString() : '-'
             ]))
@@ -373,7 +373,7 @@ PageRenderers['caps'] = async function(el) {
         ${offerItems.length
           ? DOM.table(['Offer', 'Payout', 'Daily Cap', 'Monthly Cap', 'Status'], offerItems.slice(0, 20).map(d => [
               d.name || '-',
-              'Rp ' + parseFloat(d.payout || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.payout || 0),
               d.daily_cap || '∞',
               d.monthly_cap || '∞',
               DOM.pill(d.status || 'active', (d.status||'active')==='active' ? 'green' : 'yellow')
@@ -422,8 +422,8 @@ PageRenderers['margin'] = async function(el) {
           ? DOM.table(['Offer', 'Affiliate', 'Current', 'Proposed', 'Margin', 'Status', 'Proposed By', 'Date'], items.map(d => [
               d.offer_id || '-',
               d.affiliate_id || '-',
-              'Rp ' + parseFloat(d.current_payout || 0).toLocaleString(),
-              'Rp ' + parseFloat(d.proposed_payout || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.current_payout || 0),
+              AppConfig.formatCurrency(d.proposed_payout || 0),
               (d.margin_pct || 0) + '%',
               DOM.pill(d.status || 'pending', {pending:'yellow',approved:'green',rejected:'red',expired:'blue'}[d.status] || 'blue'),
               d.proposed_by || '-',
@@ -442,7 +442,7 @@ PageRenderers['multimodel'] = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Total Clicks', value: (s.total_clicks||0).toLocaleString(), accent:'blue' })}
         ${DOM.statCard({ label:'Conversions', value: (s.attributed_conversions||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Revenue MTD', value: 'Rp ' + (s.revenueMtd||0).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Revenue MTD', value: AppConfig.formatCurrency(s.revenueMtd||0), accent:'yellow' })}
       </div>
       <div class="card"><h3>Payout Models</h3>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
@@ -480,7 +480,7 @@ PageRenderers['conversion-approval'] = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Pending', value: counts.pending, accent:'yellow' })}
         ${DOM.statCard({ label:'Approved', value: counts.approved, accent:'green' })}
-        ${DOM.statCard({ label:'Total Revenue', value: 'Rp ' + totalRev.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}), accent:'blue' })}
+        ${DOM.statCard({ label:'Total Revenue', value: AppConfig.formatCurrency(totalRev), accent:'blue' })}
       </div>
       <div class="card">
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
@@ -493,7 +493,7 @@ PageRenderers['conversion-approval'] = async function(el) {
               d.id || '-',
               d.click_id || '-',
               d.campaign_name || d.campaign_id || '-',
-              'Rp ' + parseFloat(d.payout || 0).toFixed(2),
+              AppConfig.formatCurrency(d.payout || 0),
               DOM.pill(d.status || 'pending', {pending:'yellow',approved:'green',rejected:'red',paid:'blue'}[d.status] || 'yellow'),
               d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
               d.status === 'pending'
@@ -568,7 +568,7 @@ PageRenderers['payout-processing'] = async function(el) {
         ${batches.length
           ? DOM.table(['Batch ID','Total','Status','Created','Actions'], batches.map(d => [
               d.id || d.batch_id || '-',
-              'Rp ' + parseFloat(d.total || d.amount || 0).toLocaleString(undefined,{minimumFractionDigits:2}),
+              AppConfig.formatCurrency(d.total || d.amount || 0),
               DOM.pill(d.status || 'pending', {pending:'yellow',processing:'blue',paid:'green',failed:'red'}[d.status] || 'yellow'),
               d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
               d.status === 'processing'
@@ -599,8 +599,8 @@ PageRenderers['offer-applications'] = async function(el) {
           ? DOM.table(['Offer','Affiliate','Current Payout','Proposed','Status','Date','Actions'], items.map(d => [
               d.offer_id || d.offer_name || '-',
               d.affiliate_id || d.affiliate_name || '-',
-              'Rp ' + parseFloat(d.current_payout || 0).toLocaleString(),
-              'Rp ' + parseFloat(d.proposed_payout || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.current_payout || 0),
+              AppConfig.formatCurrency(d.proposed_payout || 0),
               DOM.pill(d.status || 'pending', {pending:'yellow',approved:'green',rejected:'red'}[d.status] || 'yellow'),
               d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
               d.status === 'pending'
@@ -664,9 +664,9 @@ PageRenderers['my-earnings'] = async function(el) {
     const sum = r.summary || {};
     el.innerHTML = `${DOM.pageHeader('My Earnings', 'View and claim your commission earnings')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Pending', value: 'Rp ' + (sum.pending?.amount || 0).toLocaleString(), accent:'yellow' })}
-        ${DOM.statCard({ label:'Approved', value: 'Rp ' + (sum.approved?.amount || 0).toLocaleString(), accent:'blue' })}
-        ${DOM.statCard({ label:'Paid', value: 'Rp ' + (sum.paid?.amount || 0).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Pending', value: AppConfig.formatCurrency(sum.pending?.amount || 0), accent:'yellow' })}
+        ${DOM.statCard({ label:'Approved', value: AppConfig.formatCurrency(sum.approved?.amount || 0), accent:'blue' })}
+        ${DOM.statCard({ label:'Paid', value: AppConfig.formatCurrency(sum.paid?.amount || 0), accent:'green' })}
         ${DOM.statCard({ label:'Rejected', value: (sum.rejected?.count || 0), accent:'red' })}
       </div>
       <div class="card">
@@ -676,7 +676,7 @@ PageRenderers['my-earnings'] = async function(el) {
         ${items.length
           ? DOM.table(['ID','Amount','Model','Status','Date'], items.map(d => [
               '#' + d.id,
-              'Rp ' + parseFloat(d.payout_amount || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.payout_amount || 0),
               (d.payout_model || 'CPA').toUpperCase(),
               DOM.pill(d.status, {pending:'yellow',approved:'blue',paid:'green',rejected:'red'}[d.status] || 'blue'),
               d.created_at ? new Date(d.created_at * 1000).toLocaleDateString() : '-'
@@ -706,8 +706,8 @@ PageRenderers['invoices'] = async function(el) {
               '#' + d.id,
               (d.period_start || '') + ' → ' + (d.period_end || ''),
               d.conversions_count || 0,
-              'Rp ' + parseFloat(d.revenue_amount || 0).toLocaleString(),
-              'Rp ' + parseFloat(d.payout_amount || 0).toLocaleString(),
+              AppConfig.formatCurrency(d.revenue_amount || 0),
+              AppConfig.formatCurrency(d.payout_amount || 0),
               DOM.pill(d.status, {draft:'yellow',sent:'blue',paid:'green',void:'red'}[d.status] || 'blue'),
               d.status === 'draft' ? '<button class="btn btn-sm btn-outline" onclick="sendInvoice(' + d.id + ')">Send</button>' :
               d.status === 'sent' ? '<button class="btn btn-sm btn-primary" onclick="payInvoice(' + d.id + ')">Mark Paid</button>' : '-'
@@ -728,10 +728,10 @@ PageRenderers['billing'] = async function(el) {
     const bal = r.balance || {};
     el.innerHTML = `${DOM.pageHeader('Billing & Payments', 'Financial overview for the platform')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Total Earned', value: 'Rp ' + (earn.total || 0).toLocaleString(), accent:'blue' })}
-        ${DOM.statCard({ label:'Total Paid', value: 'Rp ' + (earn.paid || 0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Pending Payout', value: 'Rp ' + (earn.pending || 0).toLocaleString(), accent:'yellow' })}
-        ${DOM.statCard({ label:'Available Balance', value: 'Rp ' + (bal.available || 0).toLocaleString(), accent:'indigo' })}
+        ${DOM.statCard({ label:'Total Earned', value: AppConfig.formatCurrency(earn.total || 0), accent:'blue' })}
+        ${DOM.statCard({ label:'Total Paid', value: AppConfig.formatCurrency(earn.paid || 0), accent:'green' })}
+        ${DOM.statCard({ label:'Pending Payout', value: AppConfig.formatCurrency(earn.pending || 0), accent:'yellow' })}
+        ${DOM.statCard({ label:'Available Balance', value: AppConfig.formatCurrency(bal.available || 0), accent:'indigo' })}
       </div>
       <div class="card"><h3>Invoice Status</h3>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
@@ -773,9 +773,9 @@ PageRenderers['management'] = async function(el) {
     const bal = r.balance || {};
     el.innerHTML = `${DOM.pageHeader('Management Overview', 'Full financial oversight for platform operators')}
       <div class="stat-grid">
-        ${DOM.statCard({ label:'Net Balance', value: 'Rp ' + (bal.net || 0).toLocaleString(), accent: (bal.net||0) >= 0 ? 'green' : 'red' })}
-        ${DOM.statCard({ label:'Deposits', value: 'Rp ' + (bal.deposits || 0).toLocaleString(), accent:'blue' })}
-        ${DOM.statCard({ label:'Withdrawals', value: 'Rp ' + (bal.withdrawals || 0).toLocaleString(), accent:'red' })}
+        ${DOM.statCard({ label:'Net Balance', value: AppConfig.formatCurrency(bal.net || 0), accent: (bal.net||0) >= 0 ? 'green' : 'red' })}
+        ${DOM.statCard({ label:'Deposits', value: AppConfig.formatCurrency(bal.deposits || 0), accent:'blue' })}
+        ${DOM.statCard({ label:'Withdrawals', value: AppConfig.formatCurrency(bal.withdrawals || 0), accent:'red' })}
       </div>
       <div class="card"><h3>Earnings by Status</h3>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">

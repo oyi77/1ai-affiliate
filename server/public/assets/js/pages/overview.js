@@ -19,9 +19,9 @@ PageRenderers.overview = async function(el) {
         ${DOM.statCard({ label:'Visits', value: (stats.clicks24h||0).toLocaleString(), accent:'blue' })}
         ${DOM.statCard({ label:'Clicks', value: (stats.total_clicks||0).toLocaleString(), accent:'indigo' })}
         ${DOM.statCard({ label:'Conversions', value: (stats.attributed_conversions||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Revenue', value: 'Rp ' + (stats.revenueMtd||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Cost', value: 'Rp ' + (stats.cost||0).toLocaleString(), accent:'red' })}
-        ${DOM.statCard({ label:'Profit', value: 'Rp ' + (stats.profit||0).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Revenue', value: AppConfig.formatCurrency(stats.revenueMtd||0), accent:'green' })}
+        ${DOM.statCard({ label:'Cost', value: AppConfig.formatCurrency(stats.cost||0), accent:'red' })}
+        ${DOM.statCard({ label:'Profit', value: AppConfig.formatCurrency(stats.profit||0), accent:'yellow' })}
       </div>
 
       ${stats.chartData ? `
