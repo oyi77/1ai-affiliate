@@ -37,6 +37,10 @@ func (c *Client) Close() error {
 	return c.rdb.Close()
 }
 
+func (c *Client) RDB() redis.UniversalClient {
+	return c.rdb
+}
+
 func (c *Client) campaignKey(token string) string {
 	return c.prefix + "campaign:" + token
 }

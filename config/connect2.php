@@ -1271,13 +1271,8 @@ class INDEXES
                 }
             }
         } else {
-<<<<<<< HEAD
-            $ip_result = $conn->query($ip_sql);
-            $ip_row = $ip_result->fetch_assoc();
-=======
             $ip_result = _mysqli_query($db, $ip_sql);
             $ip_row = $ip_result ? $ip_result->fetch_assoc() : null;
->>>>>>> origin/main
             if ($ip_row !== null && $ip_row['ip_id']) {
                 // if this ip already exists, return the ip_id for it.
                 $ip_id = $ip_row['ip_id'];
