@@ -273,24 +273,37 @@ async function getStats(req, res) {
     const avgEpc = totalClickCount > 0 ? revenueMtd / totalClickCount : 0;
     const avgCtr = totalClickCount > 0 ? (conversionCount / totalClickCount) * 100 : 0;
 
-    // Daily chart data (last 30 days)
-    const [dailyData] = await pool.query(`
-      SELECT DATE(FROM_UNIXTIME(click_time)) AS date,
-             COUNT(*) AS clicks,
-             COALESCE(SUM(click_payout), 0) AS revenue
-      FROM 1ai_clicks
-      WHERE click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))
-      GROUP BY DATE(FROM_UNIXTIME(click_time))
-      ORDER BY date ASC
+    // Daily chart data — merge spend + commission by date
+    const [dailySpend] = await pool.query(`
+      SELECT DATE(date) AS date, campaign_name, COALESCE(SUM(spend),0) AS spend, COALESCE(SUM(clicks),0) AS clicks
+      FROM 1ai_daily_spend
+      WHERE date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+      GROUP BY DATE(date), campaign_name ORDER BY date ASC
     `).catch(() => [[]]);
 
-    // Iklan vs Organik (based on traffic source)
-    const adRevenue = await queryOne(`
-      SELECT COALESCE(SUM(e.payout_amount), 0) AS total
-      FROM 1ai_affiliate_earnings e
-      JOIN 1ai_affiliates a ON a.id = e.affiliate_id
-      WHERE e.created_at >= UNIX_TIMESTAMP(DATE_FORMAT(NOW(), '%Y-%m-01'))
-    `);
+    const [dailyCommission] = await pool.query(`
+      SELECT DATE(FROM_UNIXTIME(created_at)) AS date, COALESCE(SUM(payout_amount),0) AS commission
+      FROM 1ai_affiliate_earnings
+      WHERE created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))
+      GROUP BY DATE(FROM_UNIXTIME(created_at)) ORDER BY date ASC
+    `).catch(() => [[]]);
+
+    // Merge by date
+    const dateMap = {};
+    dailySpend.forEach(d => { const ds = new Date(d.date).toISOString().split('T')[0]; dateMap[ds] = { date: ds, spend: Number(d.spend), clicks: d.clicks, commission: 0, campaign_name: d.campaign_name || null }; });
+    dailyCommission.forEach(d => {
+      const ds = new Date(d.date).toISOString().split('T')[0];
+      if (!dateMap[ds]) dateMap[ds] = { date: ds, spend: 0, clicks: 0, commission: 0 };
+      dateMap[ds].commission = Number(d.commission);
+    });
+    const dailyData = Object.values(dateMap).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+
+    // Total spend
+    const totalSpend = await queryOne(`SELECT COALESCE(SUM(spend), 0) AS total FROM 1ai_daily_spend`);
+    const costMtd = toNumber(totalSpend.total);
+
+    // Top taglink
+    const topTag = await queryOne(`SELECT taglink FROM 1ai_campaign_taglinks ORDER BY id DESC LIMIT 1`);
 
     res.json({
       totalAffiliates: toNumber(affCount.total),
@@ -315,17 +328,15 @@ async function getStats(req, res) {
       revenue_growth: revenueGrowth,
       totalPaid: toNumber(paidTotal.total_paid),
       total_paid: toNumber(paidTotal.total_paid),
-      // Chart data
-      dailyData: dailyData.map(d => ({
-        date: d.date,
-        clicks: d.clicks,
-        revenue: Number(d.revenue)
-      })),
-      // Iklan vs Organik
-      ad_revenue: toNumber(adRevenue.total),
-      organic_revenue: 0, // TODO: separate when traffic source tracking is complete
-      cost: 0, // TODO: integrate Meta Ads spend
-      profit: revenueMtd,
+      // Business data
+      dailyData,
+      cost: costMtd,
+      costMtd,
+      profit: revenueMtd - costMtd,
+      ad_revenue: revenueMtd,
+      organic_revenue: 0,
+      best_taglink: topTag?.taglink || null,
+      top_campaign: dailySpend.length ? dailySpend[0].campaign_name || null : null,
     });
   } catch (err) {
     console.error('getStats error:', err);
