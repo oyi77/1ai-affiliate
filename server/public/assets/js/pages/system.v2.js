@@ -66,30 +66,70 @@ window.Settings = {
 
 PageRenderers.integrations = async function(el) {
   try {
-    const d = await API.get('/api/settings/integrations');
-    const items = [
-      { key:'cb_key', label:'ClickBank Secret Key', desc:'Order verification and IPN validation' },
-      { key:'jvzoo_secret_key', label:'JVZoo IPN Secret', desc:'Instant payment notification verification' },
-      { key:'zaxaa_api_signature', label:'Zaxaa API Signature', desc:'Order notification signature verification' },
-      { key:'ipqs_api_key', label:'IPQualityScore API Key', desc:'Fraud detection and IP reputation' },
-      { key:'slack_webhook', label:'Slack Incoming Webhook', desc:'Notification alerts for conversions and approvals' },
-      { key:'clickserver_api_key', label:'ClickServer API Key', desc:'Domain management and click tracking' },
-      { key:'customer_api_key', label:'License / Customer API Key', desc:'Premium features and license verification' },
+    const [d, feat] = await Promise.all([
+      API.get('/api/settings/integrations').catch(() => ({})),
+      API.get('/api/settings/features').catch(() => ({ data: {} }))
+    ]);
+    const featureData = feat.data || {};
+
+    const features = [
+      { key: 'meta_shopee', label: 'Meta \u00d7 Shopee Automation', icon: '\ud83d\udd17', desc: 'Auto-pause, auto-scale, campaign mapping, Shopee CSV upload, Meta spend sync.', requirement: 'Requires Meta Ads + Shopee advertiser' },
+      { key: 'telegram_alerts', label: 'Telegram Alerts', icon: '\ud83d\udcf1', desc: 'Performance alerts, profit drops, daily summaries to Telegram.', requirement: 'Requires Telegram Bot Token + Chat ID' },
     ];
-    el.innerHTML = `${DOM.pageHeader('API Integrations', 'Third-party connections and keys')}
-      ${items.map(i => `
-        <div class="integration-card">
-          <h4>${i.label}</h4><div class="desc">${i.desc}</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="password" id="int-${i.key}" value="${d[i.key]||''}" placeholder="Enter key" style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px">
-            <button class="btn btn-primary btn-sm" onclick="Settings.saveIntegration('${i.key}')">Save</button>
-            <button class="btn btn-outline btn-sm" onclick="Settings.toggleVis('int-${i.key}')">Show</button>
-          </div>
-        </div>`).join('')}`;
+
+    const apiKeys = [
+      { key:'meta_access_token', label:'Meta Access Token', desc:'Facebook Marketing API token', icon:'\ud83d\udcd8' },
+      { key:'meta_act_id', label:'Meta Ad Account ID', desc:'act_XXXXXXXXX format', icon:'\ud83d\udcd8' },
+      { key:'shopee_affiliate_id', label:'Shopee Affiliate ID', desc:'Shopee affiliate program ID', icon:'\ud83d\uded2' },
+      { key:'telegram_bot_token', label:'Telegram Bot Token', desc:'From @BotFather', icon:'\ud83d\udcf1' },
+      { key:'telegram_chat_id', label:'Telegram Chat ID', desc:'Your chat ID for notifications', icon:'\ud83d\udcf1' },
+      { key:'ipqs_api_key', label:'IPQualityScore Key', desc:'Fraud detection', icon:'\ud83d\udee1\ufe0f' },
+      { key:'slack_webhook', label:'Slack Webhook', desc:'Slack notifications', icon:'\ud83d\udcac' },
+    ];
+
+    el.innerHTML = DOM.pageHeader('Integrations', 'Connect platforms, toggle features, manage API keys') +
+      '<div class="card" style="margin-bottom:24px;">' +
+        '<h3>\ud83d\udd79\ufe0f Platform Features</h3>' +
+        '<p style="color:var(--text2);font-size:13px;margin-bottom:20px;">Toggle features on/off. Disabled features are hidden from the sidebar.</p>' +
+        '<div style="display:grid;gap:16px;">' +
+          features.map(f => {
+            const isEnabled = featureData['feature_' + f.key]?.enabled || false;
+            return '<div style="display:flex;align-items:flex-start;gap:16px;padding:20px;background:var(--panel2);border:1px solid ' + (isEnabled ? 'var(--green)' : 'var(--border)') + ';border-radius:12px;">' +
+              '<div style="font-size:32px;min-width:40px;text-align:center;">' + f.icon + '</div>' +
+              '<div style="flex:1;"><div style="font-weight:600;font-size:15px;margin-bottom:4px;">' + f.label + '</div>' +
+              '<div style="color:var(--text2);font-size:13px;line-height:1.5;">' + f.desc + '</div>' +
+              '<div style="color:var(--text2);font-size:11px;margin-top:6px;opacity:0.7;">' + f.requirement + '</div></div>' +
+              '<label style="position:relative;display:inline-block;width:52px;height:28px;flex-shrink:0;cursor:pointer;margin-top:4px;">' +
+              '<input type="checkbox" ' + (isEnabled ? 'checked' : '') + ' onchange="Settings.toggleFeature(\'' + f.key + '\', this.checked)" style="opacity:0;width:0;height:0;">' +
+              '<span style="position:absolute;inset:0;background:' + (isEnabled ? 'var(--green)' : 'rgba(255,255,255,0.1)') + ';border-radius:14px;transition:0.3s;">' +
+              '<span style="position:absolute;left:' + (isEnabled ? '26px' : '3px') + ';top:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></span>' +
+              '</span></label></div>';
+          }).join('') +
+        '</div></div>' +
+      '<div class="card">' +
+        '<h3>\ud83d\udd11 API Keys & Connections</h3>' +
+        '<p style="color:var(--text2);font-size:13px;margin-bottom:20px;">Connect your accounts for data sync and automation.</p>' +
+        '<div style="display:grid;gap:12px;">' +
+          apiKeys.map(i =>
+            '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">' +
+              '<span style="font-size:20px;min-width:28px;text-align:center;">' + i.icon + '</span>' +
+              '<div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:13px;">' + i.label + '</div>' +
+              '<div style="color:var(--text2);font-size:11px;">' + i.desc + '</div></div>' +
+              '<input type="password" id="int-' + i.key + '" value="' + (d[i.key] || '') + '" placeholder="Enter key" style="width:200px;padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">' +
+              '<button class="btn btn-primary btn-sm" onclick="Settings.saveIntegration(\'' + i.key + '\')">Save</button></div>'
+          ).join('') +
+        '</div></div>';
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load integrations.</p></div>'; }
 };
 Settings.saveIntegration = async (key) => { try { await API.put('/api/settings/integrations',{key,value:document.getElementById('int-'+key).value}); AppUI.toast('Saved'); } catch(e) { AppUI.toast(e.message, 'err'); } };
-Settings.toggleVis = (id) => { const e = document.getElementById(id); e.type = e.type==='password'?'text':'password'; const btn = e.nextElementSibling.nextElementSibling; btn.textContent = e.type==='password'?'Show':'Hide'; };
+Settings.toggleFeature = async (key, enabled) => {
+  try {
+    await API.put('/api/settings/features/' + key, { enabled });
+    AppUI.toast(key + ' ' + (enabled ? 'enabled' : 'disabled'));
+    setTimeout(() => Router.navigate('integrations'), 500);
+  } catch(e) { AppUI.toast(e.message, 'err'); }
+};
+Settings.toggleVis = (id) => { const e = document.getElementById(id); e.type = e.type==='password'?'text':'password'; };
 
 PageRenderers.admin = async function(el) {
   try {
