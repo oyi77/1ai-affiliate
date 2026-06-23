@@ -35,7 +35,7 @@ func main() {
 	if !cfg.LogJSON {
 		logger = logger.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-	zerolog.SetGlobalLevel(parseLogLevel(cfg.LogLevel))
+	zerolog.SetGlobalLevel(config.ParseLogLevel(cfg.LogLevel))
 
 	logger.Info().Msg("starting 1ai-affiliate cold path consumer")
 
@@ -190,19 +190,4 @@ func (h *ClickHandler) flush() {
 	}
 
 	h.logger.Debug().Int("batch_size", len(batch)).Msg("flushed click batch to clickhouse")
-}
-
-func parseLogLevel(level string) zerolog.Level {
-	switch level {
-	case "debug":
-		return zerolog.DebugLevel
-	case "info":
-		return zerolog.InfoLevel
-	case "warn":
-		return zerolog.WarnLevel
-	case "error":
-		return zerolog.ErrorLevel
-	default:
-		return zerolog.InfoLevel
-	}
 }

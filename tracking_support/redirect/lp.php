@@ -6,9 +6,8 @@ $lpip = $_GET['lpip'];
 if (!is_numeric($lpip)) die();
 
 # check to see if mysql connection works, if not fail over to cached stored redirect urls
-include_once(substr(__DIR__, 0,-21) . '/config/connect2.php'); 
-include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect2.php'); 
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 $usedCachedRedirect = false; 
 if (!$db) $usedCachedRedirect = true;
@@ -78,7 +77,7 @@ if ($usedCachedRedirect==true) {
 	die("<h2>Error establishing a database connection - please contact the webhost</h2>");
 }
 
-$mysql['landing_page_id_public'] = $conn->escape($lpip);
+$mysql['landing_page_id_public'] = $db->real_escape_string($lpip);
 $tracker_sql = "SELECT landing_pages.user_id,
 						landing_pages.landing_page_id,
 						landing_pages.landing_page_id_public,
@@ -115,7 +114,7 @@ parse_str($landing_page_site_url_address_parsed['query'], $_GET);
 
 if ($_GET['t1aiid']) { 
 	//grab tracker data if avaliable
-	$mysql['tracker_id_public'] = $conn->escape((string)$_GET['t1aiid']);
+	$mysql['tracker_id_public'] = $db->real_escape_string((string)$_GET['t1aiid']);
 
 	$tracker_sql2 = "SELECT  text_ad_id,
 							ppc_account_id,
@@ -133,15 +132,15 @@ if ($_GET['t1aiid']) {
 //INSERT THIS CLICK BELOW, if this click doesn't already exisit
 
 //get mysql variables 
-$mysql['user_id'] = $conn->escape((string) $tracker_row['user_id']);
-$mysql['aff_campaign_id'] = $conn->escape((string) $tracker_row['aff_campaign_id']);
-$mysql['ppc_account_id'] = $conn->escape((string) $tracker_row['ppc_account_id']);
-$mysql['click_cpc'] = $conn->escape((string) $tracker_row['click_cpc']);
-$mysql['click_payout'] = $conn->escape((string) $tracker_row['aff_campaign_payout']);
+$mysql['user_id'] = $db->real_escape_string((string) $tracker_row['user_id']);
+$mysql['aff_campaign_id'] = $db->real_escape_string((string) $tracker_row['aff_campaign_id']);
+$mysql['ppc_account_id'] = $db->real_escape_string((string) $tracker_row['ppc_account_id']);
+$mysql['click_cpc'] = $db->real_escape_string((string) $tracker_row['click_cpc']);
+$mysql['click_payout'] = $db->real_escape_string((string) $tracker_row['aff_campaign_payout']);
 $mysql['click_time'] = time();
 
-$mysql['landing_page_id'] = $conn->escape((string) $tracker_row['landing_page_id']);
-$mysql['text_ad_id'] = $conn->escape((string) $tracker_row['text_ad_id']);
+$mysql['landing_page_id'] = $db->real_escape_string((string) $tracker_row['landing_page_id']);
+$mysql['text_ad_id'] = $db->real_escape_string((string) $tracker_row['text_ad_id']);
 
 //now gather variables for the clicks record db
 //click_id is needed to build click_id_public below, so resolve it first
@@ -156,7 +155,7 @@ if (($tracker_row['click_cloaking'] == 1) or //if tracker has overrided cloaking
 	$mysql['click_cloaking'] = 1;
 	//if cloaking is on, add in a click_id_public, because we will be forwarding them to a cloaked /cl/xxxx link
 	$click_id_public = random_int(1,9) . $click_id . random_int(1,9);
-	$mysql['click_id_public'] = $conn->escape($click_id_public);
+	$mysql['click_id_public'] = $db->real_escape_string($click_id_public);
 } else {
 	$mysql['click_cloaking'] = 0;
 }
@@ -165,59 +164,26 @@ if (($tracker_row['click_cloaking'] == 1) or //if tracker has overrided cloaking
 if ($cloaking_on == true) {
 
 	$cloaking_site_url = 'http://'.$_SERVER['SERVER_NAME'] . '/tracking_support/redirect/lpc.php?lpip=' . $tracker_row['landing_page_id_public'];
-	$click_cloaking_site_url_id = get_site_url_id($db); 
-	$mysql['click_cloaking_site_url_id'] = $conn->escape((string) $click_cloaking_site_url_id);         
+	$click_cloaking_site_url_id = INDEXES::get_site_url_id($db); 
+	$mysql['click_cloaking_site_url_id'] = $db->real_escape_string((string) $click_cloaking_site_url_id);         
 	
 }
 
 $redirect_site_url = rotateTrackerUrl($db, $tracker_row);
 
-$mysql['click_id'] = $conn->escape($click_id);
+$mysql['click_id'] = $db->real_escape_string($click_id);
 $mysql['click_out'] = 1;
 
-// If no click_id from cookie, this is a new visit — INSERT a new click record
-if ($click_id === '') {
-    $new_click_sql = "
-        INSERT INTO clicks
-            (user_id, aff_campaign_id, landing_page_id, ppc_account_id,
-             click_cpc, click_payout, click_filtered, click_bot, click_alp, click_time)
-        VALUES
-            ('".$mysql['user_id']."','".$mysql['aff_campaign_id']."',
-             '".$mysql['landing_page_id']."','".$mysql['ppc_account_id']."',
-             '".$mysql['click_cpc']."','".$mysql['click_payout']."',
-             0, 0, 0, '".$mysql['click_time']."')";
-    $conn->query($new_click_sql) or record_mysql_error($db);
-    $new_click_id = (int) $conn->writeConnection()->insert_id;
 
-    if ($new_click_id > 0) {
-        $click_id = (string) $new_click_id;
-        $mysql['click_id'] = $conn->escape($click_id);
-        // Set cookie so subsequent page loads use this click_id
-        setcookie(
-            'tracking1aisubid_a_' . $tracker_row['aff_campaign_id'],
-            $click_id,
-            time() + 86400,
-            '/'
-        );
-        $click_id_public = random_int(1,9) . $click_id . random_int(1,9);
-        $mysql['click_id_public'] = $conn->escape($click_id_public);
-        // Insert clicks_record for new click
-        $record_sql = "INSERT INTO clicks_record
-            SET click_id='".$mysql['click_id']."',
-                click_id_public='".$mysql['click_id_public']."',
-                click_cloaking='".$mysql['click_cloaking']."',
-                click_in=1,
-                click_out=1";
-        $conn->query($record_sql) or record_mysql_error($db);
-    }
-} else {
-    $update_sql = "
-        UPDATE clicks_record
-        SET click_out='".$mysql['click_out']."',
-            click_cloaking='".$mysql['click_cloaking']."'
-        WHERE click_id='".$mysql['click_id']."'";
-    $conn->query($update_sql) or record_mysql_error($db);
-}
+$update_sql = "
+	UPDATE
+		clicks_record
+	SET
+		click_out='".$mysql['click_out']."',
+		click_cloaking='".$mysql['click_cloaking']."'
+	WHERE
+		click_id='".$mysql['click_id']."'";
+$click_result = $db->query($update_sql) or record_mysql_error($db);
 //delay_sql($db, $update_sql);
 
 //set dirty hour
@@ -226,8 +192,8 @@ $data=($de->setDirtyHour($mysql['click_id']));
 
 $redirect_site_url = replaceTrackerPlaceholders($db, $redirect_site_url,$mysql['click_id']);
 
-$click_redirect_site_url_id = get_site_url_id($db); 
-$mysql['click_redirect_site_url_id'] = $conn->escape((string) $click_redirect_site_url_id);
+$click_redirect_site_url_id = INDEXES::get_site_url_id($db); 
+$mysql['click_redirect_site_url_id'] = $db->real_escape_string((string) $click_redirect_site_url_id);
 
 
 

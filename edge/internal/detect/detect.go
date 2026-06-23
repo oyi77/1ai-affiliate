@@ -4,7 +4,6 @@ import (
 	"strings"
 )
 
-// FraudResult contains the fraud assessment for a click.
 type FraudResult struct {
 	Score   float64  `json:"score"`
 	Reasons []string `json:"reasons,omitempty"`
@@ -19,7 +18,6 @@ type Detector struct {
 	maxScore    float64         // threshold above which clicks are blocked
 }
 
-// NewDetector creates a new fraud detector.
 func NewDetector(maxScore float64) *Detector {
 	return &Detector{
 		proxyIPs: make(map[string]bool),
@@ -86,7 +84,6 @@ func (d *Detector) checkUserAgent(ua string) float64 {
 	return 0
 }
 
-// LoadProxyIPs loads known proxy/VPN IPs into the detector.
 func (d *Detector) LoadProxyIPs(ips []string) {
 	for _, ip := range ips {
 		d.proxyIPs[ip] = true

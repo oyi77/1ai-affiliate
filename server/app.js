@@ -10,14 +10,8 @@ const logger = require('./logger');
 const metrics = require('./metrics');
 const { idempotency } = require('./middleware/idempotency');
 const { auditLog } = require('./middleware/auditLog');
-const postbackQueue = require('./services/postbackQueue');
-const posterWorker = require('./services/posterWorker');
-const pipelineWorker = require('./services/pipelineWorker');
-const cron = require('node-cron');
-const { sendDailySummaryForAllUsers } = require('./cron/telegramDailySummary');
 
 const app = express();
-app.set('trust proxy', true);
 const PORT = process.env.PORT || 3001;
 
 // Security + observability middleware
@@ -25,33 +19,17 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://static.cloudflareinsights.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'", "https:", "data:"],
       connectSrc: ["'self'", "https:"],
-      frameSrc: ["'self'"],
-      mediaSrc: ["'self'"],
-      frameAncestors: ["'self'"],
-      formAction: ["'self'"],
-      objectSrc: ["'none'"],
     },
   },
 }));
 app.use(cors());
 app.use(express.json());
 app.use(pinoHttp({ logger, genReqId: req => req.get('X-Request-ID') || crypto.randomUUID() }));
-// API key auth (X-API-Key header as alternative to JWT)
-const { apiKeyAuth } = require('./middleware/apiKeyAuth');
-app.use('/api', (req, res, next) => {
-  // Skip auth for public endpoints
-  if (req.path === '/auth/login' || req.path === '/auth/register' || req.path === '/postback' || req.path.startsWith('/t/') || req.path === '/consent') return next();
-  // If no JWT token, try API key
-  if (!req.headers.authorization && req.headers['x-api-key']) {
-    return apiKeyAuth(req, res, next);
-  }
-  next();
-});
 
 // Idempotency for mutating requests
 app.use(idempotency());
@@ -78,11 +56,16 @@ app.use((req, res, next) => {
 });
 
 // Static files — shared with PHP public dir
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    // Never cache HTML/JS/CSS — always fetch latest on deploy
+    if (/\.(html|js|css)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      res.setHeader('CDN-Cache-Control', 'no-cache');
+    }
+  }
+}));
 
-
-// React SPA assets (built by Vite to public/dist/)
-app.use(express.static(path.join(__dirname, 'public', 'dist')));
 // API documentation
 app.get('/api-docs', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
@@ -91,13 +74,6 @@ app.get('/api-docs', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/admin/advertisers', require('./routes/advertisers'));
-app.use('/api/admin/traffic-sources', require('./routes/trafficSources'));
-app.use('/api/admin/offers', require('./routes/offers'));
-app.use('/api/admin/campaigns', require('./routes/campaigns'));
-app.use('/api/admin/reports', require('./routes/reports'));
-app.use('/api/admin/affiliates', require('./routes/affiliates'));
-app.use('/api/t', require('./routes/tracking'));
 app.use('/api/om', require('./routes/om'));
 app.use('/api/am', require('./routes/am'));
 app.use('/api/payment', require('./routes/payment'));
@@ -107,56 +83,14 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
 app.use('/api', require('./routes/postback'));
-app.use('/api/templates/landing', require('./routes/landingTemplates'));
-app.use('/api/templates', require('./routes/templates'));
-app.use('/api/enterprise', require('./routes/enterprise'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/admin/stats', require('./routes/statsSSE'));
 app.use('/api/poster', require('./routes/poster'));
 app.use('/api/pipeline', require('./routes/pipeline'));
-app.use('/api/affiliate', require('./routes/affiliate'));
-app.use('/api/settings/telegram', require('./routes/telegram'));
-app.use('/api/settings/payouts', require('./routes/payouts'));
-app.use('/api/admin/notifications', require('./routes/notifications'));
-app.use('/api/admin/taglinks', require('./routes/taglinks'));
-app.use('/api/admin/shopee-accounts', require('./routes/shopeeAccounts'));
-app.use('/api/admin/balance', require('./routes/balance'));
-app.use('/api/admin/automation', require('./routes/automation'));
-app.use('/api/admin/traffic-rules', require('./routes/trafficRules'));
-app.use('/api/admin/webhooks', require('./routes/webhooks'));
-app.use('/api/admin/payouts', require('./routes/payouts'));
-app.use('/api/migration', require('./routes/migration'));
-app.use('/api/admin/deep-links', require('./routes/deepLinks'));
-app.use('/api/platform', require('./routes/settingsApi'));
-// Honeypot trap — invisible link that only bots follow
-app.get('/go/honeypot/:campaignId', require('./services/fraudRuleEngine').honeypotHandler);
+app.use('/api/admin', require('./routes/gapfill'));
+app.use('/api/admin/services', require('./routes/services'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
-// Deep link redirect
-app.get('/dl/:slug', async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      'SELECT offer_url, is_active FROM deep_link_pages WHERE slug = ? LIMIT 1',
-      [req.params.slug]
-    );
-    if (!rows.length || !rows[0].is_active) return res.status(404).send('Link not found');
-
-    // Fraud check
-    const fraudRuleEngine = require('./services/fraudRuleEngine');
-    const ip = req.ip || req.connection?.remoteAddress || '';
-    const userAgent = req.get('User-Agent') || '';
-    const referer = req.get('Referer') || '';
-    const fraud = await fraudRuleEngine.evaluateClick(pool, { ip, userAgent, referer });
-    if (fraud.action === 'block') return res.status(403).send('Blocked');
-
-    // Record click (fire-and-forget)
-    pool.query('UPDATE deep_link_pages SET clicks = clicks + 1 WHERE slug = ?', [req.params.slug]).catch(() => {});
-    return res.redirect(302, rows[0].offer_url);
-  } catch (err) {
-    console.error('Deep link redirect error:', err);
-    return res.status(500).send('Server error');
-  }
-});
 // Health check — deep probe: checks DB connectivity + queue status
 app.get('/health', async (req, res) => {
   const checks = { status: 'ok', service: '1ai-affiliate-tracker', port: String(PORT), timestamp: new Date().toISOString(), uptime: Math.floor(process.uptime()), request_id: req.id, components: {} };
@@ -179,23 +113,23 @@ app.get('/health', async (req, res) => {
   res.status(httpStatus).json(checks);
 });
 
-// Legacy admin SPA (preserved for reference; React SPA serves root /)
-app.get('/legacy/admin', (req, res) => res.redirect('/legacy/admin/'));
-app.get('/legacy/admin/*', (req, res) => {
+// SPA fallback — / serves admin SPA, /admin and /client alias
+app.get('/admin', (req, res) => res.redirect('/admin/'));
+app.get('/client', (req, res) => res.redirect('/client/'));
+app.get('/admin/*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public/admin/index.html'));
 });
-app.get('/legacy/client', (req, res) => res.redirect('/legacy/client/'));
-app.get('/legacy/client/*', (req, res) => {
+app.get('/client/*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
-
-// React frontend SPA — catch-all for client-side routing (must be last)
-app.get('*', (req, res, next) => {
-  // Skip API routes
-  if (req.path.startsWith('/api') || req.path.startsWith('/go/') || req.path === '/health') {
-    return next();
-  }
-  res.sendFile(path.join(__dirname, 'public', 'dist', 'index.html'));
+app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public/admin/index.html'));
 });
 
 // Error handler — log via pino, return request_id for 500s
@@ -211,54 +145,16 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
+  const postbackQueue = require('./services/postbackQueue');
+  const posterWorker = require('./services/posterWorker');
+  const pipelineWorker = require('./services/pipelineWorker');
   postbackQueue.start();
   posterWorker.start();
   pipelineWorker.start();
-  // Telegram daily summary cron — 08:00 WIB (01:00 UTC)
-  cron.schedule('0 1 * * *', () => {
-    logger.info('[cron] Running Telegram daily summary...');
-    sendDailySummaryForAllUsers(pool).catch(err => {
-      logger.error({ err }, '[cron] Telegram daily summary failed');
-    });
-  });
-  // Auto-sync ad platform stats daily at 06:00 UTC
-  cron.schedule('0 6 * * *', () => {
-    logger.info('[cron] Auto-syncing traffic source stats...');
-    const { syncAllTrafficSources } = require('./services/autoSyncService');
-    syncAllTrafficSources().then(r => logger.info({ synced: r.synced, errors: r.errors.length }, '[cron] Auto-sync done')).catch(err => logger.error({ err }, '[cron] Auto-sync failed'));
-  });
-  // Campaign auto-rules — evaluate every 15 minutes
-  cron.schedule('*/15 * * * *', () => {
-    const { evaluateCampaignRules } = require('./services/campaignAutoRules');
-    evaluateCampaignRules().catch(err => logger.error({ err }, '[cron] Campaign auto-rules failed'));
-  });
-  // Scheduled report exports — daily at 07:00 UTC
-  cron.schedule('0 7 * * *', () => {
-    const { runScheduledExports } = require('./services/scheduledExportService');
-    runScheduledExports().catch(err => logger.error({ err }, '[cron] Scheduled exports failed'));
-  });
-  const server = app.listen(PORT, () => {
+  app.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);
     logger.info(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
   });
-
-  function gracefulShutdown(signal) {
-    logger.info(`Received ${signal}. Starting graceful shutdown...`);
-    server.close(() => {
-      logger.info('HTTP server closed.');
-      pool.end().then(() => {
-        logger.info('Database pool closed.');
-        process.exit(0);
-      }).catch(() => process.exit(1));
-    });
-    setTimeout(() => {
-      logger.error('Forced shutdown after timeout');
-      process.exit(1);
-    }, 10000);
-  }
-
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 module.exports = app;

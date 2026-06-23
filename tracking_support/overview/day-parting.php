@@ -1,5 +1,5 @@
-<?php include_once(substr(__DIR__, 0,-21) . '/config/connect.php'); 
-include_once(substr(__DIR__, 0, -21) . '/config/functions-ui-calendar.php');
+<?php include_once(dirname(__DIR__, 2) . '/config/connect.php'); 
+include_once(dirname(__DIR__, 2) . '/config/functions-ui-calendar.php');
 
 AUTH::require_user();
 

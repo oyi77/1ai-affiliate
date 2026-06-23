@@ -1,6 +1,6 @@
 const pool = require('../db/mysql');
 const crypto = require('crypto');
-const settings = require('./settingsService');
+
 
 /**
  * Internal helper to mint a tracked smartlink without an HTTP request context.
@@ -16,10 +16,6 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
   if (!offerId || !affiliateId) {
     throw new Error('offerId and affiliateId are required');
   }
-
-  // Validate offer exists
-  const [offerCheck] = await pool.query('SELECT id FROM 1ai_offers WHERE id = ?', [offerId]);
-  if (!offerCheck.length) throw new Error('Offer not found: ' + offerId);
 
   // Resolve domain
   let domain = null;
@@ -39,10 +35,9 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
   const slug = crypto.randomBytes(6).toString('hex');
 
   const linkToken = crypto.randomBytes(16).toString('hex');
-  const now = Math.floor(Date.now() / 1000);
   await pool.query(
-    'INSERT INTO 1ai_affiliate_links (affiliate_id, offer_id, campaign_id, link_token, slug, domain_id, shortener_service_id, created_at, updated_at) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?)',
-    [affiliateId, offerId, linkToken, slug, domain?.id || null, shortenerServiceId || null, now, now]
+    'INSERT INTO 1ai_affiliate_links (affiliate_id, offer_id, link_token, slug, domain_id, shortener_service_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())',
+    [affiliateId, offerId, linkToken, slug, domain?.id || null, shortenerServiceId || null]
   );
 
   let smartlinkUrl;
@@ -50,7 +45,7 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
     const protocol = domain.ssl_enabled ? 'https' : 'http';
     smartlinkUrl = `${protocol}://${domain.domain}/go/${slug}`;
   } else {
-    const fallbackDomain = await settings.get('smartlink_domain');
+    const fallbackDomain = process.env.SMARTLINK_FALLBACK_DOMAIN || 'go.berkahkarya.org';
     smartlinkUrl = `https://${fallbackDomain}/go/${slug}`;
   }
 
@@ -85,7 +80,7 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
     slug,
     url: smartlinkUrl,
     shortUrl,
-    domain: domain?.domain || await settings.get('smartlink_domain')
+    domain: domain?.domain || process.env.SMARTLINK_FALLBACK_DOMAIN || 'go.berkahkarya.org'
   };
 }
 

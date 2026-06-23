@@ -1,8 +1,7 @@
 <?php
 
 declare(strict_types=1);
-include_once(substr(__DIR__, 0, -18) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -18,9 +17,9 @@ if (!$userObj->hasPermission("access_to_setup_section")) {
 	die();
 }
 
-$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 $editTrackerId = filter_input(INPUT_GET, 'edit_tracker_id', FILTER_SANITIZE_NUMBER_INT);
-$mysql['tracker_id_public'] = $conn->escape((string)($editTrackerId ?? ''));
+$mysql['tracker_id_public'] = $db->real_escape_string((string)($editTrackerId ?? ''));
 $showEdit = !empty($editTrackerId);
 if ($showEdit) {
 	$edit_tracker_sql = "SELECT * FROM trackers AS 2tr
@@ -29,7 +28,7 @@ if ($showEdit) {
 						 LEFT JOIN ppc_accounts AS 2pa ON (2tr.ppc_account_id = 2pa.ppc_account_id) 
 						 WHERE 2tr.user_id = '" . $mysql['user_id'] . "' AND 2ac.aff_campaign_deleted='0' AND 2tr.tracker_id_public = '" . $mysql['tracker_id_public'] . "'";
 
-	$edit_tracker_result = $conn->query($edit_tracker_sql);
+	$edit_tracker_result = $db->query($edit_tracker_sql);
 	$edit_tracker_row = $edit_tracker_result->fetch_assoc();
 	$cpc_value = explode(".", (string) $edit_tracker_row['click_cpc'], 2);
 	$cpa_value = explode(".", (string) $edit_tracker_row['click_cpa'], 2);
@@ -355,7 +354,7 @@ template_top('Get Trackers');  ?>
                                      LEFT JOIN (SELECT ppc_network_id, GROUP_CONCAT(parameter) AS parameters, GROUP_CONCAT(placeholder) AS placeholders FROM ppc_network_variables GROUP BY ppc_network_id) AS 2pv ON (2ppc.ppc_network_id = 2pv.ppc_network_id)					                 
 					                 WHERE 2tr.user_id ='" . $mysql['user_id'] . "'";
 
-						$trackers_result = $conn->query($trackers_sql);
+						$trackers_result = $db->query($trackers_sql);
 
 						while ($tracker_row = $trackers_result->fetch_array(MYSQLI_ASSOC)) {
 

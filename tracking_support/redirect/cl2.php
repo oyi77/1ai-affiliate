@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use OneAIAffiliate\Redirect\RedirectHelper;
 
-require_once substr(__DIR__, 0, -21) . '/config/connect2.php';
+require_once dirname(__DIR__, 2) . '/config/connect2.php';
 
 $url = RedirectHelper::getStringParam('q');
 if ($url === null) {

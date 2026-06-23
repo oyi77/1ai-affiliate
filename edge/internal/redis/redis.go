@@ -37,17 +37,14 @@ func (c *Client) Close() error {
 	return c.rdb.Close()
 }
 
-// campaignKey returns the Redis key for a campaign by token.
 func (c *Client) campaignKey(token string) string {
 	return c.prefix + "campaign:" + token
 }
 
-// clickKey returns the Redis key for a click record.
 func (c *Client) clickKey(clickID string) string {
 	return c.prefix + "click:" + clickID
 }
 
-// GetCampaignByToken fetches a campaign's routing state from Redis.
 func (c *Client) GetCampaignByToken(ctx context.Context, token string) (*model.CampaignState, error) {
 	data, err := c.rdb.Get(ctx, c.campaignKey(token)).Bytes()
 	if err == redis.Nil {
@@ -64,7 +61,6 @@ func (c *Client) GetCampaignByToken(ctx context.Context, token string) (*model.C
 	return &cs, nil
 }
 
-// SetCampaign stores a campaign's routing state in Redis with TTL.
 func (c *Client) SetCampaign(ctx context.Context, cs *model.CampaignState, ttl time.Duration) error {
 	data, err := json.Marshal(cs)
 	if err != nil {
@@ -73,7 +69,6 @@ func (c *Client) SetCampaign(ctx context.Context, cs *model.CampaignState, ttl t
 	return c.rdb.Set(ctx, c.campaignKey(cs.Token), data, ttl).Err()
 }
 
-// StoreClickRecord stores ephemeral click data for attribution.
 func (c *Client) StoreClickRecord(ctx context.Context, rec *model.ClickRecord) error {
 	data, err := json.Marshal(rec)
 	if err != nil {
@@ -86,7 +81,6 @@ func (c *Client) StoreClickRecord(ctx context.Context, rec *model.ClickRecord) e
 	return c.rdb.Set(ctx, c.clickKey(rec.ClickID), data, ttl).Err()
 }
 
-// GetClickRecord retrieves a click record for conversion attribution.
 func (c *Client) GetClickRecord(ctx context.Context, clickID string) (*model.ClickRecord, error) {
 	data, err := c.rdb.Get(ctx, c.clickKey(clickID)).Bytes()
 	if err == redis.Nil {

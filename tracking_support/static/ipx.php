@@ -7,13 +7,12 @@ header('Expires: Sun, 03 Feb 2008 05:00:00 GMT'); // Date in the past
 header("Pragma: no-cache");
 header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
 
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php'); 
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect2.php'); 
 
 $t1aiid = $_GET['t1aiid'] ?? '';
 if (!is_numeric($t1aiid)) die();
 
-$mysql['tracker_id_public'] = $conn->escape($t1aiid);
+$mysql['tracker_id_public'] = $db->real_escape_string($t1aiid);
 $time = time();
 $tracker_sql = "SELECT aff_campaign_id,
 					   text_ad_id,
@@ -32,8 +31,8 @@ $sql = "INSERT INTO clicks_impressions
  		ppc_account_id = '".$tracker_row['ppc_account_id']."',
  		text_ad_id = '".$tracker_row['text_ad_id']."',
  		impression_time = '".$time."'";
-$conn->query($sql);
-$ipx_id = $conn->writeConnection()->insert_id;	
+$db->query($sql);
+$ipx_id = $db->insert_id;	
 
 setcookie("pipx", (string) $ipx_id, ['expires' => $time + (10 * 365 * 24 * 60 * 60), 'path' => '/', 'domain' => (string) $_SERVER['SERVER_NAME']]);
 echo base64_decode("R0lGODlhAQABAIAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==");

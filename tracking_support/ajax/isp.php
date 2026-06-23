@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -13,7 +12,7 @@ AUTH::require_user();
 	<?php 		$isp_sql = "SELECT *
                         FROM    locations_isp
                         GROUP BY `isp_name` ORDER BY `isp_name` ASC";
-        $isp_result = $conn->query($isp_sql) or record_mysql_error($isp_sql);
+        $isp_result = $db->query($isp_sql) or record_mysql_error($isp_sql);
 
         while ($isp_row = $isp_result->fetch_array(MYSQLI_ASSOC)) {
             

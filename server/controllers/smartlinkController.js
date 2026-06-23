@@ -1,128 +1,93 @@
 const pool = require('../db/mysql');
 const { mintSmartlink, shortenUrl } = require('../services/smartlinkService');
-const fraudRuleEngine = require('../services/fraudRuleEngine');
-const settings = require('../services/settingsService');
+const { toNumber } = require('./adminController');
 
 async function routeTrafficByHash(req, res) {
   const slug = req.params.hash;
+  const subid = req.query.subid || '';
   if (!slug) return res.status(400).send('Invalid link');
 
   try {
     const [links] = await pool.query(
-      'SELECT l.id, l.affiliate_id, l.offer_id, l.campaign_id FROM 1ai_affiliate_links l WHERE l.slug = ? AND l.status = "active" LIMIT 1',
+      'SELECT id, affiliate_id, offer_id, slug, clicks FROM 1ai_affiliate_links WHERE slug = ?',
       [slug]
     );
     if (!links.length) return res.status(404).send('Link not found');
     const link = links[0];
 
-    // Fraud check — unified scoring engine
-    const ip = req.ip || req.connection?.remoteAddress || '';
-    const userAgent = req.get('User-Agent') || '';
-    const referer = req.get('Referer') || '';
-    const fraud = await fraudRuleEngine.evaluateClick(pool, {
-      ip, userAgent, referer, slug,
-      offer_id: link.offer_id, affiliate_id: link.affiliate_id,
-    });
-    if (fraud.action === 'block') return res.status(403).send('Blocked');
-    // Record click for velocity tracking
-    fraudRuleEngine.recordClick(pool, ip, null, link.affiliate_id, userAgent, fraud.action === 'block', fraud.rules.map(r => r.reason).join('; '));
-    if (fraud.score >= 80) {
-      fraudRuleEngine.autoBlacklist(pool, ip, fraud.score, fraud.rules.map(r => r.reason).join('; '));
+    const [offers] = await pool.query(
+      'SELECT id, name, payout, network_id, advertiser_id FROM 1ai_offers WHERE id = ? AND status = ?',
+      [link.offer_id, 'active']
+    );
+    if (!offers.length) return res.status(404).send('Offer not available');
+    const offer = offers[0];
+
+    const [campaigns] = await pool.query(
+      'SELECT oc.aff_campaign_id FROM 1ai_offer_campaigns oc WHERE oc.offer_id = ? LIMIT 1',
+      [offer.id]
+    );
+    const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : offer.id;
+    const clickId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    const ua = (req.headers['user-agent'] || '').toLowerCase();
+
+    // Bot detection
+    const bots = ['bot', 'crawler', 'spider', 'slurp', 'mediapartners', 'adsbot', 'googlebot', 'bingbot', 'yandexbot', 'baiduspider', 'facebot', 'ia_archiver'];
+    const isBot = bots.some(b => ua.includes(b));
+    if (isBot) {
+      await pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]);
+      return res.redirect(offer.tracking_url || '/');
     }
 
-    // Determine target URL with geo/device targeting
-    let targetUrl = await settings.get('default_fallback_url');
-    let countryCode = null;
-    let deviceType = null;
+    // Device detection
+    const isMobile = /mobile|android|iphone|ipad|ipod/i.test(ua);
+    const isTablet = /tablet|ipad/i.test(ua);
+    const deviceType = isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop';
 
-    // GeoIP lookup
-    try {
-      const { lookupIp } = require('../routes/geoip');
-      const geo = await lookupIp(ip);
-      countryCode = geo.country_code || null;
-    } catch {}
-
-    // Device detection from UA
-    const ua = (userAgent || '').toLowerCase();
-    if (ua.includes('mobile') || ua.includes('iphone') || ua.includes('android')) deviceType = 'mobile';
-    else if (ua.includes('tablet') || ua.includes('ipad')) deviceType = 'tablet';
-    else deviceType = 'desktop';
-
-    if (link.offer_id) {
-      // Check for geo/device-targeted landing pages
-      const [landings] = await pool.query(
-        'SELECT url, geo_targeting, device_targeting, is_default FROM 1ai_offer_landing_pages WHERE offer_id = ? ORDER BY weight DESC, is_default DESC',
-        [link.offer_id]
-      );
-
-      let matchedLanding = null;
-      for (const lp of landings) {
-        let geoMatch = !lp.geo_targeting; // no targeting = matches all
-        if (lp.geo_targeting && countryCode) {
-          try {
-            const allowed = JSON.parse(lp.geo_targeting);
-            geoMatch = Array.isArray(allowed) && allowed.map(c => c.toUpperCase()).includes(countryCode.toUpperCase());
-          } catch { geoMatch = lp.geo_targeting.toUpperCase().includes(countryCode.toUpperCase()); }
-        }
-        let devMatch = !lp.device_targeting;
-        if (lp.device_targeting && deviceType) {
-          try {
-            const allowed = JSON.parse(lp.device_targeting);
-            devMatch = Array.isArray(allowed) && allowed.includes(deviceType);
-          } catch { devMatch = lp.device_targeting.toLowerCase().includes(deviceType); }
-        }
-        if (geoMatch && devMatch) { matchedLanding = lp; break; }
-      }
-
-      if (matchedLanding) {
-        targetUrl = matchedLanding.url;
-      } else {
-        // Fall back to offer's default affiliate_url
-        const [offers] = await pool.query('SELECT affiliate_url FROM 1ai_offers WHERE id = ?', [link.offer_id]);
-        if (offers.length && offers[0].affiliate_url) targetUrl = offers[0].affiliate_url;
-      }
+    // Click dedup — same IP + same link within 24h
+    const clientIp = req.ip || req.connection?.remoteAddress || '';
+    const [dupCheck] = await pool.query(
+      'SELECT click_id FROM 1ai_clicks WHERE click_ip = ? AND aff_campaign_id = ? AND click_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 24 HOUR)) LIMIT 1',
+      [clientIp, campaignId]
+    );
+    if (dupCheck.length) {
+      return res.redirect(offer.tracking_url || '/');
     }
 
-    // Campaign override
-    if (link.campaign_id) {
-      const [campaigns] = await pool.query('SELECT default_url FROM 1ai_aff_campaigns WHERE aff_campaign_id = ?', [link.campaign_id]);
-      if (campaigns.length && campaigns[0].default_url) targetUrl = campaigns[0].default_url;
-    }
+    // Update link click count + log to analytics table (with device_type)
+    await Promise.all([
+      pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]),
+      pool.query(
+        'INSERT INTO 1ai_clicks (click_time, aff_campaign_id, click_payout, click_ip, device_type) VALUES (UNIX_TIMESTAMP(), ?, ?, ?, ?)',
+        [campaignId, offer.payout || 0, clientIp, deviceType]
+      )
+    ]);
 
-    // Record click (async, fire-and-forget — don't block redirect)
-    const clickId = `cl_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    pool.query(
-      'INSERT INTO 1ai_click_log (click_id, offer_id, affiliate_id, ip, country_code, device_type, user_agent, clicked_at) VALUES (?,?,?,?,?,?,?,UNIX_TIMESTAMP())',
-      [clickId, link.offer_id, link.affiliate_id, ip, countryCode || null, deviceType || 'unknown', userAgent]
-    ).catch(err => console.error('Click insert error:', err));
+    res.redirect(offer.tracking_url || '/');
 
-    // Increment link click counter
-    pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]).catch(() => {});
-
-    return res.redirect(302, targetUrl);
   } catch (err) {
-    console.error('routeTrafficByHash error:', err);
-    return res.redirect(302, '/');
+    console.error('Smartlink route error:', err);
+    res.status(500).send('Routing error');
   }
 }
 
 async function generateSmartlink(req, res) {
-  const { offer_id, domain_id, shortener_service_id, affiliate_id } = req.body;
+  const { offer_id, domain_id, shortener_service_id } = req.body;
   if (!offer_id) return res.status(400).json({ error: 'offer_id required' });
 
   try {
-    let affiliateId = affiliate_id;
+    // Validate offer exists and is active
+    const [offerCheck] = await pool.query(
+      'SELECT id FROM 1ai_offers WHERE id = ? AND status = ?',
+      [offer_id, 'active']
+    );
+    if (!offerCheck.length) return res.status(404).json({ error: 'Offer not found or inactive' });
 
-    // If admin doesn't provide affiliate_id, try to find their own affiliate profile
-    if (!affiliateId) {
-      const [aff] = await pool.query(
-        'SELECT id FROM 1ai_affiliates WHERE user_id = ?',
-        [req.user.id]
-      );
-      affiliateId = aff.length ? aff[0].id : null;
-    }
-
-    if (!affiliateId) return res.status(403).json({ error: 'Affiliate profile not found. Provide affiliate_id as admin or ensure user has affiliate profile.' });
+    const [aff] = await pool.query(
+      'SELECT id FROM 1ai_affiliates WHERE user_id = ?',
+      [req.user.id]
+    );
+    const affiliateId = aff.length ? aff[0].id : null;
+    if (!affiliateId) return res.status(403).json({ error: 'Affiliate profile not found' });
 
     const result = await mintSmartlink({
       offerId: offer_id,
@@ -199,6 +164,16 @@ async function recordConversion(req, res) {
     );
     const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : link.offer_id;
 
+    // Conversion dedup — same click_id within 24h
+    const clickId = Date.now();
+    const [convDup] = await pool.query(
+      'SELECT conversion_id FROM 1ai_conversion_logs WHERE click_id = ? AND conversion_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 24 HOUR)) LIMIT 1',
+      [clickId]
+    );
+    if (convDup.length) {
+      return res.status(409).json({ error: 'Duplicate conversion' });
+    }
+
     const networkPayout = parseFloat(link.network_payout) || 0;
     const affiliatePayout = parseFloat(link.payout) || 0;
     const marginAmount = networkPayout - affiliatePayout;
@@ -206,7 +181,7 @@ async function recordConversion(req, res) {
     await pool.query(
       `INSERT INTO 1ai_conversion_logs (aff_campaign_id, click_id, conversion_time, network_payout_snapshot, affiliate_payout_snapshot, margin_amount, affiliate_id, affiliate_status)
        VALUES (?, ?, UNIX_TIMESTAMP(), ?, ?, ?, ?, 'approved')`,
-      [campaignId, Date.now(), networkPayout, affiliatePayout, marginAmount, link.affiliate_id]
+      [campaignId, clickId, networkPayout, affiliatePayout, marginAmount, link.affiliate_id]
     );
 
     await pool.query(
@@ -265,6 +240,5 @@ async function getSmartlinkStats(req, res) {
   }
 }
 
-function toNumber(v) { return Number(v || 0); }
 
 module.exports = { routeTrafficByHash, generateSmartlink, listSmartlinks, recordConversion, getSmartlinkStats };

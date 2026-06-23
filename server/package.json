@@ -14,7 +14,6 @@
     "@ai-sdk/google": "^3.0.80",
     "@google/generative-ai": "^0.24.1",
     "@voltagent/core": "^2.7.7",
-    "@voltagent/google-ai": "^0.4.1",
     "ai": "^6.0.199",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8",

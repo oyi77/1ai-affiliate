@@ -17,7 +17,6 @@ Architecture:
 import json
 import os
 import time
-from pathlib import Path
 from typing import Any
 
 import httpx
@@ -198,7 +197,7 @@ async def service_health(service: str) -> str:
     try:
         client = get_client(service)
         data = await client.get("/health")
-        return json.dumps(data, indent=2)
+        return json.dumps(data)
     except Exception as e:
         return f"{service}: DOWN — {e}"
 
@@ -210,14 +209,14 @@ async def ads_generate(prompt: str, campaign_type: str = "general") -> str:
     """Generate ad copy via 1ai-ads/AdForge."""
     client = get_client("ads")
     result = await client.post("/api/generate-ads", {"prompt": prompt, "campaign_type": campaign_type})
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def ads_generate_landing(product: str, audience: str = "") -> str:
     """Generate landing page content via 1ai-ads."""
     client = get_client("ads")
     result = await client.post("/api/generate-landing", {"product": product, "audience": audience})
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 # ---------------------------------------------------------------------------
 # Social (SMMA) integration
@@ -231,7 +230,7 @@ async def social_blast(platform: str, content: str, accounts: list[str] = None) 
         "content": content,
         "accounts": accounts or [],
     })
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def social_analytics(platform: str = "", days: int = 7) -> str:
@@ -239,7 +238,7 @@ async def social_analytics(platform: str = "", days: int = 7) -> str:
     client = get_client("social")
     params = f"?platform={platform}&days={days}" if platform else f"?days={days}"
     result = await client.get(f"/analytics/overview{params}")
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def social_shopee_sync(shop_id: str = "") -> str:
@@ -247,14 +246,14 @@ async def social_shopee_sync(shop_id: str = "") -> str:
     client = get_client("social")
     endpoint = f"/shopee/sync/{shop_id}" if shop_id else "/shopee/sync/all"
     result = await client.post(endpoint)
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def social_shopee_commission() -> str:
     """Get Shopee affiliate commission report from 1ai-social."""
     client = get_client("social")
     result = await client.get("/shopee/analytics/sales")
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 # ---------------------------------------------------------------------------
 # Content (AI Video Marketing) integration
@@ -265,7 +264,7 @@ async def content_status() -> str:
     client = get_client("content")
     try:
         result = await client.get("/health")
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"content: DOWN — {e}. Note: 1ai-content is a Telegram bot, REST API may be limited."
 
@@ -282,7 +281,7 @@ async def ebook_generate(title: str, topic: str, language: str = "en", chapters:
         "language": language,
         "num_chapters": chapters,
     })
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def ebook_status(project_id: int = 0) -> str:
@@ -290,14 +289,14 @@ async def ebook_status(project_id: int = 0) -> str:
     client = get_client("ebook")
     path = f"/api/projects/{project_id}" if project_id else "/api/projects"
     result = await client.get(path)
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def ebook_market_research(keyword: str) -> str:
     """Research ebook market via Google Books + Open Library API."""
     client = get_client("ebook")
     result = await client.post("/api/research", {"keyword": keyword})
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 # ---------------------------------------------------------------------------
 # Tracking (CPA) integration — native PHP V3 API
@@ -308,7 +307,7 @@ async def tracking_affiliates(status: str = "") -> str:
     client = get_client("tracking")
     path = f"/api/v3/affiliates?status={status}" if status else "/api/v3/affiliates"
     result = await client.get(path)
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def tracking_commissions(affiliate_id: int = 0) -> str:
@@ -316,7 +315,7 @@ async def tracking_commissions(affiliate_id: int = 0) -> str:
     client = get_client("tracking")
     path = f"/api/v3/commissions/entries?affiliate_id={affiliate_id}" if affiliate_id else "/api/v3/commissions/entries"
     result = await client.get(path)
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 @mcp.tool()
 async def tracking_offers(network: str = "") -> str:
@@ -324,7 +323,7 @@ async def tracking_offers(network: str = "") -> str:
     client = get_client("tracking")
     path = f"/api/v3/offers?network={network}" if network else "/api/v3/offers"
     result = await client.get(path)
-    return json.dumps(result, indent=2)
+    return json.dumps(result)
 
 # ---------------------------------------------------------------------------
 # Unified workflows — cross-service orchestration
@@ -364,7 +363,7 @@ async def unified_campaign(offer_name: str, product: str, niche: str = "general"
     except Exception as e:
         steps.append({"step": "tracking_link_created", "status": "failed", "error": str(e)})
 
-    return json.dumps({"workflow": "unified_campaign", "steps": steps}, indent=2)
+    return json.dumps({"workflow": "unified_campaign", "steps": steps})
 
 @mcp.tool()
 async def unified_affiliate_onboarding(email: str, name: str, offers: list[str] = None) -> str:
@@ -398,7 +397,7 @@ async def unified_affiliate_onboarding(email: str, name: str, offers: list[str] 
         except Exception as e:
             steps.append({"step": "welcome_ebook_queued", "status": "skipped", "error": str(e)})
 
-    return json.dumps({"workflow": "affiliate_onboarding", "steps": steps}, indent=2)
+    return json.dumps({"workflow": "affiliate_onboarding", "steps": steps})
 
 
 # ---------------------------------------------------------------------------
@@ -410,7 +409,7 @@ async def content_status() -> str:
     try:
         client = get_affiliate()
         data = await client.get("/api/content/status")
-        return json.dumps(data, indent=2)
+        return json.dumps(data)
     except Exception as e:
         return f"content: DOWN — {e}"
 
@@ -423,7 +422,7 @@ async def content_banner(product: str, audience: str = "general audience", platf
             "product": product, "audience": audience, "platform": platform,
             "style": style, "variations": variations,
         })
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"banner failed: {e}"
 
@@ -435,7 +434,7 @@ async def content_carousel(topic: str, platform: str = "instagram", slides: int 
         result = await client.post("/api/content/carousel", {
             "topic": topic, "platform": platform, "slides": slides,
         })
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"carousel failed: {e}"
 
@@ -447,7 +446,7 @@ async def content_caption(product: str, platform: str = "instagram", tone: str =
         result = await client.post("/api/content/caption", {
             "product": product, "platform": platform, "tone": tone, "length": length,
         })
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"caption failed: {e}"
 
@@ -459,7 +458,7 @@ async def content_brand_kit(brand_name: str, industry: str = "", vibe: str = "mo
         result = await client.post("/api/content/brand-kit", {
             "brand_name": brand_name, "industry": industry, "vibe": vibe,
         })
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"brand_kit failed: {e}"
 
@@ -473,7 +472,7 @@ async def content_ab_test(product: str, audience: str = "general audience", hypo
             payload["hypothesis"] = hypothesis
         client_ref = get_affiliate()
         result = await client_ref.post("/api/content/ab-test", payload)
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"ab_test failed: {e}"
 
@@ -487,7 +486,7 @@ async def content_bg_remove(image_subject: str, intent: str = "product photo cle
         result = await client.post("/api/content/bg-remove", {
             "image_subject": image_subject, "intent": intent,
         })
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"bg_remove failed: {e}"
 
@@ -531,7 +530,7 @@ async def unified_content_funnel(product: str, audience: str, platform: str = "i
         except Exception as e:
             steps.append({"step": "brand_kit", "status": "error", "error": str(e)})
 
-    return json.dumps({"workflow": "unified_content_funnel", "product": product, "steps": steps}, indent=2)
+    return json.dumps({"workflow": "unified_content_funnel", "product": product, "steps": steps})
 
 
 # ---------------------------------------------------------------------------
@@ -548,7 +547,7 @@ async def pipeline_run(url: str, niche: str = None) -> str:
         if niche:
             payload["niche"] = niche
         result = await client.post("/api/pipeline/run", payload)
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"pipeline_run failed: {e}"
 
@@ -558,7 +557,7 @@ async def pipeline_status(job_id: str) -> str:
     try:
         client = get_affiliate()
         result = await client.get(f"/api/pipeline/jobs/{job_id}")
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"pipeline_status failed: {e}"
 
@@ -568,7 +567,7 @@ async def poster_trigger() -> str:
     try:
         client = get_affiliate()
         result = await client.post("/api/poster/trigger")
-        return json.dumps(result, indent=2)
+        return json.dumps(result)
     except Exception as e:
         return f"poster_trigger failed: {e}"
 

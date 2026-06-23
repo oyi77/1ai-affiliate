@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 ?>
@@ -11,7 +10,7 @@ AUTH::require_user();
 	<?php 		$region_sql = "SELECT *
                         FROM    locations_region
                         GROUP BY `region_name` ORDER BY `region_name` ASC";
-        $region_result = $conn->query($region_sql) or record_mysql_error($region_sql);
+        $region_result = $db->query($region_sql) or record_mysql_error($region_sql);
 
         while ($region_row = $region_result->fetch_array(MYSQLI_ASSOC)) {
             

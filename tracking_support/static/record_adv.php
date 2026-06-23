@@ -4,8 +4,8 @@ declare(strict_types=1);
 header("Pragma: no-cache");
 header("Expires: -1");
 
-include_once(substr(__DIR__, 0, -19) . '/config/connect2.php');
-include_once(substr(__DIR__, 0, -19) . '/config/class-dataengine-slim.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 $locationRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::location($db);
 $trackingRepo = \OneAIAffiliate\Repository\LookupRepositoryFactory::tracking($db);

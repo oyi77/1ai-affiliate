@@ -1,8 +1,7 @@
 <?php
 
 declare(strict_types=1);
-include_once(substr(__DIR__, 0, -18) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -27,14 +26,14 @@ if (!isset($aff_campaign_row)) $aff_campaign_row = null;
 if (!isset($aff_network_row)) $aff_network_row = null;
 
 $slack = false;
-$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
-$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url, 2u.install_hash FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '" . $mysql['user_own_id'] . "'";
-$user_results = $conn->query($user_sql);
+$user_results = $db->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 $rotateUrlCampaignsSql = "SELECT * FROM aff_campaigns WHERE user_id = '" . $mysql['user_id'] . "' AND aff_campaign_deleted = 0 AND aff_campaign_rotate = 1";
-$rotateUrlCampaignsResults = $conn->query($rotateUrlCampaignsSql);
+$rotateUrlCampaignsResults = $db->query($rotateUrlCampaignsSql);
 
 if (!empty($user_row['url']))
 	$slack = new Slack($user_row['url']);
@@ -86,10 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 
 	//check to see if they are the owners of this affiliate network
-	$mysql['aff_network_id'] = $conn->escape((string)$_POST['aff_network_id']);
-	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['aff_network_id'] = $db->real_escape_string((string)$_POST['aff_network_id']);
+	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 	$aff_network_sql = "SELECT * FROM `aff_networks` WHERE `user_id`='" . $mysql['user_id'] . "' AND `aff_network_id`='" . $mysql['aff_network_id'] . "'";
-	$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+	$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 	if ($aff_network_result->num_rows == 0) {
 		$error['wrong_user'] = '<div class="error">You are not authorized to add an campaign to another users network</div>';
 	} else {
@@ -98,10 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 	//if editing, check to make sure the own the campaign they are editing
 	if ($editing == true) {
-		$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+		$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 		$aff_campaign_sql = "SELECT * FROM aff_campaigns AS 2cp LEFT JOIN aff_networks AS 2an USING (aff_network_id) WHERE 2cp.user_id='" . $mysql['user_id'] . "' AND 2cp.aff_campaign_id='" . $mysql['aff_campaign_id'] . "'";
-		$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+		$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 		if ($aff_campaign_result->num_rows == 0) {
 			$error['wrong_user'] .= '<div class="error">You are not authorized to modify another users campaign</div>';
 		} else {
@@ -110,18 +109,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 
 	if (! $error) {
-		$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
-		$mysql['aff_network_id'] = $conn->escape((string)$_POST['aff_network_id']);
-		$mysql['aff_campaign_name'] = $conn->escape(trim($_POST['aff_campaign_name'] ?? ''));
-		$mysql['aff_campaign_url'] = $conn->escape(trim($_POST['aff_campaign_url'] ?? ''));
-		$mysql['aff_campaign_url_2'] = $conn->escape(trim($_POST['aff_campaign_url_2'] ?? ''));
-		$mysql['aff_campaign_url_3'] = $conn->escape(trim($_POST['aff_campaign_url_3'] ?? ''));
-		$mysql['aff_campaign_url_4'] = $conn->escape(trim($_POST['aff_campaign_url_4'] ?? ''));
-		$mysql['aff_campaign_url_5'] = $conn->escape(trim($_POST['aff_campaign_url_5'] ?? ''));
+		$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
+		$mysql['aff_network_id'] = $db->real_escape_string((string)$_POST['aff_network_id']);
+		$mysql['aff_campaign_name'] = $db->real_escape_string(trim($_POST['aff_campaign_name'] ?? ''));
+		$mysql['aff_campaign_url'] = $db->real_escape_string(trim($_POST['aff_campaign_url'] ?? ''));
+		$mysql['aff_campaign_url_2'] = $db->real_escape_string(trim($_POST['aff_campaign_url_2'] ?? ''));
+		$mysql['aff_campaign_url_3'] = $db->real_escape_string(trim($_POST['aff_campaign_url_3'] ?? ''));
+		$mysql['aff_campaign_url_4'] = $db->real_escape_string(trim($_POST['aff_campaign_url_4'] ?? ''));
+		$mysql['aff_campaign_url_5'] = $db->real_escape_string(trim($_POST['aff_campaign_url_5'] ?? ''));
 		$post_aff_campaign_rotate = isset($_POST['aff_campaign_rotate']) ? (string)$_POST['aff_campaign_rotate'] : '0';
-		$mysql['aff_campaign_rotate'] = $conn->escape($post_aff_campaign_rotate);
-		$mysql['aff_campaign_payout'] = $conn->escape(trim($_POST['aff_campaign_payout'] ?? ''));
-		$mysql['aff_campaign_cloaking'] = $conn->escape((string)($_POST['aff_campaign_cloaking'] ?? '0'));
+		$mysql['aff_campaign_rotate'] = $db->real_escape_string($post_aff_campaign_rotate);
+		$mysql['aff_campaign_payout'] = $db->real_escape_string(trim($_POST['aff_campaign_payout'] ?? ''));
+		$mysql['aff_campaign_cloaking'] = $db->real_escape_string((string)($_POST['aff_campaign_cloaking'] ?? '0'));
 		
 		// Handle attribution model ID
 		$attributionModelId = null;
@@ -130,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		}
 		$mysql['attribution_model_id'] = $attributionModelId;
 		
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 		$mysql['aff_campaign_time'] = time();
 
 		if ($editing == true) {
@@ -156,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		if ($editing == true) {
 			$aff_campaign_sql .= "WHERE `aff_campaign_id`='" . $mysql['aff_campaign_id'] . "'";
 		}
-		$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+		$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 		$add_success = true;
 
 		if ($slack) {
@@ -202,15 +201,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		if ($editing != true) {
 			//if this landing page is brand new, add on a landing_page_id_public
-			$aff_campaign_row['aff_campaign_id'] = $conn->writeConnection()->insert_id;
+			$aff_campaign_row['aff_campaign_id'] = $db->insert_id;
 			$aff_campaign_id_public = random_int(1, 9) . $aff_campaign_row['aff_campaign_id'] . random_int(1, 9);
-			$mysql['aff_campaign_id_public'] = $conn->escape($aff_campaign_id_public);
-			$mysql['aff_campaign_id'] = $conn->escape((string)$aff_campaign_row['aff_campaign_id']);
+			$mysql['aff_campaign_id_public'] = $db->real_escape_string($aff_campaign_id_public);
+			$mysql['aff_campaign_id'] = $db->real_escape_string((string)$aff_campaign_row['aff_campaign_id']);
 
 			$aff_campaign_sql = "	UPDATE       `aff_campaigns`
 								 	SET          	 `aff_campaign_id_public`='" . $mysql['aff_campaign_id_public'] . "'
 								 	WHERE        `aff_campaign_id`='" . $mysql['aff_campaign_id'] . "'";
-			$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+			$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 
 			if (isset($_POST['dni_id']) && isset($_POST['dni_offer_id'])) {
 				$ddlci = false;
@@ -218,9 +217,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 					$ddlci = $_GET['ddlci'];
 				}
 
-				$mysql['dni_id'] = $conn->escape((string)$_POST['dni_id']);
+				$mysql['dni_id'] = $db->real_escape_string((string)$_POST['dni_id']);
 				$dniSql = 'SELECT networkId, apiKey, affiliateId FROM dni_networks WHERE user_id = "' . $mysql['user_id'] . '" AND id = "' . $mysql['dni_id'] . '"';
-				$dniResult = $conn->query($dniSql);
+				$dniResult = $db->query($dniSql);
 
 				if ($dniResult->num_rows > 0) {
 					$dniRow = $dniResult->fetch_assoc();
@@ -245,8 +244,8 @@ if (isset($_GET['delete_aff_campaign_id'])) {
 	}
 
 	if ($userObj->hasPermission("remove_campaign")) {
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
-		$mysql['aff_campaign_id'] = $conn->escape((string)$_GET['delete_aff_campaign_id']);
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_GET['delete_aff_campaign_id']);
 		$mysql['date_deleted'] = time();
 
 		$delete_sql = " UPDATE  `aff_campaigns`
@@ -254,7 +253,7 @@ if (isset($_GET['delete_aff_campaign_id'])) {
 								`aff_campaign_time`='" . ($mysql['aff_campaign_time'] ?? time()) . "'
 						WHERE   `user_id`='" . $mysql['user_id'] . "'
 						AND     `aff_campaign_id`='" . $mysql['aff_campaign_id'] . "'";
-		if ($delete_result = $conn->query($delete_sql) or record_mysql_error($delete_sql)) {
+		if ($delete_result = $db->query($delete_sql) or record_mysql_error($delete_sql)) {
 			$delete_success = true;
 		}
 	} else {
@@ -264,15 +263,15 @@ if (isset($_GET['delete_aff_campaign_id'])) {
 
 if (!empty($_GET['edit_aff_campaign_id'])) {
 
-	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
-	$mysql['aff_campaign_id'] = $conn->escape((string)$_GET['edit_aff_campaign_id']);
+	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_GET['edit_aff_campaign_id']);
 
 	$aff_campaign_sql = "SELECT 	* 
 						 FROM   	`aff_campaigns`
 						 WHERE  	`aff_campaign_id`='" . $mysql['aff_campaign_id'] . "'
 						 AND    		`user_id`='" . $mysql['user_id'] . "'";
 
-	$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+	$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 	$aff_campaign_row = $aff_campaign_result->fetch_assoc();
 
 	$selected['aff_network_id'] = $aff_campaign_row['aff_network_id'];
@@ -282,15 +281,15 @@ if (!empty($_GET['edit_aff_campaign_id'])) {
 
 if (!empty($_GET['copy_aff_campaign_id'])) {
 
-	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
-	$mysql['aff_campaign_id'] = $conn->escape((string)$_GET['copy_aff_campaign_id']);
+	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+	$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_GET['copy_aff_campaign_id']);
 
 	$aff_campaign_sql = "SELECT 	* 
 						 FROM   	`aff_campaigns`
 						 WHERE  	`aff_campaign_id`='" . $mysql['aff_campaign_id'] . "'
 						 AND    		`user_id`='" . $mysql['user_id'] . "'";
 
-	$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+	$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 	$aff_campaign_row = $aff_campaign_result->fetch_assoc();
 
 	$selected['aff_network_id'] = $aff_campaign_row['aff_network_id'];
@@ -382,7 +381,7 @@ template_top('Affiliate Campaigns Setup');
 					<select class="form-control input-sm" name="aff_network_id" id="aff_network_id">
 						<option value="">--</option>
 						<?php
-						$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+						$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 						$aff_network_sql = "
 										SELECT *
 										FROM `aff_networks`
@@ -390,7 +389,7 @@ template_top('Affiliate Campaigns Setup');
 										AND `aff_network_deleted`='0'
 										ORDER BY `aff_network_name` ASC
 									";
-						$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+						$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 
 						while ($aff_network_row = $aff_network_result->fetch_array(MYSQLI_ASSOC)) {
 
@@ -547,10 +546,10 @@ template_top('Affiliate Campaigns Setup');
 					<input class="form-control input-sm search" style="margin-bottom: 10px; height: 30px;" placeholder="Filter">
 					<ul class="list">
 						<?php
-						$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+						$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 						$aff_network_sql = "SELECT 2af.user_id, 2af.aff_network_id, 2af.aff_network_name, 2af.dni_network_id, 2dni.favicon, 2dni.processed FROM aff_networks AS 2af LEFT JOIN dni_networks AS 2dni ON (2af.dni_network_id = 2dni.id) WHERE 2af.user_id='" . $mysql['user_id'] . "' AND 2af.aff_network_deleted='0' ORDER BY 2af.aff_network_name ASC";
 
-						$aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+						$aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 						if ($aff_network_result->num_rows == 0) {
 						?><li class="empty-state">No categories added yet. Add a category first to organize your campaigns.</li><?php
 																}
@@ -575,9 +574,9 @@ template_top('Affiliate Campaigns Setup');
 																	?><ul style="margin-top: 0px;"><?php
 
 																	//print out the individual accounts per each PPC network
-																	$mysql['aff_network_id'] = $conn->escape($aff_network_row['aff_network_id']);
+																	$mysql['aff_network_id'] = $db->real_escape_string($aff_network_row['aff_network_id']);
 																	$aff_campaign_sql = "SELECT * FROM `aff_campaigns` WHERE `user_id`='" . $mysql['user_id'] . "' AND `aff_network_id`='" . $mysql['aff_network_id'] . "' AND `aff_campaign_deleted`='0' ORDER BY `aff_campaign_name` ASC";
-																	$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+																	$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 
 																	while ($aff_campaign_row = $aff_campaign_result->fetch_array(MYSQLI_ASSOC)) {
 
@@ -663,9 +662,9 @@ template_top('Affiliate Campaigns Setup');
 	</div>
 </div>
 <?php if (isset($_GET['dl_dni']) && isset($_GET['dl_offer_id']) && !isset($_POST['aff_network_id'])) {
-	$mysql['dl_dni'] = $conn->escape((string)$_GET['dl_dni']);
+	$mysql['dl_dni'] = $db->real_escape_string((string)$_GET['dl_dni']);
 	$getDlDniSql = "SELECT id FROM dni_networks WHERE networkId = '" . $mysql['dl_dni'] . "' AND user_id = '" . $mysql['user_id'] . "'";
-	$getDlDniResult = $conn->query($getDlDniSql);
+	$getDlDniResult = $db->query($getDlDniSql);
 	if ($getDlDniResult->num_rows > 0) {
 		$getDlDniRow = $getDlDniResult->fetch_assoc();
 	} else {

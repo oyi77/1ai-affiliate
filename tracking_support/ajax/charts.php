@@ -1,18 +1,17 @@
 <?php
 
 declare(strict_types=1);
-include_once(substr(__DIR__, 0, -17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
-include_once(substr(__DIR__, 0, -17) . '/config/class-dataengine.php');
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine.php');
 
 AUTH::require_user();
 
 AUTH::set_timezone($_SESSION['user_timezone']);
 
 $time = grab_timeframe();
-$mysql['to'] = $conn->escape((string)$time['to']);
-$mysql['from'] = $conn->escape((string)$time['from']);
-$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['to'] = $db->real_escape_string((string)$time['to']);
+$mysql['from'] = $db->real_escape_string((string)$time['from']);
+$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -28,14 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$range = [];
 		$de = new DataEngine();
 
-		$mysql['chart_time_range'] = $conn->escape((string)$_POST['chart_time_range']);
+		$mysql['chart_time_range'] = $db->real_escape_string((string)$_POST['chart_time_range']);
 
 		// scope to owner
 		$sql = "UPDATE charts SET chart_time_range = '" . $mysql['chart_time_range'] . "' WHERE user_id = '" . $mysql['user_id'] . "'";
-		$result = $conn->query($sql) or record_mysql_error($sql);
+		$result = $db->query($sql) or record_mysql_error($sql);
 
 		$sql = "SELECT * FROM charts WHERE user_id = '" . $mysql['user_id'] . "'";
-		$result = $conn->query($sql) or record_mysql_error($sql);
+		$result = $db->query($sql) or record_mysql_error($sql);
 		$user_row = $result->fetch_assoc();
 
 		if (!is_array($user_row)) {
@@ -81,9 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		}
 
 		$serialize = serialize($data);
-		$mysql['serialize'] = $conn->escape($serialize);
+		$mysql['serialize'] = $db->real_escape_string($serialize);
 
 		$sql = "UPDATE charts SET data = '" . $mysql['serialize'] . "' WHERE user_id = '" . $mysql['user_id'] . "'";
-		$result = $conn->query($sql) or record_mysql_error($sql);
+		$result = $db->query($sql) or record_mysql_error($sql);
 	}
 }

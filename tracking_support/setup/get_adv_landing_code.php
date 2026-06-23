@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-18) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -67,9 +66,9 @@ template_top('Get Landing Page Code');  ?>
 					    <label for="landing_page_id" class="lp-label">Landing Page</label>
 				    	<select class="form-control lp-select" name="landing_page_id" id="landing_page_id">
 							<option value="0">-- Select Landing Page --</option> <?php
-							$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+							$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 							$landing_page_sql = "SELECT * FROM landing_pages WHERE user_id='".$mysql['user_id']."' AND landing_page_type='1' AND landing_page_deleted='0'";
-							$landing_page_result = $conn->query($landing_page_sql);
+							$landing_page_result = $db->query($landing_page_sql);
 							while ($landing_page_row = $landing_page_result->fetch_array(MYSQLI_ASSOC)) {
 								$html['landing_page_id'] = htmlentities((string)($landing_page_row['landing_page_id'] ?? ''), ENT_QUOTES, 'UTF-8');
 								$html['landing_page_nickname'] = htmlentities((string)($landing_page_row['landing_page_nickname'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -101,9 +100,9 @@ template_top('Get Landing Page Code');  ?>
 								<select class="form-control lp-select" name="aff_campaign_id_1" id="aff_campaign_id_1">
 									<option value="0">-- Select Campaign --</option>
 									<?php
-									$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+									$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 									$aff_campaign_sql = "SELECT aff_campaign_id, aff_campaign_name, aff_network_name FROM aff_campaigns LEFT JOIN aff_networks USING (aff_network_id) WHERE aff_campaigns.user_id='".$mysql['user_id']."' AND aff_campaign_deleted='0' AND aff_network_deleted=0 ORDER BY aff_network_name ASC";
-									$aff_campaign_result = $conn->query($aff_campaign_sql);
+									$aff_campaign_result = $db->query($aff_campaign_sql);
 									while ($aff_campaign_row = $aff_campaign_result->fetch_assoc()) {
 										$html['aff_campaign_id'] = htmlentities((string)($aff_campaign_row['aff_campaign_id'] ?? ''), ENT_QUOTES, 'UTF-8');
 										$html['aff_campaign_name'] = htmlentities((string)($aff_campaign_row['aff_campaign_name'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -120,9 +119,9 @@ template_top('Get Landing Page Code');  ?>
 								<select class="form-control lp-select" name="rotator_id_1" id="rotator_id_1">
 									<option value="0">-- Select Rotator --</option>
 									<?php
-									$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+									$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 									$rotator_sql = "SELECT id, name FROM rotators WHERE user_id='".$mysql['user_id']."' ORDER BY name ASC";
-									$rotator_result = $conn->query($rotator_sql);
+									$rotator_result = $db->query($rotator_sql);
 									while ($rotator_row = $rotator_result->fetch_assoc()) {
 										$html['rotator_id'] = htmlentities((string)($rotator_row['id'] ?? ''), ENT_QUOTES, 'UTF-8');
 										$html['rotator_name'] = htmlentities((string)($rotator_row['name'] ?? ''), ENT_QUOTES, 'UTF-8');

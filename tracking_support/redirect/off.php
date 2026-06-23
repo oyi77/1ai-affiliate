@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
-error_reporting(E_ALL);
-ini_set("display_errors", true);
+error_reporting(E_ERROR | E_PARSE);
+ini_set("display_errors", false);
 ob_start();
 // only allow numeric acip's
 
@@ -20,9 +20,8 @@ elseif (isset($_COOKIE['tracking1aipci']))
 
 if (! is_numeric($acip))
     die();
-include_once (substr(__DIR__, 0,-21) . '/config/connect2.php');
-include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once (dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 if(isset($_COOKIE['tracking1aisubid'])) { //if there's a cookie use it
     $click_id = $_COOKIE['tracking1aisubid'];
@@ -30,7 +29,7 @@ if(isset($_COOKIE['tracking1aisubid'])) { //if there's a cookie use it
 
 else { //if not find the list clicks id of the ip within a 30 day range
     $mysql['user_id'] = 1;
-    $mysql['ip_address'] = $conn->escape($_SERVER['REMOTE_ADDR']);
+    $mysql['ip_address'] = $db->real_escape_string($_SERVER['REMOTE_ADDR']);
     $daysago = time() - 86400; // 24 hours
     $click_sql1 = "	SELECT 	clicks.click_id,ppc_account_id,click_id_public 
 					FROM 		clicks
@@ -43,12 +42,12 @@ else { //if not find the list clicks id of the ip within a 30 day range
 					ORDER BY 	clicks.click_id DESC
 					LIMIT 		1";
 
-    $click_result1 = $conn->query($click_sql1) or record_mysql_error($click_sql1);
+    $click_result1 = $db->query($click_sql1) or record_mysql_error($click_sql1);
     $click_row1 = $click_result1->fetch_assoc();
-    $mysql['click_id'] = $conn->escape((string)$click_row1['click_id']);
+    $mysql['click_id'] = $db->real_escape_string((string)$click_row1['click_id']);
     $click_id = $mysql['click_id'];
-    $mysql['ppc_account_id'] = $conn->escape((string)$click_row1['ppc_account_id']);
-    $mysql['click_id_public'] = $conn->escape($click_row1['click_id_public']);
+    $mysql['ppc_account_id'] = $db->real_escape_string((string)$click_row1['ppc_account_id']);
+    $mysql['click_id_public'] = $db->real_escape_string($click_row1['click_id_public']);
     $pci=$mysql['click_id_public'];
 
 }
@@ -111,7 +110,7 @@ if ($usedCachedRedirect == true) {
 
 /* OK FIRST IF THERE IS NO PUBLIC CLICK_ID, JUST REDIRECT TO THE NORMAL CAMPAIGN */
 if ($vars[1] == '' && $pci == '') {
-    $mysql['aff_campaign_id_public'] = $conn->escape($acip);
+    $mysql['aff_campaign_id_public'] = $db->real_escape_string($acip);
  $aff_campaign_sql = "SELECT   aff_campaign_rotate, 
 									aff_campaign_url, 
 									aff_campaign_url_2, 
@@ -195,8 +194,8 @@ if ($vars[1] == '' && $pci == '') {
 /* ------------------------------------------------------- */
 /* ------------------------------------------------------- */
 
-$mysql['aff_campaign_id_public'] = $conn->escape((string)$_GET['acip']);
-$mysql['click_id_public'] = $conn->escape($pci);
+$mysql['aff_campaign_id_public'] = $db->real_escape_string((string)$_GET['acip']);
+$mysql['click_id_public'] = $db->real_escape_string($pci);
 
 $info_sql = "
 	SELECT
@@ -242,10 +241,10 @@ if ($memcacheWorking) {
 
 $click_id = $info_row['click_id'];
 
-$mysql['click_id'] = $conn->escape((string)$click_id);
+$mysql['click_id'] = $db->real_escape_string((string)$click_id);
 
-$mysql['aff_campaign_id'] = $conn->escape((string)$info_row['aff_campaign_id']);
-$mysql['click_payout'] = $conn->escape((string)$info_row['aff_campaign_payout']);
+$mysql['aff_campaign_id'] = $db->real_escape_string((string)$info_row['aff_campaign_id']);
+$mysql['click_payout'] = $db->real_escape_string((string)$info_row['aff_campaign_payout']);
 
 $update_sql = "
 	UPDATE
@@ -261,7 +260,7 @@ $update_sql = "
 ";
 // this function delays the sql, because UPDATING is very very slow
 //delay_sql($db, $update_sql);
-$click_result = $conn->query($update_sql) or record_mysql_error($db);
+$click_result = $db->query($update_sql) or record_mysql_error($db);
 
 $mysql['click_out'] = 1;
 
@@ -285,11 +284,11 @@ $update_sql = "
 		click_id='" . $mysql['click_id'] . "'
 ";
 //delay_sql($db, $update_sql);
-$click_result = $conn->query($update_sql) or record_mysql_error($db);
+$click_result = $db->query($update_sql) or record_mysql_error($db);
 
 $outbound_site_url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-$click_outbound_site_url_id = get_site_url_id($db);
-$mysql['click_outbound_site_url_id'] = $conn->escape((string)$click_outbound_site_url_id);
+$click_outbound_site_url_id = INDEXES::get_site_url_id($db);
+$mysql['click_outbound_site_url_id'] = $db->real_escape_string((string)$click_outbound_site_url_id);
 
 if ($cloaking_on == true) {
     $cloaking_site_url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
@@ -299,8 +298,8 @@ $redirect_site_url = rotateTrackerUrl($db, $info_row);
 
 $redirect_site_url = replaceTrackerPlaceholders($db, $redirect_site_url, $click_id);
 
-$click_redirect_site_url_id = get_site_url_id($db);
-$mysql['click_redirect_site_url_id'] = $conn->escape((string)$click_redirect_site_url_id);
+$click_redirect_site_url_id = INDEXES::get_site_url_id($db);
+$mysql['click_redirect_site_url_id'] = $db->real_escape_string((string)$click_redirect_site_url_id);
 
 $update_sql = "
 	UPDATE
@@ -312,7 +311,7 @@ $update_sql = "
 		click_id='" . $mysql['click_id'] . "'
 ";
 //delay_sql($db, $update_sql);
-$click_result = $conn->query($update_sql) or record_mysql_error($db);
+$click_result = $db->query($update_sql) or record_mysql_error($db);
 
 // alright now the updates,
 // WE WANT TO DELAY THESES UPDATES, in a MYSQL DATBASES? Or else the UPDATES lag the server, the UPDATES have to wait until it locks to update the server
@@ -324,8 +323,8 @@ $click_result = $conn->query($update_sql) or record_mysql_error($db);
 // update the click summary table if this is a 'real click'
 // if ($info_row['click_filtered'] == 0) {
 
-$mysql['landing_page_id'] = $conn->escape((string)$info_row['landing_page_id']);
-$mysql['user_id'] = $conn->escape((string)$info_row['user_id']);
+$mysql['landing_page_id'] = $db->real_escape_string((string)$info_row['landing_page_id']);
+$mysql['user_id'] = $db->real_escape_string((string)$info_row['user_id']);
 
 // set timezone correctly
 $user_sql = "SELECT user_timezone FROM users WHERE user_id='" . $mysql['user_id'] . "'";
@@ -340,7 +339,7 @@ $today_year = date('Y', time());
 
 // the click_time is recorded in the middle of the day
 $click_time = mktime(12, 0, 0, $today_month, $today_day, $today_year);
-$mysql['click_time'] = $conn->escape((string)$click_time);
+$mysql['click_time'] = $db->real_escape_string((string)$click_time);
 // check to make sure this click_summary doesn't already exist
 $check_sql = "SELECT  *
 				  FROM    summary_overview
@@ -348,7 +347,7 @@ $check_sql = "SELECT  *
 				  AND     landing_page_id='" . $mysql['landing_page_id'] . "'
 				  AND     aff_campaign_id='" . $mysql['aff_campaign_id'] . "'
 				  AND     click_time='" . $mysql['click_time'] . "'";
-$check_result = $conn->query($check_sql) or record_mysql_error($check_sql);
+$check_result = $db->query($check_sql) or record_mysql_error($check_sql);
 $check_count = $check_result->num_rows;
 
 // if this click summary hasn't been recorded do this now
@@ -359,7 +358,7 @@ if ($check_count == 0) {
 								   landing_page_id='" . $mysql['landing_page_id'] . "',
 								   aff_campaign_id='" . $mysql['aff_campaign_id'] . "',
 								   click_time='" . $mysql['click_time'] . "'";
-    $insert_result = $conn->query($insert_sql) or record_mysql_error($db);
+    $insert_result = $db->query($insert_sql) or record_mysql_error($db);
 }
 // }
 

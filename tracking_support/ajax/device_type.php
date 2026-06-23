@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -12,7 +11,7 @@ AUTH::require_user();
 	<?php 		$device_sql = "SELECT *
                         FROM    device_types
                         ORDER BY `type_name` ASC";
-        $device_result = $conn->query($device_sql) or record_mysql_error($device_sql);
+        $device_result = $db->query($device_sql) or record_mysql_error($device_sql);
 
         while ($device_row = $device_result->fetch_array(MYSQLI_ASSOC)) {
             

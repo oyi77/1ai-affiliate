@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -12,7 +11,7 @@ AUTH::require_user();
 	<?php 		$browser_sql = "SELECT *
                         FROM    browsers
                         GROUP BY `browser_name` ORDER BY `browser_name` ASC";
-        $browser_result = $conn->query($browser_sql) or record_mysql_error($browser_sql);
+        $browser_result = $db->query($browser_sql) or record_mysql_error($browser_sql);
 
         while ($browser_row = $browser_result->fetch_array(MYSQLI_ASSOC)) {
 

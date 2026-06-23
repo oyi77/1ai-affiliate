@@ -1,19 +1,18 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
 
- $mysql['aff_campaign_id'] = isset($_POST['aff_campaign_id']) ? $conn->escape((string)$_POST['aff_campaign_id']) : '0';      
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+ $mysql['aff_campaign_id'] = isset($_POST['aff_campaign_id']) ? $db->real_escape_string((string)$_POST['aff_campaign_id']) : '0';      
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 		$text_ad_sql = "SELECT * FROM `text_ads`
 						WHERE `user_id`='".$mysql['user_id']."' 
 						AND `aff_campaign_id`='".$mysql['aff_campaign_id']."' 
 						AND `text_ad_deleted`='0' 
 						ORDER BY `aff_campaign_id`, `text_ad_name` ASC"; 
-		$text_ad_result = $conn->query($text_ad_sql) or record_mysql_error($text_ad_sql);
+		$text_ad_result = $db->query($text_ad_sql) or record_mysql_error($text_ad_sql);
 
 		if ($text_ad_result->num_rows == 0) {
 		

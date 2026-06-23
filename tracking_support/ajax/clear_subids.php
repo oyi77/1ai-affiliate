@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -10,12 +9,12 @@ AUTH::require_user();
 		die();
 	}
 
-	$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 	
 	if (!isset($_POST['aff_network_id']) || $_POST['aff_network_id'] == 0) { 
 		$error['clear_subids'] = '<div class="error"><small><span class="fui-alert"></span>You have to at least select an affiliate network to clear out</small></div>'; 
 	}
-	$mysql['aff_network_id'] = $conn->escape(isset($_POST['aff_network_id']) ? (string)$_POST['aff_network_id'] : '0');
+	$mysql['aff_network_id'] = $db->real_escape_string(isset($_POST['aff_network_id']) ? (string)$_POST['aff_network_id'] : '0');
 	
 	if (isset($error)){ 
 		echo $error['clear_subids'];  
@@ -29,15 +28,15 @@ AUTH::require_user();
 		$de['ppc_account_id'] = 0;
 
 		if (isset($_POST['aff_campaign_id']) && (string)$_POST['aff_campaign_id'] !== '0') {
-			$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
+			$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
 			$click_sql = "
 				UPDATE clicks
 				SET click_lead=0
 				WHERE user_id='".$mysql['user_id']."'
 				AND aff_campaign_id='".$mysql['aff_campaign_id']."'
 			";
-			$click_result = $conn->query($click_sql) or record_mysql_error($click_sql);
-			$clicks = $conn->writeConnection()->affected_rows;
+			$click_result = $db->query($click_sql) or record_mysql_error($click_sql);
+			$clicks = $db->affected_rows;
 			if ($clicks < 0 ) { $clicks = 0; }
 
 			$de['aff_campaign_id'] = $mysql['aff_campaign_id'];
@@ -49,7 +48,7 @@ AUTH::require_user();
 				AND aff_campaign_id='".$mysql['aff_campaign_id']."'
 				LIMIT 1
 			";
-			$click_result = $conn->query($click_sql) or record_mysql_error($click_sql);
+			$click_result = $db->query($click_sql) or record_mysql_error($click_sql);
 			$row = $click_result ? $click_result->fetch_assoc() : null;
 			$de['user_id'] = $mysql['user_id'];
 			$de['click_time_from'] = $row['click_time'] ?? null;
@@ -66,8 +65,8 @@ AUTH::require_user();
 				SET click_lead=0
 				WHERE 2c.user_id='".$mysql['user_id']."'
 			";
-			$click_result = $conn->query($click_sql) or record_mysql_error($click_sql);
-			$clicks = $conn->writeConnection()->affected_rows;
+			$click_result = $db->query($click_sql) or record_mysql_error($click_sql);
+			$clicks = $db->affected_rows;
 			if ($clicks < 0 ) { $clicks = 0; }
 
 			$de['aff_campaign_id'] = 0;
@@ -81,7 +80,7 @@ AUTH::require_user();
 				)
 				WHERE 2c.user_id='".$mysql['user_id']."'
 			";
-			$click_result = $conn->query($click_sql) or record_mysql_error($click_sql);
+			$click_result = $db->query($click_sql) or record_mysql_error($click_sql);
 			$row = $click_result ? $click_result->fetch_assoc() : null;
 
 			$de['user_id'] = $mysql['user_id'];
@@ -100,7 +99,7 @@ AUTH::require_user();
 							click_time_to = '".$de['click_time_to']."'";
 
 		if ($clicks) {
-			$conn->query($dirty_hours_sql) or record_mysql_error($dirty_hours_sql);
+			$db->query($dirty_hours_sql) or record_mysql_error($dirty_hours_sql);
 		}
 
 		echo "<div class=\"success\"><span class=\"fui-check-inverted\"></span><small>You have reset <strong>$clicks</strong> subids!<br/>You can now re-upload your subids.</small></div>";

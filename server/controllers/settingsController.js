@@ -140,7 +140,7 @@ async function getIntegrations(req, res) {
     }
 
     const [userRows] = await pool.query(
-      'SELECT clickserver_api_key, p1ai_customer_api_key, user_slack_incoming_webhook FROM 1ai_users WHERE user_id = ?',
+      'SELECT clickserver_api_key, customer_api_key, user_slack_incoming_webhook FROM 1ai_users WHERE user_id = ?',
       [req.user.id]
     );
 
@@ -153,7 +153,7 @@ async function getIntegrations(req, res) {
       ipqs_api_key: prefs.ipqs_api_key || null,
       slack_webhook: user.user_slack_incoming_webhook || null,
       clickserver_api_key: user.clickserver_api_key || null,
-      customer_api_key: user.p1ai_customer_api_key || null,
+      customer_api_key: user.customer_api_key || null,
     });
   } catch (err) {
     console.error('getIntegrations error:', err);

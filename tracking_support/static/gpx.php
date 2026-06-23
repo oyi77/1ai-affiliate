@@ -13,10 +13,9 @@ header("Pragma: no-cache");
 header('P3P: CP="1ai-Affiliate does not have a P3P policy"');
 echo base64_decode("R0lGODlhAQABAIAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==");
 
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
-include_once(substr(__DIR__, 0,-19) . '/config/class-dataengine-slim.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
-include_once(substr(__DIR__, 0,-19) . '/config/static-endpoint-helpers.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
+include_once(dirname(__DIR__, 2) . '/config/static-endpoint-helpers.php');
 
 $settingsService = AttributionServiceFactory::createSettingsService();
 
@@ -29,25 +28,25 @@ $advertiserId = null;
 
 //grab the cid
 if(array_key_exists('cid',$_GET) && is_numeric($_GET['cid'])) {
-	$mysql['cid']= $conn->escape((string)$_GET['cid']);
+	$mysql['cid']= $db->real_escape_string((string)$_GET['cid']);
 }
     
 // grab the subid
 if (array_key_exists('subid', $_GET) && is_numeric($_GET['subid'])) {
-    $mysql['click_id'] = $conn->escape((string)$_GET['subid']);
+    $mysql['click_id'] = $db->real_escape_string((string)$_GET['subid']);
 } elseif (array_key_exists('sid', $_GET) && is_numeric($_GET['sid'])) {
-    $mysql['click_id'] = $conn->escape((string)$_GET['sid']);
+    $mysql['click_id'] = $db->real_escape_string((string)$_GET['sid']);
 } else { // no subid found get from cookie or fingerprint
        
     // see if it has the cookie in the campaign id, then the general match, then do whatever we can to grab SOMETHING to tie this lead to
     if (isset($_COOKIE['tracking1aisubid_a_' . $mysql['cid']]) && $_COOKIE['tracking1aisubid_a_' . $mysql['cid']] && $mysql['cid'] != '0') {
-        $mysql['click_id'] = $conn->escape($_COOKIE['tracking1aisubid_a_' . $mysql['cid']]);
+        $mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking1aisubid_a_' . $mysql['cid']]);
     } else
         if (isset($_COOKIE['tracking1aisubid']) && $_COOKIE['tracking1aisubid']) {
-            $mysql['click_id'] = $conn->escape($_COOKIE['tracking1aisubid']);
+            $mysql['click_id'] = $db->real_escape_string($_COOKIE['tracking1aisubid']);
         } else {
             // ok grab the last click from this ip_id
-            $mysql['ip_address'] = $conn->escape($_SERVER['REMOTE_ADDR']);
+            $mysql['ip_address'] = $db->real_escape_string($_SERVER['REMOTE_ADDR']);
             $daysago = time() - 2592000; // 30 days ago
             $click_sql1 = "	SELECT 	clicks.click_id
 					FROM 		clicks
@@ -59,12 +58,12 @@ if (array_key_exists('subid', $_GET) && is_numeric($_GET['subid'])) {
 					ORDER BY 	clicks.click_id DESC 
 					LIMIT 		1";
             
-            $click_result1 = $conn->query($click_sql1) or record_mysql_error($db, $click_sql1);
+            $click_result1 = $db->query($click_sql1) or record_mysql_error($db, $click_sql1);
             $click_row1 = $click_result1->fetch_assoc();
 
             if ($click_row1) {
-                $mysql['click_id'] = $conn->escape($click_row1['click_id']);
-                $mysql['ppc_account_id'] = $conn->escape($click_row1['ppc_account_id'] ?? '');
+                $mysql['click_id'] = $db->real_escape_string($click_row1['click_id']);
+                $mysql['ppc_account_id'] = $db->real_escape_string($click_row1['ppc_account_id'] ?? '');
             }
         }
 }
@@ -76,30 +75,30 @@ if (is_numeric($mysql['click_id'])) {
 				LEFT JOIN cpa_trackers USING (click_id) 
 				LEFT JOIN trackers USING (tracker_id_public)  
 				WHERE click_id = '".$mysql['click_id']."'";
-	$cpa_result = $conn->query($cpa_sql);
+	$cpa_result = $db->query($cpa_sql);
 	$cpa_row = $cpa_result->fetch_assoc();
 
         if (!$cpa_row['click_lead']) {
 
-                $mysql['campaign_id'] = $conn->escape((string) ($cpa_row['aff_campaign_id'] ?? ''));
-                $mysql['click_user_id'] = $conn->escape((string) ($cpa_row['user_id'] ?? ''));
+                $mysql['campaign_id'] = $db->real_escape_string((string) ($cpa_row['aff_campaign_id'] ?? ''));
+                $mysql['click_user_id'] = $db->real_escape_string((string) ($cpa_row['user_id'] ?? ''));
                 $advertiserId = p1aiResolveAdvertiserId($db, (int) $mysql['campaign_id']);
-                $mysql['click_time'] = $conn->escape((string) ($cpa_row['click_time'] ?? '0'));
+                $mysql['click_time'] = $db->real_escape_string((string) ($cpa_row['click_time'] ?? '0'));
 
 		$conv_time = time();
 		$click_time_to_date = new DateTime(date('Y-m-d H:i:s', (int) $mysql['click_time']));
 		$conv_time_to_date = new DateTime(date('Y-m-d H:i:s', (int) $conv_time));
 		$diff = $click_time_to_date->diff($conv_time_to_date);
-		$mysql['time_difference'] =  $conn->escape($diff->d.' days, '.$diff->h.' hours, '.$diff->i.' min and '.$diff->s.' sec');
-		$mysql['conv_time'] = $conn->escape((string) $conv_time);
-		$mysql['ip'] = $conn->escape($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '');
-		$mysql['user_agent'] = $conn->escape($_SERVER['HTTP_USER_AGENT'] ?? '');
+		$mysql['time_difference'] =  $db->real_escape_string($diff->d.' days, '.$diff->h.' hours, '.$diff->i.' min and '.$diff->s.' sec');
+		$mysql['conv_time'] = $db->real_escape_string((string) $conv_time);
+		$mysql['ip'] = $db->real_escape_string($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '');
+		$mysql['user_agent'] = $db->real_escape_string($_SERVER['HTTP_USER_AGENT'] ?? '');
 		
-		$mysql['click_cpa'] = $conn->escape((string) ($cpa_row['click_cpa'] ?? ''));
+		$mysql['click_cpa'] = $db->real_escape_string((string) ($cpa_row['click_cpa'] ?? ''));
 	
 			if (array_key_exists('amount', $_GET) && is_numeric($_GET['amount'])) {
 				$mysql['use_pixel_payout'] = 1;
-				$mysql['click_payout'] = $conn->escape((string)$_GET['amount']);
+				$mysql['click_payout'] = $db->real_escape_string((string)$_GET['amount']);
 			}
 			p1aiApplyConversionUpdate(
 				$db,
@@ -113,9 +112,9 @@ if (is_numeric($mysql['click_id'])) {
 		$click_payout_for_log = $mysql['click_payout'] ?? '0';
 		if (!$mysql['use_pixel_payout']) {
 			$payout_sql = "SELECT click_payout FROM clicks WHERE click_id = '".$mysql['click_id']."'";
-			$payout_result = $conn->query($payout_sql);
+			$payout_result = $db->query($payout_sql);
 			if ($payout_result && $payout_row = $payout_result->fetch_assoc()) {
-				$click_payout_for_log = $conn->escape($payout_row['click_payout']);
+				$click_payout_for_log = $db->real_escape_string($payout_row['click_payout']);
 			}
 		}
 
@@ -131,8 +130,8 @@ if (is_numeric($mysql['click_id'])) {
 					ip = '".$mysql['ip']."',
 					pixel_type = '1',
 					user_agent = '".$mysql['user_agent']."'";
-                $conn->query($log_sql);
-                $conversionId = (int) $conn->writeConnection()->insert_id;
+                $db->query($log_sql);
+                $conversionId = (int) $db->insert_id;
 
                 if ($conversionId > 0) {
                         $scope = [

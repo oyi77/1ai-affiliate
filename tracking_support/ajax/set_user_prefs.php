@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -15,31 +14,31 @@ $clean = [];
 if ($_SERVER['REQUEST_METHOD'] == 'POST') { 
     
 	//start - update user user_preferences
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);   
-		$mysql['user_pref_adv'] = $conn->escape(isset($_POST['user_pref_adv']) ? (string)$_POST['user_pref_adv'] : '');
-		$mysql['user_pref_ppc_network_id'] = $conn->escape(isset($_POST['ppc_network_id']) ? (string)$_POST['ppc_network_id'] : '');
-		$mysql['user_pref_ppc_account_id'] = $conn->escape(isset($_POST['ppc_account_id']) ? (string)$_POST['ppc_account_id'] : '');  
-		$mysql['user_pref_aff_network_id'] = $conn->escape(isset($_POST['aff_network_id']) ? (string)$_POST['aff_network_id'] : '');  
-		$mysql['user_pref_aff_campaign_id'] = $conn->escape(isset($_POST['aff_campaign_id']) ? (string)$_POST['aff_campaign_id'] : '');     
-		$mysql['user_pref_text_ad_id'] = $conn->escape(isset($_POST['text_ad_id']) ? (string)$_POST['text_ad_id'] : '');  
-		$mysql['user_pref_method_of_promotion'] = $conn->escape(isset($_POST['method_of_promotion']) ? (string)$_POST['method_of_promotion'] : '');  
-		$mysql['user_pref_landing_page_id'] = $conn->escape(isset($_POST['landing_page_id']) ? (string)$_POST['landing_page_id'] : '');  
-		$mysql['user_pref_country_id'] = $conn->escape(isset($_POST['country_id']) ? (string)$_POST['country_id'] : '');
-		$mysql['user_pref_region_id'] = $conn->escape(isset($_POST['region_id']) ? (string)$_POST['region_id'] : '');
-		$mysql['user_pref_isp_id'] = $conn->escape(isset($_POST['isp_id']) ? (string)$_POST['isp_id'] : '');    
-		$mysql['user_pref_ip'] = $conn->escape(isset($_POST['ip']) ? (string)$_POST['ip'] : '');  
-		$mysql['user_pref_ref'] = $conn->escape(isset($_POST['referer']) ? (string)$_POST['referer'] : '');  
-		$mysql['user_pref_keyword'] = $conn->escape(isset($_POST['keyword']) ? (string)$_POST['keyword'] : '');  
-		$mysql['user_pref_limit'] = $conn->escape(isset($_POST['user_pref_limit']) ? (string)$_POST['user_pref_limit'] : '');
-		$mysql['user_pref_breakdown'] = $conn->escape(isset($_POST['user_pref_breakdown']) ? (string)$_POST['user_pref_breakdown'] : '');
-		$mysql['user_cpc_or_cpv'] = $conn->escape(isset($_POST['user_cpc_or_cpv']) ? (string)$_POST['user_cpc_or_cpv'] : '');
-		$mysql['user_pref_show'] = $conn->escape(isset($_POST['user_pref_show']) ? (string)$_POST['user_pref_show'] : '');
-		$mysql['user_pref_device_id'] = $conn->escape(isset($_POST['device_id']) ? (string)$_POST['device_id'] : '');
-		$mysql['user_pref_browser_id'] = $conn->escape(isset($_POST['browser_id']) ? (string)$_POST['browser_id'] : '');
-		$mysql['user_pref_platform_id'] = $conn->escape(isset($_POST['platform_id']) ? (string)$_POST['platform_id'] : '');  
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);   
+		$mysql['user_pref_adv'] = $db->real_escape_string(isset($_POST['user_pref_adv']) ? (string)$_POST['user_pref_adv'] : '');
+		$mysql['user_pref_ppc_network_id'] = $db->real_escape_string(isset($_POST['ppc_network_id']) ? (string)$_POST['ppc_network_id'] : '');
+		$mysql['user_pref_ppc_account_id'] = $db->real_escape_string(isset($_POST['ppc_account_id']) ? (string)$_POST['ppc_account_id'] : '');  
+		$mysql['user_pref_aff_network_id'] = $db->real_escape_string(isset($_POST['aff_network_id']) ? (string)$_POST['aff_network_id'] : '');  
+		$mysql['user_pref_aff_campaign_id'] = $db->real_escape_string(isset($_POST['aff_campaign_id']) ? (string)$_POST['aff_campaign_id'] : '');     
+		$mysql['user_pref_text_ad_id'] = $db->real_escape_string(isset($_POST['text_ad_id']) ? (string)$_POST['text_ad_id'] : '');  
+		$mysql['user_pref_method_of_promotion'] = $db->real_escape_string(isset($_POST['method_of_promotion']) ? (string)$_POST['method_of_promotion'] : '');  
+		$mysql['user_pref_landing_page_id'] = $db->real_escape_string(isset($_POST['landing_page_id']) ? (string)$_POST['landing_page_id'] : '');  
+		$mysql['user_pref_country_id'] = $db->real_escape_string(isset($_POST['country_id']) ? (string)$_POST['country_id'] : '');
+		$mysql['user_pref_region_id'] = $db->real_escape_string(isset($_POST['region_id']) ? (string)$_POST['region_id'] : '');
+		$mysql['user_pref_isp_id'] = $db->real_escape_string(isset($_POST['isp_id']) ? (string)$_POST['isp_id'] : '');    
+		$mysql['user_pref_ip'] = $db->real_escape_string(isset($_POST['ip']) ? (string)$_POST['ip'] : '');  
+		$mysql['user_pref_ref'] = $db->real_escape_string(isset($_POST['referer']) ? (string)$_POST['referer'] : '');  
+		$mysql['user_pref_keyword'] = $db->real_escape_string(isset($_POST['keyword']) ? (string)$_POST['keyword'] : '');  
+		$mysql['user_pref_limit'] = $db->real_escape_string(isset($_POST['user_pref_limit']) ? (string)$_POST['user_pref_limit'] : '');
+		$mysql['user_pref_breakdown'] = $db->real_escape_string(isset($_POST['user_pref_breakdown']) ? (string)$_POST['user_pref_breakdown'] : '');
+		$mysql['user_cpc_or_cpv'] = $db->real_escape_string(isset($_POST['user_cpc_or_cpv']) ? (string)$_POST['user_cpc_or_cpv'] : '');
+		$mysql['user_pref_show'] = $db->real_escape_string(isset($_POST['user_pref_show']) ? (string)$_POST['user_pref_show'] : '');
+		$mysql['user_pref_device_id'] = $db->real_escape_string(isset($_POST['device_id']) ? (string)$_POST['device_id'] : '');
+		$mysql['user_pref_browser_id'] = $db->real_escape_string(isset($_POST['browser_id']) ? (string)$_POST['browser_id'] : '');
+		$mysql['user_pref_platform_id'] = $db->real_escape_string(isset($_POST['platform_id']) ? (string)$_POST['platform_id'] : '');  
 		if(isset($_POST['details']) && is_array($_POST['details'])) {
 			foreach($_POST['details'] AS $key=>$value) {
-				$mysql['user_pref_group_'.($key+1)] = $conn->escape($value);
+				$mysql['user_pref_group_'.($key+1)] = $db->real_escape_string($value);
 			}
 		}
 }
@@ -95,9 +94,9 @@ echo ($error['date'] ?? '') . ($error['user_pref_time_predefined'] ?? '') .  ($e
 
 if (empty($error) && $_SERVER['REQUEST_METHOD'] == 'POST') {
     
-	$mysql['user_pref_time_predefined'] = $conn->escape(isset($clean['user_pref_time_predefined']) ? (string)$clean['user_pref_time_predefined'] : '');
-	$mysql['user_pref_time_from'] = $conn->escape(isset($clean['user_pref_time_from']) ? (string)$clean['user_pref_time_from'] : '');
-	$mysql['user_pref_time_to'] = $conn->escape(isset($clean['user_pref_time_to']) ? (string)$clean['user_pref_time_to'] : '');
+	$mysql['user_pref_time_predefined'] = $db->real_escape_string(isset($clean['user_pref_time_predefined']) ? (string)$clean['user_pref_time_predefined'] : '');
+	$mysql['user_pref_time_from'] = $db->real_escape_string(isset($clean['user_pref_time_from']) ? (string)$clean['user_pref_time_from'] : '');
+	$mysql['user_pref_time_to'] = $db->real_escape_string(isset($clean['user_pref_time_to']) ? (string)$clean['user_pref_time_to'] : '');
 	 
 	$user_sql = "   UPDATE  `users_pref`
 					SET     `user_pref_adv`='".$mysql['user_pref_adv']."',";
@@ -133,5 +132,5 @@ if (empty($error) && $_SERVER['REQUEST_METHOD'] == 'POST') {
 							`user_pref_browser_id`='".$mysql['user_pref_browser_id']."',
 							`user_pref_platform_id`='".$mysql['user_pref_platform_id']."'
 					WHERE   `user_id`='".$mysql['user_id']."'";
-	$user_result = $conn->query($user_sql) or record_mysql_error($user_sql);    
+	$user_result = $db->query($user_sql) or record_mysql_error($user_sql);    
 }

@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 	//require authenticated user
 	AUTH::require_user();
@@ -11,9 +10,9 @@ $conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
 	if ($error) { echo $error['aff_campaign_id']; die(); }
 		
 	//run the code
-	$mysql['aff_campaign_id'] = $conn->escape((string)$_POST['aff_campaign_id']);
+	$mysql['aff_campaign_id'] = $db->real_escape_string((string)$_POST['aff_campaign_id']);
 	$aff_campaign_sql = "SELECT * FROM aff_campaigns WHERE aff_campaign_id='".$mysql['aff_campaign_id']."'";
-	$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+	$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 	$aff_campaign_row = $aff_campaign_result->fetch_assoc();
 	
 	$html['aff_campaign_id_public'] = htmlentities((string) $aff_campaign_row['aff_campaign_id_public']);

@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php'); 
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php'); 
 AUTH::require_user();
 
-$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 $dni_id = $_GET['dni'];
-$mysql['dni_id'] = $conn->escape($dni_id);
+$mysql['dni_id'] = $db->real_escape_string($dni_id);
 
 if (isset($_GET['dni']) && isset($_GET['all_offers'])) {
 
@@ -14,7 +13,7 @@ if (isset($_GET['dni']) && isset($_GET['all_offers'])) {
 	$filter = $_GET['filter'];
 
 	$sql = "SELECT dni.networkId, dni.apiKey, dni.affiliateId, dni.name, 2u.install_hash FROM dni_networks AS dni LEFT JOIN users AS 2u USING(user_id) WHERE dni.user_id = '".$mysql['user_id']."' AND dni.id = '".$mysql['dni_id']."'";
-	$results = $conn->query($sql);
+	$results = $db->query($sql);
 	if ($results->num_rows > 0) {
 		$dni = $results->fetch_assoc();
 		
@@ -77,7 +76,7 @@ if (isset($_GET['dni']) && isset($_GET['all_offers'])) {
 
 if (isset($_GET['dni']) && isset($_GET['get_offer']) && isset($_GET['offer_id'])) {
 	$sql = "SELECT dni.networkId, dni.apiKey, dni.affiliateId, dni.name, 2u.install_hash FROM dni_networks AS dni LEFT JOIN users AS 2u USING(user_id) WHERE dni.user_id = '".$mysql['user_id']."' AND dni.id = '".$mysql['dni_id']."'";
-	$results = $conn->query($sql);
+	$results = $db->query($sql);
 	if ($results->num_rows > 0) {
 		$dni = $results->fetch_assoc();
 		echo getDniOfferById($dni['install_hash'], $dni['networkId'], $dni['apiKey'], $dni['affiliateId'], $_GET['offer_id']);
@@ -86,7 +85,7 @@ if (isset($_GET['dni']) && isset($_GET['get_offer']) && isset($_GET['offer_id'])
 
 if (isset($_GET['dni']) && isset($_GET['request_offer_access']) && isset($_GET['offer_id']) && isset($_GET['type'])) {
 	$sql = "SELECT dni.networkId, dni.apiKey, dni.affiliateId, dni.name, 2u.install_hash FROM dni_networks AS dni LEFT JOIN users AS 2u USING(user_id) WHERE dni.user_id = '".$mysql['user_id']."' AND dni.id = '".$mysql['dni_id']."'";
-	$results = $conn->query($sql);
+	$results = $db->query($sql);
 	if ($results->num_rows > 0) {
 		$dni = $results->fetch_assoc();
 		echo requestDniOfferAccess($dni['install_hash'], $dni['networkId'], $dni['apiKey'], $dni['affiliateId'], $_GET['offer_id'], $_GET['type']);
@@ -95,7 +94,7 @@ if (isset($_GET['dni']) && isset($_GET['request_offer_access']) && isset($_GET['
 
 if (isset($_GET['dni']) && isset($_GET['offer_id']) && isset($_GET['submit_offer_questions'])) {
 	$sql = "SELECT dni.networkId, dni.apiKey, dni.affiliateId, dni.name, 2u.install_hash FROM dni_networks AS dni LEFT JOIN users AS 2u USING(user_id) WHERE dni.user_id = '".$mysql['user_id']."' AND dni.id = '".$mysql['dni_id']."'";
-	$results = $conn->query($sql);
+	$results = $db->query($sql);
 	if ($results->num_rows > 0) {
 		$dni = $results->fetch_assoc();
 		echo submitDniOfferAnswers($dni['install_hash'], $dni['networkId'], $dni['apiKey'], $dni['affiliateId'], $_GET['offer_id'], $_POST);
@@ -104,11 +103,11 @@ if (isset($_GET['dni']) && isset($_GET['offer_id']) && isset($_GET['submit_offer
 
 if (isset($_GET['dni']) && isset($_GET['offer_id']) && isset($_GET['setup_offer'])) {
 	$sql = "SELECT dni.networkId, dni.apiKey, dni.affiliateId, 2u.install_hash FROM dni_networks AS dni LEFT JOIN users AS 2u USING(user_id) WHERE dni.user_id = '".$mysql['user_id']."' AND dni.id = '".$mysql['dni_id']."'";
-	$results = $conn->query($sql);
+	$results = $db->query($sql);
 	if ($results->num_rows > 0) {
 		$dni = $results->fetch_assoc();
 		$aff_network_sql = "SELECT aff_network_id FROM aff_networks WHERE dni_network_id = '".$mysql['dni_id']."'";
-		$aff_network_results = $conn->query($aff_network_sql);
+		$aff_network_results = $db->query($aff_network_sql);
 		$aff_network_row = $aff_network_results->fetch_assoc();
 		$offerData = setupDniOffer($dni['install_hash'], $dni['networkId'], $dni['apiKey'], $dni['affiliateId'], 'USD', $_GET['offer_id'], $_GET['ddlci']);
 		$data = json_decode((string) $offerData, true);

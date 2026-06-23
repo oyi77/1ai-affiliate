@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -12,7 +11,7 @@ AUTH::require_user();
 	<?php 		$country_sql = "SELECT *
                         FROM    locations_country
                         GROUP BY `country_name` ORDER BY `country_name` ASC";
-        $country_result = $conn->query($country_sql) or record_mysql_error($country_sql);
+        $country_result = $db->query($country_sql) or record_mysql_error($country_sql);
 
         while ($country_row = $country_result->fetch_array(MYSQLI_ASSOC)) {
             

@@ -13,14 +13,12 @@ type Router struct {
 	rng *rand.Rand
 }
 
-// NewRouter creates a new traffic router.
 func NewRouter() *Router {
 	return &Router{
 		rng: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
-// MatchResult contains the result of routing a click.
 type MatchResult struct {
 	Rule    *model.RouteRule
 	Default bool // true if no rule matched and default URL was used

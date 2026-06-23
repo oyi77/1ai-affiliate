@@ -3,13 +3,10 @@ const pool = require('../db/mysql');
 const logger = require('../logger');
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET || JWT_SECRET === 'dev-secret-change-me') {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('FATAL: JWT_SECRET must be set to a secure random value');
-  }
-  console.warn('WARNING: JWT_SECRET is not set. Using insecure default. DO NOT use in production.');
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is required');
+  process.exit(1);
 }
-const JWT_SECRET_VALUE = JWT_SECRET || 'dev-secret-change-me';
 
 /**
  * Authenticate via JWT (issued by Node login endpoint).
@@ -24,7 +21,7 @@ async function authenticate(req, res, next) {
   // API key mode — delegate to PHP V3 Auth
   if (apiKey && !authHeader) {
     try {
-      const V3_API_URL = process.env.V3_API_URL || 'http://localhost/api/v3'; // ponytail: dev default, set V3_API_URL in production
+      const V3_API_URL = process.env.V3_API_URL || 'http://localhost/api/v3';
       const resp = await fetch(`${V3_API_URL}/system/health`, {
         headers: { 'Authorization': `Bearer ${apiKey}` }
       });
@@ -40,19 +37,18 @@ async function authenticate(req, res, next) {
     }
   }
 
-  // JWT mode — supports Bearer header OR ?token= query param (for EventSource)
-  let token = null;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
-  } else if (req.query && req.query.token) {
-    token = req.query.token;
+  // JWT mode
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authorization required' });
   }
+
+  const token = authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'Authorization required' });
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET_VALUE);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded || !decoded.role) {
       logger.warn({ user: decoded?.id }, 'JWT missing role claim');
       return res.status(401).json({ error: 'Invalid token payload' });
@@ -113,7 +109,7 @@ async function generateToken(userRow) {
     if (affRows.length) payload.affiliateId = affRows[0].id;
   }
 
-  return jwt.sign(payload, JWT_SECRET_VALUE, { expiresIn: '24h' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 }
 
-module.exports = { authenticate, requireAdmin, requireRole, generateToken, JWT_SECRET: JWT_SECRET_VALUE };
+module.exports = { authenticate, requireAdmin, requireRole, generateToken, JWT_SECRET };

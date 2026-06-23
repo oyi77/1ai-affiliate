@@ -1,10 +1,9 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-21) . '/config/connect2.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
-include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
-$mysql['click_id_public'] = $conn->escape((string)$_GET['pci']);
+$mysql['click_id_public'] = $db->real_escape_string((string)$_GET['pci']);
 
 $click_sql = "
 	SELECT
@@ -25,26 +24,26 @@ $click_row = memcache_mysql_fetch_assoc($db, $click_sql);
 
 $click_id = $click_row['click_id'];
 $aff_campaign_id = $click_row['aff_campaign_id'];
-$mysql['click_id'] = $conn->escape((string) $click_id);
-$mysql['aff_campaign_id'] = $conn->escape((string) $aff_campaign_id);
+$mysql['click_id'] = $db->real_escape_string((string) $click_id);
+$mysql['aff_campaign_id'] = $db->real_escape_string((string) $aff_campaign_id);
 $mysql['click_out'] = '1';
 
 $click_sql = "UPDATE    clicks_record
 			  SET       click_out='".$mysql['click_out']."'
 			  WHERE     click_id='".$mysql['click_id']."'";
-$click_result = $conn->query($click_sql) or record_mysql_error($db);
+$click_result = $db->query($click_sql) or record_mysql_error($db);
 
 
 //see if cloaking was turned on
 if ($click_row['click_cloaking'] == 1) { 
 	$cloaking_on = true;
-	$mysql['site_url_id'] = $conn->escape((string) $click_row['click_cloaking_site_url_id']);
+	$mysql['site_url_id'] = $db->real_escape_string((string) $click_row['click_cloaking_site_url_id']);
 	$site_url_sql = "SELECT site_url_address FROM site_urls WHERE site_url_id='".$mysql['site_url_id']."' limit 1";
 	$site_url_row = memcache_mysql_fetch_assoc($db, $site_url_sql);
 	$cloaking_site_url = $site_url_row['site_url_address'];
 } else {
 	$cloaking_on = false;
-	$mysql['site_url_id'] = $conn->escape((string) $click_row['click_redirect_site_url_id']);
+	$mysql['site_url_id'] = $db->real_escape_string((string) $click_row['click_redirect_site_url_id']);
 	$site_url_sql = "SELECT site_url_address FROM site_urls WHERE site_url_id='".$mysql['site_url_id']."' limit 1";
 	$site_url_row = memcache_mysql_fetch_assoc($db, $site_url_sql);
 	$redirect_site_url = $site_url_row['site_url_address'];  	

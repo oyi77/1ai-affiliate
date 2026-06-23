@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-30) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 3) . '/config/connect.php');
 	
 //make sure user is logged in or die
 	AUTH::require_user();
@@ -64,7 +63,7 @@ LEFT JOIN utm_term AS 2ut ON (2g.utm_term_id = 2ut.utm_term_id) ";
 
 //run query
 	$click_sql = $query['click_sql'];
-	$click_result = $conn->query($click_sql) or record_mysql_error($click_sql); 
+	$click_result = $db->query($click_sql) or record_mysql_error($click_sql); 
 	//echo $click_sql;	
 //html escape vars
 	$html['from'] = htmlentities((string) $query['from'], ENT_QUOTES, 'UTF-8');
@@ -104,7 +103,7 @@ LEFT JOIN utm_term AS 2ut ON (2g.utm_term_id = 2ut.utm_term_id) ";
 //now display all the clicks
 	while ($click_row = $click_result->fetch_array(MYSQLI_ASSOC)) {   
 								
-		$mysql['click_id'] = $conn->escape($click_row['click_id']);
+		$mysql['click_id'] = $db->real_escape_string($click_row['click_id']);
 		
 		
 			//Country GEO data

@@ -1,7 +1,6 @@
 const pool = require('../db/mysql');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const settings = require('../services/settingsService');
 const { parsePostbackHeaders, validatePostbackUrl, normalizeInteger, isIntegerInRange } = require('./postbackController');
 
 /**
@@ -13,6 +12,7 @@ async function queryRows(sql, params = []) {
     const [rows] = await pool.query(sql, params);
     return rows;
   } catch (err) {
+    console.error('queryRows error:', err.message, 'SQL:', sql.substring(0, 120));
     return [];
   }
 }
@@ -89,9 +89,9 @@ async function createUser(req, res) {
     const [result] = await pool.query(
       `INSERT INTO 1ai_users
         (user_name, user_email, user_pass, user_role, user_date_added, user_active,
-         user_api_key, clickserver_api_key, user_stats_app_key, install_hash, user_hash, modal_status, vip_perks_status)
-      VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), 1, ?, ?, ?, ?, ?, 1, 1)`,
-      [name || email.split('@')[0], email, hash, role, appKey, appKey, appKey, appKey, appKey]
+         user_app_key, clickserver_api_key, install_hash, user_hash, modal_status, vip_perks_status)
+      VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), 1, ?, '', '', '', 0, 0)`,
+      [name || email.split('@')[0], email, hash, role, appKey]
     );
     const userId = result.insertId;
 
@@ -107,6 +107,79 @@ async function createUser(req, res) {
     res.json({ success: true, user_id: userId, email, role });
   } catch (err) {
     console.error('createUser error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getAffiliates(req, res) {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+    const [rows] = await pool.query(
+      `SELECT a.*, u.user_email, u.user_name, u.user_date_added
+       FROM 1ai_affiliates a
+       JOIN 1ai_users u ON a.user_id = u.user_id
+       ORDER BY a.created_at DESC
+       LIMIT ?`,
+      [limit]
+    );
+    const enriched = rows.map(a => ({
+      ...a,
+      username: a.user_name || a.user_email,
+      joined_at: a.user_date_added,
+    }));
+    res.json({ data: enriched });
+  } catch (err) {
+    console.error('getAffiliates error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getEarnings(req, res) {
+  try {
+    const { affiliate_id, status } = req.query;
+    const role = req.user.role;
+    let sql = `SELECT ae.*, a.affiliate_code, u.user_email, u.user_name
+               FROM 1ai_affiliate_earnings ae
+               JOIN 1ai_affiliates a ON ae.affiliate_id = a.id
+               JOIN 1ai_users u ON a.user_id = u.user_id
+               WHERE 1=1`;
+    const params = [];
+
+    if (role === 'affiliate') {
+      sql += ' AND a.user_id = ?';
+      params.push(req.user.id);
+    } else if (affiliate_id) {
+      sql += ' AND ae.affiliate_id = ?';
+      params.push(parseInt(affiliate_id));
+    }
+    if (status) { sql += ' AND ae.status = ?'; params.push(status); }
+
+    sql += ' ORDER BY ae.created_at DESC LIMIT 200';
+    const [rows] = await pool.query(sql, params);
+    const enriched = rows.map(e => ({
+      ...e,
+      affiliate_name: e.user_name || e.user_email,
+      amount: e.payout_amount || e.amount || 0,
+    }));
+    res.json({ data: enriched });
+  } catch (err) {
+    console.error('getEarnings error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function approveEarning(req, res) {
+  try {
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: 'id required' });
+    const [result] = await pool.query(
+      `UPDATE 1ai_affiliate_earnings SET status = 'approved', approved_by = ?, approved_at = UNIX_TIMESTAMP()
+       WHERE id = ? AND status = 'pending'`,
+      [req.user.id, id]
+    );
+    res.json({ approved: result.affectedRows });
+  } catch (err) {
+    console.error('approveEarning error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -263,6 +336,128 @@ async function getPayments(_req, res) {
     res.json({ data: rows });
   } catch (err) {
     console.error('getPayments error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getCampaigns(req, res) {
+  try {
+    const role = req.user.role;
+    const limit = Math.min(parseInt(req.query.limit) || 50, 500);
+    let sql, params;
+
+    if (role === 'admin' || role === 'manager') {
+      sql = `SELECT c.aff_campaign_id AS id, c.aff_campaign_name AS name, c.aff_campaign_payout AS payout,
+              c.aff_campaign_payout AS payout_amount, c.aff_campaign_payout_type AS payout_type,
+              c.aff_campaign_status AS status, IF(c.aff_campaign_status IN ('active','1',1), 1, 0) AS active,
+              COUNT(ck.click_id) AS clicks,
+              COALESCE((SELECT COUNT(*) FROM 1ai_conversion_logs WHERE aff_campaign_id = c.aff_campaign_id), 0) AS conversions,
+              COALESCE((SELECT SUM(click_payout) FROM 1ai_clicks WHERE aff_campaign_id = c.aff_campaign_id), 0) AS revenue
+       FROM 1ai_aff_campaigns c
+       LEFT JOIN 1ai_clicks ck ON c.aff_campaign_id = ck.aff_campaign_id
+       GROUP BY c.aff_campaign_id
+       ORDER BY c.aff_campaign_id DESC LIMIT ?`;
+      params = [limit];
+    } else if (role === 'advertiser') {
+      sql = `SELECT c.aff_campaign_id AS id, c.aff_campaign_name AS name, c.aff_campaign_payout AS payout,
+              c.aff_campaign_payout AS payout_amount, c.aff_campaign_payout_type AS payout_type,
+              c.aff_campaign_status AS status, IF(c.aff_campaign_status IN ('active','1',1), 1, 0) AS active,
+              COUNT(ck.click_id) AS clicks,
+              COALESCE((SELECT COUNT(*) FROM 1ai_conversion_logs WHERE aff_campaign_id = c.aff_campaign_id), 0) AS conversions,
+              COALESCE((SELECT SUM(click_payout) FROM 1ai_clicks WHERE aff_campaign_id = c.aff_campaign_id), 0) AS revenue
+       FROM 1ai_aff_campaigns c
+       LEFT JOIN 1ai_clicks ck ON c.aff_campaign_id = ck.aff_campaign_id
+       JOIN 1ai_offer_campaigns oc ON c.aff_campaign_id = oc.aff_campaign_id
+       JOIN 1ai_offers o ON oc.offer_id = o.id
+       WHERE o.advertiser_id = ?
+       GROUP BY c.aff_campaign_id
+       ORDER BY c.aff_campaign_id DESC LIMIT ?`;
+      params = [req.user.id, limit];
+    }
+
+    const [rows] = await pool.query(sql, params);
+    res.json({ data: rows });
+  } catch (err) {
+    console.error('getCampaigns error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getOffers(req, res) {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 500);
+    const role = req.user.role;
+    
+    let sql = `SELECT o.id, o.name, o.payout AS payout_amount, o.status, 
+                      IF(o.status IN ('active'), 1, 0) AS active,
+                      COALESCE((SELECT COUNT(*) FROM 1ai_conversion_logs cl JOIN 1ai_offer_campaigns oc ON cl.aff_campaign_id = oc.aff_campaign_id WHERE oc.offer_id = o.id), 0) AS conversions,
+                      COALESCE((SELECT COUNT(*) FROM 1ai_clicks ck JOIN 1ai_offer_campaigns oc ON ck.aff_campaign_id = oc.aff_campaign_id WHERE oc.offer_id = o.id), 0) AS clicks`;
+    let params = [];
+    
+    if (role === 'admin' || role === 'manager') {
+       sql += `, o.network_payout, o.advertiser_id, o.network_id, n.name AS network_name FROM 1ai_offers o LEFT JOIN 1ai_networks n ON o.network_id = n.id ORDER BY o.id DESC LIMIT ?`;
+       params.push(limit);
+    } else if (role === 'advertiser' || role === 'manager') {
+       sql += `, o.network_payout FROM 1ai_offers o WHERE o.advertiser_id = ? ORDER BY o.id DESC LIMIT ?`;
+       params.push(req.user.id, limit);
+    } else {
+       // Affiliate
+       sql += ` FROM 1ai_offers o
+                JOIN 1ai_offer_affiliate_access acc ON o.id = acc.offer_id
+                JOIN 1ai_affiliates a ON acc.affiliate_id = a.id
+                WHERE a.user_id = ? AND o.status = 'active'
+                ORDER BY o.id DESC LIMIT ?`;
+       params.push(req.user.id, limit);
+    }
+
+    const [rows] = await pool.query(sql, params);
+    res.json({ data: rows });
+  } catch (err) {
+    console.error('getOffers error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function createOffer(req, res) {
+  try {
+    const role = req.user.role;
+    if (role === 'affiliate') return res.status(403).json({ error: 'Unauthorized' });
+
+    const { name, network_id } = req.body;
+    const payoutAmount = req.body.payout_amount || req.body.payout || 0;
+    const networkPayout = req.body.network_payout || payoutAmount;
+    let adv_id = req.body.advertiser_id || null;
+    
+    // Admin can explicitly set advertiser_id; advertisers always self-assign
+    if (role === 'advertiser' || role === 'manager') {
+       adv_id = req.user.id;
+    }
+
+    await pool.query(
+      `INSERT INTO 1ai_offers (name, payout, network_payout, advertiser_id, network_id, created_at, status) 
+       VALUES (?, ?, ?, ?, ?, UNIX_TIMESTAMP(), 'active')`,
+      [name, payoutAmount, networkPayout, adv_id, network_id || null]
+    );
+    const offerId = (await queryOne('SELECT LAST_INSERT_ID() AS id')).id;
+
+    res.json({ success: true, offer_id: offerId });
+  } catch (err) {
+    console.error('createOffer error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function linkOfferToCampaign(req, res) {
+  try {
+    const { offer_id, aff_campaign_id } = req.body;
+    if (!offer_id || !aff_campaign_id) return res.status(400).json({ error: 'offer_id and aff_campaign_id required' });
+    await pool.query(
+      'INSERT IGNORE INTO 1ai_offer_campaigns (offer_id, aff_campaign_id) VALUES (?, ?)',
+      [offer_id, aff_campaign_id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('linkOfferToCampaign error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -517,6 +712,65 @@ async function saveVipProfile(req, res) {
     res.json({ saved: true, status: 'submitted' });
   } catch (err) {
     console.error('saveVipProfile error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function setOfferPostback(req, res) {
+  const { offerId } = req.params;
+  const { postback_url, postback_enabled, postback_auth_type, postback_auth_value, postback_method, postback_headers, postback_timeout, postback_retries } = req.body;
+
+  if (postback_url && !validatePostbackUrl(postback_url)) {
+    return res.status(400).json({
+      error: 'Invalid postback URL format. Must be a valid HTTP or HTTPS URL.'
+    });
+  }
+
+  if (postback_method && !['GET', 'POST'].includes(postback_method.toUpperCase())) {
+    return res.status(400).json({ 
+      error: 'postback_method must be GET or POST' 
+    });
+  }
+
+  if (postback_timeout !== undefined && !isIntegerInRange(postback_timeout, 1, 60)) {
+    return res.status(400).json({ error: 'postback_timeout must be an integer between 1 and 60' });
+  }
+
+  if (postback_retries !== undefined && !isIntegerInRange(postback_retries, 0, 10)) {
+    return res.status(400).json({ error: 'postback_retries must be an integer between 0 and 10' });
+  }
+
+  try {
+    const headersToStore = postback_headers ? JSON.stringify(parsePostbackHeaders(postback_headers)) : null;
+
+    await pool.query(
+      `UPDATE 1ai_offers SET postback_url = ?, postback_enabled = ?, postback_auth_type = ?, postback_auth_value = ?, postback_method = ?, postback_headers = ?, postback_timeout = ?, postback_retries = ? WHERE id = ?`,
+      [postback_url || null, postback_enabled !== false, postback_auth_type || null, postback_auth_value || null, postback_method?.toUpperCase() || 'GET', headersToStore || '{}', normalizeInteger(postback_timeout, 10, 1, 60), normalizeInteger(postback_retries, 3, 0, 10), offerId]
+    );
+
+    res.json({ success: true, offer_id: offerId });
+  } catch (err) {
+    console.error('setOfferPostback error:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getOfferPostback(req, res) {
+  const { offerId } = req.params;
+
+  try {
+    const [offers] = await pool.query(
+      'SELECT postback_url, postback_enabled, postback_auth_type, postback_auth_value, postback_timeout, postback_method, postback_headers, postback_retries FROM 1ai_offers WHERE id = ?',
+      [offerId]
+    );
+
+    if (!offers.length) {
+      return res.status(404).json({ error: 'Offer not found' });
+    }
+
+    res.json(offers[0]);
+  } catch (err) {
+    console.error('getOfferPostback error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -855,87 +1109,19 @@ async function shortenUrl(longUrl, service) {
   }
 }
 
-async function createManualConversion(req, res) {
-  try {
-    const { click_id, payout, status, txid, conversion_event } = req.body;
-    if (!click_id || payout === undefined) return res.status(400).json({ error: 'click_id and payout required' });
-
-    const [clicks] = await pool.query(
-      'SELECT click_id, offer_id, affiliate_id FROM 1ai_click_log WHERE click_id = ?',
-      [click_id]
-    );
-    if (!clicks.length) return res.status(404).json({ error: 'click_id not found' });
-    const click = clicks[0];
-
-    const txId = txid || `manual_${Date.now()}`;
-    const payoutAmt = parseFloat(payout) || 0;
-    const convStatus = status || 'approved';
-
-    const [convResult] = await pool.query(
-      `INSERT INTO 1ai_conversion_logs (click_id, aff_campaign_id, conversion_time)
-       VALUES (?, ?, UNIX_TIMESTAMP())`,
-      [click_id, click.offer_id]
-    );
-
-    await pool.query(
-      'UPDATE 1ai_click_log SET converted = 1, converted_at = UNIX_TIMESTAMP() WHERE click_id = ?',
-      [click_id]
-    );
-
-    await pool.query(
-      `INSERT INTO 1ai_affiliate_earnings (affiliate_id, conversion_id, payout_amount, status, created_at)
-       VALUES (?, ?, ?, 'pending', UNIX_TIMESTAMP())`,
-      [click.affiliate_id, convResult.insertId, payoutAmt]
-    );
-
-    res.json({ success: true, conversion_id: convResult.insertId, txid: txId });
-  } catch (err) {
-    console.error('createManualConversion error:', err);
-    res.status(500).json({ error: err.message });
-  }
-}
-/**
- * GET /api/admin/pixel/test?offer_id=X — Generate test conversion pixel HTML
- */
-async function testConversionPixel(req, res) {
-  const offerId = parseInt(req.query.offer_id);
-  if (!offerId) return res.status(400).json({ error: 'offer_id required' });
-
-  const offer = await queryOne('SELECT id, name, postback_url FROM 1ai_offers WHERE id = ?', [offerId]);
-  if (!offer.id) return res.status(404).json({ error: 'Offer not found' });
-
-  const testClickId = `test_${Date.now()}`;
-  const host = req.get('host') || await settings.get('app_domain');
-  const protocol = req.protocol || 'http';
-  const baseUrl = `${protocol}://${host}`;
-
-  const pixelHtml = `<!-- 1ai Conversion Pixel (Test) -->
-<img src="${baseUrl}/postback?click_id=${testClickId}&payout=10.00&event=Purchase" width="1" height="1" style="display:none" alt="" />
-<!-- Server-side postback URL -->
-<!-- ${baseUrl}/postback?click_id={CLICK_ID}&payout={PAYOUT}&event={EVENT} -->`;
-
-  res.json({
-    offer_id: offerId,
-    offer_name: offer.name,
-    test_click_id: testClickId,
-    pixel_html: pixelHtml,
-    postback_url: `${baseUrl}/postback`,
-    expected_params: {
-      click_id: testClickId,
-      payout: '10.00',
-      event: 'Purchase',
-      transaction_id: `tx_${Date.now()}`,
-    },
-    curl_command: `curl -X POST "${baseUrl}/postback" -d "click_id=${testClickId}&payout=10.00&event=Purchase"`,
-  });
-}
-
 module.exports = {
+  toNumber,
+  queryRows,
+  queryOne,
   getUsers,
   createUser,
+  getAffiliates,
+  getEarnings,
+  approveEarning,
   getStats,
   getCommissions,
   getPayments,
+  getCampaigns,
   getReport,
   exportReportCsv,
   getSystemStatus,
@@ -943,10 +1129,15 @@ module.exports = {
   addClickServer,
   getVipProfile,
   saveVipProfile,
+  getOffers,
+  createOffer,
+  linkOfferToCampaign,
   getMargin,
   setMargin,
   getNetworks,
   createNetwork,
+  setOfferPostback,
+  getOfferPostback,
   getPostbackLogs,
   getDomains,
   createDomain,
@@ -955,9 +1146,6 @@ module.exports = {
   getShortenerServices,
   saveShortenerService,
   deleteShortenerService,
-  createManualConversion,
-  testConversionPixel,
   testShortenerService,
-  testConversionPixel,
+  shortenUrl,
 };
-

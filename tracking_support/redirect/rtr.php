@@ -7,7 +7,7 @@ $tracker_id = $_GET['t1aiid'] ?? '';
 if (!is_numeric($tracker_id) || (int)$tracker_id <= 0) die();
 
 # check to see if mysql connection works, if not fail over to cached stored redirect urls
-include_once(substr(__DIR__, 0,-21) . '/config/connect2.php'); 
+include_once(dirname(__DIR__, 2) . '/config/connect2.php'); 
 
 $usedCachedRedirect = false;
 if (!$db) $usedCachedRedirect = true;
@@ -27,11 +27,10 @@ if ($usedCachedRedirect==true) {
 	die("<h2>Error establishing a database connection - please contact the webhost</h2>");
 }
 
-include_once(substr(__DIR__, 0,-21) . '/config/class-dataengine-slim.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine-slim.php');
 
 //grab tracker data
-$mysql['tracker_id_public'] = $conn->escape($tracker_id);
+$mysql['tracker_id_public'] = $db->real_escape_string($tracker_id);
 $rotator_sql = "SELECT  tr.user_id,
 						tr.ppc_account_id,
 						tr.rotator_id,
@@ -62,16 +61,16 @@ $rotator_sql = "SELECT  tr.user_id,
 				LEFT JOIN users_pref AS up ON up.user_id = tr.user_id
 				WHERE   tracker_id_public='".$mysql['tracker_id_public']."'"; 
 $rotator_row = memcache_mysql_fetch_assoc($db, $rotator_sql);
-if (!$rotator_row) die();
-$user_id = $conn->escape((string)$rotator_row['user_id']);
-$user_keyword_searched_or_bidded = $conn->escape($rotator_row['user_keyword_searched_or_bidded']);
+$user_id = $db->real_escape_string((string)$rotator_row['user_id']);
+$user_keyword_searched_or_bidded = $db->real_escape_string($rotator_row['user_keyword_searched_or_bidded']);
 
 //grab rules data
-$mysql['rotator_id'] = $conn->escape((string)$rotator_row['rotator_id']);
+$mysql['rotator_id'] = $db->real_escape_string((string)$rotator_row['rotator_id']);
 $rule_sql = "SELECT ru.id as rule_id
 			 FROM rotator_rules AS ru
 			 WHERE rotator_id='".$mysql['rotator_id']."' AND status='1'"; 
 $rule_row = foreach_memcache_mysql_fetch_assoc($db, $rule_sql);
+if (!$rotator_row) die();
 
 AUTH::set_timezone($rotator_row['user_timezone']);
 
@@ -122,7 +121,7 @@ if (isset ( $_GET ['t1aib'] ) && $rotator_row['user_pref_dynamic_bid'] == '1') {
     $_GET ['t1aib']=ltrim((string) $_GET ['t1aib'],'$');
     if(is_numeric ( $_GET ['t1aib'] )){
         $bid = number_format ( $_GET ['t1aib'], 5, '.', '' );
-        $rotator_row ['click_cpc'] = $conn->escape( $bid );
+        $rotator_row ['click_cpc'] = $db->real_escape_string ( $bid );
     }
 } 
 
@@ -133,7 +132,7 @@ foreach ($rule_row as $rule) {
 	$rotate = [];
 	$count = 0;
 
-	$mysql['rule_id'] = $conn->escape((string)$rule['rule_id']);
+	$mysql['rule_id'] = $db->real_escape_string((string)$rule['rule_id']);
 	$criteria_sql = "SELECT type, statement, value
 				 FROM rotator_rules_criteria
 				 WHERE rule_id='".$mysql['rule_id']."'"; 
@@ -377,8 +376,7 @@ $ruleDefaults = [
 
 $rule = array_merge($ruleDefaults, is_array($rule) ? $rule : []);
 
-$conn = new \OneAIAffiliate\Database\Connection($db);
-$escape = static fn($value) => $conn->escape((string)($value ?? ''));
+$escape = static fn($value) => $db->real_escape_string((string)($value ?? ''));
 
 $uaParam = (string)($_GET['ua'] ?? '');
 $detectInstance = new DeviceDetect();
@@ -409,58 +407,58 @@ if ($referer_url_query !== '') {
     @parse_str($referer_url_query, $referer_query);
 }
 
-$keyword = $conn->escape((string)($_GET['t1aikw'] ?? ''));
+$keyword = $db->real_escape_string((string)($_GET['t1aikw'] ?? ''));
 
 switch ($keyword_type) {
 
 	case "bidded":
 	      #try to get the bidded keyword first
 		if (isset($_GET['OVKEY']) && $_GET['OVKEY'] != '') { //if this is a Y! keyword
-			$keyword = $conn->escape((string)$_GET['OVKEY']);   
+			$keyword = $db->real_escape_string((string)$_GET['OVKEY']);   
 		}  elseif (isset($_GET['t1aikw']) && $_GET['t1aikw'] != '') { 
-			$keyword = $conn->escape((string)$_GET['t1aikw']);  
+			$keyword = $db->real_escape_string((string)$_GET['t1aikw']);  
 		} elseif (isset($_GET['target_passthrough']) && $_GET['target_passthrough'] != '') { //if this is a mediatraffic! keyword
-			$keyword = $conn->escape((string)$_GET['target_passthrough']);   
+			$keyword = $db->real_escape_string((string)$_GET['target_passthrough']);   
 		} else { //if this is a zango, or more keyword
-			$keyword = $conn->escape((string)($_GET['keyword'] ?? ''));   
+			$keyword = $db->real_escape_string((string)($_GET['keyword'] ?? ''));   
 		} 
 		break;
 		case "searched":
 		#try to get the searched keyword
 		if (isset($referer_query['q']) && $referer_query['q'] != '') { 
-			$keyword = $conn->escape($referer_query['q']);
+			$keyword = $db->real_escape_string($referer_query['q']);
 		} elseif (isset($_GET['OVRAW']) && $_GET['OVRAW'] != '') { //if this is a Y! keyword
-			$keyword = $conn->escape((string)$_GET['OVRAW']);   
+			$keyword = $db->real_escape_string((string)$_GET['OVRAW']);   
 		} elseif (isset($_GET['target_passthrough']) && $_GET['target_passthrough'] != '') { //if this is a mediatraffic! keyword
-			$keyword = $conn->escape((string)$_GET['target_passthrough']);   
+			$keyword = $db->real_escape_string((string)$_GET['target_passthrough']);   
 		} elseif (isset($_GET['keyword']) && $_GET['keyword'] != '') { //if this is a zango, or more keyword
-			$keyword = $conn->escape((string)$_GET['keyword']);   
+			$keyword = $db->real_escape_string((string)$_GET['keyword']);   
 		} elseif (isset($_GET['search_word']) && $_GET['search_word'] != '') { //if this is a eniro, or more keyword
-			$keyword = $conn->escape((string)$_GET['search_word']);   
+			$keyword = $db->real_escape_string((string)$_GET['search_word']);   
 		} elseif (isset($_GET['query']) && $_GET['query'] != '') { //if this is a naver, or more keyword
-			$keyword = $conn->escape((string)$_GET['query']);   
+			$keyword = $db->real_escape_string((string)$_GET['query']);   
 		} elseif (isset($_GET['encquery']) && $_GET['encquery'] != '') { //if this is a aol, or more keyword
-			$keyword = $conn->escape((string)$_GET['encquery']);   
+			$keyword = $db->real_escape_string((string)$_GET['encquery']);   
 		} elseif (isset($_GET['terms']) && $_GET['terms'] != '') { //if this is a about.com, or more keyword
-			$keyword = $conn->escape((string)$_GET['terms']);   
+			$keyword = $db->real_escape_string((string)$_GET['terms']);   
 		} elseif (isset($_GET['rdata']) && $_GET['rdata'] != '') { //if this is a viola, or more keyword
-			$keyword = $conn->escape((string)$_GET['rdata']);   
+			$keyword = $db->real_escape_string((string)$_GET['rdata']);   
 		} elseif (isset($_GET['qs']) && $_GET['qs'] != '') { //if this is a virgilio, or more keyword
-			$keyword = $conn->escape((string)$_GET['qs']);   
+			$keyword = $db->real_escape_string((string)$_GET['qs']);   
 		} elseif (isset($_GET['wd']) && $_GET['wd'] != '') { //if this is a baidu, or more keyword
-			$keyword = $conn->escape((string)$_GET['wd']);   
+			$keyword = $db->real_escape_string((string)$_GET['wd']);   
 		} elseif (isset($_GET['text']) && $_GET['text'] != '') { //if this is a yandex, or more keyword
-			$keyword = $conn->escape((string)$_GET['text']);   
+			$keyword = $db->real_escape_string((string)$_GET['text']);   
 		} elseif (isset($_GET['szukaj']) && $_GET['szukaj'] != '') { //if this is a wp.pl, or more keyword
-			$keyword = $conn->escape((string)$_GET['szukaj']);   
+			$keyword = $db->real_escape_string((string)$_GET['szukaj']);   
 		} elseif (isset($_GET['qt']) && $_GET['qt'] != '') { //if this is a O*net, or more keyword
-			$keyword = $conn->escape((string)$_GET['qt']);   
+			$keyword = $db->real_escape_string((string)$_GET['qt']);   
 		} elseif (isset($_GET['k']) && $_GET['k'] != '') { //if this is a yam, or more keyword
-			$keyword = $conn->escape((string)$_GET['k']);   
+			$keyword = $db->real_escape_string((string)$_GET['k']);   
 		} elseif (isset($_GET['words']) && $_GET['words'] != '') { //if this is a Rambler, or more keyword
-			$keyword = $conn->escape((string)$_GET['words']);   
+			$keyword = $db->real_escape_string((string)$_GET['words']);   
 		} else { 
-			$keyword = $conn->escape((string)($_GET['t1aikw'] ?? ''));
+			$keyword = $db->real_escape_string((string)($_GET['t1aikw'] ?? ''));
 		}
 		break;
 }
@@ -474,34 +472,34 @@ if (str_starts_with((string) $keyword, 't1aivar_')) {
 }
 
 $keyword = str_replace('%20',' ',$keyword);      
-$keyword_id = get_keyword_id($keyword); 
-$mysql['keyword_id'] = $conn->escape((string)$keyword_id); 		  
+$keyword_id = INDEXES::get_keyword_id($db, $keyword); 
+$mysql['keyword_id'] = $db->real_escape_string((string)$keyword_id); 		  
 
-$c1 = $conn->escape((string)($_GET['c1'] ?? ''));
+$c1 = $db->real_escape_string((string)($_GET['c1'] ?? ''));
 $c1 = str_replace('%20',' ',$c1);  
-$c1_id = get_c1_id($c1); 
-$mysql['c1_id'] = $conn->escape((string)$c1_id);
+$c1_id = INDEXES::get_c1_id($db, $c1); 
+$mysql['c1_id'] = $db->real_escape_string((string)$c1_id);
 
-$c2 = $conn->escape((string)($_GET['c2'] ?? ''));
+$c2 = $db->real_escape_string((string)($_GET['c2'] ?? ''));
 $c2 = str_replace('%20',' ',$c2);
-$c2_id = get_c2_id($c2);
-$mysql['c2_id'] = $conn->escape((string)$c2_id);
+$c2_id = INDEXES::get_c2_id($db, $c2);
+$mysql['c2_id'] = $db->real_escape_string((string)$c2_id);
 
-$c3 = $conn->escape((string)($_GET['c3'] ?? ''));
+$c3 = $db->real_escape_string((string)($_GET['c3'] ?? ''));
 $c3 = str_replace('%20',' ',$c3);  
-$c3_id = get_c3_id($c3); 
-$mysql['c3_id'] = $conn->escape((string)$c3_id);
+$c3_id = INDEXES::get_c3_id($db, $c3); 
+$mysql['c3_id'] = $db->real_escape_string((string)$c3_id);
 
-$c4 = $conn->escape((string)($_GET['c4'] ?? ''));
+$c4 = $db->real_escape_string((string)($_GET['c4'] ?? ''));
 $c4 = str_replace('%20',' ',$c4);
-$c4_id = get_c4_id($c4);
-$mysql['c4_id'] = $conn->escape((string)$c4_id);
+$c4_id = INDEXES::get_c4_id($db, $c4);
+$mysql['c4_id'] = $db->real_escape_string((string)$c4_id);
 
-$mysql['platform_id'] = $conn->escape((string)($device_id['platform'] ?? ''));
-$mysql['browser_id'] = $conn->escape((string)($device_id['browser'] ?? ''));
-$mysql['device_id'] = $conn->escape((string)($device_id['device'] ?? ''));
-$mysql['text_ad_id'] = $conn->escape((string)($rule['text_ad_id'] ?? 0));
-$mysql['isp_id'] = $conn->escape('0');
+$mysql['platform_id'] = $db->real_escape_string((string)($device_id['platform'] ?? ''));
+$mysql['browser_id'] = $db->real_escape_string((string)($device_id['browser'] ?? ''));
+$mysql['device_id'] = $db->real_escape_string((string)($device_id['device'] ?? ''));
+$mysql['text_ad_id'] = $db->real_escape_string((string)($rule['text_ad_id'] ?? 0));
+$mysql['isp_id'] = $db->real_escape_string('0');
 
 $mysql['click_bot'] = '0';
 if (($device_id['type'] ?? '') == '4') {
@@ -511,25 +509,25 @@ if (($device_id['type'] ?? '') == '4') {
 $mysql['click_in'] = 1;
 $mysql['click_out'] = 1; 
 
-$ip_id = get_ip_id($ip_address);
-$mysql['ip_id'] = $conn->escape((string)$ip_id);
+$ip_id = INDEXES::get_ip_id($db, $ip_address);
+$mysql['ip_id'] = $db->real_escape_string((string)$ip_id);
 
 $countryName = $GeoData['country'] ?? '';
 $countryCode = $GeoData['country_code'] ?? '';
-$country_id = get_country_id($countryName, $countryCode);
-$mysql['country_id'] = $conn->escape((string)$country_id);
+$country_id = INDEXES::get_country_id($db, $countryName, $countryCode);
+$mysql['country_id'] = $db->real_escape_string((string)$country_id);
 
 $regionName = $GeoData['region'] ?? '';
-$region_id = get_region_id($regionName, $country_id);
-$mysql['region_id'] = $conn->escape((string)$region_id);
+$region_id = INDEXES::get_region_id($db, $regionName, $country_id);
+$mysql['region_id'] = $db->real_escape_string((string)$region_id);
 
 $cityName = $GeoData['city'] ?? '';
-$city_id = get_city_id($cityName, $country_id);
-$mysql['city_id'] = $conn->escape((string)$city_id);
+$city_id = INDEXES::get_city_id($db, $cityName, $country_id);
+$mysql['city_id'] = $db->real_escape_string((string)$city_id);
 
 if ($IspData != null) {
-	$isp_id = get_isp_id($IspData);
-	$mysql['isp_id'] = $conn->escape((string)$isp_id);
+	$isp_id = INDEXES::get_isp_id($db, $IspData);
+	$mysql['isp_id'] = $db->real_escape_string((string)$isp_id);
 }
 
 if ($device_id['type'] == '4') {
@@ -538,7 +536,7 @@ if ($device_id['type'] == '4') {
 	// Initialize click_id as 0 for the filter (will be updated after insert)
 	$click_id_temp = 0;
 	$click_filtered = FILTER::startFilter($db, $click_id_temp,$ip_id,$ip_address,$user_id);
-$mysql['click_filtered'] = $conn->escape((string)$click_filtered);
+$mysql['click_filtered'] = $db->real_escape_string((string)$click_filtered);
 }
 
 if(isset($_GET['lpr']) && $_GET['lpr'] != '') {
@@ -549,29 +547,29 @@ if(isset($_GET['lpr']) && $_GET['lpr'] != '') {
 					LEFT JOIN 	keywords USING (keyword_id) 
 					WHERE 	ips.ip_address='".$ip_address."'
 					AND		clicks.user_id='".$user_id."'  
-					AND		clicks.click_time >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY))
+					AND		clicks.click_time >= '30'
 					ORDER BY 	clicks.click_id DESC 
 					LIMIT 		1";
-	$click_result1 = $conn->query($click_sql1) or record_mysql_error($click_sql1);
+	$click_result1 = $db->query($click_sql1) or record_mysql_error($click_sql1);
 	$click_row1 = $click_result1->fetch_assoc();
-	$mysql['click_id'] = $conn->escape((string)$click_row1['click_id']);
-	$keyword = $conn->escape($keyword);
-	$keyword_id = $conn->escape((string)$click_row1['keyword_id']);
-	$mysql['keyword_id'] = $conn->escape((string)$keyword_id);
+	$mysql['click_id'] = $db->real_escape_string((string)$click_row1['click_id']);
+	$keyword = $db->real_escape_string($keyword);
+	$keyword_id = $db->real_escape_string((string)$click_row1['keyword_id']);
+	$mysql['keyword_id'] = $db->real_escape_string((string)$keyword_id);
 }
 else{
 //ok we have the main data, now insert this row
 $click_sql = "INSERT INTO  clicks_counter SET click_id=DEFAULT";
-$click_result = $conn->query($click_sql) or record_mysql_error($db); 
+$click_result = $db->query($click_sql) or record_mysql_error($db); 
 
 //now gather the info for the advance click insert
-$click_id = $conn->writeConnection()->insert_id;
-$mysql['click_id'] = $conn->escape((string)$click_id); 
+$click_id = $db->insert_id;
+$mysql['click_id'] = $db->real_escape_string((string)$click_id); 
 }
 $mysql['click_alp'] = 0;
 
-$mysql['rotator_id'] = $conn->escape((string)$rotator_id); 
-$mysql['user_id'] = $conn->escape((string)$user_id);
+$mysql['rotator_id'] = $db->real_escape_string((string)$rotator_id); 
+$mysql['user_id'] = $db->real_escape_string((string)$user_id);
 
 //ok we have the main data, now insert this row
 $click_sql = "REPLACE INTO   clicks
@@ -589,7 +587,7 @@ $click_sql = "REPLACE INTO   clicks
                             rotator_id = '".$mysql['rotator_id']."',
                             rule_id = '".$mysql['rule_redirect_id']."'"; 
 
-$click_result = $conn->query($click_sql) or record_mysql_error($db);   
+$click_result = $db->query($click_sql) or record_mysql_error($db);   
 
 	//ok we have the main data, now insert this row
 	$click_sql = "REPLACE INTO   clicks_spy
@@ -603,7 +601,7 @@ $click_result = $conn->query($click_sql) or record_mysql_error($db);
 								click_bot = '".$mysql['click_bot']."',
 								click_alp = '".$mysql['click_alp']."',
 								click_time = '".$mysql['click_time']."'"; 
-	$click_result = $conn->query($click_sql) or record_mysql_error($db);   
+	$click_result = $db->query($click_sql) or record_mysql_error($db);   
 	
 //now we have the click's advance data, now insert this row
 $click_sql = "REPLACE INTO   clicks_advance
@@ -618,7 +616,7 @@ $click_sql = "REPLACE INTO   clicks_advance
 							platform_id='".$mysql['platform_id']."',
 							browser_id='".$mysql['browser_id']."',
 							device_id='".$mysql['device_id']."'";
-$click_result = $conn->query($click_sql) or record_mysql_error($db);
+$click_result = $db->query($click_sql) or record_mysql_error($db);
 
 //insert the tracking data
 $click_sql = "
@@ -630,7 +628,7 @@ $click_sql = "
 		c2_id = '".$mysql['c2_id']."',
 		c3_id = '".$mysql['c3_id']."',
 		c4_id = '".$mysql['c4_id']."'";
-$click_result = $conn->query($click_sql) or record_mysql_error($db);
+$click_result = $db->query($click_sql) or record_mysql_error($db);
 
 $click_sql = "
 	REPLACE INTO
@@ -640,7 +638,7 @@ $click_sql = "
 		rotator_id='".$mysql['rotator_id']."',
 		rule_id='".$mysql['rule_id']."',
 		rule_redirect_id = '".$mysql['rule_redirect_id']."'";
-$click_result = $conn->query($click_sql) or record_mysql_error($db);
+$click_result = $db->query($click_sql) or record_mysql_error($db);
 
 
 //now gather variables for the clicks record db
@@ -652,7 +650,7 @@ if ($rule['aff_campaign_cloaking'] == 1) {
 	$mysql['click_cloaking'] = 1;
 	//if cloaking is on, add in a click_id_public, because we will be forwarding them to a cloaked /cl/xxxx link
 	$click_id_public = random_int(1,9) . $click_id . random_int(1,9);
-	$mysql['click_id_public'] = $conn->escape($click_id_public); 
+	$mysql['click_id_public'] = $db->real_escape_string($click_id_public); 
 } else { 
 	$mysql['click_cloaking'] = 0; 
 }
@@ -664,21 +662,21 @@ $click_sql = "REPLACE INTO   clicks_record
 							click_cloaking='".$mysql['click_cloaking']."',
 							click_in='".$mysql['click_in']."',
 							click_out='".$mysql['click_out']."'"; 
-$click_result = $conn->query($click_sql) or record_mysql_error($db); 
+$click_result = $db->query($click_sql) or record_mysql_error($db); 
 
 //now lets get variables for clicks site
 //so this is going to check the REFERER URL, for a ?url=, which is the ACUTAL URL, instead of the google content, pagead2.google.... 
 if (!empty($referer_query['url'])) { 
-    $click_referer_site_url_id = get_site_url_id($referer_query['url']);
+    $click_referer_site_url_id = INDEXES::get_site_url_id($db, $referer_query['url']);
 } else {
-    $click_referer_site_url_id = get_site_url_id($_SERVER['HTTP_REFERER'] ?? '');
+    $click_referer_site_url_id = INDEXES::get_site_url_id($db, $_SERVER['HTTP_REFERER'] ?? '');
 }
 
-$mysql['click_referer_site_url_id'] = $conn->escape((string)$click_referer_site_url_id); 
+$mysql['click_referer_site_url_id'] = $db->real_escape_string((string)$click_referer_site_url_id); 
 
 $outbound_site_url = 'http://'.$_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
-$click_outbound_site_url_id = get_site_url_id($outbound_site_url); 
-$mysql['click_outbound_site_url_id'] = $conn->escape((string)$click_outbound_site_url_id); 
+$click_outbound_site_url_id = INDEXES::get_site_url_id($db, $outbound_site_url); 
+$mysql['click_outbound_site_url_id'] = $db->real_escape_string((string)$click_outbound_site_url_id); 
 
 if ($cloaking_on == true) {
 	$cloaking_site_url = 'http://'.$_SERVER['SERVER_NAME'] . '/tracking_support/redirect/cl.php?pci=' . $click_id_public;      
@@ -704,8 +702,8 @@ if ($rule['aff_campaign_id'] != null) {
 
 $redirect_site_url = replaceTrackerPlaceholders($db, $redirect_site_url,$click_id);
 
-$click_redirect_site_url_id = get_site_url_id($redirect_site_url); 
-$mysql['click_redirect_site_url_id'] = $conn->escape((string)$click_redirect_site_url_id);
+$click_redirect_site_url_id = INDEXES::get_site_url_id($db, $redirect_site_url); 
+$mysql['click_redirect_site_url_id'] = $db->real_escape_string((string)$click_redirect_site_url_id);
 
 //insert this
 $click_sql = "REPLACE INTO   clicks_site
@@ -713,7 +711,7 @@ $click_sql = "REPLACE INTO   clicks_site
 							click_referer_site_url_id='".$mysql['click_referer_site_url_id']."',
 							click_outbound_site_url_id='".$mysql['click_outbound_site_url_id']."',
 							click_redirect_site_url_id='".$mysql['click_redirect_site_url_id']."'";
-$click_result = $conn->query($click_sql) or record_mysql_error($db);   
+$click_result = $db->query($click_sql) or record_mysql_error($db);   
 
 	if ($rule['aff_campaign_id'] != null) {
 		//set the cookie

@@ -1,15 +1,14 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
 $slack = false;
-$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
-$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '".$mysql['user_own_id']."'";
-$user_results = $conn->query($user_sql) or record_mysql_error($user_sql);
+$user_results = $db->query($user_sql) or record_mysql_error($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 if (!empty($user_row['url'])) 
@@ -38,9 +37,9 @@ $campaign_slack = '';
 	if ($success != true){ echo '<div class="error"><small><span class="fui-alert"></span>Please select an affiliate campaign or rotator, and make sure no unused ones are there.</small></div>';  die(); }	
 
 //show tracking code
-	$mysql['landing_page_id'] = $conn->escape((string)$_POST['landing_page_id']);
+	$mysql['landing_page_id'] = $db->real_escape_string((string)$_POST['landing_page_id']);
 	$landing_page_sql = "SELECT * FROM `landing_pages` WHERE `landing_page_id`='".$mysql['landing_page_id']."'";
-	$landing_page_result = $conn->query($landing_page_sql) or record_mysql_error($landing_page_sql);
+	$landing_page_result = $db->query($landing_page_sql) or record_mysql_error($landing_page_sql);
 	$landing_page_row = $landing_page_result->fetch_assoc();
 	
 	$parsed_url = parse_url((string) $landing_page_row['landing_page_url']);
@@ -71,9 +70,9 @@ $campaign_slack = '';
 
 			if ($aff_campaign_id != 0) {
 			
-				$mysql['aff_campaign_id'] = $conn->escape($aff_campaign_id);
+				$mysql['aff_campaign_id'] = $db->real_escape_string($aff_campaign_id);
 				$aff_campaign_sql = "SELECT aff_campaign_id_public, aff_campaign_name FROM aff_campaigns WHERE aff_campaign_id='".$mysql['aff_campaign_id']."'";
-				$aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql); 
+				$aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql); 
 				$aff_campaign_row = $aff_campaign_result->fetch_assoc();
 				
 				if ($slack) {
@@ -113,9 +112,9 @@ header(\'location: \'.$tracking1aioutbound);
 			$rotator_id = $_POST['rotator_id_'.$count];
 
 			if ($rotator_id != 0) {
-				$mysql['rotator_id'] = $conn->escape($rotator_id);
+				$mysql['rotator_id'] = $db->real_escape_string($rotator_id);
 				$rotator_sql = "SELECT public_id, name FROM rotators WHERE id='".$mysql['rotator_id']."'";
-				$rotator_result = $conn->query($rotator_sql) or record_mysql_error($rotator_sql); 
+				$rotator_result = $db->query($rotator_sql) or record_mysql_error($rotator_sql); 
 				$rotator_row = $rotator_result->fetch_assoc();
 
 				//for each real campaign selected, display the code to be used for it

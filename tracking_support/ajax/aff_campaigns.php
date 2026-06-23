@@ -1,19 +1,18 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
-$mysql['aff_network_id'] = isset($_POST['aff_network_id']) ? $conn->escape((string)$_POST['aff_network_id']) : '0';      
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['aff_network_id'] = isset($_POST['aff_network_id']) ? $db->real_escape_string((string)$_POST['aff_network_id']) : '0';      
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
         $aff_campaign_sql = "SELECT * 
                              FROM `aff_campaigns` 
 							 WHERE `user_id`='".$mysql['user_id']."' 
                              AND `aff_network_id`='".$mysql['aff_network_id']."' 
 							 AND `aff_campaign_deleted`='0' 
                              ORDER BY `aff_campaign_name` ASC";
-        $aff_campaign_result = $conn->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
+        $aff_campaign_result = $db->query($aff_campaign_sql) or record_mysql_error($aff_campaign_sql);
 
         if ($aff_campaign_result->num_rows == 0) { ?>
         

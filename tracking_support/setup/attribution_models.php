@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 // Include the base connect file
-include_once(substr(__DIR__, 0, -18) . '/config/connect.php');
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 // Include the controller
 require_once __DIR__ . '/AttributionController.php';

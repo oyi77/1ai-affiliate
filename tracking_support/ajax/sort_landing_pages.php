@@ -1,9 +1,8 @@
 <?php
 
 declare(strict_types=1);
-include_once(substr(__DIR__, 0, -17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
-include_once(substr(__DIR__, 0, -17) . '/config/class-dataengine.php');
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
+include_once(dirname(__DIR__, 2) . '/config/class-dataengine.php');
 
 AUTH::require_user();
 
@@ -13,14 +12,14 @@ AUTH::set_timezone($_SESSION['user_timezone']);
 
 //grab user time range preference
 $time = grab_timeframe();
-$mysql['to'] = $conn->escape((string)$time['to']);
-$mysql['from'] = $conn->escape((string)$time['from']);
+$mysql['to'] = $db->real_escape_string((string)$time['to']);
+$mysql['from'] = $db->real_escape_string((string)$time['from']);
 
 
 //show real or filtered clicks
-$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 $user_sql = "SELECT user_pref_breakdown, user_pref_show, user_cpc_or_cpv FROM users_pref WHERE user_id=" . $mysql['user_id'];
-$user_result = $conn->query($user_sql); //($user_sql);
+$user_result = _mysqli_query($user_sql); //($user_sql);
 $user_row = $user_result->fetch_assoc();
 $breakdown = $user_row['user_pref_breakdown'];
 

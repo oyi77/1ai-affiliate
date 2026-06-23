@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -9,9 +8,9 @@ AUTH::require_user();
 
 <select class="form-control input-sm" name="aff_network_id" id="aff_network_id" onchange="load_aff_campaign_id($(this).val(), 0); load_landing_page(this.value); load_text_ad_id(this.value);">
     <option value="0"> -- </option>
-	<?php  $mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+	<?php  $mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 		$aff_network_sql = "SELECT * FROM `aff_networks` WHERE `user_id`='".$mysql['user_id']."' AND `aff_network_deleted`='0' ORDER BY `aff_network_name` ASC";
-        $aff_network_result = $conn->query($aff_network_sql) or record_mysql_error($aff_network_sql);
+        $aff_network_result = $db->query($aff_network_sql) or record_mysql_error($aff_network_sql);
 
         while ($aff_network_row = $aff_network_result->fetch_array(MYSQLI_ASSOC)) {
             

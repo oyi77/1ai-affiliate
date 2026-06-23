@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 // Config holds all configuration for the edge redirect server.
@@ -27,6 +29,7 @@ type Config struct {
 	// Kafka (click event stream)
 	KafkaBrokers  []string
 	KafkaTopic    string
+	KafkaConversionTopic string
 	KafkaBatchSize int
 
 	// ClickHouse (reporting/analytics)
@@ -54,9 +57,9 @@ func Load() *Config {
 		RedisAddrs:    getEnvSlice("REDIS_ADDRS", []string{"localhost:6379"}),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDB:       getInt("REDIS_DB", 0),
-		KafkaBrokers:  getEnvSlice("KAFKA_BROKERS", []string{"localhost:9092"}),
-		KafkaTopic:    getEnv("KAFKA_CLICK_TOPIC", "1ai-clicks"),
-		KafkaBatchSize: getInt("KAFKA_BATCH_SIZE", 100),
+		KafkaTopic:           getEnv("KAFKA_CLICK_TOPIC", "1ai-clicks"),
+		KafkaConversionTopic: getEnv("KAFKA_CONVERSION_TOPIC", "1ai-conversions"),
+		KafkaBatchSize:       getInt("KAFKA_BATCH_SIZE", 100),
 		ClickHouseDSN: getEnv("CLICKHOUSE_DSN", "clickhouse://localhost:9000/1ai_analytics"),
 		GeoIPDBPath:   getEnv("GEOIP_DB_PATH", "/data/GeoIP2-City.mmdb"),
 		MetricsPath:   getEnv("METRICS_PATH", "/metrics"),
@@ -106,4 +109,20 @@ func splitAndTrim(s, sep string) []string {
 		}
 	}
 	return out
+}
+
+// ParseLogLevel converts a log level string to a zerolog.Level.
+func ParseLogLevel(level string) zerolog.Level {
+	switch strings.ToLower(level) {
+	case "debug":
+		return zerolog.DebugLevel
+	case "info":
+		return zerolog.InfoLevel
+	case "warn":
+		return zerolog.WarnLevel
+	case "error":
+		return zerolog.ErrorLevel
+	default:
+		return zerolog.InfoLevel
+	}
 }

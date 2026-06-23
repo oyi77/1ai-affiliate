@@ -1,12 +1,10 @@
-const C = require('../utils/constants');
-const settings = require('../services/settingsService');
 const pool = require('../db/mysql');
 const { generateToken } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // Password reset key expiry: 3 days (in seconds)
-const RESET_KEY_EXPIRY = C.DEFAULTS.RESET_KEY_EXPIRY_SEC;
+const RESET_KEY_EXPIRY = 3 * 24 * 60 * 60;
 
 /**
  * Login using users table (same DB as PHP tracking platform).
@@ -145,27 +143,8 @@ async function forgotPassword(req, res) {
       [resetKey, resetTime, user.user_id]
     );
 
-    // Send reset email (optional — requires SMTP_HOST env var)
-    if (process.env.SMTP_HOST) {
-      try {
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST, port: parseInt(process.env.SMTP_PORT || '587'),
-          secure: process.env.SMTP_SECURE === 'true',
-          auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
-        });
-        const baseUrl = `https://${await settings.get('app_domain')}`;
-        await transporter.sendMail({
-          from: await settings.get('noreply_email'),
-          to: user.user_email,
-          subject: 'Password Reset — 1ai-Affiliate',
-          text: `Click this link to reset your password: ${baseUrl}/pass-reset.php?uid=${user.user_id}&key=${resetKey}\n\nThis link expires in 3 days. If you didn't request this, ignore this email.`,
-        });
-      } catch (emailErr) {
-        console.error('Reset email send failed:', emailErr.message);
-      }
-    }
-    res.json({ message: 'If that email exists, a reset link has been sent.' });
+    // In production: send email with reset link containing the key
+    res.json({ message: 'If the account exists, a reset key has been generated.' });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -260,7 +239,7 @@ async function changePassword(req, res) {
 async function getApiKey(req, res) {
   try {
     const [rows] = await pool.query(
-      'SELECT api_key, scope FROM api_keys WHERE user_id = ? LIMIT 1',
+      'SELECT api_key, scope FROM 1ai_api_keys WHERE user_id = ? LIMIT 1',
       [req.user.id]
     );
     if (rows.length === 0) {
@@ -280,11 +259,11 @@ async function regenerateApiKey(req, res) {
   try {
     const apiKey = crypto.randomBytes(32).toString('hex');
     await pool.query(
-      'DELETE FROM api_keys WHERE user_id = ?',
+      'DELETE FROM 1ai_api_keys WHERE user_id = ?',
       [req.user.id]
     );
     await pool.query(
-      "INSERT INTO api_keys (api_key, user_id, scope) VALUES (?, ?, '[*]')",
+      "INSERT INTO 1ai_api_keys (api_key, user_id, scope, created_at) VALUES (?, ?, '[*]', UNIX_TIMESTAMP())",
       [apiKey, req.user.id]
     );
     res.json({ api_key: apiKey, message: 'API key regenerated.' });
@@ -294,59 +273,36 @@ async function regenerateApiKey(req, res) {
   }
 }
 
-/**
- * Register a new affiliate (public, no auth required).
- * Creates a user row + affiliate profile, returns JWT.
- */
-async function registerAffiliate(req, res) {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'Name, email, and password are required' });
+async function register(req, res) {
+  const { username, email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
   }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  try {
+    const [existing] = await pool.query('SELECT user_id FROM 1ai_users WHERE user_email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(409).json({ error: 'Email already registered' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await pool.query(
+      `INSERT INTO 1ai_users (user_name, user_email, user_pass, user_role, user_date_added)
+       VALUES (?, ?, ?, 'affiliate', UNIX_TIMESTAMP())`,
+      [username || email.split('@')[0], email, hashedPassword]
+    );
+    const userId = result.insertId;
+    const affiliateCode = 'AFF' + userId.toString().padStart(6, '0');
+    await pool.query(
+      `INSERT INTO 1ai_affiliates (user_id, affiliate_code, tier, created_at, updated_at)
+       VALUES (?, ?, 'starter', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+      [userId, affiliateCode]
+    );
+    const user = { user_id: userId, user_email: email, user_role: 'affiliate' };
+    const token = await generateToken(user);
+    res.json({ token, user: { id: userId, email, role: 'affiliate' } });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: 'Invalid email format' });
-  }
-
-  // Check duplicate email
-  const [existing] = await pool.query('SELECT user_id FROM 1ai_users WHERE user_email = ?', [email]);
-  if (existing.length > 0) {
-    return res.status(409).json({ error: 'Email already registered' });
-  }
-
-  const hashed = await bcrypt.hash(password, 12);
-  const now = Math.floor(Date.now() / 1000);
-
-  const [result] = await pool.query(
-    `INSERT INTO 1ai_users (user_name, user_email, user_pass, user_role, user_registered, user_active, user_date_added)
-     VALUES (?, ?, ?, 'affiliate', ?, 1, ?)`,
-    [name, email, hashed, now, now]
-  );
-  const userId = result.insertId;
-
-  // Generate unique affiliate code
-  const affiliateCode = `AFF${userId}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
-  await pool.query(
-    `INSERT INTO 1ai_affiliates (user_id, affiliate_code, tier, balance, created_at, updated_at)
-     VALUES (?, ?, 'starter', 0, ?, ?)`,
-    [userId, affiliateCode, now, now]
-  );
-
-  const userRow = { user_id: userId, user_email: email, user_role: 'affiliate' };
-  const token = await generateToken(userRow);
-
-  res.status(201).json({
-    token,
-    user: {
-      id: userId,
-      email,
-      role: 'affiliate',
-      affiliate_code: affiliateCode,
-    },
-  });
 }
 
-module.exports = { login, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey, registerAffiliate };
+module.exports = { login, register, getMe, forgotPassword, resetPassword, changePassword, getApiKey, regenerateApiKey };

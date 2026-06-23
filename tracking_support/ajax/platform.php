@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
-include_once(substr(__DIR__, 0,-17) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 ?>
@@ -11,7 +10,7 @@ AUTH::require_user();
 	<?php 		$platform_sql = "SELECT *
                         FROM    platforms
                         GROUP BY `platform_name` ORDER BY `platform_name` ASC";
-        $platform_result = $conn->query($platform_sql) or record_mysql_error($platform_sql);
+        $platform_result = $db->query($platform_sql) or record_mysql_error($platform_sql);
 
         while ($platform_row = $platform_result->fetch_array(MYSQLI_ASSOC)) {
 

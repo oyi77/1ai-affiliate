@@ -1,8 +1,7 @@
 <?php
 
 declare(strict_types=1);
-include_once(substr(__DIR__, 0, -18) . '/config/connect.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect.php');
 
 AUTH::require_user();
 
@@ -22,10 +21,10 @@ $editing = false;
 $copying = false;
 
 $slack = false;
-$mysql['user_id'] = $conn->escape((string)$_SESSION['user_own_id']);
-$mysql['user_own_id'] = $conn->escape((string)$_SESSION['user_own_id']);
+$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
+$mysql['user_own_id'] = $db->real_escape_string((string)$_SESSION['user_own_id']);
 $user_sql = "SELECT 2u.user_name as username, 2up.user_slack_incoming_webhook AS url, 2up.maxmind_isp FROM users AS 2u INNER JOIN users_pref AS 2up ON (2up.user_id = 1) WHERE 2u.user_id = '".$mysql['user_own_id']."'";
-$user_results = $conn->query($user_sql);
+$user_results = $db->query($user_sql);
 $user_row = $user_results->fetch_assoc();
 
 if (!empty($user_row['url']))
@@ -47,22 +46,22 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	}
 
 	if (!$error) {
-		$mysql['rotator_name'] = $conn->escape($_POST['rotator_name']);
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+		$mysql['rotator_name'] = $db->real_escape_string($_POST['rotator_name']);
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 
 		if ($editing == true) {
 			// scope rename to the acting user's own rotator
-			$mysql['rotator_id'] = $conn->escape((string)($_POST['rotator_id'] ?? ''));
+			$mysql['rotator_id'] = $db->real_escape_string((string)($_POST['rotator_id'] ?? ''));
 			$sql = "UPDATE rotators SET name='" . $mysql['rotator_name'] . "' WHERE id='" . $mysql['rotator_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
-			$result = $conn->query($sql);
+			$result = $db->query($sql);
 		} else {
 			$sql = "INSERT INTO rotators SET name='" . $mysql['rotator_name'] . "', user_id='" . $mysql['user_id'] . "'";
-			$result = $conn->query($sql);
-			$rotator_id = $conn->writeConnection()->insert_id;
+			$result = $db->query($sql);
+			$rotator_id = $db->insert_id;
 
 			// public_id is derived from insert_id, so only generate it for the INSERT path
 			$sql = "UPDATE rotators SET public_id='" . random_int(1, 9) . $rotator_id . random_int(1, 9) . "' WHERE id='" . $rotator_id . "' AND user_id='" . $mysql['user_id'] . "'";
-			$result = $conn->query($sql);
+			$result = $db->query($sql);
 		}
 
 		$add_success = true;
@@ -75,17 +74,17 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 if (isset($_GET['delete_rotator_id'])) {
 
 	if ($userObj->hasPermission("remove_rotator")) {
-		$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
-		$mysql['rotator_id'] = $conn->escape((string)$_GET['delete_rotator_id']);
+		$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
+		$mysql['rotator_id'] = $db->real_escape_string((string)$_GET['delete_rotator_id']);
 
 		$delete_sql = "DELETE FROM rotators WHERE id='" . $mysql['rotator_id'] . "' AND user_id='" . $mysql['user_id'] . "'";
 
-		if ($conn->query($delete_sql)) {
+		if (_mysqli_query($delete_sql)) {
 			$rule_sql = "DELETE FROM rotator_rules WHERE rotator_id='" . $mysql['rotator_id'] . "'";
 
-			if ($conn->query($rule_sql)) {
+			if (_mysqli_query($rule_sql)) {
 				$criteria_sql = "DELETE FROM rotator_rules_criteria WHERE rotator_id='" . $mysql['rotator_id'] . "'";
-				if ($conn->query($criteria_sql)) {
+				if (_mysqli_query($criteria_sql)) {
 					$delete_success = true;
 					if ($slack)
 						$slack->push('rotator_deleted', ['name' => $_GET['delete_rotator_name'], 'user' => $user_row['username']]);
@@ -182,9 +181,9 @@ template_top('Smart Redirector'); ?>
 					<input class="form-control input-sm search" style="margin-bottom: 10px; height: 30px;" placeholder="Filter">
 					<ul class="list">
 						<?php
-						$mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+						$mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 						$sql = "SELECT * FROM `rotators` WHERE `user_id`='" . $mysql['user_id'] . "' ORDER BY `name` ASC";
-						$result = $conn->query($sql) or record_mysql_error($sql);
+						$result = $db->query($sql) or record_mysql_error($sql);
 						if ($result->num_rows == 0) {
 						?><li class="empty-state">No redirectors added yet</li><?php
 																	}
@@ -200,7 +199,7 @@ template_top('Smart Redirector'); ?>
 																		}
 
 																		$rule_sql = "SELECT * FROM `rotator_rules` WHERE `rotator_id`='" . $row['id'] . "' ORDER BY `id` ASC";
-																		$rule_result = $conn->query($rule_sql) or record_mysql_error($rule_sql);
+																		$rule_result = $db->query($rule_sql) or record_mysql_error($rule_sql);
 																		if ($rule_result->num_rows == 0) {
 																		?><ul>
 									<li>You have not added any rules.</li>
@@ -209,7 +208,7 @@ template_top('Smart Redirector'); ?>
 																			echo "<ul>";
 																			while ($rule_row = $rule_result->fetch_array()) {
 																				$criteria_sql = "SELECT * FROM `rotator_rules_criteria` WHERE `rule_id`='" . $rule_row['id'] . "' ORDER BY `id` ASC";
-																				$criteria_result = $conn->query($criteria_sql) or record_mysql_error($criteria_sql);
+																				$criteria_result = $db->query($criteria_sql) or record_mysql_error($criteria_sql);
 																				if ($criteria_result->num_rows > 0) {
 																					$criteria = "You have " . $criteria_result->num_rows . " criteria added";
 																				} else {
@@ -251,9 +250,9 @@ template_top('Smart Redirector'); ?>
 				<label for="rotator_id" style="margin-right:5px;">Select redirector: </label>
 				<select class="form-control input-sm" name="rotator_id" style="min-width: 130px;">
 					<option value="0">--</option>
-					<?php $mysql['user_id'] = $conn->escape((string)$_SESSION['user_id']);
+					<?php $mysql['user_id'] = $db->real_escape_string((string)$_SESSION['user_id']);
 					$rotator_sql = "SELECT * FROM `rotators` WHERE `user_id`='" . $mysql['user_id'] . "' ORDER BY `name` ASC";
-					$rotator_result = $conn->query($rotator_sql);
+					$rotator_result = _mysqli_query($rotator_sql);
 					while ($rotator_row = $rotator_result->fetch_array(MYSQLI_ASSOC)) {
 
 						$html['rotator_name'] = htmlentities((string)($rotator_row['name'] ?? ''), ENT_QUOTES, 'UTF-8');

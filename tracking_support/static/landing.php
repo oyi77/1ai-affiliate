@@ -5,8 +5,7 @@ header('Content-type: application/javascript');
 header('Cache-Control: no-cache, no-store, max-age=0, must-revalidate');
 header('Expires: Sun, 03 Feb 2008 05:00:00 GMT'); // Date in the past
 header("Pragma: no-cache");
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
 if ( isset( $_SERVER["HTTPS"] ) && strtolower( (string) $_SERVER["HTTPS"] ) == "on" ) {
 $strProtocol = 'https';
 } else {
@@ -72,14 +71,14 @@ $t1aiid = $_GET['t1aiid'] ?? '';
 $lpip = $_GET['lpip'] ?? '';
 $cv_sql = '';
 if ($t1aiid !== '') {
-    $mysql_t1aiid = $conn->escape((string)$t1aiid);
+    $mysql_t1aiid = $db->real_escape_string((string)$t1aiid);
     $cv_sql = "SELECT 2cv.parameters
         FROM trackers
         LEFT JOIN ppc_accounts USING (ppc_account_id)
         LEFT JOIN (SELECT ppc_network_id, GROUP_CONCAT(parameter) AS parameters FROM ppc_network_variables GROUP BY ppc_network_id) AS 2cv USING (ppc_network_id)
         WHERE tracker_id_public = '".$mysql_t1aiid."'";
 } elseif ($lpip !== '') {
-    $mysql_lpip = $conn->escape((string)$lpip);
+    $mysql_lpip = $db->real_escape_string((string)$lpip);
     $cv_sql = "SELECT 2cv.parameters
         FROM landing_pages AS lp
         JOIN trackers AS tr ON tr.aff_campaign_id = lp.aff_campaign_id
@@ -89,7 +88,7 @@ if ($t1aiid !== '') {
         LIMIT 1";
 }
 if ($cv_sql !== '') {
-    $cv_result = $conn->query($cv_sql);
+    $cv_result = $db->query($cv_sql);
     if ($cv_result && $cv_result->num_rows > 0) {
         $cv_row = $cv_result->fetch_assoc();
         if (!empty($cv_row['parameters'])) {

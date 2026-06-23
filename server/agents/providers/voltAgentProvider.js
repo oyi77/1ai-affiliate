@@ -5,7 +5,7 @@
  * provider-neutral interface. Same shape as the PHP side's
  * AIProviderInterface — that's what enables the cross-runtime tool bus.
  */
-const { Agent, createTool } = require('@voltagent/core');
+const { generateText } = require('ai');
 const { anthropic } = require('@ai-sdk/anthropic');
 const { google } = require('@ai-sdk/google');
 const { openai } = require('@ai-sdk/openai');
@@ -76,28 +76,24 @@ function createVoltAgentProvider(config = {}) {
     name: providerName,
     async chat(messages, options = {}) {
       try {
-        const sdkTools = (options.tools || []).map((t) =>
-          createTool({
-            name: t.name,
+        // Convert tool definitions to Vercel AI SDK format directly
+        const sdkTools = {};
+        for (const t of (options.tools || [])) {
+          sdkTools[t.name] = {
             description: t.description,
             parameters: t.parameters,
-            // The actual handler is wired in by the caller (ToolRegistry)
-            // since we don't have direct access to it from here. The agent
-            // framework calls our chat() function with tool_calls already
-            // resolved — the SDK is just used to produce the final response
-            // and tool specs.
             execute: async (args) => args,
-          }),
-        );
+          };
+        }
 
         const result = await generateText({
           model,
           messages,
-          tools: sdkTools.length ? Object.fromEntries(sdkTools.map((t) => [t.name, t])) : undefined,
+          tools: Object.keys(sdkTools).length ? sdkTools : undefined,
           maxTokens: options.maxTokens,
           temperature: options.temperature,
-          experimental_toolChoice: sdkTools.length ? 'auto' : undefined,
         });
+
 
         const toolCalls = (result.toolCalls || []).map((tc) => ({
           name: tc.toolName || tc.name,

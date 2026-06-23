@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate, requireAdmin } = require('../middleware/auth');
-const { rateLimitAdmin } = require('../middleware/rateLimit');
+const { authenticate, requireAdmin, requireRole } = require('../middleware/auth');
+const { rateLimitWrite, rateLimitRead } = require('../middleware/rateLimit');
 const {
   getUsers,
   createUser,
+  getAffiliates,
+  getEarnings,
+  approveEarning,
   getStats,
   getCommissions,
   getPayments,
+  getCampaigns,
   getReport,
   exportReportCsv,
   getSystemStatus,
@@ -15,10 +19,15 @@ const {
   addClickServer,
   getVipProfile,
   saveVipProfile,
+  getOffers,
+  createOffer,
+  linkOfferToCampaign,
   getMargin,
   setMargin,
   getNetworks,
   createNetwork,
+  setOfferPostback,
+  getOfferPostback,
   getPostbackLogs,
   getDomains,
   createDomain,
@@ -28,47 +37,39 @@ const {
   saveShortenerService,
   deleteShortenerService,
   testShortenerService,
-  createManualConversion,
-  testConversionPixel,
 } = require('../controllers/adminController');
 
 router.use(authenticate);
-router.use(rateLimitAdmin);
+// Role-based access control: some endpoints are open to all roles (with data filtering),
+// others are restricted to specific roles.
 
-// Users
+
 router.get('/users', requireAdmin, getUsers);
 router.post('/users', requireAdmin, createUser);
-
-// Stats (open to all roles, data filtered inside)
-router.get('/stats', getStats);
-
-// Commissions & Payments
+router.get('/affiliates', requireAdmin, getAffiliates);
+router.get('/earnings', requireRole('admin', 'affiliate', 'advertiser'), getEarnings); // Role-filtered inside controller
+router.post('/earnings/:id/approve', requireAdmin, approveEarning);
+router.get('/stats', getStats); // Open to all roles, data filtered inside
 router.get('/commissions', requireAdmin, getCommissions);
 router.get('/payments', requireAdmin, getPayments);
-
-// Reports (legacy)
+router.get('/campaigns', requireRole('admin', 'advertiser'), getCampaigns); // Role-filtered inside controller
 router.get('/reports', requireAdmin, getReport);
 router.get('/reports.csv', requireAdmin, exportReportCsv);
-
-// System
 router.get('/system', requireAdmin, getSystemStatus);
 router.get('/clickservers', requireAdmin, getClickServers);
 router.post('/clickservers', requireAdmin, addClickServer);
-
-// Margin
-router.get('/margin/:userId', requireAdmin, getMargin);
-router.get('/margin', getMargin);
-router.post('/margin', requireAdmin, setMargin);
-
-// Networks
+router.get('/offers', requireRole('admin', 'affiliate', 'advertiser'), getOffers); // Role-filtered inside controller
+router.post('/offers', requireRole('admin', 'advertiser'), createOffer); // Restricted per Phase A
+router.post('/offer-campaign', requireAdmin, linkOfferToCampaign); // Link offer to campaign
+router.get('/margin/:userId', requireAdmin, getMargin); // Get margin for a user
+router.get('/margin', getMargin); // Get own margin (any role)
+router.post('/margin', requireAdmin, setMargin); // Set margin for a user
 router.get('/networks', requireAdmin, getNetworks);
 router.post('/networks', requireAdmin, createNetwork);
-
-// VIP
 router.get('/vip', getVipProfile);
 router.put('/vip', saveVipProfile);
-
-// Postback logs
+router.post('/offers/:offerId/postback', requireAdmin, setOfferPostback);
+router.get('/offers/:offerId/postback', requireAdmin, getOfferPostback);
 router.get('/postback-logs', requireAdmin, getPostbackLogs);
 
 // Domain Management
@@ -83,30 +84,5 @@ router.post('/shorteners', requireAdmin, saveShortenerService);
 router.put('/shorteners/:id', requireAdmin, saveShortenerService);
 router.delete('/shorteners/:id', requireAdmin, deleteShortenerService);
 router.post('/shorteners/:id/test', requireAdmin, testShortenerService);
-
-// Manual conversion entry
-router.post('/conversions/manual', requireAdmin, createManualConversion);
-router.get('/pixel/test', requireAdmin, testConversionPixel);
-
-// Fraud Dashboard
-router.get('/fraud/dashboard', requireAdmin, async (req, res) => {
-  const pool = require('../db/mysql');
-  try {
-    const [totalClicks] = await pool.query('SELECT COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)');
-    const [blockedClicks] = await pool.query('SELECT COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE blocked = 1 AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)');
-    const [topReasons] = await pool.query('SELECT reason, COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR) AND reason IS NOT NULL GROUP BY reason ORDER BY cnt DESC LIMIT 10');
-    const [topIPs] = await pool.query('SELECT ip_address, COUNT(*) AS cnt FROM 1ai_fraud_click_velocity WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY ip_address ORDER BY cnt DESC LIMIT 10');
-    const [blacklistCount] = await pool.query('SELECT COUNT(*) AS cnt FROM 1ai_fraud_blacklist');
-    res.json({
-      total_clicks_24h: totalClicks[0]?.cnt || 0,
-      blocked_clicks_24h: blockedClicks[0]?.cnt || 0,
-      top_fraud_reasons: topReasons,
-      top_fraud_ips: topIPs,
-      blacklist_size: blacklistCount[0]?.cnt || 0,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 module.exports = router;

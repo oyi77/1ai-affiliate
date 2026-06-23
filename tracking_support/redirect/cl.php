@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 use OneAIAffiliate\Redirect\RedirectHelper;
 
-require_once substr(__DIR__, 0, -21) . '/config/connect2.php';
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+require_once dirname(__DIR__, 2) . '/config/connect2.php';
 
 // Validate required parameter
 $clickIdPublic = RedirectHelper::getIntParam('pci');
@@ -12,11 +11,11 @@ if ($clickIdPublic === null) {
     RedirectHelper::redirect('/404.php');
 }
 
-$mysql['click_id_public'] = $conn->escape((string)$clickIdPublic);
+$mysql['click_id_public'] = $db->real_escape_string((string)$clickIdPublic);
 
 $varsParam = RedirectHelper::getStringParam('202vars');
 if ($varsParam !== null) {
-    $mysql['202vars'] = base64_decode((string) $conn->escape($varsParam));
+    $mysql['202vars'] = base64_decode((string) $db->real_escape_string($varsParam));
 }
 $tracker_sql = "
 	SELECT

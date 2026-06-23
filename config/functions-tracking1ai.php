@@ -83,32 +83,18 @@ function dollar_format($amount, $currency = null, $cpv = false)
         $amount = (float)$amount;
     }
 
-    $currency_before = '';
-    $currency_after = '';
+    static $currencySymbols = [
+        'USD' => ['$',''],  'BRL' => ['R$',''], 'CZK' => ['','Kč'],  'DKK' => ['kr.',''],
+        'EUR' => ['€',''],   'HUF' => ['','Ft'],  'ILS' => ['₪',''],   'JPY' => ['¥',''],
+        'MYR' => ['RM',''],  'NOK' => ['kr',''],   'PHP' => ['₱',''],   'PLN' => ['zł',''],
+        'GBP' => ['£',''],   'SEK' => ['kr',''],   'CHF' => ['SFr.',''],'TWD' => ['NT$',''],
+        'THB' => ['฿',''],   'TRY' => ['','₺'],   'CNY' => ['¥',''],   'INR' => ['₹',''],
+        'RUB' => ['₽',''],
+    ];
 
-    if ($currency == 'USD') $currency_before = '$';
-    if ($currency == 'BRL') $currency_before = 'R$';
-    if ($currency == 'CZK') $currency_after = 'Kč';
-    if ($currency == 'DKK') $currency_before = 'kr.';
-    if ($currency == 'EUR') $currency_before = '€';
-    if ($currency == 'HUF') $currency_after = 'Ft';
-    if ($currency == 'ILS') $currency_before = '₪';
-    if ($currency == 'JPY') $currency_before = '¥';
-    if ($currency == 'MYR') $currency_before = 'RM';
-    if ($currency == 'NOK') $currency_before = 'kr';
-    if ($currency == 'PHP') $currency_before = '₱';
-    if ($currency == 'PLN') $currency_before = 'zł';
-    if ($currency == 'GBP') $currency_before = '£';
-    if ($currency == 'SEK') $currency_before = 'kr';
-    if ($currency == 'CHF') $currency_before = 'SFr.';
-    if ($currency == 'TWD') $currency_before = 'NT$';
-    if ($currency == 'THB') $currency_before = '฿';
-    if ($currency == 'TRY') $currency_after = '₺';
-    if ($currency == 'CNY') $currency_before = '¥';
-    if ($currency == 'INR') $currency_before = '₹';
-    if ($currency == 'RUB') $currency_before = '₽';
-
-    if ($currency_before == '' && $currency_after == '') $currency_before = $currency;
+    $symbols = $currencySymbols[$currency] ?? [$currency, ''];
+    $currency_before = $symbols[0];
+    $currency_after = $symbols[1];
 
     if ($amount !== null) {
         if ($amount >= 0) {

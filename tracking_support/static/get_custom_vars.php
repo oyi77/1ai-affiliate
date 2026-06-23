@@ -1,17 +1,16 @@
 <?php
 declare(strict_types=1);
 header('Content-Type: application/json');
-include_once(substr(__DIR__, 0,-19) . '/config/connect2.php');
-$conn = \OneAIAffiliate\Repository\LookupRepositoryFactory::connection($db);
+include_once(dirname(__DIR__, 2) . '/config/connect2.php');
 $data = [];
-$tracker_id_public = $conn->escape((string)($_GET['t1aiid'] ?? ''));
+$tracker_id_public = $db->real_escape_string((string)($_GET['t1aiid'] ?? ''));
 $sql = "SELECT
 		2cv.parameters
 		FROM trackers
 		LEFT JOIN ppc_accounts USING (ppc_account_id)
 		LEFT JOIN (SELECT ppc_network_id, GROUP_CONCAT(parameter) AS parameters FROM ppc_network_variables GROUP BY ppc_network_id) AS 2cv USING (ppc_network_id)
 		WHERE tracker_id_public = '".$tracker_id_public."'";
-$result = $conn->query($sql);
+$result = $db->query($sql);
 if ($result && $result->num_rows > 0) {
 	$row = $result->fetch_assoc();
 	$parameters = explode(',', (string) $row['parameters']);
