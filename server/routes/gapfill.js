@@ -775,4 +775,283 @@ router.post('/postback-templates/:id/test', async (req, res) => {
     res.status(500).json({ error: 'Failed to test postback', detail: err.message });
   }
 });
+// ═══════════════════════════════════════════════════════════════════
+// AFFILIATE CLAIM FLOW
+// ═══════════════════════════════════════════════════════════════════
+
+// ── GET /earnings/my — affiliate sees own earnings ──────────────────
+router.get('/earnings/my', async (req, res) => {
+  try {
+    const [affRows] = await pool.query('SELECT id FROM 1ai_affiliates WHERE user_id = ?', [req.user.id]);
+    if (!affRows.length) return res.json({ data: [], summary: { pending: 0, approved: 0, paid: 0, rejected: 0 } });
+    const affiliateId = affRows[0].id;
+    const status = req.query.status;
+    let sql = 'SELECT * FROM 1ai_affiliate_earnings WHERE affiliate_id = ?';
+    const params = [affiliateId];
+    if (status) { sql += ' AND status = ?'; params.push(status); }
+    sql += ' ORDER BY id DESC LIMIT 200';
+    const [rows] = await pool.query(sql, params);
+    const [summary] = await pool.query(
+      `SELECT status, COUNT(*) AS cnt, COALESCE(SUM(payout_amount),0) AS total
+       FROM 1ai_affiliate_earnings WHERE affiliate_id = ? GROUP BY status`, [affiliateId]
+    );
+    const sum = { pending: 0, approved: 0, paid: 0, rejected: 0 };
+    summary.forEach(r => { sum[r.status] = { count: r.cnt, amount: Number(r.total) }; });
+    res.json({ data: rows, summary: sum });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch earnings', detail: err.message });
+  }
+});
+
+// ── POST /earnings/claim — affiliate requests payout ────────────────
+router.post('/earnings/claim', async (req, res) => {
+  try {
+    const [affRows] = await pool.query('SELECT id FROM 1ai_affiliates WHERE user_id = ?', [req.user.id]);
+    if (!affRows.length) return res.status(403).json({ error: 'Not an affiliate' });
+    const affiliateId = affRows[0].id;
+    const { ids } = req.body; // optional: specific earning IDs to claim
+    let affected;
+    if (ids && ids.length) {
+      const placeholders = ids.map(() => '?').join(',');
+      const [result] = await pool.query(
+        `UPDATE 1ai_affiliate_earnings SET status = 'approved', approved_by = ?, approved_at = UNIX_TIMESTAMP()
+         WHERE id IN (${placeholders}) AND affiliate_id = ? AND status = 'pending'`,
+        [req.user.id, ...ids, affiliateId]
+      );
+      affected = result.affectedRows;
+    } else {
+      const [result] = await pool.query(
+        `UPDATE 1ai_affiliate_earnings SET status = 'approved', approved_by = ?, approved_at = UNIX_TIMESTAMP()
+         WHERE affiliate_id = ? AND status = 'pending'`,
+        [req.user.id, affiliateId]
+      );
+      affected = result.affectedRows;
+    }
+    res.json({ success: true, claimed: affected });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to claim earnings', detail: err.message });
+  }
+});
+
+// ── GET /earnings/claims — admin sees all claims ────────────────────
+router.get('/earnings/claims', async (req, res) => {
+  try {
+    const status = req.query.status;
+    let sql = `SELECT e.*, a.affiliate_code, u.user_name, u.user_email
+               FROM 1ai_affiliate_earnings e
+               JOIN 1ai_affiliates a ON a.id = e.affiliate_id
+               JOIN 1ai_users u ON u.user_id = a.user_id`;
+    const params = [];
+    if (status) { sql += ' WHERE e.status = ?'; params.push(status); }
+    sql += ' ORDER BY e.id DESC LIMIT 500';
+    const [rows] = await pool.query(sql, params);
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch claims', detail: err.message });
+  }
+});
+
+// ── POST /earnings/:id/approve — admin approves earning ─────────────
+router.post('/earnings/:id/approve', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE 1ai_affiliate_earnings SET status = 'approved', approved_by = ?, approved_at = UNIX_TIMESTAMP() WHERE id = ? AND status = 'pending'`,
+      [req.user.id, req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Earning not found or already processed' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to approve earning', detail: err.message });
+  }
+});
+
+// ── POST /earnings/:id/reject — admin rejects earning ───────────────
+router.post('/earnings/:id/reject', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE 1ai_affiliate_earnings SET status = 'rejected' WHERE id = ? AND status = 'pending'`,
+      [req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Earning not found or already processed' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reject earning', detail: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ADVERTISER BILLING FLOW
+// ═══════════════════════════════════════════════════════════════════
+
+// ── GET /invoices — list invoices (filtered by role) ────────────────
+router.get('/invoices', async (req, res) => {
+  try {
+    let sql = `SELECT i.*, a.company_name, u.user_name, u.user_email
+               FROM 1ai_affiliate_invoices i
+               LEFT JOIN 1ai_advertisers a ON a.id = i.affiliate_id
+               LEFT JOIN 1ai_affiliates af ON af.id = i.affiliate_id
+               LEFT JOIN 1ai_users u ON u.user_id = af.user_id`;
+    const params = [];
+    if (req.user.role === 'advertiser') {
+      const [advRows] = await pool.query('SELECT id FROM 1ai_advertisers WHERE user_id = ?', [req.user.id]);
+      if (advRows.length) {
+        sql += ' WHERE i.affiliate_id = ?';
+        params.push(advRows[0].id);
+      }
+    }
+    if (req.query.status) {
+      sql += params.length ? ' AND' : ' WHERE';
+      sql += ' i.status = ?';
+      params.push(req.query.status);
+    }
+    sql += ' ORDER BY i.id DESC LIMIT 200';
+    const [rows] = await pool.query(sql, params);
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch invoices', detail: err.message });
+  }
+});
+
+// ── POST /invoices — admin creates invoice ──────────────────────────
+router.post('/invoices', async (req, res) => {
+  try {
+    const { affiliate_id, period_start, period_end, conversions_count, revenue_amount, payout_amount, margin_amount, currency, notes } = req.body;
+    if (!affiliate_id || !period_start || !period_end) return res.status(400).json({ error: 'affiliate_id, period_start, period_end required' });
+    const [result] = await pool.query(
+      `INSERT INTO 1ai_affiliate_invoices (affiliate_id, period_start, period_end, conversions_count, revenue_amount, payout_amount, margin_amount, currency, notes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+      [affiliate_id, period_start, period_end, conversions_count || 0, revenue_amount || 0, payout_amount || 0, margin_amount || 0, currency || 'USD', notes || null]
+    );
+    res.json({ success: true, invoice_id: result.insertId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create invoice', detail: err.message });
+  }
+});
+
+// ── POST /invoices/:id/pay — mark invoice as paid ───────────────────
+router.post('/invoices/:id/pay', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE 1ai_affiliate_invoices SET status = 'paid', paid_at = UNIX_TIMESTAMP(), paid_by = ?, updated_at = UNIX_TIMESTAMP() WHERE id = ? AND status IN ('draft','sent')`,
+      [req.user.id, req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Invoice not found or already paid' });
+    // Update related earnings to 'paid'
+    const [[invoice]] = await pool.query('SELECT affiliate_id, period_start, period_end FROM 1ai_affiliate_invoices WHERE id = ?', [req.params.id]);
+    if (invoice) {
+      await pool.query(
+        `UPDATE 1ai_affiliate_earnings SET status = 'paid', paid_at = UNIX_TIMESTAMP() WHERE affiliate_id = ? AND status = 'approved' AND created_at >= UNIX_TIMESTAMP(?) AND created_at <= UNIX_TIMESTAMP(?)`,
+        [invoice.affiliate_id, invoice.period_start, invoice.period_end]
+      );
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark invoice as paid', detail: err.message });
+  }
+});
+
+// ── POST /invoices/:id/send — mark invoice as sent ──────────────────
+router.post('/invoices/:id/send', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE 1ai_affiliate_invoices SET status = 'sent', updated_at = UNIX_TIMESTAMP() WHERE id = ? AND status = 'draft'`,
+      [req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Invoice not found or not in draft' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to send invoice', detail: err.message });
+  }
+});
+
+// ── GET /billing/summary — billing overview ─────────────────────────
+router.get('/billing/summary', async (req, res) => {
+  try {
+    const [totalEarned] = await pool.query(`SELECT COALESCE(SUM(payout_amount),0) AS total FROM 1ai_affiliate_earnings`);
+    const [totalPaid] = await pool.query(`SELECT COALESCE(SUM(payout_amount),0) AS total FROM 1ai_affiliate_earnings WHERE status = 'paid'`);
+    const [totalPending] = await pool.query(`SELECT COALESCE(SUM(payout_amount),0) AS total FROM 1ai_affiliate_earnings WHERE status IN ('pending','approved')`);
+    const [invoiceStats] = await pool.query(`SELECT status, COUNT(*) AS cnt, COALESCE(SUM(payout_amount),0) AS total FROM 1ai_affiliate_invoices GROUP BY status`);
+    const [depositTotal] = await pool.query(`SELECT COALESCE(SUM(amount),0) AS total FROM 1ai_balance_ledger WHERE type = 'deposit'`);
+    const [withdrawTotal] = await pool.query(`SELECT COALESCE(SUM(amount),0) AS total FROM 1ai_balance_ledger WHERE type IN ('withdrawal','spend')`);
+    const invoices = {};
+    invoiceStats.forEach(r => { invoices[r.status] = { count: r.cnt, amount: Number(r.total) }; });
+    res.json({
+      earnings: {
+        total: Number(totalEarned[0].total),
+        paid: Number(totalPaid[0].total),
+        pending: Number(totalPending[0].total),
+      },
+      invoices,
+      balance: {
+        deposits: Number(depositTotal[0].total),
+        withdrawals: Number(withdrawTotal[0].total),
+        available: Number(depositTotal[0].total) - Number(withdrawTotal[0].total),
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch billing summary', detail: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// MANAGEMENT OVERSIGHT
+// ═══════════════════════════════════════════════════════════════════
+
+// ── GET /management/overview — full financial overview ──────────────
+router.get('/management/overview', async (req, res) => {
+  try {
+    const [earnings] = await pool.query(`SELECT status, COUNT(*) AS cnt, COALESCE(SUM(payout_amount),0) AS total FROM 1ai_affiliate_earnings GROUP BY status`);
+    const [invoices] = await pool.query(`SELECT status, COUNT(*) AS cnt, COALESCE(SUM(payout_amount),0) AS total FROM 1ai_affiliate_invoices GROUP BY status`);
+    const [payments] = await pool.query(`SELECT status, COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM 1ai_affiliate_payments GROUP BY status`);
+    const [batches] = await pool.query(`SELECT status, COUNT(*) AS cnt, COALESCE(SUM(total),0) AS total FROM payout_batches GROUP BY status`);
+    const [deposits] = await pool.query(`SELECT COALESCE(SUM(amount),0) AS total FROM 1ai_balance_ledger WHERE type='deposit'`);
+    const [withdrawals] = await pool.query(`SELECT COALESCE(SUM(amount),0) AS total FROM 1ai_balance_ledger WHERE type IN ('withdrawal','spend')`);
+    const format = (rows) => { const o = {}; rows.forEach(r => { o[r.status] = { count: r.cnt, amount: Number(r.total) }; }); return o; };
+    res.json({
+      earnings: format(earnings),
+      invoices: format(invoices),
+      payments: format(payments),
+      payout_batches: format(batches),
+      balance: {
+        deposits: Number(deposits[0].total),
+        withdrawals: Number(withdrawals[0].total),
+        net: Number(deposits[0].total) - Number(withdrawals[0].total),
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch management overview', detail: err.message });
+  }
+});
+
+// ── GET /management/transactions — all transactions with details ────
+router.get('/management/transactions', async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 100, 500);
+    const [earnings] = await pool.query(
+      `SELECT 'earning' AS type, e.id, e.payout_amount AS amount, e.status, e.created_at, u.user_name, u.user_email
+       FROM 1ai_affiliate_earnings e
+       JOIN 1ai_affiliates a ON a.id = e.affiliate_id
+       JOIN 1ai_users u ON u.user_id = a.user_id
+       ORDER BY e.id DESC LIMIT ?`, [limit]
+    );
+    const [payments] = await pool.query(
+      `SELECT 'payment' AS type, p.id, p.amount, p.status, p.created_at, u.user_name, u.user_email
+       FROM 1ai_affiliate_payments p
+       JOIN 1ai_users u ON u.user_id = p.user_id
+       ORDER BY p.id DESC LIMIT ?`, [limit]
+    );
+    const [invoices] = await pool.query(
+      `SELECT 'invoice' AS type, i.id, i.payout_amount AS amount, i.status, i.created_at, u.user_name, u.user_email
+       FROM 1ai_affiliate_invoices i
+       JOIN 1ai_affiliates a ON a.id = i.affiliate_id
+       JOIN 1ai_users u ON u.user_id = a.user_id
+       ORDER BY i.id DESC LIMIT ?`, [limit]
+    );
+    const all = [...earnings, ...payments, ...invoices].sort((a, b) => b.created_at - a.created_at).slice(0, limit);
+    res.json({ data: all });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch transactions', detail: err.message });
+  }
+});
+
 module.exports = router;

@@ -655,3 +655,160 @@ PageRenderers['api-docs-page'] = async function(el) {
       </div>
     </div>`;
 };
+
+/* ── 25. Affiliate Earnings & Claim ────────────────────────────────── */
+PageRenderers['my-earnings'] = async function(el) {
+  try {
+    const r = await API.get('/api/admin/earnings/my');
+    const items = r.data || [];
+    const sum = r.summary || {};
+    el.innerHTML = `${DOM.pageHeader('My Earnings', 'View and claim your commission earnings')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Pending', value: 'Rp ' + (sum.pending?.amount || 0).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Approved', value: 'Rp ' + (sum.approved?.amount || 0).toLocaleString(), accent:'blue' })}
+        ${DOM.statCard({ label:'Paid', value: 'Rp ' + (sum.paid?.amount || 0).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Rejected', value: (sum.rejected?.count || 0), accent:'red' })}
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <button class="btn btn-primary btn-sm" onclick="claimAllEarnings()">💰 Claim All Pending</button>
+        </div>
+        ${items.length
+          ? DOM.table(['ID','Amount','Model','Status','Date'], items.map(d => [
+              '#' + d.id,
+              'Rp ' + parseFloat(d.payout_amount || 0).toLocaleString(),
+              (d.payout_model || 'CPA').toUpperCase(),
+              DOM.pill(d.status, {pending:'yellow',approved:'blue',paid:'green',rejected:'red'}[d.status] || 'blue'),
+              d.created_at ? new Date(d.created_at * 1000).toLocaleDateString() : '-'
+            ]))
+          : DOM.emptyState('No earnings yet', 'Your commission earnings will appear here.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load earnings.</p></div>'; }
+};
+
+// Claim all earnings helper
+window.claimAllEarnings = async function() {
+  try {
+    const r = await API.post('/api/admin/earnings/claim', {});
+    if (r.success) { Router.navigate('my-earnings'); }
+  } catch(e) { alert('Claim failed: ' + e.message); }
+};
+
+/* ── 26. Advertiser Invoices ─────────────────────────────────────── */
+PageRenderers['invoices'] = async function(el) {
+  try {
+    const r = await API.get('/api/admin/invoices');
+    const items = r.data || [];
+    el.innerHTML = `${DOM.pageHeader('Invoices', 'Manage advertiser invoices')}
+      <div class="card">
+        ${items.length
+          ? DOM.table(['ID','Period','Conversions','Revenue','Payout','Status','Actions'], items.map(d => [
+              '#' + d.id,
+              (d.period_start || '') + ' → ' + (d.period_end || ''),
+              d.conversions_count || 0,
+              'Rp ' + parseFloat(d.revenue_amount || 0).toLocaleString(),
+              'Rp ' + parseFloat(d.payout_amount || 0).toLocaleString(),
+              DOM.pill(d.status, {draft:'yellow',sent:'blue',paid:'green',void:'red'}[d.status] || 'blue'),
+              d.status === 'draft' ? '<button class="btn btn-sm btn-outline" onclick="sendInvoice(' + d.id + ')">Send</button>' :
+              d.status === 'sent' ? '<button class="btn btn-sm btn-primary" onclick="payInvoice(' + d.id + ')">Mark Paid</button>' : '-'
+            ]))
+          : DOM.emptyState('No invoices', 'Invoices will appear here when created.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load invoices.</p></div>'; }
+};
+window.sendInvoice = async (id) => { try { await API.post('/api/admin/invoices/' + id + '/send', {}); Router.navigate('invoices'); } catch(e) { alert('Failed: ' + e.message); } };
+window.payInvoice = async (id) => { try { await API.post('/api/admin/invoices/' + id + '/pay', {}); Router.navigate('invoices'); } catch(e) { alert('Failed: ' + e.message); } };
+
+/* ── 27. Billing Summary ────────────────────────────────────────── */
+PageRenderers['billing'] = async function(el) {
+  try {
+    const r = await API.get('/api/admin/billing/summary');
+    const earn = r.earnings || {};
+    const inv = r.invoices || {};
+    const bal = r.balance || {};
+    el.innerHTML = `${DOM.pageHeader('Billing & Payments', 'Financial overview for the platform')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Total Earned', value: 'Rp ' + (earn.total || 0).toLocaleString(), accent:'blue' })}
+        ${DOM.statCard({ label:'Total Paid', value: 'Rp ' + (earn.paid || 0).toLocaleString(), accent:'green' })}
+        ${DOM.statCard({ label:'Pending Payout', value: 'Rp ' + (earn.pending || 0).toLocaleString(), accent:'yellow' })}
+        ${DOM.statCard({ label:'Available Balance', value: 'Rp ' + (bal.available || 0).toLocaleString(), accent:'indigo' })}
+      </div>
+      <div class="card"><h3>Invoice Status</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          ${['draft','sent','paid','void'].map(s => {
+            const d = inv[s] || {};
+            return '<div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:center;">' +
+              '<div style="font-size:20px;font-weight:700;">' + (d.count || 0) + '</div>' +
+              '<div style="color:var(--text2);font-size:12px;">' + s.charAt(0).toUpperCase() + s.slice(1) + '</div>' +
+              '<div style="font-size:11px;color:var(--text2);">Rp ' + (d.amount || 0).toLocaleString() + '</div></div>';
+          }).join('')}
+        </div>
+      </div>
+      <div class="card"><h3>Balance Ledger</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:center;">
+            <div style="font-size:18px;font-weight:700;color:var(--green);">Rp ${(bal.deposits||0).toLocaleString()}</div>
+            <div style="color:var(--text2);font-size:12px;">Deposits</div>
+          </div>
+          <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:center;">
+            <div style="font-size:18px;font-weight:700;color:var(--red);">Rp ${(bal.withdrawals||0).toLocaleString()}</div>
+            <div style="color:var(--text2);font-size:12px;">Withdrawals</div>
+          </div>
+          <div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:center;">
+            <div style="font-size:18px;font-weight:700;color:var(--indigo2);">Rp ${(bal.available||0).toLocaleString()}</div>
+            <div style="color:var(--text2);font-size:12px;">Available</div>
+          </div>
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load billing summary.</p></div>'; }
+};
+
+/* ── 28. Management Overview ─────────────────────────────────────── */
+PageRenderers['management'] = async function(el) {
+  try {
+    const r = await API.get('/api/admin/management/overview');
+    const earn = r.earnings || {};
+    const inv = r.invoices || {};
+    const pay = r.payments || {};
+    const bal = r.balance || {};
+    el.innerHTML = `${DOM.pageHeader('Management Overview', 'Full financial oversight for platform operators')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Net Balance', value: 'Rp ' + (bal.net || 0).toLocaleString(), accent: (bal.net||0) >= 0 ? 'green' : 'red' })}
+        ${DOM.statCard({ label:'Deposits', value: 'Rp ' + (bal.deposits || 0).toLocaleString(), accent:'blue' })}
+        ${DOM.statCard({ label:'Withdrawals', value: 'Rp ' + (bal.withdrawals || 0).toLocaleString(), accent:'red' })}
+      </div>
+      <div class="card"><h3>Earnings by Status</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          ${['pending','approved','paid','rejected'].map(s => {
+            const d = earn[s] || {};
+            return '<div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:center;">' +
+              '<div style="font-size:20px;font-weight:700;">' + (d.count || 0) + '</div>' +
+              '<div style="color:var(--text2);font-size:12px;">' + s.charAt(0).toUpperCase() + s.slice(1) + '</div>' +
+              '<div style="font-size:11px;color:var(--text2);">Rp ' + (d.amount || 0).toLocaleString() + '</div></div>';
+          }).join('')}
+        </div>
+      </div>
+      <div class="card"><h3>Invoices</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          ${['draft','sent','paid','void'].map(s => {
+            const d = inv[s] || {};
+            return '<div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:center;">' +
+              '<div style="font-size:20px;font-weight:700;">' + (d.count || 0) + '</div>' +
+              '<div style="color:var(--text2);font-size:12px;">' + s.charAt(0).toUpperCase() + s.slice(1) + '</div>' +
+              '<div style="font-size:11px;color:var(--text2);">Rp ' + (d.amount || 0).toLocaleString() + '</div></div>';
+          }).join('')}
+        </div>
+      </div>
+      <div class="card"><h3>Payments</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          ${['pending','processing','paid','failed'].map(s => {
+            const d = pay[s] || {};
+            return '<div style="padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;text-align:center;">' +
+              '<div style="font-size:20px;font-weight:700;">' + (d.count || 0) + '</div>' +
+              '<div style="color:var(--text2);font-size:12px;">' + s.charAt(0).toUpperCase() + s.slice(1) + '</div>' +
+              '<div style="font-size:11px;color:var(--text2);">Rp ' + (d.amount || 0).toLocaleString() + '</div></div>';
+          }).join('')}
+        </div>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load management overview.</p></div>'; }
+};
