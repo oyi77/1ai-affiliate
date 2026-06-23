@@ -21,11 +21,21 @@ function showForgotPassword() {
   document.getElementById('login-form').style.display = 'none';
   document.getElementById('forgot-form').style.display = 'block';
   document.getElementById('reset-form').style.display = 'none';
+  var reg = document.getElementById('register-form');
+  if (reg) reg.style.display = 'none';
 }
 function showLoginForm() {
   document.getElementById('login-form').style.display = 'block';
   document.getElementById('forgot-form').style.display = 'none';
   document.getElementById('reset-form').style.display = 'none';
+  var reg = document.getElementById('register-form');
+  if (reg) reg.style.display = 'none';
+}
+function showRegisterForm() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('forgot-form').style.display = 'none';
+  document.getElementById('reset-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'block';
 }
 function showResetForm(key) {
   document.getElementById('login-form').style.display = 'none';
@@ -70,3 +80,44 @@ async function doResetPassword() {
     setTimeout(() => showLoginForm(), 2000);
   } catch(e) { msg.textContent = 'Network error'; msg.style.display = 'block'; }
 }
+
+// Registration
+async function doRegister() {
+  var err = document.getElementById('reg-err');
+  var success = document.getElementById('reg-success');
+  err.style.display = 'none'; success.style.display = 'none';
+  var role = document.getElementById('reg-role').value;
+  var username = document.getElementById('reg-username').value.trim();
+  var email = document.getElementById('reg-email').value.trim();
+  var password = document.getElementById('reg-pass').value;
+  var company = document.getElementById('reg-company') ? document.getElementById('reg-company').value.trim() : '';
+  var website = document.getElementById('reg-website') ? document.getElementById('reg-website').value.trim() : '';
+  if (!username) { err.textContent = 'Username required'; err.style.display = 'block'; return; }
+  if (!email) { err.textContent = 'Email required'; err.style.display = 'block'; return; }
+  if (!password || password.length < 6) { err.textContent = 'Password min 6 characters'; err.style.display = 'block'; return; }
+  try {
+    var r = await fetch('/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username, email: email, password: password, role: role, company_name: company, website: website })
+    });
+    var d = await r.json();
+    if (!r.ok) { err.textContent = d.error || 'Registration failed'; err.style.display = 'block'; return; }
+    if (d.token) {
+      Auth.set(d.token); Auth.setUser(d.user.email || d.user.id); Auth.resetRole(); Router.showApp();
+    } else {
+      success.textContent = 'Account created! You can now log in.'; success.style.display = 'block';
+      setTimeout(function(){ showLoginForm(); }, 1500);
+    }
+  } catch(e) { err.textContent = 'Network error'; err.style.display = 'block'; }
+}
+
+// Role-based field toggle
+document.addEventListener('DOMContentLoaded', function() {
+  var roleSelect = document.getElementById('reg-role');
+  if (roleSelect) {
+    roleSelect.addEventListener('change', function() {
+      var advFields = document.getElementById('reg-advertiser-fields');
+      if (advFields) advFields.style.display = this.value === 'advertiser' ? 'block' : 'none';
+    });
+  }
+});

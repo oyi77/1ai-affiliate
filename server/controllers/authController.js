@@ -274,10 +274,14 @@ async function regenerateApiKey(req, res) {
 }
 
 async function register(req, res) {
-  const { username, email, password } = req.body;
+  const { username, email, password, role, company_name, website } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
   }
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  const userRole = (role === 'advertiser') ? 'advertiser' : 'affiliate';
   try {
     const [existing] = await pool.query('SELECT user_id FROM 1ai_users WHERE user_email = ?', [email]);
     if (existing.length > 0) {
@@ -286,19 +290,29 @@ async function register(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const [result] = await pool.query(
       `INSERT INTO 1ai_users (user_name, user_email, user_pass, user_role, user_date_added)
-       VALUES (?, ?, ?, 'affiliate', UNIX_TIMESTAMP())`,
-      [username || email.split('@')[0], email, hashedPassword]
+       VALUES (?, ?, ?, ?, UNIX_TIMESTAMP())`,
+      [username || email.split('@')[0], email, hashedPassword, userRole]
     );
     const userId = result.insertId;
-    const affiliateCode = 'AFF' + userId.toString().padStart(6, '0');
-    await pool.query(
-      `INSERT INTO 1ai_affiliates (user_id, affiliate_code, tier, created_at, updated_at)
-       VALUES (?, ?, 'starter', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
-      [userId, affiliateCode]
-    );
-    const user = { user_id: userId, user_email: email, user_role: 'affiliate' };
+
+    if (userRole === 'advertiser') {
+      await pool.query(
+        `INSERT INTO 1ai_advertisers (user_id, company_name, website, status, created_at, updated_at)
+         VALUES (?, ?, ?, 'active', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        [userId, company_name || username || email.split('@')[0], website || null]
+      );
+    } else {
+      const affiliateCode = 'AFF' + userId.toString().padStart(6, '0');
+      await pool.query(
+        `INSERT INTO 1ai_affiliates (user_id, affiliate_code, tier, created_at, updated_at)
+         VALUES (?, ?, 'starter', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        [userId, affiliateCode]
+      );
+    }
+
+    const user = { user_id: userId, user_email: email, user_role: userRole };
     const token = await generateToken(user);
-    res.json({ token, user: { id: userId, email, role: 'affiliate' } });
+    res.json({ token, user: { id: userId, email, role: userRole } });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: 'Internal server error' });
