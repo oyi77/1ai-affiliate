@@ -217,7 +217,8 @@ func (s *Server) handleClick(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 5. Daily cap check
+	// 5. Daily cap check & Smart Cap Redirection
+	capReached := false
 	if campaign.DailyCap > 0 {
 		count, err := s.redis.IncrementDailyCount(r.Context(), campaign.ID)
 		if err == nil && count > int64(campaign.DailyCap) {
@@ -225,21 +226,28 @@ func (s *Server) handleClick(w http.ResponseWriter, r *http.Request) {
 				Int64("campaign_id", campaign.ID).
 				Int64("count", count).
 				Int("cap", campaign.DailyCap).
-				Msg("daily cap reached")
-			http.Error(w, "Cap reached", http.StatusTooManyRequests)
-			return
+				Msg("daily cap reached, redirecting to fallback")
+			capReached = true
 		}
 	}
 
-	// 6. Route the click (in-memory rule evaluation)
-	result := s.router.Match(campaign, clickCtx)
-	targetURL := campaign.DefaultURL
+	// 6. Route the click (in-memory rule evaluation or fallback redirect)
+	var targetURL string
 	var ruleID int64
-	if result != nil && result.Rule != nil {
-		targetURL = result.Rule.TargetURL
-		ruleID = result.Rule.ID
+	if capReached {
+		if campaign.FallbackURL != "" {
+			targetURL = campaign.FallbackURL
+		} else {
+			targetURL = "https://go.berkahkarya.org/fallback"
+		}
+	} else {
+		result := s.router.Match(campaign, clickCtx)
+		targetURL = campaign.DefaultURL
+		if result != nil && result.Rule != nil {
+			targetURL = result.Rule.TargetURL
+			ruleID = result.Rule.ID
+		}
 	}
-
 	// 7. Generate click event
 	clickID := model.NewClickID()
 	now := time.Now()

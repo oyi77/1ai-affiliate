@@ -1,6 +1,8 @@
 package model
 
 import (
+	"encoding/json"
+
 	"github.com/google/uuid"
 )
 
@@ -94,6 +96,7 @@ type CampaignState struct {
 	Token         string            `json:"token"`
 	OfferID       int64             `json:"offer_id,omitempty"`
 	DefaultURL    string            `json:"default_url"`
+	FallbackURL   string            `json:"fallback_url,omitempty"`
 	DailyCap      int               `json:"daily_cap,omitempty"`
 	Rules         []RouteRule       `json:"rules"`
 	UpdatedAt     int64             `json:"updated_at"`
@@ -114,4 +117,12 @@ type ClickRecord struct {
 
 func NewClickID() string {
 	return uuid.New().String()
+}
+
+func (e *ClickEvent) Marshal() ([]byte, error) {
+	return json.Marshal(e)
+}
+
+func (e *ConversionEvent) Marshal() ([]byte, error) {
+	return json.Marshal(e)
 }

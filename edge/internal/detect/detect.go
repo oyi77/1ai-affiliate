@@ -1,6 +1,7 @@
 package detect
 
 import (
+	"net"
 	"strings"
 )
 
@@ -14,10 +15,10 @@ type FraudResult struct {
 // No external API calls in the hot path — all checks are local.
 type Detector struct {
 	proxyIPs    map[string]bool // known proxy/VPN IP ranges (loaded from Redis)
+	proxySubnets []*net.IPNet    // parsed CIDR subnets (e.g., AWS, GCP ranges)
 	botUAs      []string        // known bot user-agent substrings
 	maxScore    float64         // threshold above which clicks are blocked
 }
-
 func NewDetector(maxScore float64) *Detector {
 	return &Detector{
 		proxyIPs: make(map[string]bool),
@@ -52,8 +53,8 @@ func (d *Detector) Evaluate(ip, userAgent, referer string) *FraudResult {
 		result.Reasons = append(result.Reasons, "missing_referer")
 	}
 
-	// 3. Known proxy/VPN IP
-	if d.proxyIPs[ip] {
+	// 3. Known proxy/VPN IP or subnet
+	if d.isProxyIP(ip) {
 		score += 0.3
 		result.Reasons = append(result.Reasons, "proxy_ip")
 	}
@@ -84,8 +85,31 @@ func (d *Detector) checkUserAgent(ua string) float64 {
 	return 0
 }
 
+func (d *Detector) isProxyIP(ipStr string) bool {
+	if d.proxyIPs[ipStr] {
+		return true
+	}
+	ip := net.ParseIP(ipStr)
+	if ip == nil {
+		return false
+	}
+	for _, subnet := range d.proxySubnets {
+		if subnet.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
 func (d *Detector) LoadProxyIPs(ips []string) {
 	for _, ip := range ips {
-		d.proxyIPs[ip] = true
+		if strings.Contains(ip, "/") {
+			_, subnet, err := net.ParseCIDR(ip)
+			if err == nil && subnet != nil {
+				d.proxySubnets = append(d.proxySubnets, subnet)
+			}
+		} else {
+			d.proxyIPs[ip] = true
+		}
 	}
 }
