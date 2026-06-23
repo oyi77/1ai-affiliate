@@ -334,11 +334,29 @@ async function getOfferCapUsage(offer_id) {
     };
 }
 
+/**
+ * Check if an offer has reached its monthly cap using 1ai_conversion_logs
+ * @param {number} offerId
+ * @returns {Promise<{capped: boolean, reason?: string}>}
+ */
+async function checkMonthlyCap(offerId) {
+  const [rows] = await db.query(
+    'SELECT COUNT(*) AS cnt FROM 1ai_conversion_logs WHERE aff_campaign_id IN (SELECT aff_campaign_id FROM 1ai_offer_campaigns WHERE offer_id = ?) AND conversion_time >= UNIX_TIMESTAMP(DATE_FORMAT(NOW(), "%Y-%m-01"))',
+    [offerId]
+  );
+  const [offer] = await db.query('SELECT monthly_cap FROM 1ai_offers WHERE id = ?', [offerId]);
+  if (offer.length && offer[0].monthly_cap && rows[0].cnt >= offer[0].monthly_cap) {
+    return { capped: true, reason: 'Monthly cap reached' };
+  }
+  return { capped: false };
+}
+
 module.exports = {
     checkOfferCap,
     incrementCapCounter,
     checkAffiliateCap,
     setOfferCap,
     setAffiliateCap,
-    getOfferCapUsage
+    getOfferCapUsage,
+    checkMonthlyCap
 };

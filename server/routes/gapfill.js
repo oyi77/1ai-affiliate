@@ -485,6 +485,25 @@ router.get('/campaigns/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── GET /offers/pending — admin sees pending applications ───────────
+router.get('/offers/pending', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT oaa.id, oaa.offer_id, oaa.affiliate_id, oaa.status, oaa.created_at,
+              o.name AS offer_name, u.user_name AS affiliate_name
+       FROM 1ai_offer_affiliate_access oaa
+       JOIN 1ai_offers o ON o.id = oaa.offer_id
+       JOIN 1ai_affiliates a ON a.id = oaa.affiliate_id
+       JOIN 1ai_users u ON u.user_id = a.user_id
+       WHERE oaa.status = 'pending'
+       ORDER BY oaa.created_at DESC`
+    );
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch pending applications', detail: err.message });
+  }
+});
+
 // ── GET /offers/:id ─────────────────────────────────────────────────
 router.get('/offers/:id', async (req, res) => {
   try {
@@ -1051,6 +1070,60 @@ router.get('/management/transactions', async (req, res) => {
     res.json({ data: all });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch transactions', detail: err.message });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════════
+// AFFILIATE OFFER ACCESS FLOW
+// ═══════════════════════════════════════════════════════════════════
+
+router.post('/offers/:id/apply', async (req, res) => {
+  try {
+    const offerId = req.params.id;
+    const [affiliates] = await pool.query(
+      'SELECT id FROM 1ai_affiliates WHERE user_id = ?',
+      [req.user.id]
+    );
+    if (!affiliates.length) return res.status(404).json({ error: 'Affiliate not found' });
+    const affiliateId = affiliates[0].id;
+
+    await pool.query(
+      `INSERT INTO 1ai_offer_affiliate_access (offer_id, affiliate_id, status, assigned_by, assignment_type, created_at)
+       VALUES (?, ?, 'pending', ?, 'specific', UNIX_TIMESTAMP())`,
+      [offerId, affiliateId, req.user.id]
+    );
+    res.json({ success: true, status: 'pending' });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'Already applied to this offer' });
+    res.status(500).json({ error: 'Failed to apply', detail: err.message });
+  }
+});
+
+
+// ── POST /offers/access/:id/approve — admin approves application ────
+router.post('/offers/access/:id/approve', async (req, res) => {
+  try {
+    await pool.query(
+      "UPDATE 1ai_offer_affiliate_access SET status = 'approved' WHERE id = ?",
+      [req.params.id]
+    );
+    res.json({ success: true, status: 'approved' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to approve', detail: err.message });
+  }
+});
+
+// ── POST /offers/access/:id/reject — admin rejects application ──────
+router.post('/offers/access/:id/reject', async (req, res) => {
+  try {
+    await pool.query(
+      "UPDATE 1ai_offer_affiliate_access SET status = 'revoked' WHERE id = ?",
+      [req.params.id]
+    );
+    res.json({ success: true, status: 'revoked' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reject', detail: err.message });
   }
 });
 

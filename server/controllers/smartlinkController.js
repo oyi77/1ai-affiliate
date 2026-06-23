@@ -28,15 +28,41 @@ async function routeTrafficByHash(req, res) {
     );
     const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : offer.id;
     const clickId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    const ua = (req.headers['user-agent'] || '').toLowerCase();
 
-    // Update link click count + log to analytics table
+    // Bot detection
+    const bots = ['bot', 'crawler', 'spider', 'slurp', 'mediapartners', 'adsbot', 'googlebot', 'bingbot', 'yandexbot', 'baiduspider', 'facebot', 'ia_archiver'];
+    const isBot = bots.some(b => ua.includes(b));
+    if (isBot) {
+      await pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]);
+      return res.redirect(offer.tracking_url || '/');
+    }
+
+    // Device detection
+    const isMobile = /mobile|android|iphone|ipad|ipod/i.test(ua);
+    const isTablet = /tablet|ipad/i.test(ua);
+    const deviceType = isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop';
+
+    // Click dedup — same IP + same link within 24h
+    const clientIp = req.ip || req.connection?.remoteAddress || '';
+    const [dupCheck] = await pool.query(
+      'SELECT click_id FROM 1ai_clicks WHERE click_ip = ? AND aff_campaign_id = ? AND click_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 24 HOUR)) LIMIT 1',
+      [clientIp, campaignId]
+    );
+    if (dupCheck.length) {
+      return res.redirect(offer.tracking_url || '/');
+    }
+
+    // Update link click count + log to analytics table (with device_type)
     await Promise.all([
       pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]),
       pool.query(
-        'INSERT INTO 1ai_clicks (click_time, aff_campaign_id, click_payout, click_ip) VALUES (UNIX_TIMESTAMP(), ?, ?, ?)',
-        [campaignId, offer.payout || 0, req.ip || req.connection?.remoteAddress || '']
+        'INSERT INTO 1ai_clicks (click_time, aff_campaign_id, click_payout, click_ip, device_type) VALUES (UNIX_TIMESTAMP(), ?, ?, ?, ?)',
+        [campaignId, offer.payout || 0, clientIp, deviceType]
       )
     ]);
+
+    res.redirect(offer.tracking_url || '/');
 
   } catch (err) {
     console.error('Smartlink route error:', err);
@@ -138,6 +164,16 @@ async function recordConversion(req, res) {
     );
     const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : link.offer_id;
 
+    // Conversion dedup — same click_id within 24h
+    const clickId = Date.now();
+    const [convDup] = await pool.query(
+      'SELECT conversion_id FROM 1ai_conversion_logs WHERE click_id = ? AND conversion_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 24 HOUR)) LIMIT 1',
+      [clickId]
+    );
+    if (convDup.length) {
+      return res.status(409).json({ error: 'Duplicate conversion' });
+    }
+
     const networkPayout = parseFloat(link.network_payout) || 0;
     const affiliatePayout = parseFloat(link.payout) || 0;
     const marginAmount = networkPayout - affiliatePayout;
@@ -145,7 +181,7 @@ async function recordConversion(req, res) {
     await pool.query(
       `INSERT INTO 1ai_conversion_logs (aff_campaign_id, click_id, conversion_time, network_payout_snapshot, affiliate_payout_snapshot, margin_amount, affiliate_id, affiliate_status)
        VALUES (?, ?, UNIX_TIMESTAMP(), ?, ?, ?, ?, 'approved')`,
-      [campaignId, Date.now(), networkPayout, affiliatePayout, marginAmount, link.affiliate_id]
+      [campaignId, clickId, networkPayout, affiliatePayout, marginAmount, link.affiliate_id]
     );
 
     await pool.query(
