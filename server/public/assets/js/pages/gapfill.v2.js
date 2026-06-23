@@ -465,3 +465,193 @@ PageRenderers['multimodel'] = async function(el) {
       </div>`;
   } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load multi-model tracking data.</p></div>'; }
 };
+
+/* ── 20. Conversion Approval ────────────────────────────────────── */
+PageRenderers['conversion-approval'] = async function(el) {
+  try {
+    const _capStatus = (PageRenderers._capStatus || 'pending');
+    const url = '/api/admin/conversion-approval' + (_capStatus !== 'all' ? '?status=' + _capStatus : '');
+    const r = await API.get(url);
+    const items = r.data || [];
+    const counts = { pending:0, approved:0, rejected:0, paid:0 };
+    items.forEach(d => { if (counts[d.status] !== undefined) counts[d.status]++; });
+    const totalRev = items.reduce((s,d) => s + parseFloat(d.payout || 0), 0);
+    el.innerHTML = `${DOM.pageHeader('Conversion Approval', 'Review and approve pending conversions')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Pending', value: counts.pending, accent:'yellow' })}
+        ${DOM.statCard({ label:'Approved', value: counts.approved, accent:'green' })}
+        ${DOM.statCard({ label:'Total Revenue', value: '$' + totalRev.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}), accent:'blue' })}
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          ${['all','pending','approved','rejected','paid'].map(s =>
+            '<button class="btn btn-sm ' + (s===_capStatus?'btn-primary':'btn-outline') + '" onclick="PageRenderers._capStatus=\'' + s + '\';Router.navigate(\'conversion-approval\')">' + s.charAt(0).toUpperCase()+s.slice(1) + '</button>'
+          ).join('')}
+        </div>
+        ${items.length
+          ? DOM.table(['ID','Click ID','Campaign','Payout','Status','Date','Actions'], items.map(d => [
+              d.id || '-',
+              d.click_id || '-',
+              d.campaign_name || d.campaign_id || '-',
+              '$' + parseFloat(d.payout || 0).toFixed(2),
+              DOM.pill(d.status || 'pending', {pending:'yellow',approved:'green',rejected:'red',paid:'blue'}[d.status] || 'yellow'),
+              d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
+              d.status === 'pending'
+                ? '<button class="btn btn-sm btn-success" onclick="convApprove(' + d.id + ')">Approve</button> <button class="btn btn-sm btn-danger" onclick="convReject(' + d.id + ')">Reject</button>'
+                : '-'
+            ]))
+          : DOM.emptyState('No conversions found', 'No conversions match the current filter.')}
+      </div>`;
+    window.convApprove = async function(id) {
+      try { await API.post('/api/admin/conversion-approval/' + id + '/approve'); Router.navigate('conversion-approval'); }
+      catch(e) { alert('Approve failed'); }
+    };
+    window.convReject = async function(id) {
+      try { await API.post('/api/admin/conversion-approval/' + id + '/reject'); Router.navigate('conversion-approval'); }
+      catch(e) { alert('Reject failed'); }
+    };
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load conversion approval data.</p></div>'; }
+};
+
+/* ── 21. Creative Assets ─────────────────────────────────────────── */
+PageRenderers['creatives'] = async function(el) {
+  try {
+    const offers = await API.get('/api/admin/offers');
+    const offerList = offers.data || [];
+    const selected = PageRenderers._creativeOffer || '';
+    const r = selected ? await API.get('/api/admin/creatives?offer_id=' + selected).catch(() => ({data: []})) : {data: []};
+    const items = r.data || [];
+    el.innerHTML = `${DOM.pageHeader('Creative Assets', 'Manage banners, HTML creatives, and media')}
+      <div class="card">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+          <label style="font-size:13px;font-weight:600;color:var(--text2);">Offer:</label>
+          <select style="padding:8px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;" onchange="PageRenderers._creativeOffer=this.value;Router.navigate('creatives')">
+            <option value="">All Offers</option>
+            ${offerList.map(o => '<option value="' + o.id + '"' + (String(o.id)===String(selected)?' selected':'') + '>' + (o.name || 'Offer #' + o.id) + '</option>').join('')}
+          </select>
+        </div>
+        ${items.length
+          ? DOM.table(['Name','Type','Dimensions','Status','Created','Preview'], items.map(d => [
+              d.name || '-',
+              d.type || '-',
+              d.width && d.height ? d.width + '×' + d.height : '-',
+              DOM.pill(d.status || 'active', {active:'green',pending:'yellow',paused:'red',archived:'blue'}[d.status] || 'blue'),
+              d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
+              d.type === 'image' || d.type === 'banner'
+                ? '<img src="' + (d.url || d.preview_url || '') + '" style="max-width:80px;max-height:40px;border-radius:4px;" onerror="this.style.display=\'none\'" />'
+                : d.type === 'html'
+                ? '<span class="pill pill-indigo">HTML</span>'
+                : '-'
+            ]))
+          : DOM.emptyState('No creatives found', 'No creative assets available for the selected offer.')}
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load creative assets.</p></div>'; }
+};
+
+/* ── 22. Payout Processing ───────────────────────────────────────── */
+PageRenderers['payout-processing'] = async function(el) {
+  try {
+    const r = await API.get('/api/admin/payouts/batches');
+    const batches = r.data || [];
+    const counts = { pending:0, processing:0, paid:0 };
+    batches.forEach(d => { if (counts[d.status] !== undefined) counts[d.status]++; });
+    el.innerHTML = `${DOM.pageHeader('Payout Processing', 'Manage payout batches and disbursements')}
+      <div class="stat-grid">
+        ${DOM.statCard({ label:'Pending', value: counts.pending, accent:'yellow' })}
+        ${DOM.statCard({ label:'Processing', value: counts.processing, accent:'blue' })}
+        ${DOM.statCard({ label:'Paid', value: counts.paid, accent:'green' })}
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+          <button class="btn btn-primary btn-sm" onclick="createPayoutBatch()">+ Create New Batch</button>
+        </div>
+        ${batches.length
+          ? DOM.table(['Batch ID','Total','Status','Created','Actions'], batches.map(d => [
+              d.id || d.batch_id || '-',
+              '$' + parseFloat(d.total || d.amount || 0).toLocaleString(undefined,{minimumFractionDigits:2}),
+              DOM.pill(d.status || 'pending', {pending:'yellow',processing:'blue',paid:'green',failed:'red'}[d.status] || 'yellow'),
+              d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
+              d.status === 'processing'
+                ? '<button class="btn btn-sm btn-success" onclick="markBatchPaid(' + (d.id || d.batch_id) + ')">Mark Paid</button>'
+                : '-'
+            ]))
+          : DOM.emptyState('No payout batches', 'No payout batches have been created yet.')}
+      </div>`;
+    window.createPayoutBatch = async function() {
+      try { await API.post('/api/admin/payouts/batches'); Router.navigate('payout-processing'); }
+      catch(e) { alert('Create batch failed'); }
+    };
+    window.markBatchPaid = async function(id) {
+      try { await API.post('/api/admin/payouts/batches/' + id + '/mark-paid'); Router.navigate('payout-processing'); }
+      catch(e) { alert('Mark paid failed'); }
+    };
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load payout processing data.</p></div>'; }
+};
+
+/* ── 23. Offer Applications ──────────────────────────────────────── */
+PageRenderers['offer-applications'] = async function(el) {
+  try {
+    const r = await API.get('/api/admin/services/margin/negotiations');
+    const items = r.data || [];
+    el.innerHTML = `${DOM.pageHeader('Offer Applications', 'Review affiliate applications to offers')}
+      <div class="card"><h3>Applications (${items.length})</h3>
+        ${items.length
+          ? DOM.table(['Offer','Affiliate','Current Payout','Proposed','Status','Date','Actions'], items.map(d => [
+              d.offer_id || d.offer_name || '-',
+              d.affiliate_id || d.affiliate_name || '-',
+              '$' + parseFloat(d.current_payout || 0).toLocaleString(),
+              '$' + parseFloat(d.proposed_payout || 0).toLocaleString(),
+              DOM.pill(d.status || 'pending', {pending:'yellow',approved:'green',rejected:'red'}[d.status] || 'yellow'),
+              d.created_at ? new Date(d.created_at).toLocaleDateString() : '-',
+              d.status === 'pending'
+                ? '<button class="btn btn-sm btn-success" onclick="offerApprove(' + d.id + ')">Approve</button> <button class="btn btn-sm btn-danger" onclick="offerReject(' + d.id + ')">Reject</button>'
+                : '-'
+            ]))
+          : DOM.emptyState('No applications', 'No offer applications pending review.')}
+      </div>`;
+    window.offerApprove = async function(id) {
+      try { await API.post('/api/admin/services/margin/negotiations/' + id + '/approve'); Router.navigate('offer-applications'); }
+      catch(e) { alert('Approve failed'); }
+    };
+    window.offerReject = async function(id) {
+      try { await API.post('/api/admin/services/margin/negotiations/' + id + '/reject'); Router.navigate('offer-applications'); }
+      catch(e) { alert('Reject failed'); }
+    };
+  } catch(e) { el.innerHTML = '<div class="card"><p>Unable to load offer applications.</p></div>'; }
+};
+
+/* ── 24. API Documentation ───────────────────────────────────────── */
+PageRenderers['api-docs-page'] = async function(el) {
+  el.innerHTML = `${DOM.pageHeader('API Documentation', 'RESTful API reference for the 1AI Affiliate platform')}
+    <div class="card">
+      <h3>📖 API Reference</h3>
+      <p style="color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:16px;">
+        Access the full interactive API documentation with endpoint details, request/response schemas, and live examples.
+      </p>
+      <a href="/api-docs" target="_blank" class="btn btn-primary" style="display:inline-flex;">
+        Open API Docs ↗
+      </a>
+    </div>
+    <div class="card">
+      <h3>Available Endpoints</h3>
+      <div style="display:grid;gap:12px;margin-top:12px;">
+        ${[
+          ['GET','/api/admin/stats','Platform statistics and metrics'],
+          ['GET','/api/admin/offers','List all offers'],
+          ['GET','/api/admin/campaigns','List campaigns'],
+          ['GET','/api/admin/affiliates','List affiliates'],
+          ['GET','/api/admin/conversions','Conversion data'],
+          ['GET','/api/admin/clicks','Click tracking data'],
+          ['POST','/api/admin/conversion-approval/:id/approve','Approve conversion'],
+          ['GET','/api/admin/payouts/batches','Payout batches'],
+          ['GET','/api/admin/creatives','Creative assets'],
+        ].map(([m,path,desc]) =>
+          '<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;">' +
+            '<span class="pill pill-' + (m==='GET'?'blue':'green') + '">' + m + '</span>' +
+            '<code style="font-size:13px;">' + path + '</code>' +
+            '<span style="color:var(--text2);font-size:12px;margin-left:auto;">' + desc + '</span>' +
+          '</div>'
+        ).join('')}
+      </div>
+    </div>`;
+};

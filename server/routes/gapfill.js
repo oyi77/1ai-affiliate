@@ -6,6 +6,15 @@ const pool = require('../db/mysql');
 router.use(authenticate);
 router.use(requireAdmin);
 
+
+// ── Helper: substitute postback macros ───────────────────────────────
+function substitutePostbackMacros(template, data) {
+  let url = template;
+  for (const [key, value] of Object.entries(data)) {
+    url = url.replace(new RegExp(`\\{${key}\\}`, 'g'), value ?? '');
+  }
+  return url;
+}
 // ── GET /traffic-sources ──────────────────────────────────────────────
 router.get('/traffic-sources', async (req, res) => {
   try {
@@ -485,4 +494,285 @@ router.get('/offers/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── GET /conversion-approval ──────────────────────────────────────
+router.get('/conversion-approval', async (req, res) => {
+  try {
+    const { status } = req.query;
+    let sql = 'SELECT cl.conversion_id, cl.click_id, cl.aff_campaign_id, cl.conversion_time, cl.network_payout_snapshot, cl.affiliate_payout_snapshot, cl.margin_amount, cl.affiliate_id, cl.affiliate_status, cl.status, cl.approved_by, cl.approved_at, cl.reject_reason FROM 1ai_conversion_logs cl';
+    const params = [];
+    if (status) {
+      sql += ' WHERE cl.status = ?';
+      params.push(status);
+    }
+    sql += ' ORDER BY cl.conversion_time DESC';
+    const [rows] = await pool.query(sql, params);
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch conversions', detail: err.message });
+  }
+});
+
+// ── POST /conversion-approval/:id/approve ─────────────────────────
+router.post('/conversion-approval/:id/approve', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      "UPDATE 1ai_conversion_logs SET status = 'approved', approved_by = ?, approved_at = UNIX_TIMESTAMP() WHERE conversion_id = ?",
+      [req.user.id, req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Conversion not found' });
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /conversion-approval/:id/reject ──────────────────────────
+router.post('/conversion-approval/:id/reject', async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason) return res.status(400).json({ error: 'reason is required' });
+    const [result] = await pool.query(
+      "UPDATE 1ai_conversion_logs SET status = 'rejected', reject_reason = ?, approved_by = ?, approved_at = UNIX_TIMESTAMP() WHERE conversion_id = ?",
+      [reason, req.user.id, req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Conversion not found' });
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /conversion-approval/batch-approve ───────────────────────
+router.post('/conversion-approval/batch-approve', async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'ids array is required' });
+    const [result] = await pool.query(
+      "UPDATE 1ai_conversion_logs SET status = 'approved', approved_by = ?, approved_at = UNIX_TIMESTAMP() WHERE conversion_id IN (?)",
+      [req.user.id, ids]
+    );
+    res.json({ success: true, affected: result.affectedRows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /conversion-approval/stats ────────────────────────────────
+router.get('/conversion-approval/stats', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT status, COUNT(*) AS count FROM 1ai_conversion_logs GROUP BY status"
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+
+// ── GET /creatives ──────────────────────────────────────────────────
+router.get('/creatives', async (req, res) => {
+  try {
+    const { offer_id } = req.query;
+    if (!offer_id) return res.status(400).json({ error: 'offer_id is required' });
+    const [rows] = await pool.query(
+      'SELECT * FROM 1ai_offer_creatives WHERE offer_id = ? ORDER BY id DESC', [offer_id]
+    );
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch creatives', detail: err.message });
+  }
+});
+
+// ── POST /creatives ─────────────────────────────────────────────────
+router.post('/creatives', async (req, res) => {
+  try {
+    const { offer_id, name, type, asset_url, html_body, dimensions } = req.body;
+    if (!offer_id || !name || !type) return res.status(400).json({ error: 'offer_id, name, and type are required' });
+    const [result] = await pool.query(
+      'INSERT INTO 1ai_offer_creatives (offer_id, name, type, asset_url, html_body, dimensions, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())',
+      [offer_id, name, type, asset_url || null, html_body || null, dimensions || null]
+    );
+    res.status(201).json({ data: { id: result.insertId, offer_id, name, type, asset_url, html_body, dimensions, is_active: 1 } });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create creative', detail: err.message });
+  }
+});
+
+// ── PUT /creatives/:id ──────────────────────────────────────────────
+router.put('/creatives/:id', async (req, res) => {
+  try {
+    const fields = ['offer_id', 'name', 'type', 'asset_url', 'html_body', 'dimensions'];
+    const updates = [];
+    const values = [];
+    for (const f of fields) {
+      if (req.body[f] !== undefined) {
+        updates.push(`${f} = ?`);
+        values.push(req.body[f]);
+      }
+    }
+    if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
+    updates.push('updated_at = UNIX_TIMESTAMP()');
+    values.push(req.params.id);
+    const [result] = await pool.query(
+      `UPDATE 1ai_offer_creatives SET ${updates.join(', ')} WHERE id = ?`, values
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Creative not found' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update creative', detail: err.message });
+  }
+});
+
+// ── DELETE /creatives/:id ───────────────────────────────────────────
+router.delete('/creatives/:id', async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      'UPDATE 1ai_offer_creatives SET is_active = 0, updated_at = UNIX_TIMESTAMP() WHERE id = ?', [req.params.id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Creative not found' });
+    res.json({ data: { deleted: true } });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete creative', detail: err.message });
+  }
+});
+
+// ── GET /payouts/batches ────────────────────────────────────────────
+router.get('/payouts/batches', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM payout_batches ORDER BY id DESC'
+    );
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch payout batches', detail: err.message });
+  }
+});
+
+// ── POST /payouts/batches ───────────────────────────────────────────
+router.post('/payouts/batches', async (req, res) => {
+  try {
+    // Aggregate pending earnings by affiliate
+    const [pendingEarnings] = await pool.query(
+      "SELECT affiliate_id, SUM(amount) AS total FROM 1ai_affiliate_earnings WHERE status = 'pending' GROUP BY affiliate_id"
+    );
+    if (pendingEarnings.length === 0) return res.status(400).json({ error: 'No pending earnings to process' });
+    const grandTotal = pendingEarnings.reduce((sum, e) => sum + parseFloat(e.total), 0);
+    // Create batch
+    const [batchResult] = await pool.query(
+      "INSERT INTO payout_batches (total, status, created_at) VALUES (?, 'draft', UNIX_TIMESTAMP())",
+      [grandTotal]
+    );
+    const batchId = batchResult.insertId;
+    // Create payout items
+    for (const earning of pendingEarnings) {
+      await pool.query(
+        'INSERT INTO payout_items (batch_id, affiliate_id, amount) VALUES (?, ?, ?)',
+        [batchId, earning.affiliate_id, earning.total]
+      );
+    }
+    // Update earnings status to processing
+    await pool.query(
+      "UPDATE 1ai_affiliate_earnings SET status = 'processing' WHERE status = 'pending'"
+    );
+    res.status(201).json({ data: { id: batchId, total: grandTotal, status: 'draft', items: pendingEarnings.length } });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create payout batch', detail: err.message });
+  }
+});
+
+// ── POST /payouts/batches/:id/mark-paid ────────────────────────────
+router.post('/payouts/batches/:id/mark-paid', async (req, res) => {
+  try {
+    const [batchCheck] = await pool.query(
+      'SELECT id, status FROM payout_batches WHERE id = ?', [req.params.id]
+    );
+    if (batchCheck.length === 0) return res.status(404).json({ error: 'Batch not found' });
+    await pool.query(
+      "UPDATE payout_batches SET status = 'paid' WHERE id = ?", [req.params.id]
+    );
+    // Update affiliate earnings associated with this batch's items to 'paid'
+    const [items] = await pool.query(
+      'SELECT affiliate_id, amount FROM payout_items WHERE batch_id = ?', [req.params.id]
+    );
+    for (const item of items) {
+      await pool.query(
+        "UPDATE 1ai_affiliate_earnings SET status = 'paid' WHERE affiliate_id = ? AND status = 'processing'",
+        [item.affiliate_id]
+      );
+    }
+    res.json({ success: true, items_updated: items.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark batch as paid', detail: err.message });
+  }
+});
+
+// ── GET /payouts/batches/:id/items ─────────────────────────────────
+router.get('/payouts/batches/:id/items', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM payout_items WHERE batch_id = ?', [req.params.id]
+    );
+    res.json({ data: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch payout items', detail: err.message });
+  }
+});
+
+// ── GET /postback-templates/:id/preview ─────────────────────────────
+router.get('/postback-templates/:id/preview', async (req, res) => {
+  try {
+    const [[template]] = await pool.query(
+      'SELECT * FROM 1ai_postback_templates WHERE id = ?', [req.params.id]
+    );
+    if (!template) return res.status(404).json({ error: 'Template not found' });
+    const sampleData = {
+      click_id: 'abc123',
+      payout: '10.00',
+      status: 'approved',
+      transaction_id: 'txn_001',
+      sub_id: 'sub_01',
+      offer_id: '1'
+    };
+    const macros = template.macros ? (typeof template.macros === 'string' ? JSON.parse(template.macros) : template.macros) : {};
+    const mergedData = { ...sampleData, ...macros };
+    const previewUrl = substitutePostbackMacros(template.url_template, mergedData);
+    res.json({ data: { ...template, preview_url: previewUrl, sample_data: mergedData } });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to preview postback template', detail: err.message });
+  }
+});
+
+// ── POST /postback-templates/:id/test ──────────────────────────────
+router.post('/postback-templates/:id/test', async (req, res) => {
+  try {
+    const [[template]] = await pool.query(
+      'SELECT * FROM 1ai_postback_templates WHERE id = ?', [req.params.id]
+    );
+    if (!template) return res.status(404).json({ error: 'Template not found' });
+    const testData = req.body.data || {
+      click_id: 'test_click',
+      payout: '1.00',
+      status: 'approved',
+      transaction_id: 'test_txn',
+      sub_id: 'test_sub',
+      offer_id: '0'
+    };
+    const macros = template.macros ? (typeof template.macros === 'string' ? JSON.parse(template.macros) : template.macros) : {};
+    const mergedData = { ...macros, ...testData };
+    const url = substitutePostbackMacros(template.url_template, mergedData);
+    const method = (template.method || 'GET').toUpperCase();
+    const headers = template.headers ? (typeof template.headers === 'string' ? JSON.parse(template.headers) : template.headers) : {};
+    const fetchOptions = { method, headers: { 'User-Agent': '1ai-postback-test', ...headers } };
+    if (method === 'POST' && req.body.payload) {
+      fetchOptions.headers['Content-Type'] = 'application/json';
+      fetchOptions.body = JSON.stringify(req.body.payload);
+    }
+    const response = await fetch(url, fetchOptions);
+    const responseBody = await response.text();
+    res.json({
+      data: {
+        url,
+        method,
+        status: response.status,
+        response_body: responseBody.substring(0, 2000),
+        sent_data: mergedData
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to test postback', detail: err.message });
+  }
+});
 module.exports = router;
