@@ -469,18 +469,8 @@
       </div>
       <div class="nav-section" style="margin-bottom:24px" data-roles="admin">
         <div class="nav-section-label">System</div>
-        <div class="nav-item" data-page="profile" onclick="Router.navigate('profile')">Profile</div>
-        <div class="nav-item" data-page="integrations" onclick="Router.navigate('integrations')">Integrations</div>
-        <div class="nav-item" data-page="domains" data-roles="admin" onclick="Router.navigate('domains')">Domains & Links</div>
-        <div class="nav-item" data-page="admin" onclick="Router.navigate('admin')">Admin & Management</div>
-        <div class="nav-item" data-page="webhooks" data-roles="admin" onclick="Router.navigate('webhooks')">Webhooks</div>
-        <div class="nav-item" data-page="automation" data-roles="admin" onclick="Router.navigate('automation')">Automation</div>
-        <div class="nav-item" data-page="ab-tests" data-roles="admin" onclick="Router.navigate('ab-tests')">A/B Tests</div>
-        <div class="nav-item" data-page="day-parting" data-roles="admin" onclick="Router.navigate('day-parting')">Day Parting</div>
-        <div class="nav-item" data-page="caps" data-roles="admin" onclick="Router.navigate('caps')">Cap Enforcement</div>
-        <div class="nav-item" data-page="fraud" data-roles="admin" onclick="Router.navigate('fraud')">Fraud Detection</div>
-        <div class="nav-item" data-page="margin" data-roles="admin" onclick="Router.navigate('margin')">Margin Negotiation</div>
-        <div class="nav-item" data-page="multimodel" data-roles="admin" onclick="Router.navigate('multimodel')">Multi-Model</div>
+        <div class="nav-item" data-page="settings" onclick="Router.navigate('settings')">⚙️ Settings</div>
+        <div class="nav-item" data-page="admin" onclick="Router.navigate('admin')">👥 Admin Users</div>
       </div>
     </nav>
     <div class="main">
@@ -521,6 +511,7 @@
   <script src="/admin/assets/js/pages/shorteners.v2.js"></script>
   <script src="/admin/assets/js/pages/advertiser-integrations.v2.js"></script>
   <script src="/admin/assets/js/pages/gapfill.v2.js"></script>
+  <script src="/admin/assets/js/pages/settings.v2.js"></script>
   <script>Router.init();</script>
 </body>
 </html>

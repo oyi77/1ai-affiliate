@@ -16,7 +16,7 @@ const Router = (function() {
     smartlink:'Smartlink Generator', earnings:'My Earnings', affiliates:'Manage Affiliates',
     commissions:'Commissions Ledger', payments:'Payments',
     pipeline:'TikTok Pipeline', poster:'Telegram Poster',
-    profile:'Profile & Settings', integrations:'API Integrations',
+    profile:'Profile & Settings', integrations:'API Integrations', settings:'Settings',
     networks:'Ad Networks', domains:'Custom Domains', shorteners:'URL Shorteners',
     admin:'Admin Users', 'ab-tests':'A/B Tests', automation:'Automation Rules',
     'day-parting':'Day Parting', webhooks:'Webhooks', 'saldo-budget':'Saldo & Budget',
