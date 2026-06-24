@@ -76,7 +76,7 @@ PageRenderers.clicks = async function(el) {
           const el5 = document.getElementById('rt-pending-pb');
           if (el1) el1.textContent = (d.clicks_1h||0).toLocaleString();
           if (el2) el2.textContent = (d.conversions_1h||0).toLocaleString();
-          if (el3) el3.textContent = AppConfig.formatCurrency(parseFloat)(d.revenue_1h||0).toFixed(2);
+          if (el3) el3.textContent = AppConfig.formatCurrency(d.revenue_1h||0);
           if (el4) el4.textContent = (d.active_affiliates||0).toLocaleString();
           if (el5) el5.textContent = (d.pending_postbacks||0).toLocaleString();
 
@@ -119,7 +119,7 @@ PageRenderers.reports = async function(el) {
       <div class="stat-grid">
         ${DOM.statCard({ label:'Revenue MTD', value:AppConfig.formatCurrency(s.revenue_mtd||0) })}
         ${DOM.statCard({ label:'Total Clicks', value: (s.total_clicks||0).toLocaleString(), accent:'green' })}
-        ${DOM.statCard({ label:'Avg EPC', value:AppConfig.formatCurrency(s.avg_epc||0), accent:'yellow' })}
+        ${DOM.statCard({ label:'Avg EPC', value:AppConfig.formatCurrency((s.avg_epc||0)), accent:'yellow' })}
       </div>
       <div class="card"><h3>Report Generator</h3>
         <div class="form-row">
@@ -160,7 +160,7 @@ PageRenderers.loadReport = async () => {
         DOM.table(d.headers, d.rows.map(r => d.headers.map(h => {
           const v = r[h];
           if (h === 'timestamp') return new Date(v * 1000).toLocaleString();
-          if (h === 'payout' || h === 'amount') return AppConfig.formatCurrency(Number(v)||0).toLocaleString();
+          if (h === 'payout' || h === 'amount') return AppConfig.formatCurrency(Number(v)||0);
           return v;
         }))) +
         '</div>';

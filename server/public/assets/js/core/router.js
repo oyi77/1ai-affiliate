@@ -16,7 +16,7 @@ const Router = (function() {
     smartlink:'Smartlink Generator', earnings:'My Earnings', affiliates:'Manage Affiliates',
     commissions:'Commissions Ledger', payments:'Payments',
     pipeline:'TikTok Pipeline', poster:'Telegram Poster',
-    profile:'Profile & Settings', integrations:'API Integrations',
+    profile:'Profile & Settings', integrations:'API Integrations', settings:'Settings', 'trackpro-sync':'TrackPro Sync',
     networks:'Ad Networks', domains:'Custom Domains', shorteners:'URL Shorteners',
     admin:'Admin Users', 'ab-tests':'A/B Tests', automation:'Automation Rules',
     'day-parting':'Day Parting', webhooks:'Webhooks', 'saldo-budget':'Saldo & Budget',
@@ -46,6 +46,16 @@ const Router = (function() {
     });
 
     navigate('overview');
+    initSidebarCollapse();
+    checkOnboarding();
+  }
+
+  function init() {
+    if (Auth.isLoggedIn()) {
+      showApp();
+    } else {
+      showLogin();
+    }
   }
 
   function navigate(page) {
@@ -78,8 +88,6 @@ const Router = (function() {
   function init() {
     if (Auth.isLoggedIn()) {
       showApp();
-      initSidebarCollapse();
-      checkOnboarding();
     } else {
       showLogin();
     }
@@ -127,7 +135,11 @@ const Router = (function() {
   function showOnboarding() {
     const overlay = document.createElement('div');
     overlay.id = 'onboarding-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:480px;width:90%;text-align:center;position:relative;overflow:hidden;cursor:default;';
+    card.innerHTML = '<div style="position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--indigo),var(--purple),var(--pink));"></div>';
 
     const steps = [
       { title: 'Welcome to 1AI Affiliate Hub! 🚀', body: 'Your all-in-one CPA tracking and affiliate marketing platform. Let\'s get you started.', icon: '👋' },
@@ -140,38 +152,56 @@ const Router = (function() {
 
     let step = 0;
 
+    // Stable content containers (never destroyed)
+    const iconEl = document.createElement('div');
+    iconEl.style.cssText = 'font-size:48px;margin-bottom:16px;';
+    const titleEl = document.createElement('h2');
+    titleEl.style.cssText = 'font-size:22px;font-weight:700;margin-bottom:12px;color:var(--text);';
+    const bodyEl = document.createElement('p');
+    bodyEl.style.cssText = 'color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:24px;';
+    const dotsEl = document.createElement('div');
+    dotsEl.style.cssText = 'display:flex;justify-content:center;gap:8px;margin-bottom:24px;';
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:12px;justify-content:center;';
+
+    card.append(iconEl, titleEl, bodyEl, dotsEl, btnRow);
+    overlay.appendChild(card);
+
+    // Click outside card = dismiss
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOnboarding();
+    });
+
+    // Event delegation on button row
+    btnRow.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      if (btn.dataset.action === 'prev') { step--; renderStep(); }
+      else if (btn.dataset.action === 'next') { step++; renderStep(); }
+      else if (btn.dataset.action === 'done' || btn.dataset.action === 'skip') closeOnboarding();
+    });
+
     function renderStep() {
       const s = steps[step];
-      overlay.innerHTML = `
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:40px;max-width:480px;width:90%;text-align:center;position:relative;overflow:hidden;">
-          <div style="position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--indigo),var(--purple),var(--pink));"></div>
-          <div style="font-size:48px;margin-bottom:16px;">${s.icon}</div>
-          <h2 style="font-size:22px;font-weight:700;margin-bottom:12px;color:var(--text);">${s.title}</h2>
-          <p style="color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:24px;">${s.body}</p>
-          <div style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;">
-            ${steps.map((_, i) => `<div style="width:8px;height:8px;border-radius:50%;background:${i === step ? 'var(--indigo)' : 'var(--border)'};transition:background 0.2s;"></div>`).join('')}
-          </div>
-          <div style="display:flex;gap:12px;justify-content:center;">
-            ${step > 0 ? '<button id="ob-prev" class="btn btn-outline btn-sm">Back</button>' : ''}
-            ${step < steps.length - 1
-              ? '<button id="ob-next" class="btn btn-primary btn-sm">Next</button>'
-              : '<button id="ob-done" class="btn btn-primary btn-sm">Get Started!</button>'}
-            <button id="ob-skip" class="btn btn-outline btn-sm" style="opacity:0.6">Skip</button>
-          </div>
-        </div>`;
+      iconEl.textContent = s.icon;
+      titleEl.textContent = s.title;
+      bodyEl.innerHTML = s.body;
 
-      const prevBtn = document.getElementById('ob-prev');
-      const nextBtn = document.getElementById('ob-next');
-      const doneBtn = document.getElementById('ob-done');
-      const skipBtn = document.getElementById('ob-skip');
+      dotsEl.innerHTML = steps.map((_, i) =>
+        `<div style="width:8px;height:8px;border-radius:50%;background:${i === step ? 'var(--indigo)' : 'var(--border)'};transition:background 0.2s;"></div>`
+      ).join('');
 
-      if (prevBtn) prevBtn.onclick = () => { step--; renderStep(); };
-      if (nextBtn) nextBtn.onclick = () => { step++; renderStep(); };
-      if (doneBtn) doneBtn.onclick = closeOnboarding;
-      if (skipBtn) skipBtn.onclick = closeOnboarding;
+      let btns = '';
+      if (step > 0) btns += '<button data-action="prev" class="btn btn-outline btn-sm">Back</button>';
+      if (step < steps.length - 1) btns += '<button data-action="next" class="btn btn-primary btn-sm">Next</button>';
+      else btns += '<button data-action="done" class="btn btn-primary btn-sm">Get Started!</button>';
+      btns += '<button data-action="skip" class="btn btn-outline btn-sm" style="opacity:0.6">Skip</button>';
+      btnRow.innerHTML = btns;
     }
 
     function closeOnboarding() {
+      if (overlay._closing) return;
+      overlay._closing = true;
       localStorage.setItem('1ai_onboarded', 'true');
       overlay.style.opacity = '0';
       overlay.style.transition = 'opacity 0.3s';
