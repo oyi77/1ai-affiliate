@@ -217,29 +217,45 @@ router.post('/trackpro/sync', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ── Shopee: Test connection ────────────────────────────────────────
+// ── Shopee: Test connection (3-tier: Open API → CloakBrowser → DB) ─
 router.post('/shopee/test', async (req, res) => {
   try {
-    const [[cookieRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_shopee_cookies'");
-    const [[idRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_shopee_affiliate_id'");
-    const cookies = cookieRow?.value;
-    const affiliateId = idRow?.value;
-    if (!cookies) return res.status(400).json({ error: 'Shopee cookies not configured' });
-    if (!affiliateId) return res.status(400).json({ error: 'Shopee affiliate ID not configured' });
+    const shopeeIntegration = require('../services/shopeeIntegration');
+
+    // Check what credentials are configured
+    const openApiCreds = await shopeeIntegration.getOpenPlatformCreds();
+    const cloakCreds = await shopeeIntegration.getCloakBrowserCreds();
 
     const [[countRow]] = await pool.query('SELECT COUNT(*) as cnt FROM 1ai_shopee_reports');
     const [[payoutRow]] = await pool.query('SELECT COUNT(*) as cnt FROM 1ai_shopee_payouts');
 
+    // Try Open Platform API first
+    let openApiStatus = 'not_configured';
+    if (openApiCreds.partner_id && openApiCreds.partner_key) {
+      const t1 = await shopeeIntegration.shopeeOpenApiGet('/api/v2/affiliate/commission/list', { page: '1', page_size: '1' });
+      openApiStatus = t1.error ? `error: ${t1.error}` : 'connected';
+    }
+
+    // Try CloakBrowser
+    let cloakStatus = 'not_configured';
+    if (cloakCreds.cookies) {
+      cloakStatus = 'cookies_configured';
+    }
+
     res.json({
       success: true,
-      message: 'Shopee configured',
-      affiliate_id: affiliateId,
-      reports_in_db: countRow?.cnt || 0,
-      payouts_in_db: payoutRow?.cnt || 0,
-      note: 'Shopee API has anti-bot protection. Use CSV import from dashboard or Puppeteer scraping.'
+      tiers: {
+        open_api: { status: openApiStatus, partner_id: openApiCreds.partner_id || 'not set' },
+        cloakbrowser: { status: cloakStatus, affiliate_id: cloakCreds.affiliate_id || 'not set' },
+        csv_import: { status: 'always_available', reports_in_db: countRow?.cnt || 0, payouts_in_db: payoutRow?.cnt || 0 },
+      },
+      recommendation: openApiStatus === 'connected' ? 'Using Open Platform API (best)' :
+                       cloakStatus === 'cookies_configured' ? 'Using CloakBrowser scraping (good)' :
+                       'Using CSV import (manual). Configure Open Platform API for best results.',
     });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
 
 // ── Shopee: Import from CSV ────────────────────────────────────────
 router.post('/shopee/import-csv', async (req, res) => {
@@ -281,6 +297,17 @@ router.post('/shopee/import-csv', async (req, res) => {
     }
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+// ── Shopee: Live fetch (tries Open API → CloakBrowser → falls back to DB) ──
+router.get('/shopee/live', async (req, res) => {
+  try {
+    const shopeeIntegration = require('../services/shopeeIntegration');
+    const days = parseInt(req.query.days) || 30;
+    const result = await shopeeIntegration.fetchCommissions(days);
+    res.json(result);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 
 // ── Shopee: Get stored reports ─────────────────────────────────────
 router.get('/shopee/reports', async (req, res) => {
