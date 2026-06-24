@@ -1428,28 +1428,24 @@ router.get('/reports/orders', async (req, res) => {
        WHERE cv.created_at >= UNIX_TIMESTAMP(?) AND cv.created_at <= UNIX_TIMESTAMP(?)
        ORDER BY cv.id DESC LIMIT 100`,
       [dateFrom, dateTo + ' 23:59:59']
-    );
     res.json({ data: rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ── Balance & Budget ───────────────────────────────────────────────
 router.get('/balance', async (req, res) => {
   try {
-    const [[earnings]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "approved"');
-    const [[pending]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "pending"');
+    const [[earnings]] = await pool.query('SELECT COALESCE(SUM(payout_amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "approved"');
+    const [[pending]] = await pool.query('SELECT COALESCE(SUM(payout_amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "pending"');
     const [[paid]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_payments WHERE status = "paid"');
-    const [transactions] = await pool.query(
-      `SELECT * FROM 1ai_balance_ledger ORDER BY id DESC LIMIT 50`
-    );
+    const [transactions] = await pool.query('SELECT * FROM 1ai_balance_ledger ORDER BY id DESC LIMIT 50');
     res.json({ data: { earnings: earnings.total, pending: pending.total, paid: paid.total, transactions } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 router.get('/balance/summary', async (req, res) => {
   try {
-    const [[earnings]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "approved"');
-    const [[pending]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "pending"');
+    const [[earnings]] = await pool.query('SELECT COALESCE(SUM(payout_amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "approved"');
+    const [[pending]] = await pool.query('SELECT COALESCE(SUM(payout_amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "pending"');
     const [[paid]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_payments WHERE status = "paid"');
     res.json({ data: { total_earnings: earnings.total, total_pending: pending.total, total_paid: paid.total, available_balance: earnings.total - paid.total } });
   } catch (err) { res.status(500).json({ error: err.message }); }
