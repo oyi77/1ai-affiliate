@@ -65,6 +65,15 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
   }
 }));
+// React SPA assets — serve from dist/ so /assets/* resolves to dist/assets/*
+app.use(express.static(path.join(__dirname, 'public/dist'), {
+  setHeaders: (res, filePath) => {
+    if (/\.(js|css)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('CDN-Cache-Control', 'no-store');
+    }
+  }
+}));
 
 // API documentation
 app.get('/api-docs', (req, res) => {
