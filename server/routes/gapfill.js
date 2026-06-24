@@ -1360,15 +1360,20 @@ router.get('/reports/ads', async (req, res) => {
     const dateTo = req.query.date_to || new Date().toISOString().split('T')[0];
     const [rows] = await pool.query(
       `SELECT o.name as campaign_name,
-              COUNT(DISTINCT cl.click_id) as clicks,
+              COALESCE(click_counts.clicks, 0) as clicks,
               COUNT(DISTINCT cv.id) as conversions,
               COALESCE(SUM(cv.revenue), 0) as revenue,
               COALESCE(SUM(cv.payout), 0) as payout
        FROM 1ai_offers o
-       LEFT JOIN 1ai_aff_campaigns ac ON ac.aff_campaign_name = o.name
-       LEFT JOIN 1ai_clicks cl ON cl.aff_campaign_id = ac.aff_campaign_id AND cl.click_time >= UNIX_TIMESTAMP(?) AND cl.click_time <= UNIX_TIMESTAMP(?)
        LEFT JOIN 1ai_conversions cv ON cv.offer_id = o.id AND cv.created_at >= UNIX_TIMESTAMP(?) AND cv.created_at <= UNIX_TIMESTAMP(?)
-       GROUP BY o.id, o.name ORDER BY clicks DESC`,
+       LEFT JOIN (
+         SELECT ac.aff_campaign_id, COUNT(cl.click_id) as clicks
+         FROM 1ai_clicks cl
+         JOIN 1ai_aff_campaigns ac ON cl.aff_campaign_id = ac.aff_campaign_id
+         WHERE cl.click_time >= UNIX_TIMESTAMP(?) AND cl.click_time <= UNIX_TIMESTAMP(?)
+         GROUP BY ac.aff_campaign_id
+       ) click_counts ON click_counts.aff_campaign_id = o.id
+       GROUP BY o.id, o.name, click_counts.clicks ORDER BY clicks DESC`,
       [dateFrom, dateTo + ' 23:59:59', dateFrom, dateTo + ' 23:59:59']
     );
     res.json({ data: rows, date_from: dateFrom, date_to: dateTo });
