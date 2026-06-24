@@ -116,20 +116,19 @@ app.get('/health', async (req, res) => {
   res.status(httpStatus).json(checks);
 });
 
-// React SPA is the primary interface — served from /dist/
-app.get('/', (req, res) => res.redirect('/dist/'));
-app.get('/admin', (req, res) => res.redirect('/dist/'));
-app.get('/admin/*', (req, res) => res.redirect('/dist/'));
-app.get('/client', (req, res) => res.redirect('/dist/'));
-app.get('/client/*', (req, res) => res.redirect('/dist/'));
-
-// React SPA (Vite build) — all routes serve dist/index.html for client-side routing
-app.get('/dist', (req, res) => res.redirect('/dist/'));
-app.get('/dist/*', (req, res) => {
+// React SPA — serves dist/index.html for all non-API routes (client-side routing)
+const spaHandler = (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('CDN-Cache-Control', 'no-store');
   res.sendFile(path.join(__dirname, 'public/dist/index.html'));
-});
+};
+app.get('/', spaHandler);
+app.get('/admin', spaHandler);
+app.get('/admin/*', spaHandler);
+app.get('/client', spaHandler);
+app.get('/client/*', spaHandler);
+// Catch-all for React client-side routes (campaigns, offers, landing-pages, etc.)
+app.get('*', spaHandler);
 
 // Error handler — log via pino, return request_id for 500s
 app.use((err, req, res, next) => {
