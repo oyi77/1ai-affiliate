@@ -222,92 +222,90 @@ router.post('/shopee/test', async (req, res) => {
   try {
     const [[cookieRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_shopee_cookies'");
     const [[idRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_shopee_affiliate_id'");
-
     const cookies = cookieRow?.value;
-    const affiliateId = idRow?.value || '1301713950';
-
+    const affiliateId = idRow?.value;
     if (!cookies) return res.status(400).json({ error: 'Shopee cookies not configured' });
+    if (!affiliateId) return res.status(400).json({ error: 'Shopee affiliate ID not configured' });
 
-    // Test Shopee affiliate API
-    const resp = await fetch(`https://affiliate.shopee.co.id/api/v1/affiliate/dashboard`, {
-      headers: {
-        'Cookie': cookies,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': 'https://affiliate.shopee.co.id/dashboard',
-      },
+    const [[countRow]] = await pool.query('SELECT COUNT(*) as cnt FROM 1ai_shopee_reports');
+    const [[payoutRow]] = await pool.query('SELECT COUNT(*) as cnt FROM 1ai_shopee_payouts');
+
+    res.json({
+      success: true,
+      message: 'Shopee configured',
+      affiliate_id: affiliateId,
+      reports_in_db: countRow?.cnt || 0,
+      payouts_in_db: payoutRow?.cnt || 0,
+      note: 'Shopee API has anti-bot protection. Use CSV import from dashboard or Puppeteer scraping.'
     });
-
-    if (!resp.ok) return res.status(resp.status).json({ error: 'Shopee API error' });
-
-    const data = await resp.json();
-    res.json({ success: true, message: 'Shopee connected', data: data });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ── Shopee: Fetch commissions ──────────────────────────────────────
-router.get('/shopee/commissions', async (req, res) => {
+// ── Shopee: Import from CSV ────────────────────────────────────────
+router.post('/shopee/import-csv', async (req, res) => {
   try {
-    const [[cookieRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_shopee_cookies'");
+    const { csv_data, type } = req.body;
+    if (!csv_data) return res.status(400).json({ error: 'csv_data required' });
 
-    const cookies = cookieRow?.value;
-    if (!cookies) return res.status(400).json({ error: 'Shopee cookies not configured' });
+    const shopeeService = require('../services/shopeeService');
+    const [[idRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_shopee_affiliate_id'");
+    const affiliateId = idRow?.value || 'unknown';
 
-    // Fetch commission data from Shopee affiliate
-    const resp = await fetch(`https://affiliate.shopee.co.id/api/v1/affiliate/commission/list?page=1&pageSize=50`, {
-      headers: {
-        'Cookie': cookies,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': 'https://affiliate.shopee.co.id/commission',
-      },
-    });
-
-    if (!resp.ok) return res.status(resp.status).json({ error: 'Shopee API error' });
-
-    const data = await resp.json();
-    res.json({ data: data.data || data.commissions || [] });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// ── Shopee: Sync payouts ───────────────────────────────────────────
-router.post('/shopee/sync', async (req, res) => {
-  try {
-    const [[cookieRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_shopee_cookies'");
-    const cookies = cookieRow?.value;
-    if (!cookies) return res.status(400).json({ error: 'Shopee cookies not configured' });
-
-    // Fetch payout data
-    const resp = await fetch(`https://affiliate.shopee.co.id/api/v1/affiliate/payout/list?page=1&pageSize=50`, {
-      headers: {
-        'Cookie': cookies,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': 'https://affiliate.shopee.co.id/payout',
-      },
-    });
-
-    if (!resp.ok) return res.status(resp.status).json({ error: 'Shopee API error' });
-
-    const data = await resp.json();
-    const payouts = data.data || data.payouts || [];
-
-    let imported = 0;
-    for (const p of payouts) {
-      const [[existing]] = await pool.query(
-        'SELECT id FROM 1ai_shopee_payouts WHERE order_id = ? LIMIT 1',
-        [p.orderId || p.order_id]
-      );
-      if (existing) continue;
-
-      await pool.query(
-        `INSERT INTO 1ai_shopee_payouts (order_id, product_name, commission, status, created_at)
-         VALUES (?, ?, ?, ?, UNIX_TIMESTAMP())`,
-        [p.orderId || p.order_id || '', p.productName || p.product_name || '', p.commission || 0, p.status || 'pending']
-      );
-      imported++;
+    if (type === 'commissions' || type === 'orders') {
+      const rows = shopeeService.parseCommissionCsv(csv_data);
+      if (!rows.length) return res.json({ success: true, imported: 0, message: 'No valid rows in CSV' });
+      const mapped = rows.map(r => shopeeService.mapCommissionRow(r, null, req.user.id, affiliateId, 'Shopee Affiliate'));
+      const result = await shopeeService.bulkInsertReports(mapped);
+      res.json({ success: true, imported: result.inserted, duplicates: result.duplicates, total: rows.length });
+    } else if (type === 'payouts') {
+      const lines = csv_data.split('\n').filter(l => l.trim());
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'));
+      let imported = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+        const row = {};
+        headers.forEach((h, idx) => row[h] = cols[idx] || '');
+        const orderId = row.order_id || row.orderid || row.id;
+        if (!orderId) continue;
+        const [[existing]] = await pool.query('SELECT id FROM 1ai_shopee_payouts WHERE order_id = ? LIMIT 1', [orderId]);
+        if (existing) continue;
+        await pool.query(
+          `INSERT INTO 1ai_shopee_payouts (order_id, product_name, amount, status, created_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP())`,
+          [orderId, row.product_name || '', parseFloat(row.commission || row.amount || 0), row.status || 'pending']
+        );
+        imported++;
+      }
+      res.json({ success: true, imported, total: lines.length - 1 });
+    } else {
+      return res.status(400).json({ error: 'type required: commissions, orders, or payouts' });
     }
-
-    res.json({ success: true, imported, total: payouts.length });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+// ── Shopee: Get stored reports ─────────────────────────────────────
+router.get('/shopee/reports', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+    const [rows] = await pool.query(
+      `SELECT * FROM 1ai_shopee_reports WHERE report_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY) ORDER BY order_time DESC LIMIT 200`, [days]
+    );
+    const [[totals]] = await pool.query(
+      `SELECT COUNT(*) as orders, SUM(commission_gross) as gross, SUM(commission_net) as net, SUM(order_amount) as order_total
+       FROM 1ai_shopee_reports WHERE report_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)`, [days]
+    );
+    res.json({ data: rows, summary: totals, days });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Shopee: Get stored payouts ─────────────────────────────────────
+router.get('/shopee/payouts', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM 1ai_shopee_payouts ORDER BY id DESC LIMIT 100');
+    const [[totals]] = await pool.query('SELECT COUNT(*) as count, SUM(amount) as total FROM 1ai_shopee_payouts WHERE status = "paid"');
+    res.json({ data: rows, summary: totals });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 
 
 // ── Meta Ads: Fetch ad accounts ────────────────────────────────────
