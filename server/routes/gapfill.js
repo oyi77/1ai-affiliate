@@ -1415,4 +1415,52 @@ router.get('/reports/taglink', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Reports: Orders (Laporan Order) ───────────────────────────────
+router.get('/reports/orders', async (req, res) => {
+  try {
+    const dateFrom = req.query.date_from || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const dateTo = req.query.date_to || new Date().toISOString().split('T')[0];
+    const [rows] = await pool.query(
+      `SELECT cv.id, cv.click_id, o.name as campaign_name, cv.payout, cv.revenue, cv.status, cv.created_at
+       FROM 1ai_conversions cv
+       LEFT JOIN 1ai_offers o ON cv.offer_id = o.id
+       WHERE cv.created_at >= UNIX_TIMESTAMP(?) AND cv.created_at <= UNIX_TIMESTAMP(?)
+       ORDER BY cv.id DESC LIMIT 100`,
+      [dateFrom, dateTo + ' 23:59:59']
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Balance & Budget ───────────────────────────────────────────────
+router.get('/balance', async (req, res) => {
+  try {
+    const [[earnings]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "approved"');
+    const [[pending]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "pending"');
+    const [[paid]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_payments WHERE status = "paid"');
+    const [transactions] = await pool.query(
+      `SELECT * FROM 1ai_balance_ledger ORDER BY id DESC LIMIT 50`
+    );
+    res.json({ data: { earnings: earnings.total, pending: pending.total, paid: paid.total, transactions } });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/balance/summary', async (req, res) => {
+  try {
+    const [[earnings]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "approved"');
+    const [[pending]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_earnings WHERE status = "pending"');
+    const [[paid]] = await pool.query('SELECT COALESCE(SUM(amount), 0) as total FROM 1ai_affiliate_payments WHERE status = "paid"');
+    res.json({ data: { total_earnings: earnings.total, total_pending: pending.total, total_paid: paid.total, available_balance: earnings.total - paid.total } });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Traffic Sources Integrations ───────────────────────────────────
+router.get('/traffic-sources/integrations', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT id, name, type, status, postback_url FROM 1ai_traffic_sources ORDER BY id DESC');
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
