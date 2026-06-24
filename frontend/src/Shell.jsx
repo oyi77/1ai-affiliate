@@ -2,7 +2,8 @@ import { LayoutDashboard, Target, Layers, Link as LinkIcon, Users,
   DollarSign, Settings, Menu, X, Search, ChevronRight, ChevronDown,
   Sparkles, BarChart3, Shield, Crown, HelpCircle,
   Globe, Server, TrendingUp, Eye, Clock, FileText,
-  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database, Download } from 'lucide-react';
+  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database, Download,
+  Building2, Radio, Zap, BarChart2, Bell, ShoppingCart, Wallet, CreditCard, Webhook } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';

@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const pool = require('../db/mysql');
+const { authenticate } = require('../middleware/auth');
 
 // ══════════════════════════════════════════════════════════════════════
 // Inter-service Auth Middleware
@@ -203,6 +204,86 @@ router.get('/analytics', async (req, res) => {
  * GET /api/affiliate/health
  * Health check for content integration
  */
+/**
+ * GET /api/affiliate/stats
+ * Affiliate dashboard stats (clicks, earnings, conversions)
+ */
+router.get('/stats', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const [[aff]] = await pool.query('SELECT id, balance FROM 1ai_affiliates WHERE user_id = ?', [userId]);
+    if (!aff) return res.json({ data: { totalClicks: 0, totalConversions: 0, totalEarnings: 0, conversionRate: 0 } });
+
+    const [[clicks]] = await pool.query('SELECT COUNT(*) as cnt FROM 1ai_clicks');
+    const [[conversions]] = await pool.query('SELECT COUNT(*) as cnt FROM 1ai_conversion_logs WHERE affiliate_id = ?', [aff.id]);
+    const [[earnings]] = await pool.query('SELECT COALESCE(SUM(affiliate_payout_snapshot), 0) as total FROM 1ai_conversion_logs WHERE affiliate_id = ?', [aff.id]);
+
+    res.json({
+      data: {
+        totalClicks: clicks?.cnt || 0,
+        totalConversions: conversions?.cnt || 0,
+        totalEarnings: earnings?.total || aff.balance || 0,
+        conversionRate: clicks?.cnt ? ((conversions?.cnt || 0) / clicks.cnt * 100).toFixed(2) : 0,
+      }
+    });
+  } catch (error) {
+    console.error('Affiliate stats error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch affiliate stats' });
+  }
+});
+
+/**
+ * GET /api/affiliate/links
+ * Affiliate's tracking links
+ */
+router.get('/links', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const [[aff]] = await pool.query('SELECT id, affiliate_code FROM 1ai_affiliates WHERE user_id = ?', [userId]);
+    if (!aff) return res.json({ data: [] });
+
+    const [links] = await pool.query(
+      `SELECT c.aff_campaign_id as id, c.aff_campaign_name as name,
+              c.aff_campaign_status as status, c.aff_campaign_payout as payout,
+              COUNT(cl.click_id) as clicks
+       FROM 1ai_aff_campaigns c
+       LEFT JOIN 1ai_clicks cl ON cl.aff_campaign_id = c.aff_campaign_id
+       GROUP BY c.aff_campaign_id
+       ORDER BY c.aff_campaign_id DESC LIMIT 50`
+    );
+    res.json({ data: links });
+  } catch (error) {
+    console.error('Affiliate links error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch affiliate links' });
+  }
+});
+
+/**
+ * GET /api/affiliate/earnings
+ * Affiliate's earnings history
+ */
+router.get('/earnings', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const [[aff]] = await pool.query('SELECT id FROM 1ai_affiliates WHERE user_id = ?', [userId]);
+    if (!aff) return res.json({ data: [] });
+
+    const [earnings] = await pool.query(
+      `SELECT cl.conversion_id as id, cl.conversion_time as date,
+              cl.affiliate_payout_snapshot as amount, cl.status,
+              ac.aff_campaign_name as campaign
+       FROM 1ai_conversion_logs cl
+       LEFT JOIN 1ai_aff_campaigns ac ON ac.aff_campaign_id = cl.aff_campaign_id
+       WHERE cl.affiliate_id = ?
+       ORDER BY cl.conversion_time DESC LIMIT 50`,
+      [aff.id]
+    );
+    res.json({ data: earnings });
+  } catch (error) {
+    console.error('Affiliate earnings error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch affiliate earnings' });
+  }
+});
 router.get('/health', (req, res) => {
   res.json({ status: 'healthy', service: 'content-integration' });
 });

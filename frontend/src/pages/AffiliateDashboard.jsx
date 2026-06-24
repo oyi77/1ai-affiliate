@@ -54,7 +54,7 @@ export function AffiliateDashboard() {
     navigator.clipboard.writeText(`${base}/go/${slug}`);
   };
 
-  if (isError && (!stats || (Array.isArray(stats) && !stats.length))) return <ErrorState error={error} onRetry={refetch} />;
+  if (errorStats && (!stats || (Array.isArray(stats) && !stats.length))) return <ErrorState error={statsError} onRetry={refetchStats} />;
   return (
     <div className="space-y-8">
       <div>
