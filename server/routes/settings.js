@@ -94,4 +94,47 @@ router.put('/features/:name', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Platform settings (domains, branding, misc)
+const PLATFORM_KEYS = [
+  'smartlink_domain', 'smartlink_domain_alt', 'deeplink_domain', 'click_domain',
+  'landing_domain', 'app_domain', 'brand_name', 'support_email', 'noreply_email',
+  'default_currency', 'default_fallback_url', 'postback_url_template', 'webhook_url_template',
+  'status_page_url', 'changelog_url', 'community_url',
+];
+
+router.get('/platform', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT name, value FROM 1ai_settings WHERE name IN (?)",
+      [PLATFORM_KEYS]
+    );
+    const settings = {};
+    rows.forEach(r => { settings[r.name] = r.value; });
+    // Merge with env defaults
+    const schema = require('../services/settingsService');
+    const all = schema.getAll ? schema.getAll() : {};
+    for (const key of PLATFORM_KEYS) {
+      if (!settings[key]) settings[key] = all[key] || process.env[key.toUpperCase()] || '';
+    }
+    res.json({ data: settings });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.put('/platform', async (req, res) => {
+  try {
+    const { settings } = req.body;
+    if (!settings || typeof settings !== 'object') return res.status(400).json({ error: 'settings object required' });
+    for (const [key, value] of Object.entries(settings)) {
+      if (!PLATFORM_KEYS.includes(key)) continue;
+      await pool.query(
+        "INSERT INTO 1ai_settings (name, value, updated_at) VALUES (?, ?, UNIX_TIMESTAMP()) ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = VALUES(updated_at)",
+        [key, String(value)]
+      );
+    }
+    // Reload settings cache
+    try { require('../services/settingsService').reload(); } catch {}
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
