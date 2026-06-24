@@ -116,28 +116,18 @@ app.get('/health', async (req, res) => {
   res.status(httpStatus).json(checks);
 });
 
-// SPA fallback — / serves admin SPA, /admin and /client alias
-app.get('/admin', (req, res) => res.redirect('/admin/'));
-app.get('/client', (req, res) => res.redirect('/client/'));
-app.get('/admin/*', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-  res.setHeader('CDN-Cache-Control', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public/admin/index.html'));
-});
-app.get('/client/*', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-  res.setHeader('CDN-Cache-Control', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public/client/index.html'));
-});
-app.get('/', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-  res.setHeader('CDN-Cache-Control', 'no-cache');
-  res.sendFile(path.join(__dirname, 'public/admin/index.html'));
-});
-// React SPA (Vite build) — /dist/* serves dist/index.html for client-side routing
+// React SPA is the primary interface — served from /dist/
+app.get('/', (req, res) => res.redirect('/dist/'));
+app.get('/admin', (req, res) => res.redirect('/dist/'));
+app.get('/admin/*', (req, res) => res.redirect('/dist/'));
+app.get('/client', (req, res) => res.redirect('/dist/'));
+app.get('/client/*', (req, res) => res.redirect('/dist/'));
+
+// React SPA (Vite build) — all routes serve dist/index.html for client-side routing
+app.get('/dist', (req, res) => res.redirect('/dist/'));
 app.get('/dist/*', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-  res.setHeader('CDN-Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-store');
   res.sendFile(path.join(__dirname, 'public/dist/index.html'));
 });
 
