@@ -60,8 +60,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, filePath) => {
     // Never cache HTML/JS/CSS — always fetch latest on deploy
     if (/\.(html|js|css)$/.test(filePath)) {
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-      res.setHeader('CDN-Cache-Control', 'no-cache');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('CDN-Cache-Control', 'no-store');
     }
   }
 }));
