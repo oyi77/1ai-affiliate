@@ -83,7 +83,7 @@ function TemplateEditorModal({ open, onOpenChange, template, onSave }) {
 
   const inputBase = 'w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors';
 
-  if (isError && (!templates || (Array.isArray(templates) && !templates.length))) return <ErrorState error={error} onRetry={refetch} />;
+  // Error handling is done by parent component
   return (
     <Modal open={open} onOpenChange={onOpenChange} title={template ? 'Edit Template' : 'Create Template'} size="xl">
       <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">

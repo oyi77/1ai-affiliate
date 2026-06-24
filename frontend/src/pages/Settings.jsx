@@ -24,7 +24,7 @@ export function Settings() {
   });
   const queryClient = useQueryClient();
 
-  const { data: profile } = useSafeQuery({
+  const { data: profile, isError, error, refetch } = useSafeQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const response = await api.get('/api/admin/vip');
