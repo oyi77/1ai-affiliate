@@ -8,6 +8,17 @@ const {
   getIntegrations, updateIntegration, getPostback, updatePostback,
 } = require('../controllers/settingsController');
 
+// Public platform settings (no auth required — used by landing page, client portal)
+router.get('/platform/public', async (req, res) => {
+  try {
+    const keys = ['brand_name', 'app_domain', 'support_email', 'default_currency', 'smartlink_domain'];
+    const [rows] = await pool.query("SELECT name, value FROM 1ai_settings WHERE name IN (?)", [keys]);
+    const settings = {};
+    rows.forEach(r => { settings[r.name] = r.value; });
+    res.json({ data: settings });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 router.use(authenticate);
 
 // Profile

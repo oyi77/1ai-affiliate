@@ -1236,4 +1236,64 @@ router.get('/trackpro/data', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Traffic Rules CRUD ─────────────────────────────────────────────
+router.get('/traffic-rules', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT r.*, o.name as offer_name FROM 1ai_traffic_rules r
+       LEFT JOIN 1ai_offers o ON r.offer_id = o.id
+       WHERE r.user_id = ? ORDER BY r.priority DESC, r.id DESC`,
+      [req.user.id]
+    );
+    for (const r of rows) {
+      if (typeof r.conditions === 'string') { try { r.conditions = JSON.parse(r.conditions); } catch {} }
+    }
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/traffic-rules', async (req, res) => {
+  try {
+    const { name, offer_id, conditions, action, target_url, landing_page_id, weight, enabled, priority } = req.body;
+    if (!name) return res.status(400).json({ error: 'name required' });
+    const now = Math.floor(Date.now() / 1000);
+    const [result] = await pool.query(
+      `INSERT INTO 1ai_traffic_rules (user_id, name, offer_id, conditions, action, target_url, landing_page_id, weight, enabled, priority, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [req.user.id, name, offer_id || null, JSON.stringify(conditions || {}), action || 'redirect', target_url || null, landing_page_id || null, weight || 100, enabled !== false ? 1 : 0, priority || 0, now, now]
+    );
+    res.status(201).json({ id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.patch('/traffic-rules/:id', async (req, res) => {
+  try {
+    const { name, offer_id, conditions, action, target_url, landing_page_id, weight, enabled, priority } = req.body;
+    const now = Math.floor(Date.now() / 1000);
+    const fields = [];
+    const params = [];
+    if (name !== undefined) { fields.push('name = ?'); params.push(name); }
+    if (offer_id !== undefined) { fields.push('offer_id = ?'); params.push(offer_id); }
+    if (conditions !== undefined) { fields.push('conditions = ?'); params.push(JSON.stringify(conditions)); }
+    if (action !== undefined) { fields.push('action = ?'); params.push(action); }
+    if (target_url !== undefined) { fields.push('target_url = ?'); params.push(target_url); }
+    if (landing_page_id !== undefined) { fields.push('landing_page_id = ?'); params.push(landing_page_id); }
+    if (weight !== undefined) { fields.push('weight = ?'); params.push(weight); }
+    if (enabled !== undefined) { fields.push('enabled = ?'); params.push(enabled ? 1 : 0); }
+    if (priority !== undefined) { fields.push('priority = ?'); params.push(priority); }
+    fields.push('updated_at = ?'); params.push(now);
+    params.push(req.params.id, req.user.id);
+    await pool.query(`UPDATE 1ai_traffic_rules SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`, params);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.delete('/traffic-rules/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM 1ai_traffic_rules WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
