@@ -16,6 +16,11 @@ ini_set('session.cookie_lifetime', '0'); // session cookie — expires when brow
 // Start the session at the beginning to avoid undefined $_SESSION variable.
 // AJAX detection depends on clients sending X-Requested-With. jQuery does this
 // automatically; fetch() and sendBeacon() do not unless the caller adds it.
+// Security: enforce secure session cookies
+@ini_set('session.cookie_httponly', '1');
+@ini_set('session.cookie_secure', '1');
+@ini_set('session.cookie_samesite', 'Lax');
+
 // For AJAX requests, use read_and_close to release the session file lock immediately.
 // PHP's file-based sessions use exclusive locks, so parallel AJAX requests become
 // serialized if the lock is held. Session data is still readable in $_SESSION after close.
@@ -55,6 +60,28 @@ if (!function_exists('withWritableSession')) {
     }
 }
 
+// CSRF token generation and validation
+if (!function_exists('csrf_token')) {
+    function csrf_token(): string {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+}
+if (!function_exists('csrf_field')) {
+    function csrf_field(): string {
+        return '<input type="hidden" name="_csrf_token" value="' . htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') . '">';
+    }
+}
+if (!function_exists('verify_csrf')) {
+    function verify_csrf(): bool {
+        $token = $_POST['_csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        return !empty($token) && hash_equals($_SESSION['csrf_token'] ?? '', $token);
+    }
+}
+
+
 DEFINE('TRACKING1ai_RSS_URL', 'http://rss.tracking1ai.com');
 DEFINE('TRACKING1ai_ADS_URL', 'https://ads.tracking1ai.com');
 
@@ -72,7 +99,7 @@ DEFINE('CONFIG_PATH', __DIR__);
 @ini_set('auto_detect_line_endings', '1');
 // Deprecated in PHP 5.4
 // @ini_set('register_globals', 0);
-@ini_set('display_errors', 'On');
+@ini_set('display_errors', 'Off');
 @ini_set('error_reporting', '6135');
 // @ini_set('safe_mode', 'Off'); // Removed in PHP 5.4
 @ini_set('set_time_limit', '0');
@@ -120,7 +147,7 @@ if (function_exists('mysqli_report')) {
 } else {
     // Polyfill or alternative error handling if mysqli_report isn't available
     error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
-    @ini_set('display_errors', 'On');
+    @ini_set('display_errors', 'Off');
 }
 
 $install_path = substr(ROOT_PATH, strlen((string) $_SERVER['DOCUMENT_ROOT']));
