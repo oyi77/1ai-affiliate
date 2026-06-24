@@ -13,7 +13,7 @@ function doLogin() {
       // Close all modals
       ['login-modal','register-modal','forgot-modal'].forEach(id => {
         var el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+        if (el) { el.style.display = 'none'; el.classList.remove('open'); }
       });
       Router.showApp();
     } else { err.textContent = d.error || 'Login failed'; err.style.display = 'block'; }
@@ -25,28 +25,32 @@ function doLogout() { Auth.clear(); location.reload(); }
 function showForgotPassword() {
   ['login-modal','register-modal','forgot-modal'].forEach(id => {
     var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    if (el) { el.style.display = 'none'; el.classList.remove('open'); }
   });
   var forgotModal = document.getElementById('forgot-modal');
-  if (forgotModal) forgotModal.style.display = 'flex';
+  if (forgotModal) { forgotModal.style.display = 'flex'; forgotModal.classList.add('open'); }
 }
 function showLoginForm() {
-  // Close all modals
   ['login-modal','register-modal','forgot-modal'].forEach(id => {
     var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    if (el) { el.style.display = 'none'; el.classList.remove('open'); }
   });
-  // Open login modal
   var loginModal = document.getElementById('login-modal');
-  if (loginModal) loginModal.style.display = 'flex';
+  if (loginModal) { loginModal.style.display = 'flex'; loginModal.classList.add('open'); }
 }
 function showRegisterForm() {
   ['login-modal','register-modal','forgot-modal'].forEach(id => {
     var el = document.getElementById(id);
-    if (el) el.style.display = 'none';
+    if (el) { el.style.display = 'none'; el.classList.remove('open'); }
   });
   var regModal = document.getElementById('register-modal');
-  if (regModal) regModal.style.display = 'flex';
+  if (regModal) { regModal.style.display = 'flex'; regModal.classList.add('open'); }
+}
+function closeAllModals() {
+  ['login-modal','register-modal','forgot-modal'].forEach(id => {
+    var el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.classList.remove('open'); }
+  });
 }
 function showResetForm(key) {
   document.getElementById('login-form').style.display = 'none';
@@ -117,7 +121,7 @@ async function doRegister() {
       Auth.set(d.token); Auth.setUser(d.user.email || d.user.id); Auth.resetRole();
       ['login-modal','register-modal','forgot-modal'].forEach(function(id) {
         var el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+        if (el) { el.style.display = 'none'; el.classList.remove('open'); }
       });
       Router.showApp();
     } else {

@@ -781,9 +781,9 @@
     </footer>
 
     <!-- LOGIN MODAL -->
-    <div id="login-modal" class="modal-wrap" onclick="if(event.target===this)this.style.display='none'">
+    <div id="login-modal" class="modal-wrap" onclick="if(event.target===this)closeAllModals()">
       <div class="modal-card">
-        <button class="modal-close" onclick="document.getElementById('login-modal').style.display='none'">✕</button>
+        <button class="modal-close" onclick="closeAllModals()">✕</button>
         <div style="text-align:center;margin-bottom:24px;">
           <div style="width:48px;height:48px;margin:0 auto;font-size:20px;border-radius:12px;background:linear-gradient(135deg,var(--indigo),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 4px 15px rgba(99,102,241,0.3);">1A</div>
         </div>
@@ -803,9 +803,9 @@
     </div>
 
     <!-- REGISTER MODAL -->
-    <div id="register-modal" class="modal-wrap" onclick="if(event.target===this)this.style.display='none'">
+    <div id="register-modal" class="modal-wrap" onclick="if(event.target===this)closeAllModals()">
       <div class="modal-card">
-        <button class="modal-close" onclick="document.getElementById('register-modal').style.display='none'">✕</button>
+        <button class="modal-close" onclick="closeAllModals()">✕</button>
         <div style="text-align:center;margin-bottom:24px;">
           <div style="width:48px;height:48px;margin:0 auto;font-size:20px;border-radius:12px;background:linear-gradient(135deg,var(--indigo),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;box-shadow:0 4px 15px rgba(99,102,241,0.3);">1A</div>
         </div>
@@ -832,9 +832,9 @@
     </div>
 
     <!-- FORGOT PASSWORD MODAL -->
-    <div id="forgot-modal" class="modal-wrap" onclick="if(event.target===this)this.style.display='none'">
+    <div id="forgot-modal" class="modal-wrap" onclick="if(event.target===this)closeAllModals()">
       <div class="modal-card">
-        <button class="modal-close" onclick="document.getElementById('forgot-modal').style.display='none'">✕</button>
+        <button class="modal-close" onclick="closeAllModals()">✕</button>
         <h2 style="text-align:center;font-size:22px;font-weight:700;margin-bottom:24px;">Reset Password</h2>
         <div id="forgot-form-inner">
           <p style="font-size:13px;color:var(--text2);margin-bottom:20px;text-align:center;">Enter your username and email to receive a secure reset key.</p>
