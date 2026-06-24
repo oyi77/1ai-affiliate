@@ -1460,4 +1460,29 @@ router.get('/traffic-sources/integrations', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Advertiser Payouts (Laporan Pembayaran) ────────────────────────
+router.get('/advertisers/:id/payouts', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, user_id, reference, amount, status, tripay_ref, created_at, paid_at
+       FROM 1ai_affiliate_payments ORDER BY id DESC LIMIT 100`
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/advertisers/:id/payouts', async (req, res) => {
+  try {
+    const { user_id, amount, reference } = req.body;
+    if (!user_id || !amount) return res.status(400).json({ error: 'user_id and amount required' });
+    const ref = reference || `PAY-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+    const [result] = await pool.query(
+      `INSERT INTO 1ai_affiliate_payments (user_id, reference, amount, status, created_at) VALUES (?, ?, ?, 'pending', UNIX_TIMESTAMP())`,
+      [user_id, ref, amount]
+    );
+    res.status(201).json({ id: result.insertId, reference: ref });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
