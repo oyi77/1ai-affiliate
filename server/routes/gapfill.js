@@ -1333,4 +1333,86 @@ router.get('/reports/conversions', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Reports: Clicks ────────────────────────────────────────────────
+router.get('/reports/clicks', async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const offset = (page - 1) * limit;
+    const [rows] = await pool.query(
+      `SELECT cl.*, o.name as offer_name, a.user_name as affiliate_name
+       FROM 1ai_clicks cl
+       LEFT JOIN 1ai_offers o ON cl.offer_id = o.id
+       LEFT JOIN 1ai_affiliates af ON cl.affiliate_id = af.id
+       LEFT JOIN 1ai_users a ON af.user_id = a.user_id
+       ORDER BY cl.id DESC LIMIT ? OFFSET ?`,
+      [limit, offset]
+    );
+    const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM 1ai_clicks');
+    res.json({ data: rows, pagination: { page, limit, total } });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Reports: Ad Performance (Laporan Iklan) ────────────────────────
+router.get('/reports/ads', async (req, res) => {
+  try {
+    const dateFrom = req.query.date_from || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const dateTo = req.query.date_to || new Date().toISOString().split('T')[0];
+    const [rows] = await pool.query(
+      `SELECT o.name as campaign_name,
+              COUNT(DISTINCT cl.id) as clicks,
+              COUNT(DISTINCT cv.id) as conversions,
+              COALESCE(SUM(cv.revenue), 0) as revenue,
+              COALESCE(SUM(cv.payout), 0) as payout
+       FROM 1ai_offers o
+       LEFT JOIN 1ai_clicks cl ON cl.offer_id = o.id AND cl.click_time >= UNIX_TIMESTAMP(?) AND cl.click_time <= UNIX_TIMESTAMP(?)
+       LEFT JOIN 1ai_conversions cv ON cv.offer_id = o.id AND cv.created_at >= UNIX_TIMESTAMP(?) AND cv.created_at <= UNIX_TIMESTAMP(?)
+       GROUP BY o.id, o.name ORDER BY clicks DESC`,
+      [dateFrom, dateTo + ' 23:59:59', dateFrom, dateTo + ' 23:59:59']
+    );
+    res.json({ data: rows, date_from: dateFrom, date_to: dateTo });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Reports: Daily Analytics ───────────────────────────────────────
+router.get('/reports/daily', async (req, res) => {
+  try {
+    const dateFrom = req.query.date_from || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+    const dateTo = req.query.date_to || new Date().toISOString().split('T')[0];
+    const [rows] = await pool.query(
+      `SELECT DATE(FROM_UNIXTIME(click_time)) as date,
+              COUNT(*) as clicks,
+              COUNT(DISTINCT affiliate_id) as affiliates
+       FROM 1ai_clicks
+       WHERE click_time >= UNIX_TIMESTAMP(?) AND click_time <= UNIX_TIMESTAMP(?)
+       GROUP BY DATE(FROM_UNIXTIME(click_time))
+       ORDER BY date DESC`,
+      [dateFrom, dateTo + ' 23:59:59']
+    );
+    res.json({ data: rows, date_from: dateFrom, date_to: dateTo });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Reports: Taglink ───────────────────────────────────────────────
+router.get('/reports/taglink', async (req, res) => {
+  try {
+    const dateFrom = req.query.date_from || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const dateTo = req.query.date_to || new Date().toISOString().split('T')[0];
+    const [rows] = await pool.query(
+      `SELECT tm.tag, tm.campaign_id, o.name as campaign_name,
+              COUNT(DISTINCT cl.id) as clicks,
+              COUNT(DISTINCT cv.id) as conversions
+       FROM 1ai_taglink_mappings tm
+       LEFT JOIN 1ai_offers o ON tm.campaign_id = o.id
+       LEFT JOIN 1ai_clicks cl ON cl.tag = tm.tag AND cl.click_time >= UNIX_TIMESTAMP(?) AND cl.click_time <= UNIX_TIMESTAMP(?)
+       LEFT JOIN 1ai_conversions cv ON cv.offer_id = tm.campaign_id AND cv.created_at >= UNIX_TIMESTAMP(?) AND cv.created_at <= UNIX_TIMESTAMP(?)
+       GROUP BY tm.id, tm.tag, tm.campaign_id, o.name
+       ORDER BY clicks DESC`,
+      [dateFrom, dateTo + ' 23:59:59', dateFrom, dateTo + ' 23:59:59']
+    );
+    res.json({ data: rows, date_from: dateFrom, date_to: dateTo });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
