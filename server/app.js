@@ -129,7 +129,7 @@ app.get('/health', async (req, res) => {
 const spaHandler = (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('CDN-Cache-Control', 'no-store');
-  res.sendFile(path.join(__dirname, 'public/dist/index.html'));
+  res.sendFile(path.join(__dirname, 'public/dist/index.html'), { cacheControl: false });
 };
 app.get('/', spaHandler);
 // Catch-all middleware for React client-side routes (must use app.use, not app.get('*'))
