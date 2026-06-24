@@ -112,6 +112,7 @@ app.use('/api/templates/landing', require('./routes/landingTemplates'));
 app.use('/api/templates', require('./routes/templates'));
 app.use('/api/enterprise', require('./routes/enterprise'));
 app.use('/api/integrations', require('./routes/integrations'));
+app.use('/api/copilot', require('./routes/copilot'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
