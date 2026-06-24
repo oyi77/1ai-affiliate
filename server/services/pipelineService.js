@@ -250,7 +250,7 @@ async function postToInstagram(igAccountId, accessToken, videoPath, caption) {
 /**
  * Get configured Facebook Pages and Instagram accounts from env.
  */
-function getAccounts() {
+async function getAccounts() {
   let fbPages = [];
   let igAccounts = [];
   try {
@@ -259,6 +259,21 @@ function getAccounts() {
   try {
     igAccounts = JSON.parse(process.env.IG_ACCOUNTS_JSON || '[]');
   } catch { /* ignore parse errors */ }
+
+  // Also load from DB settings
+  try {
+    const [[fbRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'pipeline_fb_pages'");
+    if (fbRow?.value) {
+      const dbPages = JSON.parse(fbRow.value);
+      fbPages = [...fbPages, ...dbPages];
+    }
+    const [[igRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'pipeline_ig_accounts'");
+    if (igRow?.value) {
+      const dbIg = JSON.parse(igRow.value);
+      igAccounts = [...igAccounts, ...dbIg];
+    }
+  } catch { /* ignore */ }
+
   return { fbPages, igAccounts };
 }
 

@@ -57,10 +57,10 @@ async function listJobs(req, res) {
  */
 async function getAccounts(req, res) {
   try {
-    const accounts = pipelineService.getAccounts();
+    const accounts = await pipelineService.getAccounts();
     const redacted = {
-      fbPages: accounts.fbPages.map(p => ({ id: p.id, niche: p.niche })),
-      igAccounts: accounts.igAccounts.map(a => ({ id: a.id, niche: a.niche })),
+      fbPages: (accounts.fbPages || []).map(p => ({ id: p.id || p.page_id, niche: p.niche || p.name })),
+      igAccounts: (accounts.igAccounts || []).map(a => ({ id: a.id || a.account_id, niche: a.niche || a.username })),
     };
     res.json(redacted);
   } catch (err) {

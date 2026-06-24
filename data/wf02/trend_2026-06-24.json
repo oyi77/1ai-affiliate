@@ -1,0 +1,42 @@
+{
+  "date": "2026-06-24",
+  "wib_time": "18:19",
+  "research_method": "1ai-affiliate DB offer ranking by lifetime clicks + recent activity",
+  "geo_focus": "ID (Indonesia)",
+  "trending_offers": [
+    {
+      "rank": 1,
+      "offer_id": 12,
+      "name": "Herbal Heion",
+      "geo": "ID",
+      "links_count": 10,
+      "lifetime_clicks": 26,
+      "lifetime_conversions": 0,
+      "payout": "IDR varies",
+      "affiliate_url_template": "https://s.shopee.co.id/3g1PGil0fB?subId2={clickId}",
+      "category": "health/herbal",
+      "rationale": "Most-clicked real Shopee ID offer in portfolio. Health/wellness has evergreen demand in ID market."
+    },
+    {
+      "rank": 2,
+      "offer_id": 11,
+      "name": "Baby & Kids Fashion",
+      "geo": "ID",
+      "links_count": 6,
+      "lifetime_clicks": 6,
+      "lifetime_conversions": 0,
+      "payout": "$15.00 USD",
+      "affiliate_url_template": "https://s.shopee.co.id/2BCQZhggCi{clickId}",
+      "category": "fashion/parenting",
+      "rationale": "Highest payout among real Shopee ID offers ($15). Recent activity (last link 2026-06-23). Family-shopper audience = high LTV."
+    }
+  ],
+  "selected_for_today": {
+    "offer_id": 11,
+    "offer_name": "Baby & Kids Fashion",
+    "niche": "parenting/baby-fashion",
+    "rationale": "Highest $ payout among active Shopee ID offers with live URL; clean Shopee tracking sub_id2 placeholder",
+    "audience_persona": "Ibu muda 25-35, kota tier 2/3, scrolling TikTok malam hari"
+  },
+  "notes": "Affiliate network = Shopee Affiliate Program (network_id=1). TikTok trending data unavailable without TikTok research tool access; selected offer based on internal historical click ranking as proxy for proven Shopee ID traction."
+}
