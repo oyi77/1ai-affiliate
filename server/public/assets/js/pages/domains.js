@@ -16,7 +16,7 @@ PageRenderers.domains = async function(el) {
         
         <p style="font-size:13px;color:var(--text2);margin-bottom:16px">
           Custom domains allow you to use your own branded URLs for smartlink redirects. 
-          Each smartlink can use one of these domains instead of the default go.berkahkarya.org.
+          Each smartlink can use one of these domains instead of the default configured domain.
         </p>
         
         ${domains.length === 0 ? '<p style="color:var(--text2)">No domains configured yet.</p>' : `

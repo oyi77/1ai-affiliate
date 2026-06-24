@@ -44,7 +44,7 @@ PageRenderers.smartlink = async function(el) {
           <div class="form-group" style="margin-top:16px">
             <label>Custom Domain</label>
             <select id="sl-domain">
-              <option value="">Default (${defaultDomain?.domain || 'go.berkahkarya.org'})</option>
+              <option value="">Default (${defaultDomain?.domain || 'Not configured'})</option>
               ${activeDomains.map(d => `<option value="${d.id}">${d.domain}${d.is_default ? ' (default)' : ''}</option>`).join('')}
             </select>
             <div style="font-size:12px;color:var(--text2);margin-top:4px">Choose a custom domain for branded links</div>
