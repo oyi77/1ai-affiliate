@@ -1428,6 +1428,7 @@ router.get('/reports/orders', async (req, res) => {
        WHERE cv.created_at >= UNIX_TIMESTAMP(?) AND cv.created_at <= UNIX_TIMESTAMP(?)
        ORDER BY cv.id DESC LIMIT 100`,
       [dateFrom, dateTo + ' 23:59:59']
+    );
     res.json({ data: rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
