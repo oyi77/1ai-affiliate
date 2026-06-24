@@ -16,6 +16,9 @@ router.get('/', async (req, res) => {
       'integration_trackpro_url', 'integration_trackpro_username', 'integration_trackpro_password', 'integration_trackpro_enabled',
       'integration_shopee_affiliate_id', 'integration_shopee_cookies', 'integration_shopee_enabled',
       'integration_facebook_token', 'integration_facebook_enabled',
+      'integration_voluum_access_id', 'integration_voluum_access_key', 'integration_voluum_endpoint', 'integration_voluum_enabled',
+      'integration_redtrack_api_key', 'integration_redtrack_endpoint', 'integration_redtrack_enabled',
+      'integration_prosper202_url', 'integration_prosper202_api_key', 'integration_prosper202_enabled',
     ];
     const [rows] = await pool.query("SELECT name, value FROM 1ai_settings WHERE name IN (?)", [keys]);
     const config = {};
@@ -28,7 +31,7 @@ router.get('/', async (req, res) => {
 router.put('/:service', async (req, res) => {
   try {
     const service = req.params.service;
-    const validServices = ['bemob', 'trackpro', 'shopee', 'facebook'];
+    const validServices = ['bemob', 'trackpro', 'shopee', 'facebook', 'voluum', 'redtrack', 'prosper202'];
     if (!validServices.includes(service)) return res.status(400).json({ error: 'Invalid service' });
 
     const updates = req.body;
@@ -398,6 +401,284 @@ router.get('/facebook/spend', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+
+// ══════════════════════════════════════════════════════════════════════
+// VOLUUM INTEGRATION
+// ══════════════════════════════════════════════════════════════════════
+async function getVoluumCreds() {
+  const [rows] = await pool.query(
+    "SELECT name, value FROM 1ai_settings WHERE name IN ('integration_voluum_access_id','integration_voluum_access_key','integration_voluum_endpoint','integration_voluum_enabled')"
+  );
+  const cfg = {}; rows.forEach(r => cfg[r.name] = r.value);
+  return {
+    accessId: cfg.integration_voluum_access_id,
+    accessKey: cfg.integration_voluum_access_key,
+    endpoint: cfg.integration_voluum_endpoint || 'https://api.voluum.com',
+    enabled: cfg.integration_voluum_enabled === '1',
+  };
+}
+
+router.post('/voluum/test', async (req, res) => {
+  try {
+    const { accessId, accessKey, endpoint } = await getVoluumCreds();
+    if (!accessId || !accessKey) return res.status(400).json({ error: 'Voluum credentials not configured' });
+
+    // Authenticate and get session token
+    const authResp = await fetch(`${endpoint}/auth/access/session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessId, accessKey }),
+    });
+    if (!authResp.ok) { const t = await authResp.text(); return res.status(authResp.status).json({ error: `Voluum auth error: ${t}` }); }
+
+    const authData = await authResp.json();
+    const token = authData.token;
+
+    // Test: list campaigns
+    const campResp = await fetch(`${endpoint}/campaign?limit=1`, {
+      headers: { 'cwauth-token': token, 'Content-Type': 'application/json' },
+    });
+    if (!campResp.ok) return res.status(campResp.status).json({ error: 'Voluum campaigns API error' });
+
+    const campData = await campResp.json();
+    res.json({ success: true, message: 'Voluum connected', campaigns_count: campData.campaigns?.length || 0, token });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/voluum/import', async (req, res) => {
+  try {
+    const { accessId, accessKey, endpoint } = await getVoluumCreds();
+    if (!accessId || !accessKey) return res.status(400).json({ error: 'Voluum credentials not configured' });
+
+    // Auth
+    const authResp = await fetch(`${endpoint}/auth/access/session`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessId, accessKey }),
+    });
+    if (!authResp.ok) return res.status(authResp.status).json({ error: 'Voluum auth failed' });
+    const { token } = await authResp.json();
+
+    // Fetch campaigns
+    const campResp = await fetch(`${endpoint}/campaign?limit=100`, {
+      headers: { 'cwauth-token': token },
+    });
+    if (!campResp.ok) return res.status(campResp.status).json({ error: 'Voluum API error' });
+    const campData = await campResp.json();
+    const campaigns = campData.campaigns || [];
+
+    let imported = 0;
+    for (const c of campaigns) {
+      const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [c.name]);
+      if (existing) continue;
+      await pool.query(
+        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        [c.name, c.status === 'active' ? 'active' : 'paused', c.cost || 0, c.url || c.campaignUrl || '']
+      );
+      imported++;
+    }
+    res.json({ success: true, imported, total: campaigns.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/voluum/stats', async (req, res) => {
+  try {
+    const { accessId, accessKey, endpoint } = await getVoluumCreds();
+    if (!accessId || !accessKey) return res.status(400).json({ error: 'Voluum credentials not configured' });
+
+    const authResp = await fetch(`${endpoint}/auth/access/session`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessId, accessKey }),
+    });
+    if (!authResp.ok) return res.status(authResp.status).json({ error: 'Voluum auth failed' });
+    const { token } = await authResp.json();
+
+    const from = req.query.date_from || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+    const to = req.query.date_to || new Date().toISOString().split('T')[0];
+
+    const statsResp = await fetch(`${endpoint}/report?from=${from}&to=${to}&groupBy=campaign&columns=clicks,conversions,revenue,cost`, {
+      headers: { 'cwauth-token': token },
+    });
+    if (!statsResp.ok) return res.status(statsResp.status).json({ error: 'Voluum stats API error' });
+
+    const data = await statsResp.json();
+    res.json({ data: data.rows || data.report || [], date_from: from, date_to: to });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// REDTRACK INTEGRATION
+// ══════════════════════════════════════════════════════════════════════
+async function getRedTrackCreds() {
+  const [rows] = await pool.query(
+    "SELECT name, value FROM 1ai_settings WHERE name IN ('integration_redtrack_api_key','integration_redtrack_endpoint','integration_redtrack_enabled')"
+  );
+  const cfg = {}; rows.forEach(r => cfg[r.name] = r.value);
+  return {
+    apiKey: cfg.integration_redtrack_api_key,
+    endpoint: cfg.integration_redtrack_endpoint || 'https://api.redtrack.io',
+    enabled: cfg.integration_redtrack_enabled === '1',
+  };
+}
+
+router.post('/redtrack/test', async (req, res) => {
+  try {
+    const { apiKey, endpoint } = await getRedTrackCreds();
+    if (!apiKey) return res.status(400).json({ error: 'RedTrack API key not configured' });
+
+    const resp = await fetch(`${endpoint}/pub/campaigns?limit=1`, {
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    });
+    if (!resp.ok) { const t = await resp.text(); return res.status(resp.status).json({ error: `RedTrack API error: ${t}` }); }
+
+    const data = await resp.json();
+    res.json({ success: true, message: 'RedTrack connected', campaigns_count: data.total || data.data?.length || 0 });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/redtrack/import', async (req, res) => {
+  try {
+    const { apiKey, endpoint } = await getRedTrackCreds();
+    if (!apiKey) return res.status(400).json({ error: 'RedTrack API key not configured' });
+
+    const resp = await fetch(`${endpoint}/pub/campaigns?limit=100`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: 'RedTrack API error' });
+
+    const data = await resp.json();
+    const campaigns = data.data || data.campaigns || [];
+
+    let imported = 0;
+    for (const c of campaigns) {
+      const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [c.name]);
+      if (existing) continue;
+      await pool.query(
+        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        [c.name, c.status === 'active' ? 'active' : 'paused', c.payout || 0, c.url || c.destinationUrl || '']
+      );
+      imported++;
+    }
+    res.json({ success: true, imported, total: campaigns.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/redtrack/stats', async (req, res) => {
+  try {
+    const { apiKey, endpoint } = await getRedTrackCreds();
+    if (!apiKey) return res.status(400).json({ error: 'RedTrack API key not configured' });
+
+    const from = req.query.date_from || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+    const to = req.query.date_to || new Date().toISOString().split('T')[0];
+
+    const resp = await fetch(`${endpoint}/pub/reporting?date_from=${from}&date_to=${to}&group_by=campaign`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: 'RedTrack reporting API error' });
+
+    const data = await resp.json();
+    res.json({ data: data.rows || data.data || [], date_from: from, date_to: to });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// PROSPER202 INTEGRATION (self-hosted)
+// ══════════════════════════════════════════════════════════════════════
+async function getProsper202Creds() {
+  const [rows] = await pool.query(
+    "SELECT name, value FROM 1ai_settings WHERE name IN ('integration_prosper202_url','integration_prosper202_api_key','integration_prosper202_enabled')"
+  );
+  const cfg = {}; rows.forEach(r => cfg[r.name] = r.value);
+  return {
+    url: cfg.integration_prosper202_url,
+    apiKey: cfg.integration_prosper202_api_key,
+    enabled: cfg.integration_prosper202_enabled === '1',
+  };
+}
+
+router.post('/prosper202/test', async (req, res) => {
+  try {
+    const { url, apiKey } = await getProsper202Creds();
+    if (!url || !apiKey) return res.status(400).json({ error: 'Prosper202 credentials not configured' });
+
+    const resp = await fetch(`${url}/api/v3/campaigns?limit=1`, {
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    });
+    if (!resp.ok) { const t = await resp.text(); return res.status(resp.status).json({ error: `Prosper202 API error: ${t}` }); }
+
+    const data = await resp.json();
+    res.json({ success: true, message: 'Prosper202 connected', campaigns_count: data.total || data.data?.length || 0 });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.post('/prosper202/import', async (req, res) => {
+  try {
+    const { url, apiKey } = await getProsper202Creds();
+    if (!url || !apiKey) return res.status(400).json({ error: 'Prosper202 credentials not configured' });
+
+    const resp = await fetch(`${url}/api/v3/campaigns?limit=100`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: 'Prosper202 API error' });
+
+    const data = await resp.json();
+    const campaigns = data.data || data.campaigns || [];
+
+    let imported = 0;
+    for (const c of campaigns) {
+      const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [c.name]);
+      if (existing) continue;
+      await pool.query(
+        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        [c.name, c.status || 'active', c.payout || 0, c.url || '']
+      );
+      imported++;
+    }
+    res.json({ success: true, imported, total: campaigns.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/prosper202/stats', async (req, res) => {
+  try {
+    const { url, apiKey } = await getProsper202Creds();
+    if (!url || !apiKey) return res.status(400).json({ error: 'Prosper202 credentials not configured' });
+
+    const from = req.query.date_from || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+    const to = req.query.date_to || new Date().toISOString().split('T')[0];
+
+    const resp = await fetch(`${url}/api/v1/?type=traffic&apikey=${apiKey}&date_from=${from}&date_to=${to}`, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: 'Prosper202 API error' });
+
+    const data = await resp.json();
+    res.json({ data: data.rows || data.data || [], date_from: from, date_to: to });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// GENERIC PLATFORM IMPORT (CSV/JSON upload)
+// ══════════════════════════════════════════════════════════════════════
+router.post('/generic/import', async (req, res) => {
+  try {
+    const { platform, campaigns } = req.body;
+    if (!campaigns || !Array.isArray(campaigns)) return res.status(400).json({ error: 'campaigns array required' });
+
+    let imported = 0;
+    for (const c of campaigns) {
+      const name = c.name || c.campaign_name || c.campaignName;
+      if (!name) continue;
+      const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [name]);
+      if (existing) continue;
+      await pool.query(
+        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        [name, c.status || 'active', c.payout || 0, c.url || c.destination_url || '']
+      );
+      imported++;
+    }
+    res.json({ success: true, imported, total: campaigns.length, platform: platform || 'generic' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
 
 // ── Currency: Get exchange rates ───────────────────────────────────
 router.get('/currency/rates', async (req, res) => {
