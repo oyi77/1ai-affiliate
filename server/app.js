@@ -57,8 +57,8 @@ app.use((req, res, next) => {
 
 // Static files — shared with PHP public dir
 app.use(express.static(path.join(__dirname, 'public'), {
+  index: false, // Don't serve index.html for / — let SPA catch-all handle it
   setHeaders: (res, filePath) => {
-    // Never cache HTML/JS/CSS — always fetch latest on deploy
     if (/\.(html|js|css)$/.test(filePath)) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('CDN-Cache-Control', 'no-store');
