@@ -398,4 +398,72 @@ router.get('/facebook/spend', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Currency: Get exchange rates ───────────────────────────────────
+router.get('/currency/rates', async (req, res) => {
+  try {
+    const base = req.query.base || 'USD';
+    const [rows] = await pool.query(
+      'SELECT target_currency, rate FROM 1ai_exchange_rates WHERE base_currency = ? ORDER BY target_currency',
+      [base.toUpperCase()]
+    );
+    res.json({ base: base.toUpperCase(), rates: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Currency: Convert amount ───────────────────────────────────────
+router.get('/currency/convert', async (req, res) => {
+  try {
+    const amount = parseFloat(req.query.amount) || 0;
+    const from = (req.query.from || 'IDR').toUpperCase();
+    const to = (req.query.to || 'USD').toUpperCase();
+
+    if (from === to) return res.json({ amount, from, to, converted: amount, rate: 1 });
+
+    const [[rateRow]] = await pool.query(
+      'SELECT rate FROM 1ai_exchange_rates WHERE base_currency = ? AND target_currency = ?',
+      [from, to]
+    );
+
+    if (!rateRow) return res.status(404).json({ error: `Rate ${from}→${to} not found` });
+
+    const converted = Math.round(amount * rateRow.rate * 100) / 100;
+    res.json({ amount, from, to, converted, rate: rateRow.rate });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Currency: Update rates from API ────────────────────────────────
+router.post('/currency/sync', async (req, res) => {
+  try {
+    // Fetch live rates from exchangerate-api (free, no key needed)
+    const resp = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (!resp.ok) return res.status(resp.status).json({ error: 'Failed to fetch rates' });
+
+    const data = await resp.json();
+    const rates = data.rates || {};
+    const currencies = ['IDR', 'EUR', 'GBP', 'SGD', 'MYR', 'THB', 'PHP', 'VND', 'JPY', 'KRW', 'INR', 'AUD', 'CAD'];
+
+    let updated = 0;
+    for (const cur of currencies) {
+      if (!rates[cur]) continue;
+      await pool.query(
+        `INSERT INTO 1ai_exchange_rates (base_currency, target_currency, rate, fetched_at)
+         VALUES ('USD', ?, ?, UNIX_TIMESTAMP())
+         ON DUPLICATE KEY UPDATE rate = VALUES(rate), fetched_at = UNIX_TIMESTAMP()`,
+        [cur, rates[cur]]
+      );
+      // Also insert reverse rate
+      await pool.query(
+        `INSERT INTO 1ai_exchange_rates (base_currency, target_currency, rate, fetched_at)
+         VALUES (?, 'USD', ?, UNIX_TIMESTAMP())
+         ON DUPLICATE KEY UPDATE rate = VALUES(rate), fetched_at = UNIX_TIMESTAMP()`,
+        [cur, 1 / rates[cur]]
+      );
+      updated++;
+    }
+
+    res.json({ success: true, updated, base: 'USD', timestamp: data.time_last_update_utc });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
