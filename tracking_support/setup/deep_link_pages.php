@@ -63,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 )";
                 
                 if ($db->query($sql)) {
-                    $success = "Landing page created! URL: https://l.berkahkarya.org/{$slug}";
+                    $landingDomain = getenv('LANDING_DOMAIN') ?: 'l.example.com';
+                    $success = "Landing page created! URL: https://{$landingDomain}/{$slug}";
                 } else {
                     $error = 'Database error: ' . $db->error;
                 }
@@ -163,7 +164,7 @@ if ($result) {
                     <div class="form-group">
                         <label>Slug (URL path)</label>
                         <input type="text" name="slug" pattern="[a-zA-Z0-9_-]{1,32}" required placeholder="shopee-deal">
-                        <small>l.berkahkarya.org/<strong>shopee-deal</strong></small>
+                        <small><?= htmlspecialchars(getenv('LANDING_DOMAIN') ?: 'l.example.com') ?>/<strong>shopee-deal</strong></small>
                     </div>
                     <div class="form-group">
                         <label>Page Title</label>
@@ -243,7 +244,7 @@ if ($result) {
                                 <td class="slug"><?= htmlspecialchars($p['slug']) ?></td>
                                 <td><?= htmlspecialchars($p['title']) ?></td>
                                 <td>
-                                    <span class="url-preview">https://l.berkahkarya.org/<?= htmlspecialchars($p['slug']) ?></span>
+                                    <span class="url-preview">https://<?= htmlspecialchars(getenv('LANDING_DOMAIN') ?: 'l.example.com') ?>/<?= htmlspecialchars($p['slug']) ?></span>
                                 </td>
                                 <td><?= (int)$p['impressions'] ?> / <?= (int)$p['clicks'] ?></td>
                                 <td class="<?= $p['is_active'] ? 'status-active' : 'status-inactive' ?>">

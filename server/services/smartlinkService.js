@@ -45,8 +45,8 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
     const protocol = domain.ssl_enabled ? 'https' : 'http';
     smartlinkUrl = `${protocol}://${domain.domain}/go/${slug}`;
   } else {
-    const fallbackDomain = process.env.SMARTLINK_FALLBACK_DOMAIN || 'go.berkahkarya.org';
-    smartlinkUrl = `https://${fallbackDomain}/go/${slug}`;
+    if (!process.env.SMARTLINK_FALLBACK_DOMAIN) throw new Error('SMARTLINK_FALLBACK_DOMAIN not configured');
+    smartlinkUrl = `https://${process.env.SMARTLINK_FALLBACK_DOMAIN}/go/${slug}`;
   }
 
   let shortUrl = null;
@@ -80,7 +80,7 @@ async function mintSmartlink({ offerId, affiliateId, domainId = null, shortenerS
     slug,
     url: smartlinkUrl,
     shortUrl,
-    domain: domain?.domain || process.env.SMARTLINK_FALLBACK_DOMAIN || 'go.berkahkarya.org'
+    domain: domain?.domain || process.env.SMARTLINK_FALLBACK_DOMAIN || ''
   };
 }
 

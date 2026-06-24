@@ -54,7 +54,8 @@ router.post('/generate-link', verifyServiceAuth, async (req, res) => {
     const { user_id, destination_url, campaign_id, platform, sub_id } = req.body;
     
     const trackingId = uuidv4();
-    const trackingUrl = `${process.env.TRACKING_URL || 'https://track.berkahkarya.org'}/${trackingId}`;
+    if (!process.env.TRACKING_URL) return res.status(500).json({ error: 'TRACKING_URL not configured' });
+    const trackingUrl = `${process.env.TRACKING_URL}/${trackingId}`;
     
     // Store tracking link in database
     await pool.query(

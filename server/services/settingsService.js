@@ -11,31 +11,31 @@ const CACHE_TTL_MS = 60_000;
 
 // All known settings with their .env fallback keys and defaults
 const SCHEMA = {
-  // Domains
-  smartlink_domain:       { env: 'SMARTLINK_FALLBACK_DOMAIN',  default: 'go.berkahkarya.org' },
-  smartlink_domain_alt:   { env: 'SMARTLINK_DOMAIN_ALT',       default: 'r.berkahkarya.org' },
-  deeplink_domain:        { env: 'DEEPLINK_DOMAIN',            default: 'go.berkahkarya.org' },
-  click_domain:           { env: 'CLICK_DOMAIN',               default: 'go.aitradepulse.com' },
-  landing_domain:         { env: 'LANDING_DOMAIN',             default: 'l.berkahkarya.org' },
-  app_domain:             { env: 'APP_DOMAIN',                 default: 'affiliate.berkahkarya.org' },
+  // Domains — MUST be configured via env or admin settings
+  smartlink_domain:       { env: 'SMARTLINK_FALLBACK_DOMAIN',  default: '' },
+  smartlink_domain_alt:   { env: 'SMARTLINK_DOMAIN_ALT',       default: '' },
+  deeplink_domain:        { env: 'DEEPLINK_DOMAIN',            default: '' },
+  click_domain:           { env: 'CLICK_DOMAIN',               default: '' },
+  landing_domain:         { env: 'LANDING_DOMAIN',             default: '' },
+  app_domain:             { env: 'APP_DOMAIN',                 default: '' },
 
   // Branding
-  brand_name:             { env: 'BRAND_NAME',                 default: '1ai-Affiliate' },
-  support_email:          { env: 'SUPPORT_EMAIL',              default: 'support@berkahkarya.org' },
-  noreply_email:          { env: 'SMTP_FROM',                  default: 'noreply@berkahkarya.org' },
-  status_page_url:        { env: 'STATUS_PAGE_URL',            default: 'https://status.berkahkarya.org' },
-  changelog_url:          { env: 'CHANGELOG_URL',              default: 'https://changelog.berkahkarya.org' },
-  community_url:          { env: 'COMMUNITY_URL',              default: 'https://community.berkahkarya.org' },
+  brand_name:             { env: 'BRAND_NAME',                 default: '1AI Affiliate' },
+  support_email:          { env: 'SUPPORT_EMAIL',              default: '' },
+  noreply_email:          { env: 'SMTP_FROM',                  default: '' },
+  status_page_url:        { env: 'STATUS_PAGE_URL',            default: '' },
+  changelog_url:          { env: 'CHANGELOG_URL',              default: '' },
+  community_url:          { env: 'COMMUNITY_URL',              default: '' },
 
   // Postback
-  postback_url_template:  { env: 'POSTBACK_URL_TEMPLATE',      default: 'https://{domain}/postback?aff_id={affiliate_id}&payout={payout}&status={status}' },
-  webhook_url_template:   { env: 'WEBHOOK_URL_TEMPLATE',       default: 'https://{domain}/webhooks/incoming' },
+  postback_url_template:  { env: 'POSTBACK_URL_TEMPLATE',      default: '' },
+  webhook_url_template:   { env: 'WEBHOOK_URL_TEMPLATE',       default: '' },
 
   // Shortener
   default_shortener:      { env: 'DEFAULT_SHORTENER',          default: '' },
 
   // Misc
-  default_fallback_url:   { env: 'DEFAULT_FALLBACK_URL',       default: 'https://berkahkarya.org' },
+  default_fallback_url:   { env: 'DEFAULT_FALLBACK_URL',       default: '' },
   default_currency:       { env: 'DEFAULT_CURRENCY',           default: 'IDR' },
 };
 
