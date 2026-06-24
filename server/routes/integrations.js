@@ -308,6 +308,16 @@ router.get('/shopee/live', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── Shopee: Tier status diagnostics ────────────────────────────────
+router.get('/shopee/status', async (req, res) => {
+  try {
+    const shopeeIntegration = require('../services/shopeeIntegration');
+    const status = shopeeIntegration.getTierStatus();
+    res.json({ success: true, ...status });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+
 
 // ── Shopee: Get stored reports ─────────────────────────────────────
 router.get('/shopee/reports', async (req, res) => {

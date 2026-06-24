@@ -180,59 +180,111 @@ async function importCommissionCsv(csvText, userId) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// UNIFIED: Smart fetch — tries all 3 tiers automatically
+// AUTO-DEGRADE: Smart fetch — best tier first, falls back automatically
 // ══════════════════════════════════════════════════════════════════════
 
+const tierState = {
+  activeTier: null,
+  lastCheck: 0,
+  failures: { 1: 0, 2: 0, 3: 0 },
+  cooldownUntil: { 1: 0, 2: 0, 3: 0 },
+};
+
+const TIER_COOLDOWN_MS = 30 * 60 * 1000;
+const MAX_FAILURES = 3;
+const RECHECK_INTERVAL_MS = 60 * 60 * 1000;
+
+function getActiveTier() {
+  const now = Date.now();
+  if (tierState.activeTier && tierState.cooldownUntil[tierState.activeTier] < now) return tierState.activeTier;
+  return null;
+}
+
+function recordSuccess(tier) {
+  tierState.activeTier = tier;
+  tierState.failures[tier] = 0;
+  tierState.lastCheck = Date.now();
+  tierState.cooldownUntil[tier] = 0;
+}
+
+function recordFailure(tier) {
+  tierState.failures[tier]++;
+  if (tierState.failures[tier] >= MAX_FAILURES) {
+    tierState.cooldownUntil[tier] = Date.now() + TIER_COOLDOWN_MS;
+    if (tierState.activeTier === tier) tierState.activeTier = null;
+  }
+}
+
+async function tryTier(tier, days) {
+  if (tier === 1) {
+    const creds = await getOpenPlatformCreds();
+    if (!creds.partner_id || !creds.partner_key) return null;
+    const result = await shopeeOpenApiGet('/api/v2/affiliate/commission/list', { page: '1', page_size: '100' });
+    if (result.error) throw new Error(result.error);
+    return { source: 'open_api', tier: 1, ...result };
+  }
+  if (tier === 2) {
+    const creds = await getCloakBrowserCreds();
+    if (!creds.cookies) return null;
+    const result = await scrapeShopeeApi('/api/v3/affiliate/commission');
+    if (result.error) throw new Error(result.error);
+    return { source: 'cloakbrowser', tier: 2, ...result };
+  }
+  if (tier === 3) {
+    const [rows] = await pool.query(
+      `SELECT * FROM 1ai_shopee_reports WHERE report_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY) ORDER BY order_time DESC LIMIT 200`, [days]
+    );
+    const [[totals]] = await pool.query(
+      `SELECT COUNT(*) as orders, SUM(commission_gross) as gross, SUM(commission_net) as net FROM 1ai_shopee_reports WHERE report_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)`, [days]
+    );
+    return {
+      source: 'database', tier: 3, data: rows, summary: totals, days,
+      note: rows.length ? 'Data from CSV import' : 'No data. Import CSV from Shopee dashboard.',
+    };
+  }
+  return null;
+}
+
 async function fetchCommissions(days = 30) {
-  // Try Tier 1: Open Platform API
-  const t1 = await shopeeOpenApiGet('/api/v2/affiliate/commission/list', {
-    page: '1', page_size: '100',
-  });
-  if (t1.data && !t1.error) {
-    return { source: 'open_api', ...t1 };
-  }
+  const now = Date.now();
+  const active = getActiveTier();
+  const tryOrder = active ? [active, active + 1, active + 2, 3].filter((v, i, a) => a.indexOf(v) === i && v >= 1 && v <= 3) : [1, 2, 3];
+  const tiers = tryOrder.filter(t => tierState.cooldownUntil[t] < now);
 
-  // Try Tier 2: CloakBrowser
-  const t2 = await scrapeShopeeApi('/api/v3/affiliate/commission');
-  if (t2.data && !t2.error) {
-    return { source: 'cloakbrowser', ...t2 };
+  for (const tier of tiers) {
+    try {
+      const result = await tryTier(tier, days);
+      if (!result) { recordFailure(tier); continue; }
+      recordSuccess(tier);
+      return { ...result, auto_degraded: active && active !== tier };
+    } catch (err) {
+      recordFailure(tier);
+    }
   }
-
-  // Fallback: read from DB (Tier 3 data)
-  const [rows] = await pool.query(
-    `SELECT * FROM 1ai_shopee_reports WHERE report_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY) ORDER BY order_time DESC LIMIT 200`,
-    [days]
-  );
-  const [[totals]] = await pool.query(
-    `SELECT COUNT(*) as orders, SUM(commission_gross) as gross, SUM(commission_net) as net
-     FROM 1ai_shopee_reports WHERE report_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)`,
-    [days]
-  );
 
   return {
-    source: 'database',
-    data: rows,
-    summary: totals,
-    days,
-    tier: 3,
-    note: rows.length ? 'Data from CSV import' : 'No data. Import CSV from Shopee dashboard or configure Open Platform API.',
+    source: 'none', tier: null,
+    error: 'All Shopee tiers failed. Import CSV manually.',
+    tier_status: getTierStatus(),
+  };
+}
+
+function getTierStatus() {
+  const now = Date.now();
+  return {
+    active_tier: tierState.activeTier,
+    failures: { ...tierState.failures },
+    cooldowns: {
+      1: tierState.cooldownUntil[1] > now ? Math.round((tierState.cooldownUntil[1] - now) / 1000) + 's remaining' : 'ok',
+      2: tierState.cooldownUntil[2] > now ? Math.round((tierState.cooldownUntil[2] - now) / 1000) + 's remaining' : 'ok',
+      3: 'always available',
+    },
   };
 }
 
 module.exports = {
-  // Tier 1: Open Platform API
-  shopeeOpenApiGet,
-  generateShopeeSign,
-  getOpenPlatformCreds,
-
-  // Tier 2: CloakBrowser
-  scrapeShopeeApi,
-  getCloakBrowserCreds,
-
-  // Tier 3: CSV
-  parseCommissionCsv,
-  importCommissionCsv,
-
-  // Unified
-  fetchCommissions,
+  shopeeOpenApiGet, generateShopeeSign, getOpenPlatformCreds,
+  scrapeShopeeApi, getCloakBrowserCreds,
+  parseCommissionCsv, importCommissionCsv,
+  fetchCommissions, getTierStatus,
 };
