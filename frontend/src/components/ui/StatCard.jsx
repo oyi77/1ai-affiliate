@@ -14,12 +14,13 @@ export function StatCard({ label, value, change, sparkline = [], accent = 'blue'
   const trendColor = trendDirection === 'up' ? 'text-green-success' : trendDirection === 'down' ? 'text-red-error' : 'text-slate-400';
 
   const renderSparkline = () => {
-    if (!sparkline.length) return null;
-    const max = Math.max(...sparkline);
-    const min = Math.min(...sparkline);
+    const valid = sparkline.filter(v => typeof v === 'number' && isFinite(v));
+    if (!valid.length) return null;
+    const max = Math.max(...valid);
+    const min = Math.min(...valid);
     const range = max - min || 1;
-    const points = sparkline.map((val, i) => {
-      const x = (i / (sparkline.length - 1)) * 100;
+    const points = valid.map((val, i) => {
+      const x = (i / (valid.length - 1)) * 100;
       const y = 100 - ((val - min) / range) * 100;
       return `${x},${y}`;
     }).join(' ');

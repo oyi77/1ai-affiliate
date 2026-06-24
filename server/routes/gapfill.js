@@ -1455,7 +1455,7 @@ router.get('/balance/summary', async (req, res) => {
 // ── Traffic Sources Integrations ───────────────────────────────────
 router.get('/traffic-sources/integrations', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT id, name, type, status, postback_url FROM 1ai_traffic_sources ORDER BY id DESC');
+    const [rows] = await pool.query('SELECT id, name, platform_type as type, is_active as status, postback_url_template as postback_url FROM 1ai_traffic_sources ORDER BY id DESC');
     res.json({ data: rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });

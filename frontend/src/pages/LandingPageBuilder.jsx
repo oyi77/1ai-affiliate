@@ -92,7 +92,7 @@ function TemplateCard({ template, onSelect, onUse }) {
         <div className="relative h-40 overflow-hidden bg-white/5">
           {template.html_content ? (
             <div className="absolute inset-0 scale-[0.25] origin-top-left w-[400%] h-[400%]">
-              <iframe srcDoc={template.html_content} className="w-full h-full border-0" sandbox="" title="" tabIndex={-1} />
+              <iframe srcDoc={template.html_content} className="w-full h-full border-0" sandbox="allow-scripts" title="" tabIndex={-1} />
             </div>
           ) : (
             <div className="flex items-center justify-center h-full text-slate-500">
@@ -426,7 +426,7 @@ function MyTemplatesTab({ onEdit }) {
             <div className="relative h-36 overflow-hidden bg-white/5">
               {tpl.html_content ? (
                 <div className="absolute inset-0 scale-[0.25] origin-top-left w-[400%] h-[400%]">
-                  <iframe srcDoc={tpl.html_content} className="w-full h-full border-0" sandbox="" title="" tabIndex={-1} />
+                  <iframe srcDoc={tpl.html_content} className="w-full h-full border-0" sandbox="allow-scripts" title="" tabIndex={-1} />
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-full text-slate-500"><FileText className="w-8 h-8" /></div>
