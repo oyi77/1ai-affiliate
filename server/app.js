@@ -132,12 +132,13 @@ const spaHandler = (req, res) => {
   res.sendFile(path.join(__dirname, 'public/dist/index.html'));
 };
 app.get('/', spaHandler);
-app.get('/admin', spaHandler);
-app.get('/admin/*', spaHandler);
-app.get('/client', spaHandler);
-app.get('/client/*', spaHandler);
-// Catch-all for React client-side routes (campaigns, offers, landing-pages, etc.)
-app.get('*', spaHandler);
+// Catch-all middleware for React client-side routes (must use app.use, not app.get('*'))
+app.use((req, res, next) => {
+  // Only handle GET requests for HTML pages (not API, not static files)
+  if (req.method !== 'GET') return next();
+  if (req.path.startsWith('/api/')) return next();
+  spaHandler(req, res);
+});
 
 // Error handler — log via pino, return request_id for 500s
 app.use((err, req, res, next) => {
