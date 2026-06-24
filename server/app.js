@@ -76,10 +76,6 @@ app.use(express.static(path.join(__dirname, 'public/dist'), {
   }
 }));
 
-// API documentation
-app.get('/api-docs', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
-});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
