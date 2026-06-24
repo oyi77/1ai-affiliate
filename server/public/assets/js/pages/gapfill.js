@@ -1057,7 +1057,7 @@ PageRenderers['trackpro-sync'] = async function(el) {
     if (hasCredentials) {
       credStatus.innerHTML = '<span style="color:var(--green);">✅ Credentials configured</span>';
     } else {
-      credStatus.innerHTML = '<span style="color:var(--red);">❌ Not configured — <a class="link" onclick="Router.navigate('settings'); window._settingsTab='integrations'; Router.navigate('settings')">Set up in Settings</a></span>';
+      credStatus.innerHTML = '<span style="color:var(--red);">❌ Not configured — <a class="link" onclick="Router.navigate(\'settings\'); window._settingsTab=\'integrations\'; Router.navigate(\'settings\')">Set up in Settings</a></span>';
     }
   }
 
@@ -1143,7 +1143,7 @@ window.trackproSync = async function() {
   const password = settings.trackpro_password;
   
   if (!username || !password) {
-    status.innerHTML = '<span style="color:var(--red);">❌ TrackPro credentials not configured. <a class="link" onclick="Router.navigate('settings'); window._settingsTab='integrations'; Router.navigate('settings')">Go to Settings → Integrations</a></span>';
+    status.innerHTML = '<span style="color:var(--red);">❌ TrackPro credentials not configured. <a class="link" onclick="Router.navigate(\'settings\'); window._settingsTab=\'integrations\'; Router.navigate(\'settings\')">Go to Settings → Integrations</a></span>';
     return;
   }
   
