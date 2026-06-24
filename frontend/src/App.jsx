@@ -67,7 +67,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/dist">
       <Shell>
         <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="text-white p-8">Loading...</div></div>}>
           <ErrorBoundary>

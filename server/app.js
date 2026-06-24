@@ -90,6 +90,8 @@ app.use('/api/pipeline', require('./routes/pipeline'));
 app.use('/api/admin', require('./routes/gapfill'));
 app.use('/api/admin/services', require('./routes/services'));
 app.use('/api/affiliate', require('./routes/content-integration'));
+app.use('/api/templates/landing', require('./routes/landingTemplates'));
+app.use('/api/templates', require('./routes/templates'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
@@ -131,6 +133,12 @@ app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, must-revalidate');
   res.setHeader('CDN-Cache-Control', 'no-cache');
   res.sendFile(path.join(__dirname, 'public/admin/index.html'));
+});
+// React SPA (Vite build) — /dist/* serves dist/index.html for client-side routing
+app.get('/dist/*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'no-cache');
+  res.sendFile(path.join(__dirname, 'public/dist/index.html'));
 });
 
 // Error handler — log via pino, return request_id for 500s
