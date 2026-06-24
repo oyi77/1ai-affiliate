@@ -36,6 +36,7 @@ const Reports = lazy(() => import('./pages/Reports.jsx').then(m => ({ default: m
 const ClickTracker = lazy(() => import('./pages/ClickTracker.jsx').then(m => ({ default: m.ClickTracker })).catch(() => fallback));
 const DayParting = lazy(() => import('./pages/DayParting.jsx').then(m => ({ default: m.DayParting })).catch(() => fallback));
 const Integrations = lazy(() => import('./pages/Integrations.jsx'));
+const ImportExport = lazy(() => import('./pages/ImportExport.jsx').then(m => ({ default: m.ImportExport })).catch(() => fallback));
 const Pipeline = lazy(() => import('./pages/Pipeline.jsx').then(m => ({ default: m.Pipeline })).catch(() => fallback));
 const Poster = lazy(() => import('./pages/Poster.jsx').then(m => ({ default: m.Poster })).catch(() => fallback));
 const APIDocs = lazy(() => import('./pages/APIDocs.jsx').then(m => ({ default: m.APIDocs })).catch(() => fallback));
@@ -92,6 +93,7 @@ function App() {
             <Route path="/shorteners" element={<Shorteners />} />
             <Route path="/click-servers" element={<ClickServers />} />
             <Route path="/integrations" element={<Integrations />} />
+            <Route path="/import-export" element={<ImportExport />} />
             <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/poster" element={<Poster />} />
             <Route path="/settings" element={<Settings />} />
