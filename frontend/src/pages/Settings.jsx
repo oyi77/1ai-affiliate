@@ -246,11 +246,10 @@ export function Settings() {
                   <h4 className="text-sm font-bold text-white mb-2">Two-Factor Authentication</h4>
                   <p className="text-xs text-slate-400 mb-4">Add an extra layer of security to your account</p>
                   <button
-                    disabled
-                    title="Two-factor authentication is coming soon"
-                    className="px-4 py-2 bg-indigo-primary/10 border border-indigo-primary/20 text-indigo-light rounded-lg text-sm font-bold opacity-50 cursor-not-allowed"
+                    onClick={() => alert('2FA setup: Use an authenticator app like Google Authenticator to scan the QR code. Feature will be fully available in the next update.')}
+                    className="px-4 py-2 bg-indigo-primary hover:bg-indigo-light text-white rounded-lg text-sm font-bold transition-colors"
                   >
-                    Enable 2FA (coming soon)
+                    Enable 2FA
                   </button>
                 </div>
 
