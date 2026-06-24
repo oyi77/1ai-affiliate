@@ -1,10 +1,10 @@
-require('dotenv').config();
+const path = require('path');
+const crypto = require('crypto');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const pinoHttp = require('pino-http');
-const path = require('path');
-const crypto = require('crypto');
 const pool = require('./db/mysql');
 const logger = require('./logger');
 const metrics = require('./metrics');
@@ -89,6 +89,7 @@ app.use('/api/poster', require('./routes/poster'));
 app.use('/api/pipeline', require('./routes/pipeline'));
 app.use('/api/admin', require('./routes/gapfill'));
 app.use('/api/admin/services', require('./routes/services'));
+app.use('/api/affiliate', require('./routes/content-integration'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
