@@ -1,12 +1,13 @@
 module github.com/1ai-affiliate/edge
 
-go 1.22
+go 1.24.0
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.28.0
 	github.com/IBM/sarama v1.43.3
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-sql-driver/mysql v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/graphql-go/graphql v0.8.1
 	github.com/oschwald/geoip2-golang v1.11.0
@@ -16,6 +17,7 @@ require (
 )
 
 require (
+	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/ClickHouse/ch-go v0.61.5 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
