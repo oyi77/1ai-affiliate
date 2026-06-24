@@ -97,7 +97,7 @@ router.post('/bemob/import', async (req, res) => {
       if (existing) continue;
 
       await pool.query(
-        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at)
+        `INSERT INTO 1ai_offers (name, status, payout, affiliate_url, created_at, updated_at)
          VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
         [c.name || c.campaignName, c.status === 'active' ? 'active' : 'paused', c.payout || 0, c.url || c.destinationUrl || '']
       );
@@ -472,7 +472,7 @@ router.post('/voluum/import', async (req, res) => {
       const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [c.name]);
       if (existing) continue;
       await pool.query(
-        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        `INSERT INTO 1ai_offers (name, status, payout, affiliate_url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
         [c.name, c.status === 'active' ? 'active' : 'paused', c.cost || 0, c.url || c.campaignUrl || '']
       );
       imported++;
@@ -554,7 +554,7 @@ router.post('/redtrack/import', async (req, res) => {
       const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [c.name]);
       if (existing) continue;
       await pool.query(
-        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        `INSERT INTO 1ai_offers (name, status, payout, affiliate_url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
         [c.name, c.status === 'active' ? 'active' : 'paused', c.payout || 0, c.url || c.destinationUrl || '']
       );
       imported++;
@@ -629,7 +629,7 @@ router.post('/prosper202/import', async (req, res) => {
       const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [c.name]);
       if (existing) continue;
       await pool.query(
-        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        `INSERT INTO 1ai_offers (name, status, payout, affiliate_url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
         [c.name, c.status || 'active', c.payout || 0, c.url || '']
       );
       imported++;
@@ -671,7 +671,7 @@ router.post('/generic/import', async (req, res) => {
       const [[existing]] = await pool.query('SELECT id FROM 1ai_offers WHERE name = ? LIMIT 1', [name]);
       if (existing) continue;
       await pool.query(
-        `INSERT INTO 1ai_offers (name, status, payout, url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
+        `INSERT INTO 1ai_offers (name, status, payout, affiliate_url, created_at, updated_at) VALUES (?, ?, ?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
         [name, c.status || 'active', c.payout || 0, c.url || c.destination_url || '']
       );
       imported++;
