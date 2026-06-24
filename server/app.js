@@ -89,6 +89,18 @@ app.use('/api/am', require('./routes/am'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/content', require('./routes/content'));
 app.use('/api/geo', require('./routes/geoip'));
+// Public platform settings (no auth)
+app.get('/api/platform/public', async (req, res) => {
+  try {
+    const pool = require('./db/mysql');
+    const keys = ['brand_name', 'app_domain', 'support_email', 'default_currency', 'smartlink_domain'];
+    const [rows] = await pool.query("SELECT name, value FROM 1ai_settings WHERE name IN (?)", [keys]);
+    const settings = {};
+    rows.forEach(r => { settings[r.name] = r.value; });
+    res.json({ data: settings });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
