@@ -49,30 +49,17 @@ router.post('/bemob/test', async (req, res) => {
     const [[accessRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_bemob_access_key'");
     const [[secretRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_bemob_secret_key'");
     const [[endpointRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_bemob_endpoint'");
-
     const accessKey = accessRow?.value;
     const secretKey = secretRow?.value;
     const endpoint = endpointRow?.value || 'https://api.bemob.com';
+    if (!accessKey || !secretKey) return res.status(400).json({ error: 'BeMob credentials not configured' });
 
-    if (!accessKey || !secretKey) {
-      return res.status(400).json({ error: 'BeMob credentials not configured' });
-    }
-
-    // Test BeMob API - list campaigns
     const resp = await fetch(`${endpoint}/v1/campaigns?limit=1`, {
-      headers: {
-        'Authorization': `Basic ${Buffer.from(`${accessKey}:${secretKey}`).toString('base64')}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'X-Access-Key': accessKey, 'X-Secret-Key': secretKey, 'Content-Type': 'application/json' },
     });
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      return res.status(resp.status).json({ error: `BeMob API error: ${errText}` });
-    }
-
+    if (!resp.ok) { const t = await resp.text(); return res.status(resp.status).json({ error: `BeMob API error: ${t}` }); }
     const data = await resp.json();
-    res.json({ success: true, message: 'BeMob connected', campaigns_count: data.total || data.data?.length || 0 });
+    res.json({ success: true, message: 'BeMob connected', campaigns_count: data.payload?.length || 0 });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -91,13 +78,8 @@ router.post('/bemob/import', async (req, res) => {
 
     // Fetch campaigns from BeMob
     const resp = await fetch(`${endpoint}/v1/campaigns?limit=100`, {
-      headers: {
-        'Authorization': `Basic ${Buffer.from(`${accessKey}:${secretKey}`).toString('base64')}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'X-Access-Key': accessKey, 'X-Secret-Key': secretKey, 'Content-Type': 'application/json' },
     });
-
-    if (!resp.ok) return res.status(resp.status).json({ error: 'BeMob API error' });
 
     const data = await resp.json();
     const campaigns = data.data || data.campaigns || [];
@@ -140,10 +122,7 @@ router.get('/bemob/stats', async (req, res) => {
     const dateTo = req.query.date_to || new Date().toISOString().split('T')[0];
 
     const resp = await fetch(`${endpoint}/v1/statistics?dateFrom=${dateFrom}&dateTo=${dateTo}&groupBy=campaign`, {
-      headers: {
-        'Authorization': `Basic ${Buffer.from(`${accessKey}:${secretKey}`).toString('base64')}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'X-Access-Key': accessKey, 'X-Secret-Key': secretKey, 'Content-Type': 'application/json' },
     });
 
     if (!resp.ok) return res.status(resp.status).json({ error: 'BeMob API error' });
