@@ -1296,4 +1296,41 @@ router.delete('/traffic-rules/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Affiliates Earnings ────────────────────────────────────────────
+router.get('/affiliates/earnings', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+    const [rows] = await pool.query(
+      `SELECT e.*, a.user_id as affiliate_user_id, u.user_name
+       FROM 1ai_affiliate_earnings e
+       LEFT JOIN 1ai_affiliates a ON e.affiliate_id = a.id
+       LEFT JOIN 1ai_users u ON a.user_id = u.user_id
+       ORDER BY e.id DESC LIMIT ?`,
+      [limit]
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Reports: Conversions ───────────────────────────────────────────
+router.get('/reports/conversions', async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const offset = (page - 1) * limit;
+    const [rows] = await pool.query(
+      `SELECT c.*, o.name as offer_name, a.user_name as affiliate_name
+       FROM 1ai_conversions c
+       LEFT JOIN 1ai_offers o ON c.offer_id = o.id
+       LEFT JOIN 1ai_affiliates af ON c.affiliate_id = af.id
+       LEFT JOIN 1ai_users a ON af.user_id = a.user_id
+       ORDER BY c.id DESC LIMIT ? OFFSET ?`,
+      [limit, offset]
+    );
+    const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM 1ai_conversions');
+    res.json({ data: rows, pagination: { page, limit, total } });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
