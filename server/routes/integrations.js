@@ -306,4 +306,96 @@ router.post('/shopee/sync', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Meta Ads: Fetch ad accounts ────────────────────────────────────
+router.get('/facebook/accounts', async (req, res) => {
+  try {
+    const [[tokenRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_facebook_token'");
+    const token = tokenRow?.value;
+    if (!token) return res.status(400).json({ error: 'Facebook token not configured' });
+
+    const resp = await fetch(`https://graph.facebook.com/v21.0/me/adaccounts?fields=id,name,account_status,currency,balance,amount_spent&access_token=${token}`);
+    if (!resp.ok) { const t = await resp.text(); return res.status(resp.status).json({ error: `Meta API error: ${t}` }); }
+
+    const data = await resp.json();
+    const accounts = data.data || [];
+
+    // Store/update accounts in DB
+    for (const acct of accounts) {
+      await pool.query(
+        `INSERT INTO 1ai_meta_accounts (user_id, act_id, account_name, access_token, status, balance, last_synced_at)
+         VALUES (?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP())
+         ON DUPLICATE KEY UPDATE account_name = VALUES(account_name), balance = VALUES(balance), last_synced_at = UNIX_TIMESTAMP()`,
+        [req.user.id, acct.id, acct.name, token, acct.account_status === 1 ? 'active' : 'inactive', parseFloat(acct.balance || 0) / 100]
+      );
+    }
+
+    res.json({ data: accounts, stored: accounts.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Meta Ads: Sync campaign spend ──────────────────────────────────
+router.post('/facebook/sync', async (req, res) => {
+  try {
+    const [[tokenRow]] = await pool.query("SELECT value FROM 1ai_settings WHERE name = 'integration_facebook_token'");
+    const token = tokenRow?.value;
+    if (!token) return res.status(400).json({ error: 'Facebook token not configured' });
+
+    const dateFrom = req.body.date_from || new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+    const dateTo = req.body.date_to || new Date().toISOString().split('T')[0];
+
+    // Get stored accounts
+    const [accounts] = await pool.query('SELECT act_id FROM 1ai_meta_accounts WHERE status = "active"');
+
+    let totalSynced = 0;
+    for (const acct of accounts) {
+      const resp = await fetch(
+        `https://graph.facebook.com/v21.0/${acct.act_id}/insights?fields=campaign_name,impressions,clicks,spend,actions,cost_per_action_type&time_range={"since":"${dateFrom}","until":"${dateTo}"}&level=campaign&access_token=${token}`
+      );
+      if (!resp.ok) continue;
+
+      const data = await resp.json();
+      const insights = data.data || [];
+
+      for (const row of insights) {
+        const spend = parseFloat(row.spend || 0);
+        const clicks = parseInt(row.clicks || 0);
+        const impressions = parseInt(row.impressions || 0);
+
+        await pool.query(
+          `INSERT INTO 1ai_daily_spend (date, campaign_name, spend, clicks, impressions, source, created_at)
+           VALUES (?, ?, ?, ?, ?, 'meta', UNIX_TIMESTAMP())
+           ON DUPLICATE KEY UPDATE spend = VALUES(spend), clicks = VALUES(clicks), impressions = VALUES(impressions)`,
+          [dateFrom, row.campaign_name || 'Unknown', spend, clicks, impressions]
+        );
+        totalSynced++;
+      }
+    }
+
+    // Update last synced time
+    await pool.query("UPDATE 1ai_meta_accounts SET last_synced_at = UNIX_TIMESTAMP() WHERE status = 'active'");
+
+    res.json({ success: true, synced: totalSynced, accounts: accounts.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Meta Ads: Get spend data ───────────────────────────────────────
+router.get('/facebook/spend', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+    const [rows] = await pool.query(
+      `SELECT date, campaign_name, spend, clicks, impressions FROM 1ai_daily_spend
+       WHERE source = 'meta' AND date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+       ORDER BY date DESC, spend DESC`,
+      [days]
+    );
+    const [[total]] = await pool.query(
+      `SELECT COALESCE(SUM(spend), 0) as total_spend, COALESCE(SUM(clicks), 0) as total_clicks
+       FROM 1ai_daily_spend WHERE source = 'meta' AND date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)`,
+      [days]
+    );
+    res.json({ data: rows, summary: total });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
