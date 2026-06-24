@@ -37,12 +37,13 @@ async function authenticate(req, res, next) {
     }
   }
 
-  // JWT mode
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authorization required' });
+  // JWT mode — also accept ?token= query param for SSE/EventSource
+  let token = null;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (req.query.token) {
+    token = req.query.token;
   }
-
-  const token = authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'Authorization required' });
   }
