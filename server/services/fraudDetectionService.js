@@ -316,4 +316,6 @@ module.exports = {
   analyzeClick, analyzeConversion,
   getIPReputation, updateIPReputation,
   checkClick, checkConversion,
+  getDeviceFingerprint: (ua) => getDeviceFingerprint(ua),
+  getClickQualityScore: (data) => getClickQualityScore(data),
 };
