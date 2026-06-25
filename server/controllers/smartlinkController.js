@@ -1,6 +1,9 @@
 const pool = require('../db/mysql');
 const { mintSmartlink, shortenUrl } = require('../services/smartlinkService');
 const { toNumber } = require('./adminController');
+const { classifyVisitor, generateCanaryPage, generateCanaryScript, PROTECTION_PRESETS, SAFE_URLS } = require('../services/smartRedirectEngine');
+const { getDeviceFingerprint } = require('../services/deviceTracker');
+const { lookupIp } = require('../routes/geoip');
 
 async function routeTrafficByHash(req, res) {
   const slug = req.params.hash;
@@ -9,14 +12,14 @@ async function routeTrafficByHash(req, res) {
 
   try {
     const [links] = await pool.query(
-      'SELECT id, affiliate_id, offer_id, slug, clicks FROM 1ai_affiliate_links WHERE slug = ?',
+      'SELECT id, affiliate_id, offer_id, slug, clicks, cloaking_config FROM 1ai_affiliate_links WHERE slug = ?',
       [slug]
     );
     if (!links.length) return res.status(404).send('Link not found');
     const link = links[0];
 
     const [offers] = await pool.query(
-      'SELECT id, name, payout, network_id, advertiser_id FROM 1ai_offers WHERE id = ? AND status = ?',
+      'SELECT id, name, payout, network_id, advertiser_id, tracking_url, geo FROM 1ai_offers WHERE id = ? AND status = ?',
       [link.offer_id, 'active']
     );
     if (!offers.length) return res.status(404).send('Offer not available');
@@ -28,23 +31,77 @@ async function routeTrafficByHash(req, res) {
     );
     const campaignId = campaigns.length ? campaigns[0].aff_campaign_id : offer.id;
     const clickId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    const ua = (req.headers['user-agent'] || '').toLowerCase();
+    const clientIp = req.ip || req.connection?.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || '';
 
-    // Bot detection
-    const bots = ['bot', 'crawler', 'spider', 'slurp', 'mediapartners', 'adsbot', 'googlebot', 'bingbot', 'yandexbot', 'baiduspider', 'facebot', 'ia_archiver'];
-    const isBot = bots.some(b => ua.includes(b));
-    if (isBot) {
+    // ── Parse cloaking config ───────────────────────────────────────────
+    let cloakingConfig = {};
+    try { cloakingConfig = link.cloaking_config ? JSON.parse(link.cloaking_config) : {}; } catch {}
+
+    // Merge with preset if specified
+    const preset = cloakingConfig.protection_preset || 'standard';
+    const config = { ...PROTECTION_PRESETS[preset], ...cloakingConfig };
+
+    // ── Smart Visitor Classification ─────────────────────────────────────
+    const classification = await classifyVisitor(req, config);
+
+    // ── Handle crawlers/bots — serve safe page ──────────────────────────
+    if (classification.visitor_type === 'crawler') {
+      // Record as bot click (don't count as real click)
       await pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]);
-      return res.redirect(offer.tracking_url || '/');
+
+      // Log the bot visit for analytics
+      try {
+        await pool.query(
+          `INSERT INTO 1ai_fraud_log (ip, risk_score, verdict, flags, details, created_at)
+           VALUES (?, ?, 'block', ?, ?, UNIX_TIMESTAMP())`,
+          [clientIp, classification.risk_score, JSON.stringify(classification.signals), JSON.stringify(classification.layers)]
+        );
+      } catch {}
+
+      // Serve safe page or redirect to safe URL
+      if (config.safe_page_html) {
+        return res.send(config.safe_page_html);
+      }
+      return res.redirect(classification.safe_url || config.safe_url || SAFE_URLS.google);
     }
 
-    // Device detection
-    const isMobile = /mobile|android|iphone|ipad|ipod/i.test(ua);
-    const isTablet = /tablet|ipad/i.test(ua);
-    const deviceType = isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop';
+    // ── Handle suspicious visitors — serve canary page ──────────────────
+    if (classification.visitor_type === 'suspicious') {
+      // If JS fingerprinting is required, serve canary page
+      if (config.require_js_fingerprint && !classification.layers.js_fingerprint.present) {
+        const canaryHtml = generateCanaryPage(
+          config.canary_title || 'Welcome',
+          config.canary_content || '<p>Loading...</p>',
+          offer.tracking_url || '/'
+        );
+        // Inject the canary JS that checks for real browser behavior
+        const canaryScript = generateCanaryScript(offer.tracking_url || '/', clickId);
+        const htmlWithScript = canaryHtml.replace('</body>', `<script>${canaryScript}</script></body>`);
+        return res.send(htmlWithScript);
+      }
+
+      // Serve clean landing page if configured
+      if (config.suspicious_strategy === 'clean_lp' && config.clean_lp_url) {
+        return res.redirect(config.clean_lp_url);
+      }
+
+      // Default: serve canary page with JS fingerprint check
+      const canaryHtml = generateCanaryPage(
+        config.canary_title || 'Welcome',
+        config.canary_content || '<p>Loading...</p>',
+        offer.tracking_url || '/'
+      );
+      const canaryScript = generateCanaryScript(offer.tracking_url || '/', clickId);
+      const htmlWithScript = canaryHtml.replace('</body>', `<script>${canaryScript}</script></body>`);
+      return res.send(htmlWithScript);
+    }
+
+    // ── Real User — process click and redirect to offer ─────────────────
+    const ua = req.headers['user-agent'] || '';
+    const device = getDeviceFingerprint(ua);
+    const referer = req.headers['referer'] || req.headers['referrer'] || '';
 
     // Click dedup — same IP + same link within 24h
-    const clientIp = req.ip || req.connection?.remoteAddress || '';
     const [dupCheck] = await pool.query(
       'SELECT click_id FROM 1ai_clicks WHERE click_ip = ? AND aff_campaign_id = ? AND click_time > UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 24 HOUR)) LIMIT 1',
       [clientIp, campaignId]
@@ -53,13 +110,34 @@ async function routeTrafficByHash(req, res) {
       return res.redirect(offer.tracking_url || '/');
     }
 
-    // Update link click count + log to analytics table (with device_type)
+    // Record click enrichment data
+    const geo = classification.layers.ip;
+
+    // Update link click count + log to analytics table + enrichment
     await Promise.all([
       pool.query('UPDATE 1ai_affiliate_links SET clicks = clicks + 1 WHERE id = ?', [link.id]),
       pool.query(
-        'INSERT INTO 1ai_clicks (click_time, aff_campaign_id, click_payout, click_ip, device_type) VALUES (UNIX_TIMESTAMP(), ?, ?, ?, ?)',
-        [campaignId, offer.payout || 0, clientIp, deviceType]
-      )
+        `INSERT INTO 1ai_clicks (click_time, aff_campaign_id, click_payout, click_ip)
+         VALUES (UNIX_TIMESTAMP(), ?, ?, ?)`,
+        [campaignId, offer.payout || 0, clientIp]
+      ),
+      pool.query(
+        `INSERT INTO 1ai_click_log (click_id, offer_id, affiliate_id, subid, ip, country_code, device_type, user_agent, clicked_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP())`,
+        [clickId, offer.id, link.affiliate_id, subid, clientIp, geo.country, device.device_type, ua.substring(0, 512)]
+      ),
+      pool.query(
+        `INSERT INTO 1ai_click_enrichment (click_id, os_name, os_version, browser_name, browser_version, browser_engine, device_type, is_mobile, is_bot, country, country_code, city, region, timezone, latitude, longitude, isp, asn_number, connection_type, is_datacenter, is_vpn, is_proxy, fraud_score, fraud_verdict, fraud_flags, quality_score, enriched_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UNIX_TIMESTAMP())`,
+        [
+          clickId, device.os.name, device.os.version, device.browser.name, device.browser.version, device.browser.engine,
+          device.device_type, device.is_mobile ? 1 : 0, device.is_bot ? 1 : 0,
+          geo.country, geo.country_code, geo.city, geo.region, geo.timezone, geo.latitude, geo.longitude,
+          geo.isp, geo.asn_number, geo.connection_type, geo.is_datacenter ? 1 : 0, geo.is_vpn ? 1 : 0, geo.is_proxy ? 1 : 0,
+          classification.risk_score, classification.visitor_type === 'real_user' ? 'allow' : 'review',
+          JSON.stringify(classification.signals), classification.layers.behavior?.time_on_page_ms ? 80 : 60,
+        ]
+      ),
     ]);
 
     res.redirect(offer.tracking_url || '/');
