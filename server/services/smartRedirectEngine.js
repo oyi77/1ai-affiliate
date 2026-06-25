@@ -19,6 +19,9 @@
 
 const { lookupIp } = require('../routes/geoip');
 const { getDeviceFingerprint } = require('./deviceTracker');
+const { detectCGNAT, generateCompositeKey } = require('./cgnatDetector');
+const { detectPlatformReviewer } = require('./platformReviewDetector');
+const { signClickId, verifyClickId, generateClickId } = require('./hmacService');
 
 // ── Known Crawler/Reviewer IP Ranges ──────────────────────────────────────
 // These are IP ranges commonly used by platform reviewers
@@ -117,6 +120,26 @@ async function classifyVisitor(req, offerConfig = {}) {
   if (geo.is_proxy) {
     result.signals.push('proxy_ip');
     result.risk_score += 0.2;
+  }
+
+  // CGNAT detection — reduce IP-based risk for mobile carrier IPs
+  const cgnat = detectCGNAT(ip);
+  result.layers.cgnat = cgnat;
+  if (cgnat.is_cgnat) {
+    result.signals.push('cgnat_detected');
+    result.risk_score -= 0.15; // Reduce risk — CGNAT IPs are shared, not inherently suspicious
+    result.layers.cgnat.composite_key = generateCompositeKey({
+      ip, ua, acceptLanguage: req.headers['accept-language'] || '', screenRes: req.query._sr || '',
+    });
+  }
+
+  // Platform reviewer detection (before general classification)
+  const platformReview = detectPlatformReviewer(req);
+  result.layers.platform_review = platformReview;
+  if (platformReview.is_reviewer) {
+    result.signals.push(`platform_reviewer_${platformReview.platform}`);
+    result.risk_score += 0.5; // High risk — platform reviewer detected
+    result.safe_url = platformReview.safe_url;
   }
 
   // ── Layer 2: User Agent Analysis ──────────────────────────────────────
@@ -236,6 +259,13 @@ async function classifyVisitor(req, offerConfig = {}) {
       result.safe_url = offerConfig.geo_redirect_url || SAFE_URLS.google;
       result.signals.push('geo_mismatch');
     }
+  }
+
+  // Override: Platform reviewer detected → always safe page
+  if (platformReview.is_reviewer && offerConfig.platform_review_mode !== false) {
+    result.visitor_type = 'crawler';
+    result.redirect_strategy = 'safe_page';
+    result.safe_url = platformReview.safe_url;
   }
 
   return result;
