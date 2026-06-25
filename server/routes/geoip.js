@@ -51,8 +51,55 @@ async function getAsnReader() {
   return asnReader;
 }
 
+// Datacenter/hosting ASN patterns for proxy/VPN detection
+const DATACENTER_PATTERNS = [
+  'amazon', 'aws', 'google', 'microsoft', 'azure', 'digitalocean', 'ovh',
+  'rackspace', 'softlayer', 'equinix', 'colo', 'hosting', 'datacenter',
+  'cloud', 'leaseweb', 'choopa', 'psychz', 'colocrossing', 'contabo',
+  'bunny', 'cloudflare', 'akamai', 'fastly', 'stackpath', 'maxcdn',
+];
+
+// Known VPN/proxy provider ASNs (partial list)
+const VPN_PATTERNS = [
+  'nordvpn', 'expressvpn', 'surfshark', 'protonvpn', 'cyberghost',
+  'private internet', 'pia', 'mullvad', 'windscribe', 'tunnelbear',
+  'hidemyass', 'hidemy', 'hotspot shield', 'anchorfree', 'zenmate',
+  'vpn', 'proxy', 'tor', 'openvpn', 'wireguard',
+];
+
+const MOBILE_PATTERNS = [
+  'mobile', 'cellular', 'wireless', 't-mobile', 'verizon', 'at&t',
+  'sprint', 'vodafone', 'orange', 'telefonica', 'bharti', 'jio',
+  'telkomsel', 'xl axiata', 'indosat', 'smartfren',
+];
+
+function detectConnectionType(asnOrg) {
+  if (!asnOrg) return { connection_type: 'unknown', is_datacenter: false, is_vpn: false, is_mobile: false };
+  const org = asnOrg.toLowerCase();
+
+  const is_datacenter = DATACENTER_PATTERNS.some(p => org.includes(p));
+  const is_vpn = VPN_PATTERNS.some(p => org.includes(p));
+  const is_mobile = MOBILE_PATTERNS.some(p => org.includes(p));
+
+  let connection_type = 'residential';
+  if (is_datacenter) connection_type = 'datacenter';
+  else if (is_vpn) connection_type = 'vpn';
+  else if (is_mobile) connection_type = 'mobile';
+
+  return { connection_type, is_datacenter, is_vpn, is_mobile };
+}
+
 async function lookupIp(ip) {
-  const result = { ip, country: null, country_code: null, continent: null, city: null, region: null, timezone: null, latitude: null, longitude: null, isp: null, asn_number: null };
+  const result = {
+    ip,
+    country: null, country_code: null, continent: null,
+    city: null, region: null, timezone: null,
+    latitude: null, longitude: null,
+    isp: null, asn_number: null,
+    connection_type: 'unknown',
+    is_datacenter: false, is_vpn: false, is_mobile: false,
+    is_proxy: false,
+  };
 
   const cr = await getCountryReader();
   if (cr) {
@@ -65,9 +112,7 @@ async function lookupIp(ip) {
       if (country && country.continent) {
         result.continent = country.continent.names?.en || '';
       }
-    } catch {
-      // IP not found in database
-    }
+    } catch {}
   }
 
   const cit = await getCityReader();
@@ -81,9 +126,7 @@ async function lookupIp(ip) {
         result.latitude = city.location?.latitude || null;
         result.longitude = city.location?.longitude || null;
       }
-    } catch {
-      // IP not found in database
-    }
+    } catch {}
   }
 
   const ar = await getAsnReader();
@@ -93,10 +136,11 @@ async function lookupIp(ip) {
       if (asn) {
         result.isp = asn.autonomous_system_organization || null;
         result.asn_number = asn.autonomous_system_number || null;
+        const conn = detectConnectionType(asn.autonomous_system_organization);
+        Object.assign(result, conn);
+        result.is_proxy = conn.is_vpn || conn.is_datacenter;
       }
-    } catch {
-      // IP not found in database
-    }
+    } catch {}
   }
 
   return result;
