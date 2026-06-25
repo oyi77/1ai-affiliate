@@ -170,22 +170,27 @@ Defects: **0**
 | Journey | Steps / Layers | Result | Defects |
 |---------|---------------|--------|---------|
 | Login → Dashboard → API | Frontend → Auth → Backend → DB → Response → UI | PASS | 0 |
-| GeoIP → Fraud → Redirect | IP → MaxMind → ASN → Score → Decision | PASS | 0 |
-| HMAC → Postback Verify | Click ID → Sign → Store → Verify | PASS | 0 |
-
----
-
-### 9.6 Final Evidence Report
-
 | Layer | Method | DevTools? | Security? | Cases | Passed | Fixed & re-verified | Open | Not tested |
 |-------|--------|-----------|-----------|-------|--------|---------------------|------|------------|
-| Frontend | Both | ✅ | ✅ | 50 | 50 | 3 → 0 | 0 | Responsive breakpoints (not tested — headless) |
+| Frontend | Both | ✅ | ✅ | 50 | 50 | 3→0 | 0 | Responsive breakpoints (headless limitation) |
 | Backend | Auto | N/A | ✅ | 41 | 41 | 0 | 0 | Rate limiting (not configured) |
 | API | Auto | N/A | ✅ | 41 | 41 | 0 | 0 | GraphQL (not applicable) |
 | Smart Link Engine | Auto | N/A | ✅ | 21 | 21 | 0 | 0 | None |
 | Database | Manual | N/A | N/A | 4 | 4 | 0 | 0 | None |
-| Infra | Manual | N/A | N/A | 3 | 3 | 0 | 0 | Docker (not tested — using PM2) |
+| Infra | Manual | N/A | N/A | 3 | 3 | 0 | 0 | Docker (using PM2) |
+| Sidebar Navigation | Manual | ✅ | N/A | 7 | 7 | 0 | 0 | None |
+| Forms & Interactive | Manual | ✅ | N/A | 5 | 5 | 0 | 0 | None |
+| **Total** | | | | **172** | **172** | **3** | **0** | |
 
+**Sidebar QA:** All 7 sections (Overview, Tracking, Links, Analytics, Revenue, Tools, System) expand correctly. 38 nav links visible.
+
+**Forms QA:** Login form (username + password fields), Sign In modal, all buttons responsive.
+
+**E2E Journeys:**
+- Login → Dashboard → Sidebar expand → Navigate: PASS
+- Traffic Sources (4) → Clicks (19) → Conversions (3): PASS
+- Affiliate Links (10) → GeoIP pipeline → Fraud detection: PASS
+- Smart Redirect: Real user→offer_page, Bot→safe_page, FB reviewer→safe_page, Headless→safe_page, CGNAT→offer_page: ALL PASS
 **Cross-layer E2E pass defect-free?** ✅ Ya
 
 **Definition of Done (Section 6) terpenuhi?**
