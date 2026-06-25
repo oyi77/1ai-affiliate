@@ -12,10 +12,20 @@ import {
   QrCode,
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
+import { TemplateSelector } from '../components/ui/TemplateSelector';
 import api from '../lib/api';
 import { useMutation } from '@tanstack/react-query';
 import { useSafeQuery } from '../hooks/useSafeQuery';
 import { useSettings } from '../hooks/useSettings';
+import smartlinkTemplates from '../data/smartlinkTemplates';
+
+const SL_CATEGORIES = {
+  global: { label: 'Global', color: 'bg-blue-500/20 text-blue-400' },
+  geo_targeted: { label: 'Geo Targeted', color: 'bg-emerald-500/20 text-emerald-400' },
+  device_specific: { label: 'Device', color: 'bg-purple-500/20 text-purple-400' },
+  vertical_specific: { label: 'Vertical', color: 'bg-orange-500/20 text-orange-400' },
+  premium: { label: 'Premium', color: 'bg-yellow-500/20 text-yellow-400' },
+};
 
 const steps = [
   { id: 1, name: 'Offer', icon: Target },
@@ -25,6 +35,7 @@ const steps = [
 ];
 
 export function SmartlinkGenerator() {
+  const [tplSelectorOpen, setTplSelectorOpen] = useState(false);
   const { settings } = useSettings();
   const smartlinkDomain = settings.smartlink_domain || 'go.berkahkarya.org';
   const [step, setStep] = useState(1);
@@ -200,6 +211,12 @@ export function SmartlinkGenerator() {
       <header className="text-center mb-12">
         <h2 className="text-3xl font-bold text-white">Smartlink Generator</h2>
         <p className="text-slate-400 mt-2">Generate high-converting tracking links in seconds.</p>
+        <button
+          onClick={() => setTplSelectorOpen(true)}
+          className="mt-4 px-4 py-2 bg-surface-3 text-slate-300 rounded-lg text-sm font-medium hover:bg-surface-hover transition-all"
+        >
+          📋 Use Template
+        </button>
       </header>
 
       <GlassCard className="relative overflow-hidden">
@@ -260,6 +277,16 @@ export function SmartlinkGenerator() {
           </button>
         </div>
       </GlassCard>
+      <TemplateSelector
+        open={tplSelectorOpen}
+        onOpenChange={setTplSelectorOpen}
+        templates={smartlinkTemplates}
+        categoryMap={SL_CATEGORIES}
+        title="Select Smartlink Template"
+        onSelect={(tpl) => {
+          setFormData(prev => ({ ...prev, offerName: tpl.name }));
+        }}
+      />
     </div>
   );
 }

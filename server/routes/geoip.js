@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Lazy-loaded readers (initialized once on first request)
 let countryReader = null;
+let cityReader = null;
 let asnReader = null;
 
 const GEO_DIR = path.resolve(__dirname, '../../config/geo');
@@ -24,6 +25,19 @@ async function getCountryReader() {
   return countryReader;
 }
 
+async function getCityReader() {
+  if (!cityReader) {
+    const dbPath = path.join(GEO_DIR, 'City.mmdb');
+    try {
+      cityReader = await maxmind.open(dbPath);
+    } catch (err) {
+      console.error('Failed to load City.mmdb:', err.message);
+      return null;
+    }
+  }
+  return cityReader;
+}
+
 async function getAsnReader() {
   if (!asnReader) {
     const dbPath = path.join(GEO_DIR, 'GeoLite2-ASN.mmdb');
@@ -38,7 +52,7 @@ async function getAsnReader() {
 }
 
 async function lookupIp(ip) {
-  const result = { ip, country: null, country_code: null, continent: null, isp: null, asn_number: null };
+  const result = { ip, country: null, country_code: null, continent: null, city: null, region: null, timezone: null, latitude: null, longitude: null, isp: null, asn_number: null };
 
   const cr = await getCountryReader();
   if (cr) {
@@ -50,6 +64,22 @@ async function lookupIp(ip) {
       }
       if (country && country.continent) {
         result.continent = country.continent.names?.en || '';
+      }
+    } catch {
+      // IP not found in database
+    }
+  }
+
+  const cit = await getCityReader();
+  if (cit) {
+    try {
+      const city = cit.get(ip);
+      if (city) {
+        result.city = city.city?.names?.en || null;
+        result.region = city.subdivisions?.[0]?.names?.en || null;
+        result.timezone = city.location?.time_zone || null;
+        result.latitude = city.location?.latitude || null;
+        result.longitude = city.location?.longitude || null;
       }
     } catch {
       // IP not found in database

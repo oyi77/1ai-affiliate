@@ -6,11 +6,23 @@ import api from '../lib/api';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
+import { TemplateSelector } from '../components/ui/TemplateSelector';
 import { Plus, Target, Play, Pause, TrendingUp, Download } from 'lucide-react';
 import { ErrorState } from '../components/ErrorState';
+import campaignTemplates from '../data/campaignTemplates';
+
+const CMP_CATEGORIES = {
+  direct_link: { label: 'Direct Link', color: 'bg-blue-500/20 text-blue-400' },
+  landing_page: { label: 'Landing Page', color: 'bg-emerald-500/20 text-emerald-400' },
+  smartlink: { label: 'Smartlink', color: 'bg-purple-500/20 text-purple-400' },
+  email: { label: 'Email', color: 'bg-orange-500/20 text-orange-400' },
+  social: { label: 'Social', color: 'bg-pink-500/20 text-pink-400' },
+  native: { label: 'Native', color: 'bg-cyan-500/20 text-cyan-400' },
+};
 
 export function Campaigns() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [tplSelectorOpen, setTplSelectorOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', status: 'active' });
   const queryClient = useQueryClient();
 
@@ -175,6 +187,12 @@ export function Campaigns() {
             Export
           </button>
           <button
+            onClick={() => setTplSelectorOpen(true)}
+            className="flex items-center gap-2 px-4 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all"
+          >
+            📋 From Template
+          </button>
+          <button
             onClick={() => setCreateModalOpen(true)}
             className="flex items-center gap-2 px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold shadow-lg shadow-indigo-primary/20 hover:bg-indigo-light hover:-translate-y-0.5 transition-all"
           >
@@ -248,6 +266,17 @@ export function Campaigns() {
           </div>
         </form>
       </Modal>
+      <TemplateSelector
+        open={tplSelectorOpen}
+        onOpenChange={setTplSelectorOpen}
+        templates={campaignTemplates}
+        categoryMap={CMP_CATEGORIES}
+        title="Select Campaign Template"
+        onSelect={(tpl) => {
+          setFormData(prev => ({ ...prev, name: tpl.name }));
+          setCreateModalOpen(true);
+        }}
+      />
     </div>
   );
 }
