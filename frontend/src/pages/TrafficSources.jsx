@@ -5,20 +5,29 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { SlideOver } from '../components/ui/SlideOver';
+import { TemplateSelector } from '../components/ui/TemplateSelector';
 import { Radio, Plus, Globe, Settings, Check, RefreshCw, Link2, Loader2 } from 'lucide-react';
 import api from '../lib/api';
 import { ErrorState } from '../components/ErrorState';
+import trafficSourceTemplates from '../data/trafficSourceTemplates';
 
-const TEMPLATES = [
-  { id: 'meta', label: 'Meta Ads', icon: '📘', platform_type: 'meta', cost_model: 'CPC', desc: 'Facebook & Instagram ads' },
-  { id: 'google', label: 'Google Ads', icon: '🔍', platform_type: 'google', cost_model: 'CPC', desc: 'Search & Display campaigns' },
-  { id: 'tiktok', label: 'TikTok Ads', icon: '🎵', platform_type: 'tiktok', cost_model: 'CPC', desc: 'TikTok For Business' },
-  { id: 'propellerads', label: 'PropellerAds', icon: '🌐', platform_type: 'propellerads', cost_model: 'CPM', desc: 'Pop & Push traffic' },
-  { id: 'custom', label: 'Custom', icon: '⚙️', platform_type: 'custom', cost_model: 'CPC', desc: 'Any other traffic source' },
-];
+const TS_CATEGORIES = {
+  social: { label: 'Social', color: 'bg-blue-500/20 text-blue-400' },
+  search: { label: 'Search', color: 'bg-emerald-500/20 text-emerald-400' },
+  native: { label: 'Native', color: 'bg-purple-500/20 text-purple-400' },
+  push: { label: 'Push', color: 'bg-orange-500/20 text-orange-400' },
+  pop: { label: 'Pop', color: 'bg-pink-500/20 text-pink-400' },
+  display: { label: 'Display', color: 'bg-cyan-500/20 text-cyan-400' },
+  video: { label: 'Video', color: 'bg-red-500/20 text-red-400' },
+  adult: { label: 'Adult', color: 'bg-rose-500/20 text-rose-400' },
+  other: { label: 'Other', color: 'bg-slate-500/20 text-slate-400' },
+};
+
+const TEMPLATES = trafficSourceTemplates;
 
 export function TrafficSources() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({ name: '', platform_type: '', cost_model: 'CPC', currency: 'IDR', tracking_domain: '' });
   const [formError, setFormError] = useState('');
@@ -79,7 +88,12 @@ export function TrafficSources() {
 
   function selectTemplate(tpl) {
     setSelectedTemplate(tpl);
-    setFormData(prev => ({ ...prev, platform_type: tpl.platform_type, cost_model: tpl.cost_model }));
+    setFormData(prev => ({
+      ...prev,
+      name: prev.name || tpl.name,
+      platform_type: tpl.platformType || tpl.platform_type,
+      cost_model: tpl.costModel || tpl.cost_model || 'CPC',
+    }));
   }
 
   function handleSubmit(e) {
@@ -224,29 +238,24 @@ export function TrafficSources() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="text-sm font-medium text-slate-300 mb-3 block">Platform Template</label>
-            <div className="grid grid-cols-5 gap-3">
-              {TEMPLATES.map(tpl => (
-                <button
-                  type="button"
-                  key={tpl.id}
-                  onClick={() => selectTemplate(tpl)}
-                  className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
-                    selectedTemplate?.id === tpl.id
-                      ? 'border-indigo-primary bg-indigo-primary/10 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
-                      : 'border-white/10 bg-surface-2 hover:border-white/20'
-                  }`}
-                >
-                  {selectedTemplate?.id === tpl.id && (
-                    <div className="absolute top-2 right-2">
-                      <Check className="w-3.5 h-3.5 text-indigo-light" />
-                    </div>
-                  )}
-                  <span className="text-2xl">{tpl.icon}</span>
-                  <span className="text-xs font-semibold text-white">{tpl.label}</span>
-                  <span className="text-[10px] text-slate-500 text-center leading-tight">{tpl.desc}</span>
-                </button>
-              ))}
-            </div>
+            {selectedTemplate ? (
+              <div className="flex items-center gap-3 p-3 bg-indigo-600/10 border border-indigo-500/30 rounded-xl">
+                <span className="text-2xl">{selectedTemplate.icon}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-white">{selectedTemplate.name}</p>
+                  <p className="text-xs text-slate-400">{selectedTemplate.description}</p>
+                </div>
+                <button type="button" onClick={() => { setSelectedTemplate(null); resetForm(); }} className="text-xs text-indigo-400 hover:text-indigo-300">Change</button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setTemplateSelectorOpen(true)}
+                className="w-full p-4 border-2 border-dashed border-white/10 rounded-xl text-slate-400 hover:border-indigo-500/30 hover:text-white transition-colors text-sm"
+              >
+                🔍 Browse {TEMPLATES.length} templates...
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -417,6 +426,14 @@ export function TrafficSources() {
           </div>
         )}
       </SlideOver>
+      <TemplateSelector
+        open={templateSelectorOpen}
+        onOpenChange={setTemplateSelectorOpen}
+        templates={TEMPLATES}
+        categoryMap={TS_CATEGORIES}
+        title="Select Traffic Source"
+        onSelect={selectTemplate}
+      />
     </div>
   );
 }

@@ -5,19 +5,29 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { SlideOver } from '../components/ui/SlideOver';
+import { TemplateSelector } from '../components/ui/TemplateSelector';
 import { Building2, Plus, Globe, Settings, Upload, FileSpreadsheet, X } from 'lucide-react';
 import api from '../lib/api';
 import { ErrorState } from '../components/ErrorState';
+import advertiserTemplates from '../data/advertiserTemplates';
 
-const TEMPLATES = [
-  { id: 'shopee', label: 'Shopee', icon: '🛒', platform_type: 'shopee', desc: 'Shopee Affiliate Program' },
-  { id: 'tokopedia', label: 'Tokopedia', icon: '🏪', platform_type: 'tokopedia', desc: 'Tokopedia Affiliate' },
-  { id: 'lazada', label: 'Lazada', icon: '🛍️', platform_type: 'lazada', desc: 'Lazada Affiliate' },
-  { id: 'custom', label: 'Custom', icon: '⚙️', platform_type: 'custom', desc: 'Custom advertiser' },
-];
+const ADV_CATEGORIES = {
+  cpa: { label: 'CPA Network', color: 'bg-emerald-500/20 text-emerald-400' },
+  ecommerce: { label: 'E-Commerce', color: 'bg-blue-500/20 text-blue-400' },
+  finance: { label: 'Finance', color: 'bg-yellow-500/20 text-yellow-400' },
+  gaming: { label: 'Gaming', color: 'bg-purple-500/20 text-purple-400' },
+  dating: { label: 'Dating', color: 'bg-pink-500/20 text-pink-400' },
+  sweepstakes: { label: 'Sweepstakes', color: 'bg-orange-500/20 text-orange-400' },
+  health: { label: 'Health', color: 'bg-green-500/20 text-green-400' },
+  saas: { label: 'SaaS', color: 'bg-cyan-500/20 text-cyan-400' },
+  other: { label: 'Other', color: 'bg-slate-500/20 text-slate-400' },
+};
+
+const TEMPLATES = advertiserTemplates;
 
 export function Advertisers() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', company_name: '', website: '', platform_type: '' });
   const [formError, setFormError] = useState('');
@@ -145,7 +155,11 @@ export function Advertisers() {
 
   function selectTemplate(tpl) {
     setSelectedTemplate(tpl);
-    setFormData(prev => ({ ...prev, platform_type: tpl.platform_type }));
+    setFormData(prev => ({
+      ...prev,
+      name: prev.name || tpl.name,
+      platform_type: tpl.platformType || tpl.platform_type,
+    }));
   }
 
   function handleSubmit(e) {
@@ -208,29 +222,24 @@ export function Advertisers() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="text-sm font-medium text-slate-300 mb-3 block">Platform Template</label>
-            <div className="grid grid-cols-4 gap-3">
-              {TEMPLATES.map(tpl => (
-                <button
-                  type="button"
-                  key={tpl.id}
-                  onClick={() => selectTemplate(tpl)}
-                  className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
-                    selectedTemplate?.id === tpl.id
-                      ? 'border-indigo-primary bg-indigo-primary/10 shadow-[0_0_15px_rgba(99,102,241,0.15)]'
-                      : 'border-white/10 bg-surface-2 hover:border-white/20'
-                  }`}
-                >
-                  {selectedTemplate?.id === tpl.id && (
-                    <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-indigo-primary flex items-center justify-center">
-                      <span className="text-white text-[10px]">✓</span>
-                    </div>
-                  )}
-                  <span className="text-2xl">{tpl.icon}</span>
-                  <span className="text-xs font-semibold text-white">{tpl.label}</span>
-                  <span className="text-[10px] text-slate-500 text-center leading-tight">{tpl.desc}</span>
-                </button>
-              ))}
-            </div>
+            {selectedTemplate ? (
+              <div className="flex items-center gap-3 p-3 bg-indigo-600/10 border border-indigo-500/30 rounded-xl">
+                <span className="text-2xl">{selectedTemplate.icon}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-white">{selectedTemplate.name}</p>
+                  <p className="text-xs text-slate-400">{selectedTemplate.description}</p>
+                </div>
+                <button type="button" onClick={() => { setSelectedTemplate(null); setFormData(p => ({ ...p, platform_type: '' })); }} className="text-xs text-indigo-400 hover:text-indigo-300">Change</button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setTemplateSelectorOpen(true)}
+                className="w-full p-4 border-2 border-dashed border-white/10 rounded-xl text-slate-400 hover:border-indigo-500/30 hover:text-white transition-colors text-sm"
+              >
+                🔍 Browse {TEMPLATES.length} templates...
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -432,6 +441,14 @@ export function Advertisers() {
           </div>
         )}
       </SlideOver>
+      <TemplateSelector
+        open={templateSelectorOpen}
+        onOpenChange={setTemplateSelectorOpen}
+        templates={TEMPLATES}
+        categoryMap={ADV_CATEGORIES}
+        title="Select Advertiser / CPA Network"
+        onSelect={selectTemplate}
+      />
     </div>
   );
 }
