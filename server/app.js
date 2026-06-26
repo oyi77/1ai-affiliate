@@ -10,6 +10,7 @@ const logger = require('./logger');
 const metrics = require('./metrics');
 const { idempotency } = require('./middleware/idempotency');
 const { auditLog } = require('./middleware/auditLog');
+const { authenticate } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -122,6 +123,48 @@ app.use('/api/migration', require('./routes/migration'));
 app.use('/api/advertiser', require('./routes/advertiserSelfService'));
 app.use('/api/offers', require('./routes/offerBrowser'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+// Auto-optimization cron (runs every 15 minutes)
+const { runOptimization } = require('./services/autoOptimizer');
+setInterval(() => {
+  runOptimization().then(r => {
+    if (r.actions.length > 0) console.log(`[AutoOptimize] ${r.actions.length} actions taken`);
+  }).catch(e => console.error('[AutoOptimize] error:', e.message));
+}, 15 * 60 * 1000);
+
+// Real-time dashboard SSE
+const { createSSEHandler } = require('./services/realtimeDashboard');
+app.get('/api/admin/stats/stream', createSSEHandler(5000));
+
+// Direct tracking pixel
+const { handlePixelRequest } = require('./services/directTracking');
+app.get('/pixel.gif', async (req, res) => {
+  await handlePixelRequest(req.query);
+  const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+  res.writeHead(200, { 'Content-Type': 'image/gif', 'Cache-Control': 'no-store' });
+  res.end(gif);
+});
+
+// Attribution API
+const attributionService = require('./services/attributionService');
+app.get('/api/attribution/report', authenticate, async (req, res) => {
+  try {
+    const report = await attributionService.getAttributionReport(req.query);
+    res.json({ data: report });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Auto-optimization API
+app.get('/api/admin/optimization/history', authenticate, async (req, res) => {
+  try {
+    const { getOptimizationHistory } = require('./services/autoOptimizer');
+    res.json({ data: await getOptimizationHistory() });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/admin/optimization/run', authenticate, async (req, res) => {
+  try {
+    res.json({ data: await runOptimization() });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
