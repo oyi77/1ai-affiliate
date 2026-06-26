@@ -1,5 +1,5 @@
 // 1ai-Affiliate Service Worker — offline shell + cache-first for static assets
-const CACHE = '1ai-v3';
+const CACHE = '1ai-v1';
 const PRECACHE = ['/', '/index.html'];
 
 self.addEventListener('install', (e) => {

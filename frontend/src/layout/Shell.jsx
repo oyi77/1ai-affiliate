@@ -3,7 +3,7 @@ import { LayoutDashboard, Target, Layers, Link as LinkIcon, Users,
   Sparkles, BarChart3, Shield, Crown, HelpCircle,
   Globe, Server, TrendingUp, Eye, Clock, FileText,
   Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart, Wallet, CreditCard, Webhook,
-  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database } from 'lucide-react';
+  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
@@ -185,8 +185,19 @@ export function Sidebar({ open, setOpen }) {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-white/[0.06] text-xs text-gray-600">
-          v1.0.0
+        <div className="px-4 py-3 border-t border-white/[0.06]">
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              window.location.href = '/';
+            }}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+          <div className="text-xs text-gray-600 mt-2">v1.0.0</div>
         </div>
       </motion.aside>
     </>

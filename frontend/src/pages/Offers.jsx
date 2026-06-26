@@ -24,10 +24,11 @@ export function Offers() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tplSelectorOpen, setTplSelectorOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    payout: '',
-    network_id: '',
-    status: 'active',
+    name: '', payout: '', network_id: '', status: 'active',
+    url: '', country: 'Global', currency: 'USD',
+    payout_type: 'auto', postback_url: '',
+    click_id_param: 'clickid', daily_cap: '',
+    vertical: '', type: 'CPA',
   });
   const queryClient = useQueryClient();
 
@@ -54,7 +55,7 @@ export function Offers() {
     onSuccess: () => {
       queryClient.invalidateQueries(['offers']);
       setCreateModalOpen(false);
-      setFormData({ name: '', payout: '', network_id: '', status: 'active' });
+      setFormData({ name: '', payout: '', network_id: '', status: 'active', url: '', country: 'Global', currency: 'USD', payout_type: 'auto', postback_url: '', click_id_param: 'clickid', daily_cap: '', vertical: '', type: 'CPA' });
     },
     onError: (err) => {
       alert(err.response?.data?.error || 'Operation failed');
@@ -232,69 +233,145 @@ export function Offers() {
       <Modal
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
-        title="Create New Offer"
-        description="Add a new offer to your affiliate network"
+        title="Create Offer"
+        description="Add an offer to track conversions and payouts"
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createMutation.mutate(formData);
-          }}
-          className="space-y-6"
-        >
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase">Offer Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary"
-              placeholder="iPhone 15 Pro - Sweepstakes"
-              required
-            />
+        <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }} className="space-y-5">
+          {/* Section 1: Offer Details */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">1. Offer Details</h3>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Name *</label>
+              <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary" placeholder="iPhone 15 Pro - Sweepstakes ID" required />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Country</label>
+                <select value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="Global">Global</option>
+                  <option value="ID">Indonesia</option>
+                  <option value="US">United States</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="MY">Malaysia</option>
+                  <option value="TH">Thailand</option>
+                  <option value="PH">Philippines</option>
+                  <option value="VN">Vietnam</option>
+                  <option value="SG">Singapore</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="BR">Brazil</option>
+                  <option value="MX">Mexico</option>
+                  <option value="IN">India</option>
+                  <option value="JP">Japan</option>
+                  <option value="AU">Australia</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Affiliate Network</label>
+                <select value={formData.network_id} onChange={(e) => setFormData({ ...formData, network_id: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="">None (Direct)</option>
+                  {networks?.map(n => <option key={n.id} value={n.id}>{n.name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 mb-1.5 block">URL *</label>
+              <textarea value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
+                rows={3} placeholder="https://network.com/offer?aff_id=123&clickid={clickId}" required />
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {['{clickId}', '{campaignId}', '{campaignName}', '{trafficSourceId}', '{country}', '{deviceType}', '{browser}', '{os}', '{ip}', '{cost.USD}'].map(token => (
+                  <button key={token} type="button" onClick={() => setFormData({ ...formData, url: formData.url + token })}
+                    className="px-2 py-0.5 bg-indigo-600/20 text-indigo-300 rounded text-[10px] font-mono hover:bg-indigo-600/40 transition-colors">
+                    + {token}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase">Payout (USD)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.payout}
-              onChange={(e) => setFormData({ ...formData, payout: e.target.value })}
-              className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary"
-              placeholder="25.00"
-              required
-            />
+          {/* Section 2: Advanced Options */}
+          <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">2. Advanced Options</h3>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Postback URL</label>
+              <input type="text" value={formData.postback_url} onChange={(e) => setFormData({ ...formData, postback_url: e.target.value })}
+                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
+                placeholder="https://network.com/postback?clickid={clickId}&payout={payout}" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Click ID Parameter</label>
+                <input type="text" value={formData.click_id_param} onChange={(e) => setFormData({ ...formData, click_id_param: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm" placeholder="clickid" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Vertical</label>
+                <select value={formData.vertical} onChange={(e) => setFormData({ ...formData, vertical: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="">Select vertical</option>
+                  <option value="sweepstakes">Sweepstakes</option>
+                  <option value="ecommerce">E-Commerce</option>
+                  <option value="finance">Finance</option>
+                  <option value="gaming">Gaming</option>
+                  <option value="dating">Dating</option>
+                  <option value="health">Health/Nutra</option>
+                  <option value="crypto">Crypto</option>
+                  <option value="mobile">Mobile Apps</option>
+                  <option value="saas">SaaS</option>
+                  <option value="adult">Adult</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Payout Type</label>
+                <select value={formData.payout_type} onChange={(e) => setFormData({ ...formData, payout_type: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="auto">Auto (from postback)</option>
+                  <option value="manual">Manual</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Payout (USD) *</label>
+                <input type="number" step="0.01" value={formData.payout} onChange={(e) => setFormData({ ...formData, payout: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary" placeholder="25.00" required />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Currency</label>
+                <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="USD">US Dollar</option>
+                  <option value="IDR">Indonesian Rupiah</option>
+                  <option value="EUR">Euro</option>
+                  <option value="GBP">British Pound</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Daily Cap (conversions)</label>
+              <input type="number" value={formData.daily_cap} onChange={(e) => setFormData({ ...formData, daily_cap: e.target.value })}
+                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary" placeholder="Leave empty for no cap" />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase">Network</label>
-            <select
-              value={formData.network_id}
-              onChange={(e) => setFormData({ ...formData, network_id: e.target.value })}
-              className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary"
-            >
-              <option value="">Direct (No Network)</option>
-              {networks?.map(network => (
-                <option key={network.id} value={network.id}>{network.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setCreateModalOpen(false)}
-              className="flex-1 px-4 py-2 bg-surface-3 text-slate-300 rounded-lg hover:bg-surface-hover transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="flex-1 px-4 py-2 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
-            >
-              {createMutation.isPending ? 'Creating...' : 'Create Offer'}
+          <div className="flex gap-3 pt-4">
+            <button type="button" onClick={() => setCreateModalOpen(false)}
+              className="flex-1 px-4 py-2.5 bg-surface-3 text-slate-300 rounded-lg hover:bg-surface-hover transition-all">Cancel</button>
+            <button type="submit" disabled={createMutation.isPending}
+              className="flex-1 px-4 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50">
+              {createMutation.isPending ? 'Creating...' : 'Save Offer'}
             </button>
           </div>
         </form>

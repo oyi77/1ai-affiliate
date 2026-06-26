@@ -23,7 +23,12 @@ const CMP_CATEGORIES = {
 export function Campaigns() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tplSelectorOpen, setTplSelectorOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', status: 'active' });
+  const [formData, setFormData] = useState({
+    name: '', status: 'active', traffic_source_id: '', country: 'Global',
+    tracking_domain: '', cost_model: 'CPC', currency: 'USD',
+    destination_type: 'url', offer_url: '', flow_id: '',
+    tags: '', uniqueness_period: 24,
+  });
   const queryClient = useQueryClient();
 
   const { data: campaigns, isLoading, isError, error, refetch } = useSafeQuery({
@@ -41,7 +46,7 @@ export function Campaigns() {
     onSuccess: () => {
       queryClient.invalidateQueries(['campaigns']);
       setCreateModalOpen(false);
-      setFormData({ name: '', status: 'active' });
+      setFormData({ name: '', status: 'active', traffic_source_id: '', country: 'Global', tracking_domain: '', cost_model: 'CPC', currency: 'USD', destination_type: 'url', offer_url: '', flow_id: '', tags: '', uniqueness_period: 24 });
     },
     onError: (err) => {
       alert(err.response?.data?.error || 'Operation failed');
@@ -226,42 +231,158 @@ export function Campaigns() {
       <Modal
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
-        title="Create New Campaign"
-        description="Set up a new campaign to start tracking performance"
+        title="Create Campaign"
+        description="Set up tracking for your traffic source"
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createMutation.mutate(formData);
-          }}
-          className="space-y-6"
-        >
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase">Campaign Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary"
-              placeholder="Summer Sale 2024"
-              required
-            />
+        <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }} className="space-y-5">
+          {/* Section 1: Campaign Details */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">1. Campaign Details</h3>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Name *</label>
+              <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary" placeholder="Summer Sale 2024" required />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Traffic Source</label>
+                <select value={formData.traffic_source_id} onChange={(e) => setFormData({ ...formData, traffic_source_id: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="">None</option>
+                  <option value="meta">Facebook</option>
+                  <option value="google">Google Ads</option>
+                  <option value="tiktok">TikTok Ads</option>
+                  <option value="propellerads">PropellerAds</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Country</label>
+                <select value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="Global">Global</option>
+                  <option value="ID">Indonesia</option>
+                  <option value="US">United States</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="MY">Malaysia</option>
+                  <option value="TH">Thailand</option>
+                  <option value="PH">Philippines</option>
+                  <option value="VN">Vietnam</option>
+                  <option value="SG">Singapore</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="BR">Brazil</option>
+                  <option value="MX">Mexico</option>
+                  <option value="IN">India</option>
+                  <option value="JP">Japan</option>
+                  <option value="KR">South Korea</option>
+                  <option value="AU">Australia</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Tracking Domain</label>
+                <select value={formData.tracking_domain} onChange={(e) => setFormData({ ...formData, tracking_domain: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="">Account default</option>
+                  <option value="track.berkahkarya.org">track.berkahkarya.org</option>
+                  <option value="go.berkahkarya.org">go.berkahkarya.org</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Tags</label>
+                <input type="text" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary" placeholder="comma-separated tags" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Currency</label>
+                <select value={formData.currency} onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="USD">US Dollar</option>
+                  <option value="IDR">Indonesian Rupiah</option>
+                  <option value="EUR">Euro</option>
+                  <option value="GBP">British Pound</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Cost Model</label>
+                <select value={formData.cost_model} onChange={(e) => setFormData({ ...formData, cost_model: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="CPC">CPC</option>
+                  <option value="CPM">CPM</option>
+                  <option value="CPA">CPA</option>
+                  <option value="CPV">CPV</option>
+                  <option value="RevShare">RevShare</option>
+                  <option value="Auto">Auto</option>
+                  <option value="none">Do not track</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Uniqueness (hrs)</label>
+                <input type="number" value={formData.uniqueness_period} onChange={(e) => setFormData({ ...formData, uniqueness_period: parseInt(e.target.value) || 24 })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary" min="1" max="720" />
+              </div>
+            </div>
           </div>
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setCreateModalOpen(false)}
-              className="flex-1 px-4 py-2 bg-surface-3 text-slate-300 rounded-lg hover:bg-surface-hover transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="flex-1 px-4 py-2 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
-            >
-              {createMutation.isPending ? 'Creating...' : 'Create Campaign'}
+          {/* Section 2: Destination */}
+          <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+            <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">2. Destination</h3>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Destination Type</label>
+              <div className="flex gap-3">
+                {['url', 'flow'].map(type => (
+                  <button key={type} type="button" onClick={() => setFormData({ ...formData, destination_type: type })}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      formData.destination_type === type ? 'bg-indigo-600 text-white' : 'bg-white/[0.04] text-slate-400 hover:bg-white/[0.08]'
+                    }`}>
+                    {type === 'url' ? 'Direct URL' : 'Flow'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {formData.destination_type === 'url' ? (
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Offer URL *</label>
+                <textarea value={formData.offer_url} onChange={(e) => setFormData({ ...formData, offer_url: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
+                  rows={3} placeholder="https://example.com/offer?clickid={clickId}&campaign={campaignId}" />
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {['{clickId}', '{campaignId}', '{campaignName}', '{trafficSourceId}', '{country}', '{deviceType}', '{browser}', '{os}', '{ip}', '{cost.USD}'].map(token => (
+                    <button key={token} type="button" onClick={() => setFormData({ ...formData, offer_url: formData.offer_url + token })}
+                      className="px-2 py-0.5 bg-indigo-600/20 text-indigo-300 rounded text-[10px] font-mono hover:bg-indigo-600/40 transition-colors">
+                      + {token}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Select Flow</label>
+                <select value={formData.flow_id} onChange={(e) => setFormData({ ...formData, flow_id: e.target.value })}
+                  className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary appearance-none">
+                  <option value="">Select flow for your campaign…</option>
+                  <option value="1">Global - Default Flow</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button type="button" onClick={() => setCreateModalOpen(false)}
+              className="flex-1 px-4 py-2.5 bg-surface-3 text-slate-300 rounded-lg hover:bg-surface-hover transition-all">Cancel</button>
+            <button type="submit" disabled={createMutation.isPending}
+              className="flex-1 px-4 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50">
+              {createMutation.isPending ? 'Creating...' : 'Save Campaign'}
             </button>
           </div>
         </form>
