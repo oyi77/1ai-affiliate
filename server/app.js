@@ -115,6 +115,10 @@ app.use('/api/integrations', require('./routes/integrations'));
 app.use('/api/copilot', require('./routes/copilot'));
 app.use('/api/2fa', require('./routes/twoFactor'));
 app.use('/api/import-export', require('./routes/importExport'));
+app.use('/api/admin/campaigns', require('./routes/campaigns'));
+app.use('/api/admin/offers', require('./routes/offers'));
+app.use('/api/admin/affiliates', require('./routes/affiliates'));
+app.use('/api/migration', require('./routes/migration'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
