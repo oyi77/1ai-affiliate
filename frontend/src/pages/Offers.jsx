@@ -23,6 +23,7 @@ const OFFER_CATEGORIES = {
 export function Offers() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tplSelectorOpen, setTplSelectorOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({
     name: '', payout: '', network_id: '', status: 'active',
     url: '', country: 'Global', currency: 'USD',
@@ -237,6 +238,18 @@ export function Offers() {
         description="Add an offer to track conversions and payouts"
       >
         <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }} className="space-y-5">
+          {/* Template Quick-Select */}
+          <div className="flex items-center gap-3 p-3 bg-indigo-600/5 border border-indigo-500/10 rounded-xl">
+            <span className="text-sm text-slate-400">Quick start:</span>
+            <button type="button" onClick={() => setTplSelectorOpen(true)}
+              className="px-3 py-1.5 bg-indigo-600/20 text-indigo-300 rounded-lg text-sm font-medium hover:bg-indigo-600/40 transition-colors">
+              📋 Browse {offerTemplates.length} templates
+            </button>
+            {selectedTemplate && (
+              <span className="text-xs text-green-400">✓ {selectedTemplate.name}</span>
+            )}
+          </div>
+
           {/* Section 1: Offer Details */}
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">1. Offer Details</h3>

@@ -23,6 +23,7 @@ const CMP_CATEGORIES = {
 export function Campaigns() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tplSelectorOpen, setTplSelectorOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({
     name: '', status: 'active', traffic_source_id: '', country: 'Global',
     tracking_domain: '', cost_model: 'CPC', currency: 'USD',
@@ -235,6 +236,18 @@ export function Campaigns() {
         description="Set up tracking for your traffic source"
       >
         <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }} className="space-y-5">
+          {/* Template Quick-Select */}
+          <div className="flex items-center gap-3 p-3 bg-indigo-600/5 border border-indigo-500/10 rounded-xl">
+            <span className="text-sm text-slate-400">Quick start:</span>
+            <button type="button" onClick={() => setTplSelectorOpen(true)}
+              className="px-3 py-1.5 bg-indigo-600/20 text-indigo-300 rounded-lg text-sm font-medium hover:bg-indigo-600/40 transition-colors">
+              📋 Browse {campaignTemplates.length} templates
+            </button>
+            {selectedTemplate && (
+              <span className="text-xs text-green-400">✓ {selectedTemplate.name}</span>
+            )}
+          </div>
+
           {/* Section 1: Campaign Details */}
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">1. Campaign Details</h3>
@@ -244,7 +257,6 @@ export function Campaigns() {
               <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary" placeholder="Summer Sale 2024" required />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Traffic Source</label>
