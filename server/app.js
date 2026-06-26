@@ -32,6 +32,12 @@ app.use(cors());
 app.use(express.json());
 app.use(pinoHttp({ logger, genReqId: req => req.get('X-Request-ID') || crypto.randomUUID() }));
 
+// Global rate limiting + input sanitization
+const { rateLimitGlobal } = require('./middleware/globalRateLimit');
+const { sanitizeMiddleware } = require('./middleware/sanitizer');
+app.use(rateLimitGlobal);
+app.use(sanitizeMiddleware);
+
 // Idempotency for mutating requests
 app.use(idempotency());
 
