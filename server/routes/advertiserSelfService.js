@@ -23,7 +23,7 @@ router.get('/dashboard', async (req, res) => {
   try {
     const userId = req.user.id;
     const [[adv]] = await pool.query('SELECT id, company_name, status FROM 1ai_advertisers WHERE user_id = ?', [userId]);
-    if (!adv) return res.status(404).json({ error: 'Advertiser profile not found' });
+    if (!adv) return res.json({ data: { advertiser: null, offers: { total: 0, active: 0 }, conversions: { total: 0, approved: 0, pending: 0, total_payout: 0 }, clicks: { total: 0 } } });
 
     // Count offers
     const [[offerStats]] = await pool.query(
