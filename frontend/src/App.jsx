@@ -60,6 +60,7 @@ const ScheduledExports = lazy(() => import('./pages/ScheduledExports.jsx').then(
 const RealtimeDashboard = lazy(() => import('./pages/RealtimeDashboard.jsx').then(m => ({ default: m.RealtimeDashboard })).catch(() => fallback));
 const TemplateManager = lazy(() => import('./pages/TemplateManager.jsx').then(m => ({ default: m.TemplateManager })).catch(() => fallback));
 const Migration = lazy(() => import('./pages/Migration.jsx').then(m => ({ default: m.Migration })).catch(() => fallback));
+const AdvertiserDashboard = lazy(() => import('./pages/AdvertiserDashboard.jsx').then(m => ({ default: m.AdvertiserDashboard })).catch(() => fallback));
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -109,6 +110,7 @@ function App() {
             <Route path="/conversions/manual" element={<ManualConversion />} />
             <Route path="/campaign-compare" element={<CampaignCompare />} />
             <Route path="/webhooks" element={<Webhooks />} />
+            <Route path="/advertiser-dashboard" element={<AdvertiserDashboard />} />
             <Route path="/affiliate-dashboard" element={<AffiliateDashboard />} />
             <Route path="/affiliate-portal" element={<AffiliatePortal />} />
             <Route path="/automation" element={<Automation />} />

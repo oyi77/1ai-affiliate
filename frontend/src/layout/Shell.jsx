@@ -14,6 +14,8 @@ const navigation = [
     items: [
       { name: 'Dashboard', icon: LayoutDashboard, href: '/' },
       { name: 'Real-Time', icon: Activity, href: '/realtime' },
+      { name: 'Advertiser Panel', icon: Building2, href: '/advertiser-dashboard' },
+      { name: 'Affiliate Panel', icon: Users, href: '/affiliate-dashboard' },
     ],
   },
   {
