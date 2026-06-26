@@ -121,6 +121,7 @@ app.use('/api/admin/affiliates', require('./routes/affiliates'));
 app.use('/api/migration', require('./routes/migration'));
 app.use('/api/advertiser', require('./routes/advertiserSelfService'));
 app.use('/api/offers', require('./routes/offerBrowser'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
 // Shortlink / ClickServer (modern b202 equivalent)
 app.get('/go/:hash', require('./controllers/smartlinkController').routeTrafficByHash);
 // Health check — deep probe: checks DB connectivity + queue status
