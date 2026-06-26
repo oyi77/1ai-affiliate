@@ -7,7 +7,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
 import { TemplateSelector } from '../components/ui/TemplateSelector';
-import { Plus, Gift, DollarSign, Network, Download } from 'lucide-react';
+import { Plus, Gift, DollarSign, Network, Download, CheckCircle, XCircle } from 'lucide-react';
 import { ErrorState } from '../components/ErrorState';
 import offerTemplates from '../data/offerTemplates';
 
@@ -61,6 +61,18 @@ export function Offers() {
     onError: (err) => {
       alert(err.response?.data?.error || 'Operation failed');
     },
+  });
+
+  const approveOfferMutation = useMutation({
+    mutationFn: (id) => api.patch(`/api/admin/offers/${id}`, { approval_status: 'approved', status: 'active' }),
+    onSuccess: () => { queryClient.invalidateQueries(['offers']); },
+    onError: (err) => { alert(err.response?.data?.error || 'Failed to approve'); },
+  });
+
+  const rejectOfferMutation = useMutation({
+    mutationFn: (id) => api.patch(`/api/admin/offers/${id}`, { approval_status: 'rejected' }),
+    onSuccess: () => { queryClient.invalidateQueries(['offers']); },
+    onError: (err) => { alert(err.response?.data?.error || 'Failed to reject'); },
   });
 
   const columns = [
@@ -117,6 +129,34 @@ export function Offers() {
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
         );
+      },
+    },
+    {
+      header: 'Approval',
+      accessorKey: 'approval_status',
+      cell: ({ getValue, row }) => {
+        const status = getValue() || 'pending';
+        const colors = {
+          approved: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/20',
+          pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20',
+          rejected: 'bg-red-500/20 text-red-400 border-red-500/20',
+        };
+        if (status === 'pending') {
+          return (
+            <div className="flex items-center gap-1">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${colors[status]}`}>Pending</span>
+              <button onClick={() => approveOfferMutation.mutate(row.original.id)}
+                className="p-1 text-emerald-400 hover:bg-emerald-500/20 rounded transition-colors" title="Approve">
+                <CheckCircle className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => rejectOfferMutation.mutate(row.original.id)}
+                className="p-1 text-red-400 hover:bg-red-500/20 rounded transition-colors" title="Reject">
+                <XCircle className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          );
+        }
+        return <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${colors[status] || colors.pending}`}>{status}</span>;
       },
     },
     {

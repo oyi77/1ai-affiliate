@@ -26,7 +26,7 @@ export function AdvertiserDashboard() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [convFilter, setConvFilter] = useState('');
   const [formData, setFormData] = useState({
-    name: '', url: '', type: 'CPA', payout: '', vertical: '', geo: 'Global', notes: '', cap_daily: '',
+    name: '', affiliate_url: '', type: 'CPA', payout: '', vertical: '', geo: 'Global', notes: '', cap_daily: '',
   });
   const queryClient = useQueryClient();
 
@@ -65,7 +65,7 @@ export function AdvertiserDashboard() {
       queryClient.invalidateQueries(['advertiser-offers']);
       queryClient.invalidateQueries(['advertiser-dashboard']);
       setCreateModalOpen(false);
-      setFormData({ name: '', url: '', type: 'CPA', payout: '', vertical: '', geo: 'Global', notes: '', cap_daily: '' });
+      setFormData({ name: '', affiliate_url: '', type: 'CPA', payout: '', vertical: '', geo: 'Global', notes: '', cap_daily: '' });
     },
   });
 
@@ -325,7 +325,7 @@ export function AdvertiserDashboard() {
 
             <div>
               <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Offer URL</label>
-              <input type="text" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+              <input type="text" value={formData.affiliate_url} onChange={(e) => setFormData({ ...formData, affiliate_url: e.target.value })}
                 className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-indigo-primary font-mono text-sm"
                 placeholder="https://myproduct.com/landing" />
             </div>

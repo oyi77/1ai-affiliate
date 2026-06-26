@@ -80,7 +80,7 @@ router.get('/offers', async (req, res) => {
     if (!adv) return res.json({ data: [] });
 
     const [offers] = await pool.query(
-      `SELECT o.*, 
+      `SELECT o.*,
               (SELECT COUNT(*) FROM 1ai_conversion_logs cl WHERE cl.aff_campaign_id = o.id) as conversion_count,
               (SELECT COALESCE(SUM(cl.network_payout_snapshot), 0) FROM 1ai_conversion_logs cl WHERE cl.aff_campaign_id = o.id) as total_revenue
        FROM 1ai_offers o WHERE o.advertiser_id = ? ORDER BY o.created_at DESC`,
@@ -103,13 +103,13 @@ router.post('/offers', async (req, res) => {
     const [[adv]] = await pool.query('SELECT id FROM 1ai_advertisers WHERE user_id = ?', [userId]);
     if (!adv) return res.status(403).json({ error: 'Advertiser profile not found' });
 
-    const { name, url, type, payout, payout_currency, vertical, geo, notes, cap_daily } = req.body;
+    const { name, affiliate_url, type, payout, payout_currency, vertical, geo, notes, cap_daily } = req.body;
     if (!name) return res.status(400).json({ error: 'Offer name is required' });
 
     const [result] = await pool.query(
-      `INSERT INTO 1ai_offers (name, advertiser_id, url, type, payout, payout_currency, vertical, geo, notes, cap_daily, status, approval_status, created_at, updated_at)
+      `INSERT INTO 1ai_offers (name, advertiser_id, affiliate_url, type, payout, payout_currency, vertical, geo, notes, cap_daily, status, approval_status, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', UNIX_TIMESTAMP(), UNIX_TIMESTAMP())`,
-      [name, adv.id, url || null, type || 'CPA', payout || 0, payout_currency || 'USD', vertical || null, geo || 'Global', notes || null, cap_daily || null]
+      [name, adv.id, affiliate_url || null, type || 'CPA', payout || 0, payout_currency || 'USD', vertical || null, geo || 'Global', notes || null, cap_daily || null]
     );
 
     res.status(201).json({ data: { id: result.insertId, name }, message: 'Offer created. Pending admin approval.' });
