@@ -129,6 +129,7 @@ app.use('/api/migration', require('./routes/migration'));
 app.use('/api/advertiser', require('./routes/advertiserSelfService'));
 app.use('/api/offers', require('./routes/offerBrowser'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
+app.use('/api/hermes', require('./services/hermes/api'));
 // Auto-optimization cron (runs every 15 minutes)
 const { runOptimization } = require('./services/autoOptimizer');
 setInterval(() => {
