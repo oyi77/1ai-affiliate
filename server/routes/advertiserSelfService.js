@@ -270,8 +270,7 @@ router.get('/profile', async (req, res) => {
       'SELECT id, user_id, company_name, website, status, platform_type, commission_type, default_commission_rate, logo_url, notes FROM 1ai_advertisers WHERE user_id = ?',
       [userId]
     );
-    if (!adv) return res.status(404).json({ error: 'Advertiser profile not found' });
-    res.json({ data: adv });
+    res.json({ data: adv || null });
   } catch (err) {
     console.error('Advertiser profile error:', err.message);
     res.status(500).json({ error: 'Failed to fetch profile' });
