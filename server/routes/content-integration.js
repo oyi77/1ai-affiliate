@@ -243,13 +243,16 @@ router.get('/links', authenticate, async (req, res) => {
     if (!aff) return res.json({ data: [] });
 
     const [links] = await pool.query(
-      `SELECT c.aff_campaign_id as id, c.aff_campaign_name as name,
-              c.aff_campaign_status as status, c.aff_campaign_payout as payout,
-              COUNT(cl.click_id) as clicks
-       FROM 1ai_aff_campaigns c
-       LEFT JOIN 1ai_clicks cl ON cl.aff_campaign_id = c.aff_campaign_id
-       GROUP BY c.aff_campaign_id
-       ORDER BY c.aff_campaign_id DESC LIMIT 50`
+      `SELECT sl.id, sl.slug, sl.status, sl.click_count as clicks, sl.created_at,
+              sl.default_url, sl.campaign_id,
+              COALESCE(c.aff_campaign_name, 'Smartlink') as name,
+              c.aff_campaign_payout as payout,
+              (SELECT COUNT(*) FROM 1ai_conversion_logs WHERE aff_campaign_id = sl.campaign_id) as conversions
+       FROM 1ai_smartlinks sl
+       LEFT JOIN 1ai_aff_campaigns c ON c.aff_campaign_id = sl.campaign_id
+       WHERE sl.user_id = ?
+       ORDER BY sl.created_at DESC LIMIT 50`,
+      [userId]
     );
     res.json({ data: links });
   } catch (error) {
