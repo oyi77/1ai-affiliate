@@ -37,6 +37,13 @@ const SCHEMA = {
   // Misc
   default_fallback_url:   { env: 'DEFAULT_FALLBACK_URL',       default: '' },
   default_currency:       { env: 'DEFAULT_CURRENCY',           default: 'IDR' },
+
+  // Wallet
+  wallet_enabled:          { env: 'WALLET_ENABLED',             default: 'true' },
+  wallet_min_topup_usd:    { env: 'WALLET_MIN_TOPUP_USD',      default: '10' },
+  wallet_usd_idr_rate:     { env: 'WALLET_USD_IDR_RATE',       default: '15500' },
+  wallet_rate_source:      { env: 'WALLET_RATE_SOURCE',         default: 'manual' },
+  wallet_rate_api_url:     { env: 'WALLET_RATE_API_URL',        default: '' },
 };
 
 async function loadSettings() {

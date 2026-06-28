@@ -3,7 +3,7 @@ import { LayoutDashboard, Target, Layers, Link as LinkIcon, Users,
   Sparkles, BarChart3, Shield, Crown, HelpCircle,
   Globe, Server, TrendingUp, Eye, Clock, FileText,
   Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart, Wallet, CreditCard, Webhook,
-  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database, LogOut } from 'lucide-react';
+  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database, LogOut, Rocket, PieChart as PieChartIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
@@ -58,13 +58,14 @@ const navigation = [
       { name: 'Conversion Log', icon: ShoppingCart, href: '/conversion-log' },
       { name: 'Orders', icon: ShoppingCart, href: '/laporan-order' },
       { name: 'Payments', icon: CreditCard, href: '/laporan-pembayaran' },
-      { name: 'Balance & Budget', icon: Wallet, href: '/saldo-budget' },
+      { name: 'Wallet', icon: Wallet, href: '/wallet' },
     ],
   },
   {
     label: 'Tools',
     items: [
       { name: 'AI Tools', icon: Sparkles, href: '/ai-tools' },
+      { name: 'Boost Orders', icon: Rocket, href: '/boost' },
       { name: 'Automation', icon: Zap, href: '/automation' },
       { name: 'Day-Parting', icon: Clock, href: '/day-parting' },
       { name: 'Integrations', icon: Layers, href: '/integrations' },
@@ -78,6 +79,7 @@ const navigation = [
       { name: 'Pipeline', icon: Radio, href: '/pipeline' },
       { name: 'Settings', icon: Settings, href: '/settings' },
       { name: 'Admin', icon: Shield, href: '/admin' },
+      { name: 'Finance', icon: PieChartIcon, href: '/finance' },
       { name: 'Template Manager', icon: FileText, href: '/template-manager' },
       { name: 'Migration', icon: Database, href: '/migration' },
       { name: 'API Docs', icon: FileText, href: '/api-docs' },

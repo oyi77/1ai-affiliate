@@ -61,6 +61,9 @@ const RealtimeDashboard = lazy(() => import('./pages/RealtimeDashboard.jsx').the
 const TemplateManager = lazy(() => import('./pages/TemplateManager.jsx').then(m => ({ default: m.TemplateManager })).catch(() => fallback));
 const Migration = lazy(() => import('./pages/Migration.jsx').then(m => ({ default: m.Migration })).catch(() => fallback));
 const AdvertiserDashboard = lazy(() => import('./pages/AdvertiserDashboard.jsx').then(m => ({ default: m.AdvertiserDashboard })).catch(() => fallback));
+const BoostOrders    = lazy(() => import('./pages/BoostOrders.jsx').then(m => ({ default: m.BoostOrders })).catch(() => fallback));
+const Wallet         = lazy(() => import('./pages/Wallet.jsx').then(m => ({ default: m.Wallet })).catch(() => fallback));
+const AdminFinance   = lazy(() => import('./pages/AdminFinance.jsx').then(m => ({ default: m.AdminFinance })).catch(() => fallback));
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -128,7 +131,10 @@ function App() {
             <Route path="/ab-tests" element={<ABTests />} />
             <Route path="/template-manager" element={<TemplateManager />} />
             <Route path="/migration" element={<Migration />} />
-            <Route path="*" element={<Dashboard />} />
+            <Route path="/boost"   element={<BoostOrders  />} />
+            <Route path="/wallet"  element={<Wallet       />} />
+            <Route path="/finance" element={<AdminFinance />} />
+            <Route path="*"        element={<Dashboard    />} />
           </Routes>
           </ErrorBoundary>
         </Suspense>

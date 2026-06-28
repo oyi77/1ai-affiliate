@@ -126,7 +126,7 @@ export function Admin() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
             System Admin
           </h1>
-          <p className="text-slate-400 mt-2">Manage users, monitor system health</p>
+          <p className="text-slate-400 mt-2">Manage users, monitor system health, and oversee finances</p>
         </div>
 
         {activeTab === 'users' && (
@@ -175,7 +175,7 @@ export function Admin() {
       </div>
 
       <div className="flex gap-2 border-b border-white/10 pb-2">
-        {['users', 'health', 'logs'].map(tab => (
+        {['users', 'finance', 'health', 'logs'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -191,6 +191,15 @@ export function Admin() {
       </div>
 
       {activeTab === 'users' && <DataTable data={users || []} columns={userColumns} />}
+
+      {activeTab === 'finance' && (
+        <div className="p-8 text-center text-slate-400 bg-surface-2 rounded-lg border border-white/10">
+          <p className="mb-4">Financial management has moved to the dedicated Finance dashboard.</p>
+          <a href="/finance" className="px-6 py-3 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light inline-block transition-colors">
+            Go to Finance Dashboard →
+          </a>
+        </div>
+      )}
 
       {activeTab === 'health' && (
         <GlassCard>

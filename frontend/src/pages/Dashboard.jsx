@@ -5,6 +5,7 @@ import { MousePointer, TrendingUp, DollarSign, ShoppingCart, Users, Activity } f
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
 import { useStats } from '../hooks/useStats';
+import { useQuery } from '@tanstack/react-query';
 import { useClicks } from '../hooks/useClicks';
 import { useCampaigns } from '../hooks/useCampaigns';
 import { formatCurrency } from '../lib/currency';
@@ -46,6 +47,7 @@ function formatRelativeTime(value) {
 export function Dashboard() {
   const [range, setRange] = useState('30d');
   const { data: stats, isLoading: statsLoading } = useStats('admin');
+  const { data: wallet } = useQuery({ queryKey: ['wallet-summary'], queryFn: async () => (await api.get('/api/wallet')).data?.data });
   const { data: clicksResult, isLoading: clicksLoading } = useClicks(5);
   const { data: campaigns, isLoading: campaignsLoading } = useCampaigns(10);
   const { data: dailyData = [], isError, error, refetch } = useSafeQuery({
@@ -67,6 +69,14 @@ export function Dashboard() {
   const revenueGrowth = stats?.revenueGrowth ?? 0;
 
   const metrics = [
+    {
+      label: 'Wallet Balance',
+      value: wallet ? formatCurrency(wallet.balance) : '—',
+      change: { value: wallet?.pending_earnings ?? 0, direction: 'up', vsLabel: 'pending earnings' },
+      sparkline: deriveSparkline(wallet?.balance ?? 0, 0.1),
+      accent: 'purple',
+      icon: DollarSign,
+    },
     {
       label: 'Affiliates',
       value: stats?.totalAffiliates?.toLocaleString() ?? '0',
@@ -106,14 +116,6 @@ export function Dashboard() {
       sparkline: deriveSparkline(stats?.revenueMtd ?? 0, revenueGrowth),
       accent: 'green',
       icon: DollarSign,
-    },
-    {
-      label: 'Avg EPC',
-      value: formatCurrency(stats?.avg_epc ?? 0),
-      change: { value: Number((stats?.avg_ctr ?? 0).toFixed(1)), direction: (stats?.avg_epc ?? 0) > 0 ? 'up' : 'flat', vsLabel: 'avg CTR' },
-      sparkline: deriveSparkline(stats?.avg_epc ?? 0, clickChange),
-      accent: 'yellow',
-      icon: ShoppingCart,
     },
   ];
 

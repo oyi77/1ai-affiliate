@@ -89,7 +89,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/om', require('./routes/om'));
 app.use('/api/am', require('./routes/am'));
-app.use('/api/payment', require('./routes/payment'));
+// Payment routes (modern multi-gateway — legacy removed)
 app.use('/api/content', require('./routes/content'));
 app.use('/api/geo', require('./routes/geoip'));
 // Public platform settings (no auth)
@@ -129,7 +129,10 @@ app.use('/api/migration', require('./routes/migration'));
 app.use('/api/advertiser', require('./routes/advertiserSelfService'));
 app.use('/api/offers', require('./routes/offerBrowser'));
 app.use('/api/payment', require('./routes/paymentRoutes'));
-app.use('/api/hermes', require('./services/hermes/api'));
+app.use('/api/admin/balance', require('./routes/balance'));
+app.use('/api/wallet', require('./routes/wallet'));
+app.use('/api/admin/finance', require('./routes/adminFinance'));
+app.use('/api/boost', require('./routes/boost'));
 // Auto-optimization cron (runs every 15 minutes)
 const { runOptimization } = require('./services/autoOptimizer');
 setInterval(() => {
