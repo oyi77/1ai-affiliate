@@ -367,12 +367,26 @@ router.get('/advertisers', async (req, res) => {
 // ── GET /clicks ─────────────────────────────────────────────────────
 router.get('/clicks', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 100, 1000);
-    const [rows] = await pool.query(
-      `SELECT click_id, click_time, aff_campaign_id, click_payout, click_ip
-       FROM 1ai_clicks ORDER BY click_id DESC LIMIT ?`, [limit]
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(parseInt(req.query.limit) || 50, 1000);
+    const offset = (page - 1) * limit;
+
+    const [[{ total }]] = await pool.query(
+      'SELECT COUNT(*) AS total FROM 1ai_click_log'
     );
-    res.json({ data: rows });
+
+    const [rows] = await pool.query(
+      `SELECT cl.id, cl.click_id, cl.offer_id, o.name AS offer_name,
+              cl.affiliate_id, cl.country_code, cl.device_type,
+              cl.payout, cl.converted, cl.clicked_at
+       FROM 1ai_click_log cl
+       LEFT JOIN 1ai_offers o ON cl.offer_id = o.id
+       ORDER BY cl.clicked_at DESC
+       LIMIT ? OFFSET ?`,
+      [limit, offset]
+    );
+
+    res.json({ data: rows, page, limit, total, pages: Math.ceil(total / limit) });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

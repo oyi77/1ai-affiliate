@@ -219,7 +219,7 @@ export function Dashboard() {
                   <div className="flex items-center gap-2 min-w-0">
                     <span className={`w-2 h-2 rounded-full flex-shrink-0 ${click.converted ? 'bg-green-500' : 'bg-slate-500'}`} />
                     <span className="text-slate-300 truncate max-w-[160px]">
-                      {click.offer_name ?? `Offer #${click.offer_id}`}
+                      {click.offer_name || (click.offer_id != null ? `Offer #${click.offer_id}` : 'Unknown Offer')}
                     </span>
                     <span className="text-slate-500 text-xs flex-shrink-0">{click.country_code}</span>
                   </div>
