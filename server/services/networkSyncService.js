@@ -13,36 +13,55 @@ const pool = require('../db/mysql');
 // ── Network Adapters ──────────────────────────────────────────
 
 async function fetchPassioOffers(credentials) {
-  const { api_token, private_token } = credentials;
-  const url = `https://affiliate.passio.eco/pub-api/offers?api_token=${api_token}&private_token=${private_token}&limit=100`;
-  
+  const { api_token } = credentials;
+  if (!api_token) return { offers: [], error: 'No API token' };
+
+  const allAdvertisers = [];
+  let skip = 0;
+
   try {
-    const resp = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(15000) });
-    const text = await resp.text();
-    
-    // Check if response is HTML (redirect) instead of JSON
-    if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
-      return { offers: [], error: 'API redirected to login — token may be expired' };
+    while (true) {
+      const url = `https://api.ecotrackings.com/api/v3/advertisers?token=${api_token}&limit=20&skip=${skip}`;
+      const resp = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!resp.ok) return { offers: allAdvertisers, error: `HTTP ${resp.status}` };
+
+      const data = await resp.json();
+      const advertisers = data.data || [];
+      if (!advertisers.length) break;
+
+      allAdvertisers.push(...advertisers);
+      const total = data.meta?.total || 0;
+      skip += advertisers.length;
+      if (skip >= total) break;
     }
-    
-    const data = JSON.parse(text);
-    const offers = (data.data || data.offers || data || []).map(o => ({
-      network_offer_id: String(o.id || o.offer_id),
-      name: o.name || o.title || 'Unknown',
-      description: o.description || '',
-      type: o.type || 'CPA',
-      payout: parseFloat(o.payout || o.commission || 0),
-      payout_currency: o.currency || 'IDR',
-      geo: o.geo || o.country || 'Global',
-      vertical: o.category || o.vertical || '',
-      status: o.status === 'active' ? 'active' : 'paused',
-      tracking_url: o.tracking_url || o.url || '',
-      product_image_url: o.image || o.creative || '',
-    }));
-    
-    return { offers, error: null };
+
+    const normalized = allAdvertisers.map(adv => {
+      const commission = (adv.commission || '0%').replace('%', '').trim();
+      let payout = 0;
+      try { payout = parseFloat(commission) || 0; } catch (_) {}
+
+      return {
+        network_offer_id: `PS-${adv.id}`,
+        name: adv.name || 'Unknown',
+        description: adv.description || '',
+        type: 'CPS',
+        payout,
+        payout_currency: adv.currency || 'IDR',
+        geo: adv.country || 'SEA',
+        vertical: adv.category || '',
+        status: 'active',
+        tracking_url: '',
+        product_image_url: '',
+      };
+    });
+
+    return { offers: normalized, error: null };
   } catch (err) {
-    return { offers: [], error: err.message };
+    return { offers: allAdvertisers.length ? allAdvertisers : [], error: err.message };
   }
 }
 
