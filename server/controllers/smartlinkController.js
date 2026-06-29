@@ -140,7 +140,16 @@ async function routeTrafficByHash(req, res) {
       ),
     ]);
 
-    res.redirect(offer.tracking_url || '/');
+    // Build redirect URL — use tracking_url, replace {clickId} placeholder (both literal and URL-encoded)
+    let redirectUrl = offer.tracking_url || offer.affiliate_url || '';
+    if (redirectUrl) {
+      redirectUrl = redirectUrl
+        .replace(/%7[Bb]clickId%7[Dd]/gi, clickId)
+        .replace(/%7[Bb]clickid%7[Dd]/gi, clickId)
+        .replace(/\{clickId\}/gi, clickId)
+        .replace(/\{clickid\}/gi, clickId);
+    }
+    res.redirect(redirectUrl || '/');
 
   } catch (err) {
     console.error('Smartlink route error:', err);

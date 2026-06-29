@@ -240,5 +240,40 @@ router.get('/boost-orders', async (req, res) => {
     res.json({ data: [] });
   }
 });
+// ── GET /api/admin/finance/networks ─────────────────────────────
+router.get('/networks', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, name, status, api_base_url, documentation_url, last_synced_at,
+              (SELECT COUNT(*) FROM 1ai_offers WHERE network_id = 1ai_networks.id) as offer_count
+       FROM 1ai_networks ORDER BY id`
+    );
+    res.json({ data: rows });
+  } catch (err) {
+    res.json({ data: [] });
+  }
+});
+
+// ── POST /api/admin/finance/networks/:id/sync ───────────────────
+router.post('/networks/:id/sync', async (req, res) => {
+  try {
+    const { syncNetworkOffers } = require('../services/networkSyncService');
+    const result = await syncNetworkOffers(parseInt(req.params.id));
+    res.json({ data: result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/admin/finance/networks/sync-all ───────────────────
+router.post('/networks/sync-all', async (req, res) => {
+  try {
+    const { syncAllNetworks } = require('../services/networkSyncService');
+    const results = await syncAllNetworks();
+    res.json({ data: results });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
