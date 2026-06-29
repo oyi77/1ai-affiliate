@@ -49,35 +49,50 @@ async function fetchPassioOffers(credentials) {
 async function fetchIndoleadsOffers(credentials) {
   const { jwt_token } = credentials;
   if (!jwt_token) return { offers: [], error: 'No JWT token' };
-  
-  const url = 'https://app.indoleads.com/api/v1/offers?limit=100';
-  
+
+  const allOffers = [];
+  let page = 1;
+
   try {
-    const resp = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${jwt_token}` },
-      signal: AbortSignal.timeout(15000),
-    });
-    const data = await resp.json();
-    
-    if (!data.success) return { offers: [], error: data.message || 'API error' };
-    
-    const offers = (data.data || []).map(o => ({
-      network_offer_id: String(o.id),
-      name: o.name || o.title,
+    while (page <= 50) {
+      const url = `https://app.indoleads.com/api/offers?limit=10&page=${page}`;
+      const resp = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${jwt_token}`,
+          'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+          'Accept': 'application/json',
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (resp.status === 403) return { offers: allOffers, error: 'Forbidden — token may need refresh' };
+
+      const data = await resp.json();
+      const offers = data.data || [];
+      if (!offers.length) break;
+
+      allOffers.push(...offers);
+      if (page >= (data.last_page || 1)) break;
+      page++;
+    }
+
+    const normalized = allOffers.map(o => ({
+      network_offer_id: `IL-${o.id}`,
+      name: o.title || 'Unknown',
       description: o.description || '',
-      type: o.payout_type || 'CPA',
+      type: (o.type || 'CPS').toUpperCase(),
       payout: parseFloat(o.payout || 0),
-      payout_currency: o.currency || 'USD',
+      payout_currency: 'USD',
       geo: o.geo || 'Global',
       vertical: o.category || '',
-      status: o.status === 'active' ? 'active' : 'paused',
-      tracking_url: o.tracking_url || '',
-      product_image_url: o.logo || '',
+      status: 'active',
+      tracking_url: '',
+      product_image_url: o.id_thumbnail ? `https://app.indoleads.com/uploads/thumbnails/${o.id_thumbnail}` : '',
     }));
-    
-    return { offers, error: null };
+
+    return { offers: normalized, error: null };
   } catch (err) {
-    return { offers: [], error: err.message };
+    return { offers: allOffers.length ? allOffers : [], error: err.message };
   }
 }
 
