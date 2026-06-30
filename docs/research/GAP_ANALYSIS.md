@@ -159,6 +159,8 @@
 | 2026-06-24 | 6 god files >3000 LOC | Codebase audit | P1 |
 | 2026-06-24 | 200+ integrations gap | Competitor research | P1 |
 | 2026-06-24 | 75+ report dimensions | Competitor research | P1 |
+| 2026-06-30 | Edge Kafka broker list not loaded | Global-readiness audit | P0 |
+| 2026-06-30 | Node global limiter was process-local | Global-readiness audit | P0 |
 
 ## Sprint 1 Updates (2026-06-24)
 
@@ -169,3 +171,9 @@
 | GAP-015 | Multi-Currency | 16 exchange rates seeded, conversion API, live sync |
 | GAP-010 | Meta Ads Integration | Account fetch, spend sync, spend view (token needs refresh) |
 | MOAT-003 | AI Co-Pilot | Rule-based + Gemini-powered campaign suggestions |
+
+## 2026-06-30 Remediation Delta
+
+- Edge `KAFKA_BROKERS` loading was fixed in `edge/internal/config/config.go` with new unit coverage in `edge/internal/config/config_test.go`.
+- The active Express global limiter moved from per-process memory to Redis-backed shared state via `server/lib/redisClient.js`.
+- These fixes close two architecture blockers from the 2026-06-30 audit, but do **not** change the broader red Jest baseline documented elsewhere in this file.

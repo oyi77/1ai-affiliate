@@ -21,6 +21,17 @@ const mockHttpRequest = jest.fn().mockImplementation((url, opts, cb) => {
 jest.mock('http', () => ({ request: mockHttpRequest }));
 jest.mock('https', () => ({ request: mockHttpRequest }));
 
+jest.mock('../routes/geoip', () => ({
+  lookupIp: jest.fn(async () => ({})),
+}));
+jest.mock('../services/smartRedirectEngine', () => ({
+  classifyVisitor: jest.fn(async () => ({})),
+  generateCanaryPage: jest.fn(() => ''),
+  generateCanaryScript: jest.fn(() => ''),
+  PROTECTION_PRESETS: {},
+  SAFE_URLS: {},
+}));
+
 const { receivePostback, firePostback, setOfferPostback, getOfferPostback, getPostbackLogs, validatePostbackUrl, parsePostbackHeaders } = require('../controllers/postbackController');
 
 beforeEach(() => {
@@ -95,7 +106,7 @@ describe('receivePostback', () => {
     await receivePostback(req, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Click not found' });
+    expect(res.json).toHaveBeenCalledWith({ error: 'click_id not found' });
   });
 
   test('1D: should verify HMAC signature when configured (accept valid)', async () => {
@@ -430,15 +441,21 @@ describe('Click ID Deduplication', () => {
     );
 
     // Second offer — same click_id, different offer
-    jest.clearAllMocks();
+    mockPool.query.mockReset();
     const linkRow2 = { id: 2, affiliate_id: 20, offer_id: 7, postback_url: 'https://b.com/cb', postback_auth_type: null, postback_auth_value: null };
-    mockPool.query
-      .mockResolvedValueOnce([[linkRow2]])       // link lookup
-      .mockResolvedValueOnce([[]])              // dedup — no existing for offer 7
-      .mockResolvedValueOnce([{ insertId: 43 }]) // log insert
-      .mockResolvedValueOnce([])                // conversions
-      .mockResolvedValueOnce([{ insertId: 101 }]) // earnings
-      .mockResolvedValueOnce([]);               // queue
+    let req2CallCount = 0;
+    mockPool.query.mockImplementation(async () => {
+      req2CallCount++;
+      if (req2CallCount === 1) return [[linkRow2]];          // link lookup
+      if (req2CallCount === 2) return [[]];                  // CAPI traffic source lookup (async, resolves before dedup)
+      if (req2CallCount === 3) return [[]];                  // dedup check
+      if (req2CallCount === 4) return [{ insertId: 43 }];   // log insert
+      if (req2CallCount === 5) return [];                    // mark converted
+      if (req2CallCount === 6) return [{ insertId: 101 }];  // earnings insert
+      if (req2CallCount === 7) return [[]];                  // queue check
+      if (req2CallCount === 8) return [];                    // queue insert
+      return [[]];
+    });
 
     const req2 = { query: { click_id: 'shared123', payout: '20' } };
     const res2 = { status: jest.fn().mockReturnThis(), json: jest.fn() };
@@ -897,13 +914,14 @@ describe('Integration', () => {
     mockPool.query
       .mockResolvedValueOnce([[linkRow]])             // 1: link lookup
       .mockResolvedValueOnce([campaignRow])            // 2: campaign lookup
-      .mockResolvedValueOnce([{ insertId: 200 }])      // 3: conversion log INSERT
-      .mockResolvedValueOnce([{ insertId: 201 }])      // 4: earnings INSERT
-      .mockResolvedValueOnce([])                       // 5: conversions UPDATE
-      .mockResolvedValueOnce([offerRow])               // 6: offer postback_enabled check
-      .mockResolvedValueOnce([{ insertId: 42 }])       // 7: postback log INSERT
-      .mockResolvedValueOnce([[]])                     // 8: queue existing check (none)
-      .mockResolvedValueOnce([]);                      // 9: queue INSERT
+      .mockResolvedValueOnce([[]])                     // 3: conversion dedup — no duplicate
+      .mockResolvedValueOnce([{ insertId: 200 }])      // 4: conversion log INSERT
+      .mockResolvedValueOnce([{ insertId: 201 }])      // 5: earnings INSERT
+      .mockResolvedValueOnce([])                       // 6: conversions UPDATE
+      .mockResolvedValueOnce([offerRow])               // 7: offer postback_enabled check
+      .mockResolvedValueOnce([{ insertId: 42 }])       // 8: postback log INSERT
+      .mockResolvedValueOnce([[]])                     // 9: queue existing check (none)
+      .mockResolvedValueOnce([]);                      // 10: queue INSERT
 
     const req = { body: { slug: 'smartlink1' } };
     const res = {

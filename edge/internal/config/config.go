@@ -57,6 +57,7 @@ func Load() *Config {
 		RedisAddrs:    getEnvSlice("REDIS_ADDRS", []string{"localhost:6379"}),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDB:       getInt("REDIS_DB", 0),
+		KafkaBrokers:         getEnvSlice("KAFKA_BROKERS", []string{"localhost:9092"}),
 		KafkaTopic:           getEnv("KAFKA_CLICK_TOPIC", "1ai-clicks"),
 		KafkaConversionTopic: getEnv("KAFKA_CONVERSION_TOPIC", "1ai-conversions"),
 		KafkaBatchSize:       getInt("KAFKA_BATCH_SIZE", 100),
@@ -74,10 +75,12 @@ func getEnv(key, fallback string) string {
 	}
 	return fallback
 }
-
 func getEnvSlice(key string, fallback []string) []string {
 	if v := os.Getenv(key); v != "" {
-		return splitAndTrim(v, ",")
+		values := splitAndTrim(v, ",")
+		if len(values) > 0 {
+			return values
+		}
 	}
 	return fallback
 }

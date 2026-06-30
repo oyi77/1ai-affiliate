@@ -1,5 +1,5 @@
 const pool = require('../db/mysql');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { parsePostbackHeaders, validatePostbackUrl, normalizeInteger, isIntegerInRange } = require('./postbackController');
 
@@ -290,9 +290,16 @@ async function getStats(req, res) {
 
     // Merge by date
     const dateMap = {};
-    dailySpend.forEach(d => { const ds = new Date(d.date).toISOString().split('T')[0]; dateMap[ds] = { date: ds, spend: Number(d.spend), clicks: d.clicks, commission: 0, campaign_name: d.campaign_name || null }; });
+    dailySpend.forEach(d => {
+      const parsed = d.date ? new Date(d.date) : null;
+      if (!parsed || Number.isNaN(parsed.getTime())) return;
+      const ds = parsed.toISOString().split('T')[0];
+      dateMap[ds] = { date: ds, spend: Number(d.spend), clicks: d.clicks, commission: 0, campaign_name: d.campaign_name || null };
+    });
     dailyCommission.forEach(d => {
-      const ds = new Date(d.date).toISOString().split('T')[0];
+      const parsed = d.date ? new Date(d.date) : null;
+      if (!parsed || Number.isNaN(parsed.getTime())) return;
+      const ds = parsed.toISOString().split('T')[0];
       if (!dateMap[ds]) dateMap[ds] = { date: ds, spend: 0, clicks: 0, commission: 0 };
       dateMap[ds].commission = Number(d.commission);
     });

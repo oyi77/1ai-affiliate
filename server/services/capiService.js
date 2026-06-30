@@ -4,6 +4,8 @@
  * Integrates with traffic source api_config to fire async on postback receipt.
  */
 
+const C = require('../utils/constants');
+
 const GRAPH_API = 'https://graph.facebook.com/v19.0';
 
 /**
@@ -132,6 +134,7 @@ async function sendGoogleConversion(accessToken, customerId, conversionAction, c
  * @param {string} [conversionData.fbp] — Facebook browser ID
  * @param {string} [conversionData.gclid] — Google Click ID
  * @param {string} [conversionData.currency] — ISO 4217 currency code
+ */
 async function handleConversion(pool, conversionData) {
   try {
     const clickId = conversionData.click_id || '';
@@ -182,6 +185,7 @@ async function handleConversion(pool, conversionData) {
 /**
  * Fire CAPI conversion for a specific platform (meta or google).
  * Records the result in 1ai_capi_log for auditing.
+ */
 async function fireCapiAsync(pool, trafficSourceId, config, conversionData) {
   const startTime = Date.now();
   let result;

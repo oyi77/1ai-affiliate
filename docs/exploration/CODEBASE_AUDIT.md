@@ -356,11 +356,16 @@ The `tests/` directory shows solid coverage for:
 
 ---
 
+## 6.5 2026-06-30 Remediation Delta
+- `edge/internal/config/config.go` now loads `KAFKA_BROKERS`, and `edge/internal/config/config_test.go` covers env parsing, default fallback, and malformed fallback.
+- `server/middleware/globalRateLimit.js` now delegates to a Redis-backed limiter via `server/lib/redisClient.js`, replacing the previous process-local `Map` state for the active Express middleware path.
+- The broader server Jest baseline remains red outside this scope; targeted middleware and Redis wrapper tests were added to prove the new behavior without claiming unrelated failures are fixed.
+
 ## 7. Architecture Score
 
 | Dimension | Score | Rationale |
 |---|---|---|
-| **Scalability** | 🟡 | Go edge + ClickHouse analytics + Kafka event stream = strong horizontal scaling for tracking. But PHP is monolithic (no connection pooling, global singletons), Node rate limiter is in-memory. Dual-stack PHP+Node adds operational complexity. |
+| **Scalability** | 🟡 | Go edge + ClickHouse analytics + Kafka event stream = strong horizontal scaling for tracking. The active Node global limiter is now Redis-backed rather than process-local, but PHP remains monolithic (no connection pooling, global singletons) and the dual-stack PHP+Node architecture still adds operational complexity. |
 | **Maintainability** | 🔴 | 6 PHP files exceed 3,000 LOC each. `tracking_support/` (142 files) is entirely procedural. 70%+ of DB queries are raw. Dual frontend stacks (jQuery + React). Two API version directories (`v3/` + `V3/`). Mid-migration state creates cognitive overhead. |
 | **Extensibility** | 🟡 | Modern modules use repository pattern, interfaces, and dependency injection (Attribution, Click, Repository). AI agent framework with tool registry is well-designed. But legacy tracking code resists extension — adding a new tracking feature means editing 3,879 LOC procedural files. |
 | **Observability** | 🟡 | Node has structured logging (pino), Prometheus metrics, request IDs, audit logs. Go has zerolog. PHP has no structured logging — `error_log()` and `display_errors=On`. No unified tracing across PHP→Node→Go→MySQL. |

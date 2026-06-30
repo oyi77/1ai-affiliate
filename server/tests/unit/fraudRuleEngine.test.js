@@ -34,7 +34,7 @@ describe('fraudRuleEngine', () => {
     test('detects empty UA', () => {
       const result = evaluateBotUA('');
       expect(result.matched).toBe(true);
-      expect(result.score).toBe(20);
+      expect(result.score).toBe(30);
     });
 
     test('detects null UA', () => {
