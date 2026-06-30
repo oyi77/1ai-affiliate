@@ -64,6 +64,8 @@ const AdvertiserDashboard = lazy(() => import('./pages/AdvertiserDashboard.jsx')
 const BoostOrders    = lazy(() => import('./pages/BoostOrders.jsx').then(m => ({ default: m.BoostOrders })).catch(() => fallback));
 const Wallet         = lazy(() => import('./pages/Wallet.jsx').then(m => ({ default: m.Wallet })).catch(() => fallback));
 const AdminFinance   = lazy(() => import('./pages/AdminFinance.jsx').then(m => ({ default: m.AdminFinance })).catch(() => fallback));
+const OfferMappingPage = lazy(() => import('./pages/OfferMappingPage.jsx').then(m => ({ default: m.OfferMappingPage })).catch(() => fallback));
+
 function App() {
   const isAuthenticated = !!localStorage.getItem('token');
 
@@ -134,6 +136,7 @@ function App() {
             <Route path="/boost"   element={<BoostOrders  />} />
             <Route path="/wallet"  element={<Wallet       />} />
             <Route path="/finance" element={<AdminFinance />} />
+            <Route path="/offer-mapping" element={<OfferMappingPage />} />
             <Route path="*"        element={<Dashboard    />} />
           </Routes>
           </ErrorBoundary>

@@ -3,7 +3,7 @@ import { LayoutDashboard, Target, Layers, Link as LinkIcon, Users,
   Sparkles, BarChart3, Shield, Crown, HelpCircle,
   Globe, Server, TrendingUp, Eye, Clock, FileText,
   Globe2, Radio, Zap, Building2, GitMerge, BarChart2, Bell, ShoppingCart, Wallet, CreditCard, Webhook,
-  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database, LogOut, Rocket, PieChart as PieChartIcon } from 'lucide-react';
+  Route, BarChartHorizontal, FlaskConical, PieChart, Activity, Database, LogOut, Rocket, PieChart as PieChartIcon, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
@@ -26,6 +26,7 @@ const navigation = [
       { name: 'Affiliates', icon: Users, href: '/affiliates' },
       { name: 'Advertisers', icon: Building2, href: '/advertisers' },
       { name: 'Traffic Sources', icon: Radio, href: '/traffic-sources' },
+      { name: 'Offer Mapping', icon: MapPin, href: '/offer-mapping' },
     ],
   },
   {
