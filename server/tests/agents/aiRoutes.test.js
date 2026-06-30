@@ -17,6 +17,7 @@ function loadApp() {
   jest.doMock(path.join(__dirname, '../../middleware/auth.js'), () => ({
     authenticate: (_req, _res, next) => next(),
     requireAdmin: (_req, _res, next) => next(),
+    requireRole: () => (_req, _res, next) => next(),
   }));
   return require('../../app');
 }

@@ -9,7 +9,6 @@ const { generateText } = require('ai');
 const { anthropic } = require('@ai-sdk/anthropic');
 const { google } = require('@ai-sdk/google');
 const { openai } = require('@ai-sdk/openai');
-const { generateText } = require('ai');
 
 /**
  * Build the Vercel AI SDK model handle for the configured provider.

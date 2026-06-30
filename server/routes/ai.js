@@ -27,6 +27,9 @@ function charge(agent, prompt, completion) {
   spend[agent].completionTokens += completion || 0;
 }
 
+let frozen = false;
+
+
 // Agent definitions: name → { systemPrompt, buildMessages, tools }
 const AGENTS = {
   'fraud-detection': {
@@ -65,13 +68,18 @@ const AGENTS = {
 
 router.use(authenticate, requireAdmin);
 
+router.post('/kill-switch', (req, res) => {
+  frozen = !!(req.body && req.body.frozen);
+  res.json({ frozen });
+});
+
 router.post('/run', async (req, res) => {
   const { agent, input } = req.body || {};
-  if (!agent || !AGENTS[agent]) {
-    return res.status(400).json({ error: `Unknown agent: ${agent}. Available: ${Object.keys(AGENTS).join(', ')}` });
-  }
   if (!input || typeof input !== 'object') {
     return res.status(400).json({ error: 'input (object) is required' });
+  }
+  if (!agent || !AGENTS[agent]) {
+    return res.status(404).json({ error: `unknown agent: ${agent}. Available: ${Object.keys(AGENTS).join(', ')}` });
   }
 
   const runId = Math.random().toString(16).slice(2, 18);
@@ -79,6 +87,10 @@ router.post('/run', async (req, res) => {
   const startedAt = Date.now();
 
   await runs.start(agent, runId, input);
+
+  if (frozen) {
+    return res.status(503).json({ error: 'AI runs are frozen by kill-switch' });
+  }
 
   try {
     const provider = createProvider();

@@ -274,7 +274,7 @@ describe('Auth — Forgot Password', () => {
 
     const res = await request(app).post('/api/auth/forgot-password').send({ username: 'admin', email: 'admin@test.com' });
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('key');
+    expect(res.body).toHaveProperty('message');
   });
 
   test('returns same message for nonexistent user (no info leak)', async () => {

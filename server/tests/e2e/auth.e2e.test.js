@@ -314,9 +314,8 @@ describe('POST /api/auth/forgot-password', () => {
       .send({ username: 'testuser', email: 'test@test.com' });
 
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('key');
-    expect(typeof res.body.key).toBe('string');
-    expect(res.body.key.length).toBeGreaterThan(0);
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toMatch(/if the account exists/i);
   });
 
   it('returns same message for nonexistent user (no leak)', async () => {
