@@ -21,18 +21,15 @@ function makeRes() {
 }
 
 function loadLimiterWithMocks({ backend, logger } = {}) {
-  jest.resetModules();
-
   const sharedBackend = backend || {
     consume: jest.fn(async () => ({ allowed: true, remaining: 99, retryAfter: 0 })),
   };
   const sharedLogger = logger || { error: jest.fn() };
 
-  jest.doMock('../../lib/redisClient', () => sharedBackend, { virtual: true });
-  jest.doMock('../../logger', () => sharedLogger);
-
   let limiter;
   jest.isolateModules(() => {
+    jest.doMock('../../lib/redisClient', () => sharedBackend, { virtual: true });
+    jest.doMock('../../logger', () => sharedLogger);
     limiter = require('../../middleware/globalRateLimit');
   });
 
