@@ -150,4 +150,48 @@ router.put('/platform', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── POST /api/settings/notifications ────────────────────────────
+router.post('/notifications', async (req, res) => {
+  try {
+    const allowed = ['notif_email_enabled','notif_telegram_enabled','notif_conversion_min','notif_low_balance_threshold'];
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) await settings.set(key, String(req.body[key]));
+    }
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /api/settings/payouts/rules ────────────────────────────
+router.post('/payouts/rules', async (req, res) => {
+  try {
+    const allowed = ['payout_min_amount','payout_schedule','payout_auto_approve','payout_methods'];
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) await settings.set(key, typeof req.body[key] === 'object' ? JSON.stringify(req.body[key]) : String(req.body[key]));
+    }
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /api/settings/telegram ─────────────────────────────────
+router.post('/telegram', async (req, res) => {
+  try {
+    const { bot_token, chat_id, enabled } = req.body;
+    if (bot_token !== undefined) await settings.set('telegram_bot_token', bot_token);
+    if (chat_id   !== undefined) await settings.set('telegram_chat_id', String(chat_id));
+    if (enabled   !== undefined) await settings.set('telegram_enabled', String(enabled));
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /api/settings/white-label ──────────────────────────────
+router.post('/white-label', async (req, res) => {
+  try {
+    const allowed = ['wl_brand_name','wl_logo_url','wl_primary_color','wl_domain','wl_enabled'];
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) await settings.set(key, String(req.body[key]));
+    }
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

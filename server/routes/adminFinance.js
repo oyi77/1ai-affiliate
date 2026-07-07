@@ -276,4 +276,32 @@ router.post('/networks/sync-all', async (req, res) => {
   }
 });
 
+// ── GET /api/admin/finance/exchange-rate/live ───────────────────
+// Fetches current USD/IDR from open.er-api.com (free, no key needed).
+// Falls back to static default on network error so the admin UI never breaks.
+router.get('/exchange-rate/live', async (req, res) => {
+  const FALLBACK_RATE = 15500;
+  try {
+    const https = require('https');
+    const raw = await new Promise((resolve, reject) => {
+      const req2 = https.get('https://open.er-api.com/v6/latest/USD', { timeout: 5000 }, (r) => {
+        let body = '';
+        r.on('data', (c) => { body += c; });
+        r.on('end', () => resolve(body));
+      });
+      req2.on('error', reject);
+      req2.on('timeout', () => { req2.destroy(); reject(new Error('timeout')); });
+    });
+    const json = JSON.parse(raw);
+    if (json.result !== 'success' || !json.rates || !json.rates.IDR) {
+      throw new Error('Unexpected response from exchange-rate API');
+    }
+    const rate = Math.round(json.rates.IDR);
+    res.json({ data: { currency_pair: 'USD_IDR', rate, source: 'live', provider: 'open.er-api.com' } });
+  } catch (err) {
+    console.warn('Live exchange rate fetch failed, returning fallback:', err.message);
+    res.json({ data: { currency_pair: 'USD_IDR', rate: FALLBACK_RATE, source: 'fallback', error: err.message } });
+  }
+});
+
 module.exports = router;

@@ -10,6 +10,7 @@ router.get('/me', authenticate, getMe);
 router.post('/forgot-password', rateLimitAuth, forgotPassword);
 router.post('/reset-password', rateLimitAuth, resetPassword);
 router.put('/password', authenticate, changePassword);
+router.post('/change-password', authenticate, changePassword); // alias for frontend compat
 router.get('/api-key', authenticate, getApiKey);
 router.post('/api-key/regenerate', authenticate, regenerateApiKey);
 

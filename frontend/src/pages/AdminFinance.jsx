@@ -163,7 +163,17 @@ export function AdminFinance() {
     setUserPage(1);
   };
 
-  const handleFetchLiveRate = () => { /* TODO: integrate live rate API */ };
+  const handleFetchLiveRate = async () => {
+    try {
+      const { data } = await api.get('/api/admin/finance/exchange-rate/live');
+      const liveRate = data?.data?.rate;
+      if (liveRate) {
+        setExchangeRateForm((prev) => ({ ...prev, rate: String(liveRate), source: 'live' }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch live rate:', err);
+    }
+  };
 
   // ── Derived values ─────────────────────────────────────────────────
 

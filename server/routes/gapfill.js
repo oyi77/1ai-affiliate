@@ -1694,4 +1694,71 @@ router.post('/advertisers/:id/payouts', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── GET /api/admin/reports/attribution ──────────────────────────
+router.get('/reports/attribution', async (req, res) => {
+  try {
+    const { from, to, offer_id, affiliate_id } = req.query;
+    let where = '1=1';
+    const params = [];
+    if (from)         { where += ' AND DATE(e.created_at) >= ?'; params.push(from); }
+    if (to)           { where += ' AND DATE(e.created_at) <= ?'; params.push(to); }
+    if (offer_id)     { where += ' AND e.offer_id = ?';          params.push(offer_id); }
+    if (affiliate_id) { where += ' AND e.affiliate_id = ?';      params.push(affiliate_id); }
+    const [rows] = await pool.query(
+      `SELECT e.affiliate_id, u.user_name, e.offer_id, o.name AS offer_name,
+              COUNT(*) AS conversions, SUM(e.payout_amount) AS total_payout
+       FROM 1ai_affiliate_earnings e
+       LEFT JOIN 1ai_users u ON u.id = e.affiliate_id
+       LEFT JOIN 1ai_offers o ON o.id = e.offer_id
+       WHERE ${where}
+       GROUP BY e.affiliate_id, e.offer_id
+       ORDER BY total_payout DESC LIMIT 500`,
+      params
+    );
+    res.json({ data: rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /api/admin/automation/run ──────────────────────────────
+router.post('/automation/run', async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: 'id required' });
+    const [[rule]] = await pool.query('SELECT * FROM 1ai_automation_rules WHERE id = ?', [id]);
+    if (!rule) return res.status(404).json({ error: 'Rule not found' });
+    // Log run attempt; actual execution is async via the automation worker
+    await pool.query(
+      'INSERT INTO 1ai_automation_logs (rule_id, triggered_by, created_at) VALUES (?, ?, NOW())',
+      [id, 'manual']
+    );
+    res.json({ success: true, message: 'Automation rule queued for execution' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /api/admin/shopee-accounts ─────────────────────────────
+router.post('/shopee-accounts', async (req, res) => {
+  try {
+    const { shop_id, shop_name, access_token, refresh_token, region } = req.body;
+    if (!shop_id || !shop_name) return res.status(400).json({ error: 'shop_id and shop_name required' });
+    const [result] = await pool.query(
+      'INSERT INTO 1ai_shopee_accounts (shop_id, shop_name, access_token, refresh_token, region, created_at) VALUES (?,?,?,?,?,NOW())',
+      [shop_id, shop_name, access_token || null, refresh_token || null, region || 'ID']
+    );
+    res.status(201).json({ id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── POST /api/admin/advertisers ─────────────────────────────────
+router.post('/advertisers', async (req, res) => {
+  try {
+    const { name, email, company, notes } = req.body;
+    if (!name || !email) return res.status(400).json({ error: 'name and email required' });
+    const [result] = await pool.query(
+      'INSERT INTO 1ai_advertisers (name, email, company, notes, created_at) VALUES (?,?,?,?,NOW())',
+      [name, email, company || null, notes || null]
+    );
+    res.status(201).json({ id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
