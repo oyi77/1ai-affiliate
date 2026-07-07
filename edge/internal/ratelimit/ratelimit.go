@@ -42,32 +42,34 @@ func (l *Limiter) Allow(ctx context.Context, key string) (bool, error) {
 
 	rkey := fmt.Sprintf("%sratelimit:%s", l.prefix, key)
 	now := time.Now().UnixMilli()
+	nowNS := time.Now().UnixNano() // unique member; avoids ZADD collision within same ms
 	windowMS := l.window.Milliseconds()
 	cutoff := now - windowMS
 
 	// Lua script — atomic sliding window:
 	//   ZREMRANGEBYSCORE  (evict stale entries)
 	//   ZCARD             (current count)
-	//   ZADD              (record this request with score=now)
-	//   EXPIRE            (keep key alive for one window)
+	//   ZADD score=now member=nowNS  (unique member prevents overwrites within same ms)
+	//   PEXPIRE           (keep key alive for one window)
 	const script = `
 local key    = KEYS[1]
 local cutoff = tonumber(ARGV[1])
 local now    = tonumber(ARGV[2])
 local limit  = tonumber(ARGV[3])
 local window = tonumber(ARGV[4])
+local member = ARGV[5]
 
 redis.call('ZREMRANGEBYSCORE', key, '-inf', cutoff)
 local count = redis.call('ZCARD', key)
 if count >= limit then
   return 0
 end
-redis.call('ZADD', key, now, now)
+redis.call('ZADD', key, now, member)
 redis.call('PEXPIRE', key, window)
 return 1
 `
 	res, err := l.rdb.Eval(ctx, script, []string{rkey},
-		cutoff, now, l.limit, windowMS,
+		cutoff, now, l.limit, windowMS, fmt.Sprintf("%d", nowNS),
 	).Int64()
 	if err != nil {
 		// Fail open — Redis unavailable or timeout
