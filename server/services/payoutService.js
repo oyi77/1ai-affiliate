@@ -1,3 +1,5 @@
+const { recordToTreasury } = require('./treasuryClient');
+
 const { queryOne, queryRows, queryInsert, queryUpdate } = require('../utils/queryHelpers');
 
 /**
@@ -40,6 +42,23 @@ async function processAutoPayouts(pool) {
       'UPDATE 1ai_affiliates SET balance = GREATEST(balance - ?, 0), updated_at = ? WHERE user_id = ?',
       [totalAmount, now, rule.user_id]
     );
+
+    // Fire-and-forget: record revenue in Capital Pool (1ai-hub treasury)
+    recordToTreasury({
+      source: '1ai-affiliate',
+      amount_usd: totalAmount,
+      direction: 'in',
+      note: `Auto-payout: ${eligible.length} earnings for user ${rule.user_id}`,
+      workflow: 'wf6_affiliate_payout',
+      metadata: {
+        user_id: rule.user_id,
+        earning_ids: earningIds,
+        payment_method: rule.payment_method,
+      },
+    }).catch((err) => {
+      // Non-fatal — payout already processed, treasury is best-effort
+      require('../logger').warn({ err }, '[payoutService] Treasury record failed');
+    });
 
     results.push({
       user_id: rule.user_id,

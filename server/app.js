@@ -230,9 +230,11 @@ if (require.main === module) {
   const postbackQueue = require('./services/postbackQueue');
   const posterWorker = require('./services/posterWorker');
   const pipelineWorker = require('./services/pipelineWorker');
+  const autoPayoutCron = require('./cron/autoPayoutCron');
   postbackQueue.start();
   posterWorker.start();
   pipelineWorker.start();
+  autoPayoutCron.start(pool);
   app.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);
     logger.info(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
