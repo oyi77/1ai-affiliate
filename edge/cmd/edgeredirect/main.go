@@ -23,6 +23,7 @@ import (
 	"github.com/1ai-affiliate/edge/internal/detect"
 	"github.com/1ai-affiliate/edge/internal/kafka"
 	"github.com/1ai-affiliate/edge/internal/model"
+	"github.com/1ai-affiliate/edge/internal/ratelimit"
 	"github.com/1ai-affiliate/edge/internal/redis"
 	"github.com/1ai-affiliate/edge/internal/router"
 )
@@ -171,6 +172,11 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(5 * time.Second))
 	r.Use(prometheusMiddleware)
+	if cfg.RateLimitEnabled {
+		rl := ratelimit.New(rdb.RDB(), cfg.RedisAddrs[0], cfg.RateLimitRPS, cfg.RateLimitWindow)
+		r.Use(rl.Middleware)
+		logger.Info().Int64("rps", cfg.RateLimitRPS).Dur("window", cfg.RateLimitWindow).Msg("rate limiter enabled")
+	}
 
 	// Health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {

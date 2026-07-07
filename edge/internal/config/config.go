@@ -41,6 +41,11 @@ type Config struct {
 	// Prometheus metrics
 	MetricsPath   string
 
+	// Rate limiting (sliding window, per IP)
+	RateLimitEnabled bool
+	RateLimitRPS     int64
+	RateLimitWindow  time.Duration
+
 	// Logging
 	LogLevel      string
 	LogJSON       bool
@@ -64,6 +69,9 @@ func Load() *Config {
 		ClickHouseDSN: getEnv("CLICKHOUSE_DSN", "clickhouse://localhost:9000/1ai_analytics"),
 		GeoIPDBPath:   getEnv("GEOIP_DB_PATH", "/data/GeoIP2-City.mmdb"),
 		MetricsPath:   getEnv("METRICS_PATH", "/metrics"),
+		RateLimitEnabled: getEnv("RATE_LIMIT_ENABLED", "true") == "true",
+		RateLimitRPS:     int64(getInt("RATE_LIMIT_RPS", 1000)),
+		RateLimitWindow:  getDuration("RATE_LIMIT_WINDOW", time.Second),
 		LogLevel:      getEnv("LOG_LEVEL", "info"),
 		LogJSON:       getEnv("LOG_JSON", "true") == "true",
 	}
