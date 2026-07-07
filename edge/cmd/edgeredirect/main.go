@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/oschwald/geoip2-golang"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 
@@ -22,9 +23,53 @@ import (
 	"github.com/1ai-affiliate/edge/internal/detect"
 	"github.com/1ai-affiliate/edge/internal/kafka"
 	"github.com/1ai-affiliate/edge/internal/model"
+	"github.com/1ai-affiliate/edge/internal/ratelimit"
 	"github.com/1ai-affiliate/edge/internal/redis"
 	"github.com/1ai-affiliate/edge/internal/router"
 )
+
+// Prometheus metrics registered at package init.
+var (
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "edge",
+			Name:      "http_requests_total",
+			Help:      "Total number of HTTP requests by path and status.",
+		},
+		[]string{"path", "method", "status"},
+	)
+	httpRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: "edge",
+			Name:      "http_request_duration_seconds",
+			Help:      "HTTP request latency in seconds.",
+			Buckets:   []float64{.0001, .0005, .001, .005, .010, .025, .050, .100, .250, .500, 1.0},
+		},
+		[]string{"path", "method"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(httpRequestsTotal, httpRequestDuration)
+}
+
+// statusRecorder wraps http.ResponseWriter to capture the status code.
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (sr *statusRecorder) WriteHeader(code int) {
+	sr.status = code
+	sr.ResponseWriter.WriteHeader(code)
+}
+
+func (sr *statusRecorder) Status() int {
+	if sr.status == 0 {
+		return http.StatusOK
+	}
+	return sr.status
+}
 
 // Server is the edge redirect server.
 type Server struct {
@@ -127,6 +172,11 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(5 * time.Second))
 	r.Use(prometheusMiddleware)
+	if cfg.RateLimitEnabled {
+		rl := ratelimit.New(rdb.RDB(), cfg.RedisAddrs[0], cfg.RateLimitRPS, cfg.RateLimitWindow)
+		r.Use(rl.Middleware)
+		logger.Info().Int64("rps", cfg.RateLimitRPS).Dur("window", cfg.RateLimitWindow).Msg("rate limiter enabled")
+	}
 
 	// Health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -416,8 +466,15 @@ func parseLogLevel(level string) zerolog.Level {
 
 func prometheusMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: record request count and latency
-		next.ServeHTTP(w, r)
+		sr := &statusRecorder{ResponseWriter: w}
+		start := time.Now()
+		next.ServeHTTP(sr, r)
+		elapsed := time.Since(start).Seconds()
+		path := r.URL.Path
+		method := r.Method
+		status := fmt.Sprintf("%d", sr.Status())
+		httpRequestsTotal.WithLabelValues(path, method, status).Inc()
+		httpRequestDuration.WithLabelValues(path, method).Observe(elapsed)
 	})
 }
 

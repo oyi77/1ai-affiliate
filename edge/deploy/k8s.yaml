@@ -69,6 +69,12 @@ spec:
           value: "info"
         - name: LOG_JSON
           value: "true"
+        - name: RATE_LIMIT_ENABLED
+          value: "true"
+        - name: RATE_LIMIT_RPS
+          value: "1000"
+        - name: RATE_LIMIT_WINDOW
+          value: "1s"
         resources:
           requests:
             cpu: "100m"
@@ -115,8 +121,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: edge-redirect
-  minReplicas: 3
-  maxReplicas: 50
+  maxReplicas: 200
   metrics:
   - type: Resource
     resource:
@@ -191,6 +196,16 @@ spec:
           limits:
             cpu: "1000m"
             memory: "512Mi"
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "ps aux | grep click-consumer | grep -v grep"]
+          initialDelaySeconds: 5
+          periodSeconds: 15
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "ps aux | grep click-consumer | grep -v grep"]
+          initialDelaySeconds: 3
+          periodSeconds: 10
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -222,6 +237,29 @@ spec:
         type: AverageValue
         averageValue: 5000
 ---
+# PodDisruptionBudgets — ensure at least 1 replica stays up during rolling updates/node drains
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: edge-redirect-pdb
+  namespace: 1ai-affiliate
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: edge-redirect
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: click-consumer-pdb
+  namespace: 1ai-affiliate
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: click-consumer
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -233,3 +271,6 @@ data:
   IDLE_TIMEOUT: "30s"
   KAFKA_BATCH_SIZE: "100"
   METRICS_PATH: "/metrics"
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_RPS: "1000"
+  RATE_LIMIT_WINDOW: "1s"
