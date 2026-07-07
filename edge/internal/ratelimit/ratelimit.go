@@ -86,26 +86,19 @@ func (l *Limiter) DegradedCount() int64 {
 // Returns 429 when the limit is exceeded; passes through on fail-open.
 func (l *Limiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip := realIP(r)
+		// r.RemoteAddr is already normalized by chi's middleware.RealIP upstream.
+		// Using it directly avoids trusting a raw X-Forwarded-For that could be
+		// a comma-separated list or spoofed before the trusted reverse proxy.
+		ip := r.RemoteAddr
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Millisecond)
 		defer cancel()
 
 		allowed, _ := l.Allow(ctx, ip)
 		if !allowed {
+			w.Header().Set("Content-Type", "application/json")
 			http.Error(w, `{"error":"rate limit exceeded"}`, http.StatusTooManyRequests)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-// realIP extracts the real client IP honouring X-Forwarded-For.
-func realIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		return xff
-	}
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return xri
-	}
-	return r.RemoteAddr
 }
