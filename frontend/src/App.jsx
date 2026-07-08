@@ -39,6 +39,7 @@ const Integrations = lazy(() => import('./pages/Integrations.jsx'));
 const ImportExport = lazy(() => import('./pages/ImportExport.jsx').then(m => ({ default: m.ImportExport })).catch(() => fallback));
 const Pipeline = lazy(() => import('./pages/Pipeline.jsx').then(m => ({ default: m.Pipeline })).catch(() => fallback));
 const Poster = lazy(() => import('./pages/Poster.jsx').then(m => ({ default: m.Poster })).catch(() => fallback));
+const ConversionPixel = lazy(() => import('./pages/ConversionPixel.jsx').then(m => ({ default: m.ConversionPixel })).catch(() => fallback));
 const APIDocs = lazy(() => import('./pages/APIDocs.jsx').then(m => ({ default: m.APIDocs })).catch(() => fallback));
 const AffiliateDashboard = lazy(() => import('./pages/AffiliateDashboard.jsx').then(m => ({ default: m.AffiliateDashboard })).catch(() => fallback));
 const AffiliatePortal = lazy(() => import('./pages/AffiliatePortal.jsx').then(m => ({ default: m.AffiliatePortal })).catch(() => fallback));
@@ -137,6 +138,7 @@ function App() {
             <Route path="/wallet"  element={<Wallet       />} />
             <Route path="/finance" element={<AdminFinance />} />
             <Route path="/offer-mapping" element={<OfferMappingPage />} />
+            <Route path="/conversion-pixel" element={<ConversionPixel />} />
             <Route path="*"        element={<Dashboard    />} />
           </Routes>
           </ErrorBoundary>
