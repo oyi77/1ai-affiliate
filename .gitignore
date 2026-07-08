@@ -35,6 +35,9 @@ build/logs/
 build/staging-config.php
 /build/
 
+# Frontend build output (served statically, not committed)
+/server/public/dist/
+
 # Development and documentation
 /docs/
 phpstan-errors.txt
