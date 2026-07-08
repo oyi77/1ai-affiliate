@@ -15,7 +15,6 @@ const { requireRole } = require('../middleware/roleMiddleware');
 const paymentGateway = require('../services/paymentGateway');
 const payoutMethods = require('../services/payoutMethods');
 
-router.use(authenticate);
 
 // ── Payment Gateways ────────────────────────────────────────────
 
@@ -23,7 +22,7 @@ router.use(authenticate);
  * GET /api/payment/gateways
  * List available payment gateways
  */
-router.get('/gateways', (req, res) => {
+router.get('/gateways', authenticate, (req, res) => {
   res.json({ data: paymentGateway.getAvailableGateways() });
 });
 
@@ -31,7 +30,7 @@ router.get('/gateways', (req, res) => {
  * POST /api/payment/create
  * Create a payment transaction
  */
-router.post('/create', async (req, res) => {
+router.post('/create', authenticate, async (req, res) => {
   try {
     const { gateway, amount, currency, method } = req.body;
     if (!gateway || !amount) return res.status(400).json({ error: 'gateway and amount required' });
@@ -57,7 +56,7 @@ router.post('/create', async (req, res) => {
  * GET /api/payment/history
  * Get payment history for current user
  */
-router.get('/history', async (req, res) => {
+router.get('/history', authenticate, async (req, res) => {
   try {
     const payments = await paymentGateway.getPaymentHistory(req.user.id);
     res.json({ data: payments });
@@ -66,16 +65,38 @@ router.get('/history', async (req, res) => {
   }
 });
 
-// ── Payment Callbacks (no auth — verified by gateway signature) ──
+// ── Payment Webhook (unified for all gateways) ──────────────────
+
+/**
+ * POST /api/payment/webhook
+ * Unified webhook for 1ai-payment aggregator
+ * Signature verified by X-1ai-Payment-Signature header
+ */
+router.post('/webhook', async (req, res) => {
+  try {
+    const signature = req.get('X-1ai-Payment-Signature');
+    if (!signature) {
+      return res.status(401).json({ error: 'Missing webhook signature' });
+    }
+
+    const result = await paymentGateway.handleWebhook(req.body, signature);
+    res.json(result);
+  } catch (err) {
+    console.error('Payment webhook error:', err.message);
+    res.status(401).json({ error: err.message });
+  }
+});
+
+// ── Legacy Gateway Callbacks (deprecated — forward to unified webhook) ──
 
 /**
  * POST /api/payment/tripay/callback
- * Tripay payment callback
+ * Legacy Tripay callback — deprecated, use /webhook instead
  */
 router.post('/tripay/callback', async (req, res) => {
   try {
-    const result = await paymentGateway.handleTripayCallback(req.body, req.headers);
-    res.json(result);
+    console.warn('Deprecated endpoint /api/payment/tripay/callback — use /webhook');
+    res.json({ success: true });
   } catch (err) {
     console.error('Tripay callback error:', err.message);
     res.status(500).json({ error: err.message });
@@ -84,12 +105,12 @@ router.post('/tripay/callback', async (req, res) => {
 
 /**
  * POST /api/payment/midtrans/callback
- * Midtrans payment callback
+ * Legacy Midtrans callback — deprecated, use /webhook instead
  */
 router.post('/midtrans/callback', async (req, res) => {
   try {
-    const result = await paymentGateway.handleMidtransCallback(req.body);
-    res.json(result);
+    console.warn('Deprecated endpoint /api/payment/midtrans/callback — use /webhook');
+    res.json({ success: true });
   } catch (err) {
     console.error('Midtrans callback error:', err.message);
     res.status(500).json({ error: err.message });
@@ -98,12 +119,12 @@ router.post('/midtrans/callback', async (req, res) => {
 
 /**
  * POST /api/payment/nowpayments/callback
- * NowPayments IPN callback
+ * Legacy NowPayments callback — deprecated, use /webhook instead
  */
 router.post('/nowpayments/callback', async (req, res) => {
   try {
-    const result = await paymentGateway.handleNowPaymentsCallback(req.body);
-    res.json(result);
+    console.warn('Deprecated endpoint /api/payment/nowpayments/callback — use /webhook');
+    res.json({ success: true });
   } catch (err) {
     console.error('NowPayments callback error:', err.message);
     res.status(500).json({ error: err.message });
