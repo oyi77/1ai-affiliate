@@ -62,6 +62,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// ACME HTTP-01 challenge — must be before auth and static middleware
+app.use(require('./routes/acmeChallenge'));
+
 // Static files — shared with PHP public dir
 app.use(express.static(path.join(__dirname, 'public'), {
   index: false, // Don't serve index.html for / — let SPA catch-all handle it
@@ -132,6 +135,7 @@ app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/admin/balance', require('./routes/balance'));
 app.use('/api/wallet', require('./routes/wallet'));
 app.use('/api/admin/finance', require('./routes/adminFinance'));
+app.use('/api/admin/domains', require('./routes/adminDomains'));
 app.use('/api/boost', require('./routes/boost'));
 // Auto-optimization cron (runs every 15 minutes)
 const { runOptimization } = require('./services/autoOptimizer');
