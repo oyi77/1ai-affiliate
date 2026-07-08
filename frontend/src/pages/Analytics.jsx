@@ -17,6 +17,7 @@ import { ErrorState } from '../components/ErrorState';
 
 export function Analytics() {
   const [range, setRange] = useState('7d');
+  const [activeTab, setActiveTab] = useState('Geo');
   const [filterType] = useState('all');
 
   const { data: stats, isError: statsErr, error: statsError, refetch: refetchStats } = useSafeQuery({
@@ -32,6 +33,16 @@ export function Analytics() {
     queryFn: async () => {
       const response = await api.get(`/api/admin/reports?range=${range}&type=${filterType}`);
       return response.data?.data ?? response.data ?? []
+    },
+  });
+
+  const BREAKDOWN_TABS = ['Geo', 'Device', 'Browser', 'OS', 'Offer', 'Affiliate'];
+
+  const { data: breakdownData, isLoading: breakdownLoading } = useSafeQuery({
+    queryKey: ['analytics-breakdown', activeTab, range],
+    queryFn: async () => {
+      const response = await api.get(`/api/admin/analytics/breakdown?dimension=${activeTab}&range=${range}`);
+      return response.data?.data ?? response.data ?? [];
     },
   });
 
@@ -67,6 +78,39 @@ export function Analytics() {
       cell: ({ row }) => {
         const epc = (row.original.revenue / (row.original.clicks || 1)).toFixed(2);
         return <span className="text-green-success font-semibold">{formatCurrency(epc)}</span>;
+      },
+    },
+    {
+      header: 'Revenue',
+      accessorKey: 'revenue',
+      cell: ({ getValue }) => <span className="text-white font-bold">{formatCurrency(getValue() || 0)}</span>,
+    },
+  ];
+
+  const breakdownColumns = [
+    {
+      header: 'Dimension',
+      accessorKey: 'dimension',
+      cell: ({ getValue }) => <div className="font-semibold text-white">{getValue() || '—'}</div>,
+    },
+    {
+      header: 'Clicks',
+      accessorKey: 'clicks',
+      cell: ({ getValue }) => <span className="font-mono">{(getValue() || 0).toLocaleString()}</span>,
+    },
+    {
+      header: 'Conversions',
+      accessorKey: 'conversions',
+      cell: ({ getValue }) => <span className="font-mono text-indigo-light">{(getValue() || 0).toLocaleString()}</span>,
+    },
+    {
+      header: 'CR%',
+      accessorKey: 'cr',
+      cell: ({ row }) => {
+        const clicks = row.original.clicks || 0;
+        const conversions = row.original.conversions || 0;
+        const cr = clicks === 0 ? '0.0%' : (conversions / clicks * 100).toFixed(1) + '%';
+        return <span className="text-slate-400">{cr}</span>;
       },
     },
     {
@@ -248,6 +292,30 @@ export function Analytics() {
             )}
           </ResponsiveContainer>
         </GlassCard>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-white">Drill-down</h3>
+        <div className="flex border-b border-white/10">
+          {BREAKDOWN_TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === tab
+                  ? 'bg-indigo-500/20 text-indigo-400 border-b-2 border-indigo-500'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        <DataTable
+          data={breakdownData || []}
+          columns={breakdownColumns}
+          isLoading={breakdownLoading}
+        />
       </div>
     </div>
   );

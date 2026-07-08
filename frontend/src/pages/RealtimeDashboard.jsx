@@ -2,6 +2,15 @@ import { formatCurrency, formatIDR } from "../lib/currency";
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard } from '../components/ui/GlassCard';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 export function RealtimeDashboard() {
   const [stats, setStats] = useState(null);
@@ -43,21 +52,17 @@ export function RealtimeDashboard() {
   const formatNum = (n) => Number(n || 0).toLocaleString();
   const formatRp = (n) => formatIDR(n || 0);
 
-  // Simple sparkline from history
-  const sparkline = (key, color) => {
-    const values = history.map(h => Number(h[key] || 0));
-    if (values.length < 2) return null;
-    const max = Math.max(...values, 1);
-    const points = values.map((v, i) => `${(i / (values.length - 1)) * 200},${40 - (v / max) * 35}`).join(' ');
-    return (
-      <svg viewBox="0 0 200 40" className="w-full h-10 mt-2">
-        <polyline fill="none" stroke={color} strokeWidth="2" points={points} />
-      </svg>
-    );
-  };
+  // Map history to chart-friendly shape
+  const chartData = history.map(h => ({
+    t: new Date(h.t).toLocaleTimeString(),
+    clicks: Number(h.clicks_1h || 0),
+    conversions: Number(h.conversions_1h || 0),
+    revenue: Number(h.revenue_1h || 0),
+  }));
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Real-Time Dashboard</h1>
         <div className="flex items-center gap-2">
@@ -66,13 +71,14 @@ export function RealtimeDashboard() {
         </div>
       </div>
 
+      {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Clicks (1h)', key: 'clicks_1h', color: '#6366f1', format: formatNum },
-          { label: 'Conversions (1h)', key: 'conversions_1h', color: '#10b981', format: formatNum },
-          { label: 'Revenue (1h)', key: 'revenue_1h', color: '#f59e0b', format: formatIDR },
-          { label: 'Active Affiliates', key: 'active_affiliates', color: '#8b5cf6', format: formatNum },
-        ].map(({ label, key, color, format }) => (
+          { label: 'Clicks (1h)', key: 'clicks_1h', format: formatNum },
+          { label: 'Conversions (1h)', key: 'conversions_1h', format: formatNum },
+          { label: 'Revenue (1h)', key: 'revenue_1h', format: formatRp },
+          { label: 'Active Campaigns', key: 'active_campaigns', format: formatNum },
+        ].map(({ label, key, format }) => (
           <GlassCard key={key}>
             <div className="text-xs text-gray-400 mb-1">{label}</div>
             <motion.div
@@ -83,11 +89,99 @@ export function RealtimeDashboard() {
             >
               {format(stats?.[key])}
             </motion.div>
-            {sparkline(key, color)}
           </GlassCard>
         ))}
       </div>
 
+      {/* Clicks + Conversions dual-line chart */}
+      <GlassCard>
+        <h3 className="text-sm font-medium text-gray-400 mb-3">Clicks &amp; Conversions (rolling 60 pts)</h3>
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorConversions" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <XAxis
+              dataKey="t"
+              tick={{ fill: '#9ca3af', fontSize: 10 }}
+              interval="preserveStartEnd"
+              tickFormatter={(v) => v}
+            />
+            <YAxis tick={{ fill: '#9ca3af', fontSize: 10 }} width={36} />
+            <Tooltip
+              contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
+              labelStyle={{ color: '#e2e8f0', fontSize: 11 }}
+              itemStyle={{ fontSize: 11 }}
+            />
+            <Area
+              type="monotone"
+              dataKey="clicks"
+              stroke="#6366f1"
+              strokeWidth={2}
+              fill="url(#colorClicks)"
+              dot={false}
+              name="Clicks"
+            />
+            <Area
+              type="monotone"
+              dataKey="conversions"
+              stroke="#34d399"
+              strokeWidth={2}
+              fill="url(#colorConversions)"
+              dot={false}
+              name="Conversions"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </GlassCard>
+
+      {/* Revenue area chart */}
+      <GlassCard>
+        <h3 className="text-sm font-medium text-gray-400 mb-3">Revenue (1h, rolling 60 pts)</h3>
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <XAxis
+              dataKey="t"
+              tick={{ fill: '#9ca3af', fontSize: 10 }}
+              interval="preserveStartEnd"
+              tickFormatter={(v) => v}
+            />
+            <YAxis tick={{ fill: '#9ca3af', fontSize: 10 }} width={48} tickFormatter={(v) => formatIDR(v)} />
+            <Tooltip
+              contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
+              labelStyle={{ color: '#e2e8f0', fontSize: 11 }}
+              itemStyle={{ fontSize: 11 }}
+              formatter={(v) => formatRp(v)}
+            />
+            <Area
+              type="monotone"
+              dataKey="revenue"
+              stroke="#f59e0b"
+              strokeWidth={2}
+              fill="url(#colorRevenue)"
+              dot={false}
+              name="Revenue"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </GlassCard>
+
+      {/* Misc stats row */}
       <div className="grid grid-cols-2 gap-4">
         <GlassCard>
           <div className="text-xs text-gray-400 mb-1">Pending Postbacks</div>
@@ -99,6 +193,7 @@ export function RealtimeDashboard() {
         </GlassCard>
       </div>
 
+      {/* Live event stream log */}
       <GlassCard>
         <h3 className="text-sm font-medium text-gray-400 mb-2">Live Event Stream</h3>
         <div className="h-48 overflow-y-auto font-mono text-xs text-gray-500 space-y-1">

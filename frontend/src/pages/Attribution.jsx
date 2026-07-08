@@ -2,7 +2,7 @@ import { useSafeQuery } from '../hooks/useSafeQuery';
 import api from '../lib/api';
 import { GlassCard } from '../components/ui/GlassCard';
 import { StatCard } from '../components/ui/StatCard';
-import { BarChart3, Layers, MousePointer, GitBranch } from 'lucide-react';
+import { BarChart3, Layers, MousePointer, GitBranch, TrendingUp, DollarSign, Percent } from 'lucide-react';
 import { ErrorState } from '../components/ErrorState';
 
 const MODELS = [
@@ -27,6 +27,13 @@ const MODELS = [
     icon: BarChart3,
     color: 'yellow',
   },
+  {
+    id: 'time_decay',
+    name: 'Time Decay',
+    description: 'Gives more credit to touchpoints closer in time to the conversion, decaying exponentially as time increases.',
+    icon: TrendingUp,
+    color: 'pink',
+  },
 ];
 
 export function Attribution() {
@@ -41,6 +48,13 @@ export function Attribution() {
   const activeModels = stats?.active_models ?? 3;
   const conversionsAttributed = stats?.conversions_attributed ?? 0;
   const avgTouchpoints = stats?.avg_touchpoints ?? 0;
+
+  const clicks = stats?.clicks ?? 0;
+  const revenue = stats?.revenue ?? 0;
+  const cost = stats?.total_cost ?? 0;
+  const epc = clicks > 0 ? revenue / clicks : 0;
+  const cr = clicks > 0 ? (conversionsAttributed / clicks) * 100 : 0;
+  const roi = cost > 0 ? ((revenue - cost) / cost) * 100 : 0;
 
   const isModelActive = (modelId) => {
     if (!stats?.attribution_models) return true;
@@ -108,6 +122,28 @@ export function Attribution() {
             </GlassCard>
           );
         })}
+      </div>
+
+      {/* EPC / CR / ROI */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard
+          label="EPC (Earnings Per Click)"
+          value={isLoading ? '—' : `$${epc.toFixed(4)}`}
+          icon={DollarSign}
+          accent="green"
+        />
+        <StatCard
+          label="Conversion Rate"
+          value={isLoading ? '—' : `${cr.toFixed(2)}%`}
+          icon={Percent}
+          accent="indigo"
+        />
+        <StatCard
+          label="ROI"
+          value={isLoading ? '—' : `${roi.toFixed(1)}%`}
+          icon={TrendingUp}
+          accent="yellow"
+        />
       </div>
     </div>
   );

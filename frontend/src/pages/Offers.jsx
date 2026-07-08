@@ -7,7 +7,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Modal } from '../components/ui/Modal';
 import { GlassCard } from '../components/ui/GlassCard';
 import { TemplateSelector } from '../components/ui/TemplateSelector';
-import { Plus, Gift, DollarSign, Network, Download, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Gift, DollarSign, Network, Download, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 import { ErrorState } from '../components/ErrorState';
 import offerTemplates from '../data/offerTemplates';
 
@@ -32,6 +32,8 @@ export function Offers() {
     vertical: '', type: 'CPA',
   });
   const queryClient = useQueryClient();
+  const [rotationModalOpen, setRotationModalOpen] = useState(false);
+  const [rotationWeights, setRotationWeights] = useState({});
 
   const { data: offers, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['offers'],
@@ -73,6 +75,17 @@ export function Offers() {
     mutationFn: (id) => api.patch(`/api/admin/offers/${id}`, { approval_status: 'rejected' }),
     onSuccess: () => { queryClient.invalidateQueries(['offers']); },
     onError: (err) => { alert(err.response?.data?.error || 'Failed to reject'); },
+  });
+
+  const rotationMutation = useMutation({
+    mutationFn: async (data) => api.put('/api/admin/offers/rotation', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['offers']);
+      setRotationModalOpen(false);
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || 'Failed to save rotation');
+    },
   });
 
   const columns = [
@@ -235,6 +248,20 @@ export function Offers() {
             className="flex items-center gap-2 px-4 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all"
           >
             📋 From Template
+          </button>
+          <button
+            onClick={() => {
+              const initial = {};
+              (offers || []).filter(o => o.status === 'active').forEach(o => {
+                initial[o.id] = { weight: o.rotation_weight ?? 50, active: true };
+              });
+              setRotationWeights(initial);
+              setRotationModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-3 bg-surface-3 text-slate-300 rounded-lg font-bold hover:bg-surface-hover transition-all"
+          >
+            <RotateCcw className="w-5 h-5" />
+            Manage Rotation
           </button>
           <button
             onClick={() => setCreateModalOpen(true)}
@@ -440,6 +467,98 @@ export function Offers() {
           setCreateModalOpen(true);
         }}
       />
+      <Modal
+        open={rotationModalOpen}
+        onOpenChange={setRotationModalOpen}
+        title="Offer Rotation Settings"
+        description="Configure weighted rotation for active offers"
+      >
+        <div className="space-y-4">
+          {(() => {
+            const rotOffers = (offers || []).filter(o => rotationWeights[o.id] !== undefined);
+            const totalWeight = rotOffers.reduce((sum, o) => {
+              const rw = rotationWeights[o.id];
+              return rw?.active ? sum + (rw?.weight || 0) : sum;
+            }, 0);
+            return (
+              <>
+                {rotOffers.length === 0 && (
+                  <p className="text-slate-400 text-sm text-center py-4">No active offers to configure.</p>
+                )}
+                {rotOffers.map(offer => {
+                  const rw = rotationWeights[offer.id] || { weight: 50, active: true };
+                  const pct = totalWeight > 0 && rw.active ? ((rw.weight / totalWeight) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={offer.id} className="p-4 bg-black/20 border border-white/10 rounded-xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-white text-sm truncate max-w-[60%]">{offer.name}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-slate-400 font-mono w-12 text-right">{pct}%</span>
+                          <button
+                            type="button"
+                            onClick={() => setRotationWeights(prev => ({
+                              ...prev,
+                              [offer.id]: { ...prev[offer.id], active: !prev[offer.id]?.active },
+                            }))}
+                            className={`w-10 h-5 rounded-full transition-colors relative flex-shrink-0 ${rw.active ? 'bg-indigo-primary' : 'bg-slate-600'}`}
+                          >
+                            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow ${rw.active ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-slate-500 w-8 font-mono">{rw.weight}</span>
+                        <input
+                          type="range"
+                          min="1"
+                          max="100"
+                          value={rw.weight}
+                          disabled={!rw.active}
+                          onChange={(e) => setRotationWeights(prev => ({
+                            ...prev,
+                            [offer.id]: { ...prev[offer.id], weight: Number(e.target.value) },
+                          }))}
+                          className="flex-1 accent-indigo-500 disabled:opacity-40 cursor-pointer"
+                        />
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-700/60 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-indigo-primary to-indigo-light rounded-full transition-all duration-200"
+                          style={{ width: rw.active ? `${pct}%` : '0%' }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setRotationModalOpen(false)}
+                    className="flex-1 px-4 py-2.5 bg-surface-3 text-slate-300 rounded-lg hover:bg-surface-hover transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={rotationMutation.isPending}
+                    onClick={() => {
+                      const payload = Object.entries(rotationWeights).map(([id, rw]) => ({
+                        id,
+                        weight: rw.weight,
+                        active: rw.active,
+                      }));
+                      rotationMutation.mutate({ offers: payload });
+                    }}
+                    className="flex-1 px-4 py-2.5 bg-indigo-primary text-white rounded-lg font-bold hover:bg-indigo-light transition-all disabled:opacity-50"
+                  >
+                    {rotationMutation.isPending ? 'Saving...' : 'Save Rotation'}
+                  </button>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </Modal>
     </div>
   );
 }
