@@ -235,10 +235,35 @@ if (require.main === module) {
   posterWorker.start();
   pipelineWorker.start();
   autoPayoutCron.start(pool);
-  app.listen(PORT, () => {
+  const httpServer = app.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);
     logger.info(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
   });
+
+  let shuttingDown = false;
+  const shutdown = (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.info({ signal }, 'graceful shutdown initiated');
+    // Stop accepting new connections; allow in-flight requests up to 10s
+    httpServer.close(() => {
+      logger.info('HTTP server closed');
+      pool.end().then(() => {
+        logger.info('DB pool closed');
+        process.exit(0);
+      }).catch((err) => {
+        logger.error({ err }, 'DB pool close error');
+        process.exit(1);
+      });
+    });
+    // Force exit if graceful close stalls
+    setTimeout(() => {
+      logger.error('graceful shutdown timeout, forcing exit');
+      process.exit(1);
+    }, 10_000).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT',  () => shutdown('SIGINT'));
 }
 
 module.exports = app;
