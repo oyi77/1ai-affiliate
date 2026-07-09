@@ -2,6 +2,7 @@ const pool = require('../db/mysql');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { parsePostbackHeaders, validatePostbackUrl, normalizeInteger, isIntegerInRange } = require('./postbackController');
+const infrastructureManager = require('../services/infrastructureManager');
 
 /**
  * Admin controller — dashboard data from the shared tracking database.
@@ -890,6 +891,26 @@ async function createDomain(req, res) {
     `, [domain, is_active, is_default, ssl_enabled, cloudflare_zone_id, notes]);
     
     const [newDomain] = await pool.query('SELECT * FROM 1ai_smartlink_domains WHERE id = ?', [result.insertId]);
+    
+    // Provision infrastructure if SSL is enabled
+    if (ssl_enabled) {
+      try {
+        await infrastructureManager.provisionDomain(domain, {
+          sslEnabled: ssl_enabled,
+          cloudflareZoneId: cloudflare_zone_id,
+          serverIp: process.env.SERVER_IP
+        });
+      } catch (infraErr) {
+        console.error('Infrastructure provisioning failed:', infraErr);
+        // Rollback: delete the database record
+        await pool.query('DELETE FROM 1ai_smartlink_domains WHERE id = ?', [result.insertId]);
+        return res.status(500).json({ 
+          error: 'Failed to provision infrastructure',
+          details: infraErr.message 
+        });
+      }
+    }
+    
     res.status(201).json(newDomain[0]);
   } catch (err) {
     console.error('createDomain error:', err);
