@@ -1,7 +1,7 @@
 'use strict';
 
-beforeAll(() => { process.env.RATE_LIMIT_STRICT = 'true'; });
-afterAll(() => { delete process.env.RATE_LIMIT_STRICT; });
+beforeEach(() => { process.env.RATE_LIMIT_STRICT = 'true'; });
+afterEach(() => { delete process.env.RATE_LIMIT_STRICT; });
 
 function makeReq(overrides = {}) {
   return {
@@ -21,18 +21,15 @@ function makeRes() {
 }
 
 function loadLimiterWithMocks({ backend, logger } = {}) {
-  jest.resetModules();
-
   const sharedBackend = backend || {
     consume: jest.fn(async () => ({ allowed: true, remaining: 99, retryAfter: 0 })),
   };
   const sharedLogger = logger || { error: jest.fn() };
 
-  jest.doMock('../../lib/redisClient', () => sharedBackend, { virtual: true });
-  jest.doMock('../../logger', () => sharedLogger);
-
   let limiter;
   jest.isolateModules(() => {
+    jest.doMock('../../lib/redisClient', () => sharedBackend, { virtual: true });
+    jest.doMock('../../logger', () => sharedLogger);
     limiter = require('../../middleware/globalRateLimit');
   });
 

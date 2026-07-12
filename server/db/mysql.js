@@ -5,6 +5,7 @@ const mysql = require('mysql2/promise');
 const RETRYABLE_ERRORS = ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ER_CON_COUNT_ERROR', 'PROTOCOL_CONNECTION_LOST'];
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 250;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function createPoolConfig() {
   return {

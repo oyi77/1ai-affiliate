@@ -267,14 +267,14 @@ server {
       const yamlContent = await fs.readFile(this.cfRouterAppsYaml, 'utf8');
       const config = yaml.load(yamlContent);
       
-      // Find and remove the app entry
-      const initialLength = config.apps.length;
-      config.apps = config.apps.filter(app => app.hostname !== domain);
-      
-      if (config.apps.length === initialLength) {
+      // Find and remove the app entry (apps is object, not array)
+      const entries = Object.entries(config.apps || {});
+      const targetEntry = entries.find(([, v]) => v.hostname === domain);
+      if (!targetEntry) {
         console.log(`ℹ️  Domain ${domain} not found in cf-router apps.yaml`);
         return { success: true, notFound: true };
       }
+      delete config.apps[targetEntry[0]];
       
       // Write back to apps.yaml
       const updatedYaml = yaml.dump(config, {

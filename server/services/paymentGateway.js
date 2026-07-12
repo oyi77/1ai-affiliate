@@ -20,9 +20,10 @@ const pool = require('../db/mysql');
 // ── Configuration ────────────────────────────────────────────
 
 const paymentConfig = {
-  aggregatorUrl: process.env.PAYMENT_API_URL || 'http://localhost:3100',
-  aggregatorApiKey: process.env.PAYMENT_API_KEY,
+  aggregatorUrl: process.env.PAYMENT_AGGREGATOR_URL || process.env.PAYMENT_API_URL || 'http://localhost:3100',
+  aggregatorApiKey: process.env.PAYMENT_AGGREGATOR_API_KEY || process.env.PAYMENT_API_KEY,
   webhookSecret: process.env.PAYMENT_WEBHOOK_SECRET,
+  baseUrl: process.env.APP_URL || 'http://localhost:3001',
 };
 
 const gateways = {
@@ -124,9 +125,10 @@ async function createPayment({ gateway, amount, currency, method, userId, purpos
     },
     body: JSON.stringify({
       gateway,
-      amount: parseInt(amount),
+      amount: Math.round(Number(amount)),
       currency: currency || 'IDR',
-      method: method || 'QRIS',
+      payment_method: method || 'QRIS',
+      callback_url: `${paymentConfig.baseUrl}/api/payment/${gateway}/callback`,
       idempotency_key: reference,
       metadata: {
         project: 'affiliate',
@@ -141,19 +143,18 @@ async function createPayment({ gateway, amount, currency, method, userId, purpos
     throw new Error(result.error?.message || 'Payment creation failed');
   }
 
-  // Store aggregator's order_id for webhook tracking
   await pool.query('UPDATE 1ai_payments SET gateway_ref = ? WHERE reference = ?', [
-    result.data.order_id,
+    result.data.id,
     reference,
   ]);
 
   return {
     reference,
     gateway,
-    checkout_url: result.data.payment_url,
+    checkout_url: result.data.payment_url || result.data.checkout_url || null,
     qr_url: result.data.qr_url || null,
-    amount: result.data.amount,
-    method,
+    amount: result.data.amount || amount,
+    method: result.data.payment_method || method,
   };
 }
 
