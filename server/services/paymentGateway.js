@@ -128,7 +128,7 @@ async function createPayment({ gateway, amount, currency, method, userId, purpos
       amount: Math.round(Number(amount)),
       currency: currency || 'IDR',
       payment_method: method || 'QRIS',
-      callback_url: `${paymentConfig.baseUrl}/api/payment/${gateway}/callback`,
+      callback_url: `${paymentConfig.baseUrl}/api/payment/webhook`,
       idempotency_key: reference,
       metadata: {
         project: 'affiliate',
@@ -180,7 +180,7 @@ async function handleWebhook(body, signature) {
   // Verify 1ai-payment signature
   await verifyWebhookSignature(body, signature);
 
-  const { order_id, status, gateway, amount, currency, payment_method, paid_at, metadata } = body;
+  const { order_id, project_order_id, status, gateway, amount, currency, payment_method, paid_at, metadata } = body;
 
   // Map normalized status to local status
   const statusMap = {
@@ -193,16 +193,17 @@ async function handleWebhook(body, signature) {
   const localStatus = statusMap[status] || 'pending';
 
   // Update payment record
+  const ref = project_order_id || order_id;
   if (status === 'success') {
     await pool.query(
       'UPDATE 1ai_payments SET status = ?, paid_at = UNIX_TIMESTAMP(), gateway_ref = ? WHERE reference = ?',
-      [localStatus, order_id, order_id]
+      [localStatus, order_id, ref]
     );
-    await creditUserBalance(order_id);
+    await creditUserBalance(ref);
   } else if (status === 'expired' || status === 'failed' || status === 'cancelled') {
     await pool.query(
       'UPDATE 1ai_payments SET status = ?, gateway_ref = ? WHERE reference = ?',
-      [localStatus, order_id, order_id]
+      [localStatus, order_id, ref]
     );
   }
 
