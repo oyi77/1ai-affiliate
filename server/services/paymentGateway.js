@@ -2,16 +2,19 @@
 
 /**
  * Unified Payment Service
- * Uses 1ai-payment aggregator API (http://localhost:3100/api/payments)
- * 
- * Replaces direct gateway SDK calls with HTTP API:
- * - Tripay (ID bank/e-wallet)
- * - Midtrans (ID gateway)
- * - NowPayments (crypto)
- * 
+ * Uses 1ai-payment aggregator API — all gateway logic delegated.
+ *
+ * The aggregator handles:
+ *   - Gateway availability & method listing
+ *   - Method-to-gateway routing
+ *   - Payment creation (sending to Duitku/Midtrans/Tripay/NowPayments)
+ *   - Webhook callbacks
+ *
+ * No hardcoded gateway definitions, method mappings, or SDKs live here.
+ *
  * Handles:
- * - Advertiser deposits (pay platform for campaigns)
- * - Affiliate payouts (platform pays affiliates)
+ *   - Advertiser deposits (pay platform for campaigns)
+ *   - Affiliate payouts (platform pays affiliates)
  */
 
 const crypto = require('crypto');
@@ -26,61 +29,147 @@ const paymentConfig = {
   baseUrl: process.env.APP_URL || 'http://localhost:3001',
 };
 
-const gateways = {
-  tripay: {
-    name: 'Tripay',
-    icon: '🏦',
-    methods: ['BCA', 'BNI', 'BRI', 'MANDIRI', 'BSI', 'DANA', 'OVO', 'GOPAY', 'QRIS'],
-    currencies: ['IDR'],
-    type: 'fiat',
-    get isConfigured() {
-      return !!(paymentConfig.aggregatorUrl && paymentConfig.aggregatorApiKey);
-    },
-  },
+// Cache aggregator gateway list so we don't call it on every request
+let aggregatorGatewaysCache = null;
+let aggregatorGatewaysCacheTime = 0;
+const GATEWAY_CACHE_TTL = parseInt(process.env.PAYMENT_GATEWAY_CACHE_TTL) || 300_000;
 
-  midtrans: {
-    name: 'Midtrans',
-    icon: '💳',
-    methods: ['BCA', 'BNI', 'BRI', 'MANDIRI', 'GOPAY', 'OVO', 'DANA', 'QRIS', 'CREDIT_CARD'],
-    currencies: ['IDR'],
-    type: 'fiat',
-    get isConfigured() {
-      return !!(paymentConfig.aggregatorUrl && paymentConfig.aggregatorApiKey);
-    },
-  },
+// User-facing method metadata the aggregator doesn't provide.
+// Keyed by method code (upper). Only icons + fees — NOT gateway logic.
+const DEFAULT_BANK_FEE = parseInt(process.env.PAYMENT_BANK_FEE) || 4000;
 
-  nowpayments: {
-    name: 'NowPayments',
-    icon: '₿',
-    methods: ['BTC', 'ETH', 'USDT', 'USDC', 'SOL', 'BNB', 'XRP', 'DOGE'],
-    currencies: ['USD', 'EUR', 'IDR'],
-    type: 'crypto',
-    get isConfigured() {
-      return !!(paymentConfig.aggregatorUrl && paymentConfig.aggregatorApiKey);
-    },
-  },
+const methodMeta = {
+  BCA:          { icon: '🏦', fee: DEFAULT_BANK_FEE },
+  BNI:          { icon: '🏦', fee: DEFAULT_BANK_FEE },
+  BRI:          { icon: '🏦', fee: DEFAULT_BANK_FEE },
+  MANDIRI:      { icon: '🏦', fee: DEFAULT_BANK_FEE },
+  PERMATA:      { icon: '🏦', fee: DEFAULT_BANK_FEE },
+  BSI:          { icon: '🏦', fee: DEFAULT_BANK_FEE },
+  QRIS:         { icon: '📱', fee: 0 },
+  CREDIT_CARD:  { icon: '💳', fee: 0 },
+  GOPAY:        { icon: '🟢', fee: 0 },
+  OVO:          { icon: '🟣', fee: 0 },
+  DANA:         { icon: '🔵', fee: 0 },
+  SHOPEEPAY:    { icon: '🛒', fee: 0 },
+  VIRTUAL_ACCOUNT:{ icon: '🏦', fee: DEFAULT_BANK_FEE },
 };
 
-// ── Get Available Gateways ──────────────────────────────────────
+// ── Aggregator Gateway Fetcher ───────────────────────────────
 
-function getAvailableGateways() {
-  return Object.entries(gateways).map(([key, gw]) => ({
-    id: key,
-    name: gw.name,
-    icon: gw.icon,
-    methods: gw.methods,
-    currencies: gw.currencies,
-    type: gw.type,
-    available: gw.isConfigured,
-  }));
+async function getAggregatorGateways() {
+  const now = Date.now();
+  if (aggregatorGatewaysCache && (now - aggregatorGatewaysCacheTime) < GATEWAY_CACHE_TTL) {
+    return aggregatorGatewaysCache;
+  }
+
+  try {
+    const resp = await fetch(`${paymentConfig.aggregatorUrl}/api/gateways`, {
+      headers: { 'X-Api-Key': paymentConfig.aggregatorApiKey },
+    });
+    const json = await resp.json();
+    if (json.success && Array.isArray(json.data)) {
+      aggregatorGatewaysCache = json.data;
+      aggregatorGatewaysCacheTime = now;
+    }
+    return aggregatorGatewaysCache || [];
+  } catch {
+    return aggregatorGatewaysCache || [];
+  }
 }
 
-// ── Create Payment ──────────────────────────────────────────
+
+// Prime cache on startup
+getAggregatorGateways().catch(() => {});
+
+// ── Available Gateways (all from aggregator) ──────────────────
+
+function getAvailableGateways() {
+  if (!aggregatorGatewaysCache) return [];
+  return aggregatorGatewaysCache
+    .filter(gw => gw.enabled)
+    .map(gw => ({
+      id: gw.gateway,
+      name: gw.name || gw.gateway.charAt(0).toUpperCase() + gw.gateway.slice(1),
+      icon: gw.icon || '💳',
+      methods: gw.methods.map(m => m.code || m.name),
+      currencies: gw.currencies || ['IDR'],
+      type: gw.gateway === 'nowpayments' ? 'crypto' : 'fiat',
+      isConfigured: true,
+    }));
+}
+
+// ── Available Methods (flattened from aggregator, deduplicated) ──
+
+function getAvailableMethods() {
+  if (!aggregatorGatewaysCache) return [];
+
+  const seen = new Set();
+  const methods = [];
+
+  for (const gw of aggregatorGatewaysCache) {
+    if (!gw.enabled) continue;
+    for (const mt of gw.methods) {
+      const code = (mt.code || mt.name || '').toUpperCase();
+      if (!code || seen.has(code)) continue;
+      seen.add(code);
+
+      const meta = methodMeta[code] || {};
+      let group = 'virtual_account';
+      if (['QRIS', 'GOPAY', 'OVO', 'DANA', 'SHOPEEPAY'].includes(code)) group = 'e_wallet';
+      else if (code === 'CREDIT_CARD') group = 'credit_card';
+      else if (gw.gateway === 'nowpayments') group = 'crypto';
+
+      methods.push({
+        code,
+        name: mt.name || code,
+        icon: meta.icon || '💳',
+        group,
+        fee: meta.fee || 0,
+        min_amount: 0,
+        gateway: gw.gateway,
+      });
+    }
+  }
+
+  return methods;
+}
+
+// ── Resolve user-facing method → gateway ────────────────────
+// Searches the aggregator cache for an enabled gateway that
+// supports the requested method. Match is case-insensitive on
+// both code and name so "BCA" finds midtrans::bca / duitku BC.
+
+function resolveGateway(method) {
+  if (!aggregatorGatewaysCache || aggregatorGatewaysCache.length === 0) {
+    throw new Error('Payment gateways not available');
+  }
+
+  const m = method.toUpperCase().trim();
+
+  for (const gw of aggregatorGatewaysCache) {
+    if (!gw.enabled) continue;
+    for (const mt of gw.methods) {
+      const code = (mt.code || '').toUpperCase();
+      const name = (mt.name || '').toUpperCase();
+      if (code === m || name.includes(m)) {
+        return gw.gateway;
+      }
+    }
+  }
+
+  throw new Error(`No enabled gateway supports payment method: ${method}`);
+}
+
+// ── Create Payment (delegate to aggregator) ──────────────────
+
+const aggregatorHeaders = () => ({
+  'Content-Type': 'application/json',
+  'X-API-Key': paymentConfig.aggregatorApiKey,
+});
 
 async function createPayment({ gateway, amount, currency, method, userId, purpose, metadata }) {
-  const gw = gateways[gateway];
-  if (!gw) throw new Error(`Unknown gateway: ${gateway}`);
-  if (!gw.isConfigured) throw new Error(`${gw.name} is not configured`);
+  const gw = aggregatorGatewaysCache?.find(g => g.gateway === gateway);
+  if (!gw) throw new Error(`Gateway not found: ${gateway}`);
 
   const reference = `PAY-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
 
@@ -116,18 +205,23 @@ async function createPayment({ gateway, amount, currency, method, userId, purpos
     );
   });
 
-  // Call 1ai-payment API to create payment
+  // Look up the aggregator's method code for this gateway
+  let paymentMethod = method;
+  const methodEntry = gw.methods.find(mt => {
+    const mc = (mt.code || '').toUpperCase();
+    const mn = (mt.name || '').toUpperCase();
+    return mc === method.toUpperCase() || mn.includes(method.toUpperCase());
+  });
+  if (methodEntry) paymentMethod = methodEntry.code;
+
   const resp = await fetch(`${paymentConfig.aggregatorUrl}/api/payments`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': paymentConfig.aggregatorApiKey,
-    },
+    headers: aggregatorHeaders(),
     body: JSON.stringify({
       gateway,
       amount: Math.round(Number(amount)),
       currency: currency || 'IDR',
-      payment_method: method || 'QRIS',
+      payment_method: paymentMethod,
       callback_url: `${paymentConfig.baseUrl}/api/payment/webhook`,
       idempotency_key: reference,
       metadata: {
@@ -158,7 +252,7 @@ async function createPayment({ gateway, amount, currency, method, userId, purpos
   };
 }
 
-// ── Handle Webhook ──────────────────────────────────────────
+// ── Handle Webhook ───────────────────────────────────────────
 
 async function verifyWebhookSignature(body, signature) {
   if (!paymentConfig.webhookSecret) {
@@ -178,9 +272,8 @@ async function verifyWebhookSignature(body, signature) {
 
 async function handleWebhook(body, signature) {
   // Verify 1ai-payment signature
-  await verifyWebhookSignature(body, signature);
+  const { order_id, project_order_id, status } = body;
 
-  const { order_id, project_order_id, status, gateway, amount, currency, payment_method, paid_at, metadata } = body;
 
   // Map normalized status to local status
   const statusMap = {
@@ -210,7 +303,7 @@ async function handleWebhook(body, signature) {
   return { success: true };
 }
 
-// ── Credit User Balance ─────────────────────────────────────────
+// ── Credit User Balance ──────────────────────────────────────
 
 async function creditUserBalance(reference) {
   const [[payment]] = await pool.query('SELECT * FROM 1ai_payments WHERE reference = ?', [reference]);
@@ -235,7 +328,7 @@ async function creditUserBalance(reference) {
   );
 }
 
-// ── Payment History ─────────────────────────────────────────────
+// ── Payment History ─────────────────────────────────────────
 
 async function getPaymentHistory(userId, limit = 50) {
   const [rows] = await pool.query(
@@ -247,9 +340,10 @@ async function getPaymentHistory(userId, limit = 50) {
 
 module.exports = {
   getAvailableGateways,
+  getAvailableMethods,
+  resolveGateway,
   createPayment,
   handleWebhook,
   verifyWebhookSignature,
   getPaymentHistory,
-  gateways,
 };

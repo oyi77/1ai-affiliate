@@ -19,11 +19,10 @@ const payoutMethods = require('../services/payoutMethods');
 // ── Payment Gateways ────────────────────────────────────────────
 
 /**
- * GET /api/payment/gateways
- * List available payment gateways
+ * List available payment methods
  */
 router.get('/gateways', authenticate, (req, res) => {
-  res.json({ data: paymentGateway.getAvailableGateways() });
+  res.json({ data: paymentGateway.getAvailableMethods() });
 });
 
 /**

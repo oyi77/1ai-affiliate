@@ -70,3 +70,7 @@ CLAUDE.md
 documentation/images/
 1ai-css/fonts/fontawesome-webfont.svg
 1ai-css/css/flat-ui-pro.css.map
+
+# Runtime artifacts
+/logs/
+*.backup

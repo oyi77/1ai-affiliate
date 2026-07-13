@@ -29,13 +29,14 @@ function verifyServiceAuth(req, res, next) {
     return res.status(401).json({ error: 'Invalid service key' });
   }
 
-  if (!['1ai-content', '1ai-social'].includes(serviceName)) {
-    return res.status(401).json({ error: 'Invalid service name' });
+  const allowedServices = (process.env.ALLOWED_SERVICE_NAMES || '1ai-content,1ai-social').split(',');
+  if (!allowedServices.includes(serviceName)) {
+    return res.status(401).json({ error: `Unknown service: ${serviceName}` });
   }
 
   // Check timestamp (5 minute tolerance)
   const ts = parseInt(timestamp);
-  if (isNaN(ts) || Math.abs(Date.now() - ts) > 300_000) {
+  if (isNaN(ts) || Math.abs(Date.now() - ts) > (parseInt(process.env.CONTENT_AUTH_TIMEOUT) || 300_000)) {
     return res.status(401).json({ error: 'Request expired' });
   }
 

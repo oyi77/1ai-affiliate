@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // Password reset key expiry: 3 days (in seconds)
-const RESET_KEY_EXPIRY = 3 * 24 * 60 * 60;
+const RESET_KEY_EXPIRY = parseInt(process.env.RESET_KEY_EXPIRY) || 3 * 24 * 60 * 60;
 
 /**
  * Login using users table (same DB as PHP tracking platform).

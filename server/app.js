@@ -20,7 +20,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://static.cloudflareinsights.com", "https://cdn.jsdelivr.net"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", ...(process.env.CSP_CDN_SCRIPTS ? process.env.CSP_CDN_SCRIPTS.split(',') : ["https://static.cloudflareinsights.com", "https://cdn.jsdelivr.net"])],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       imgSrc: ["'self'", "data:", "https:"],
@@ -139,7 +139,7 @@ setInterval(() => {
   runOptimization().then(r => {
     if (r.actions.length > 0) console.log(`[AutoOptimize] ${r.actions.length} actions taken`);
   }).catch(e => console.error('[AutoOptimize] error:', e.message));
-}, 15 * 60 * 1000);
+}, parseInt(process.env.AUTO_OPTIMIZE_INTERVAL) || 15 * 60 * 1000);
 
 // Real-time dashboard SSE
 const { createSSEHandler } = require('./services/realtimeDashboard');

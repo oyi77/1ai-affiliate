@@ -14,8 +14,11 @@ const { triggerZapierWebhook, buildTestPayload } = require('../services/zapierSe
 
 const createWebhookSchema = z.object({
   url: z.string().url('Must be a valid URL').refine(
-    u => u.startsWith('https://') || u.startsWith('http://localhost') || u.startsWith('http://127.0.0.1'),
-    'URL must use HTTPS (or HTTP for localhost)'
+    u => {
+      const allowed = process.env.WEBHOOK_ALLOWED_URL_PREFIXES || 'https://,http://localhost,http://127.0.0.1';
+      return allowed.split(',').some(prefix => u.startsWith(prefix));
+    },
+    'URL must use HTTPS (or HTTP for localhost/127.0.0.1)'
   ),
   events: z.array(z.string().min(1)).min(1, 'At least one event is required'),
   secret: z.string().max(128).optional(),

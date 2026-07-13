@@ -142,16 +142,24 @@ router.get('/pricing', async (req, res) => {
 // Create a topup payment via gateway
 router.post('/topup', async (req, res) => {
   try {
-    const { amount, gateway, method } = req.body;
+    const { amount, method } = req.body;
     const userId = req.user.id;
 
-    if (!amount || !gateway) {
-      return res.status(400).json({ error: 'Amount and gateway required' });
+    if (!amount || !method) {
+      return res.status(400).json({ error: 'Amount and method required' });
     }
 
     const numAmount = Number(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+
+    // Resolve method to internal gateway
+    let gateway;
+    try {
+      gateway = paymentGateway.resolveGateway(method);
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
     }
 
     // Check minimum topup
@@ -195,9 +203,10 @@ router.post('/topup', async (req, res) => {
     });
   } catch (err) {
     console.error('Topup error:', err.message);
-    res.status(500).json({ error: err.message || 'Failed to create topup' });
+    res.status(500).json({ error: err.message || 'Topup failed' });
   }
 });
+
 
 // ── GET /api/wallet/topup/status/:ref ────────────────────────────
 router.get('/topup/status/:ref', async (req, res) => {

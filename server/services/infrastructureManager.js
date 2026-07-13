@@ -7,15 +7,25 @@ const axios = require('axios');
 
 const execAsync = promisify(exec);
 
+// ── Config (env vars with dev-friendly defaults) ──────────────
+const NGINX_SITES_AVAILABLE = process.env.NGINX_SITES_AVAILABLE || '/etc/nginx/sites-available';
+const NGINX_SITES_ENABLED  = process.env.NGINX_SITES_ENABLED  || '/etc/nginx/sites-enabled';
+const SSL_BASE_DIR         = process.env.SSL_BASE_DIR         || path.join(__dirname, '..', 'ssl');
+const ACME_ROOT            = process.env.ACME_ROOT            || path.join(__dirname, '..', 'public');
+const CF_ROUTER_URL        = process.env.CF_ROUTER_URL        || 'http://127.0.0.1:7070';
+const CF_ACCOUNT_ID        = process.env.CF_ACCOUNT_ID        || 'cf_1781776521858';
+const CF_ZONE_ID           = process.env.CF_ZONE_ID           || '4a56e4de3b8d9e8b11c5bea50a2ff0df';
+const APP_PROXY_PORT       = process.env.APP_PROXY_PORT       || 3001;
+
 /**
  * Infrastructure Manager Service
  * Automates Nginx config generation, cf-router integration, and Cloudflare DNS management
  */
 class InfrastructureManager {
   constructor() {
-    this.nginxSitesAvailable = '/etc/nginx/sites-available';
-    this.nginxSitesEnabled = '/etc/nginx/sites-enabled';
-    this.cfRouterPath = path.join(process.env.HOME, 'projects', '1ai-cf-router');
+    this.nginxSitesAvailable = NGINX_SITES_AVAILABLE;
+    this.nginxSitesEnabled = NGINX_SITES_ENABLED;
+    this.cfRouterPath = path.join(process.env.HOME || '/root', process.env.CF_ROUTER_DIR || 'projects/1ai-cf-router');
     this.cfRouterAppsYaml = path.join(this.cfRouterPath, 'apps.yaml');
   }
 
@@ -23,8 +33,8 @@ class InfrastructureManager {
    * Generate Nginx vhost configuration for a custom domain
    */
   generateNginxConfig(domain, sslEnabled = true) {
-    const sslCertPath = `/home/openclaw/projects/1ai-affiliate/server/ssl/${domain}/fullchain.pem`;
-    const sslKeyPath = `/home/openclaw/projects/1ai-affiliate/server/ssl/${domain}/privkey.pem`;
+    const sslCertPath = path.join(SSL_BASE_DIR, domain, 'fullchain.pem');
+    const sslKeyPath = path.join(SSL_BASE_DIR, domain, 'privkey.pem');
     
     if (sslEnabled) {
       return `server {
@@ -34,7 +44,7 @@ class InfrastructureManager {
     
     # ACME challenge location for Let's Encrypt
     location /.well-known/acme-challenge/ {
-        root /home/openclaw/projects/1ai-affiliate/server/public;
+        root ${ACME_ROOT};
     }
     
     # Redirect all other HTTP traffic to HTTPS
@@ -98,14 +108,13 @@ server {
 `;
     }
   }
-
   /**
    * Write Nginx config file and enable the site
    */
   async provisionNginxVhost(domain, { sslCertPath, sslKeyPath }) {
     try {
-      const sitesAvailablePath = `/etc/nginx/sites-available/${domain}`;
-      const sitesEnabledPath = `/etc/nginx/sites-enabled/${domain}`;
+      const sitesAvailablePath = path.join(this.nginxSitesAvailable, domain);
+      const sitesEnabledPath = path.join(this.nginxSitesEnabled, domain);
       const tempConfigPath = `/tmp/nginx-${domain}-${Date.now()}.conf`;
 
       const nginxConfig = `
@@ -120,7 +129,7 @@ server {
     ` : ''}
 
     location / {
-        proxy_pass http://localhost:3001;
+        proxy_pass http://localhost:${APP_PROXY_PORT};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -207,10 +216,11 @@ server {
         return { success: false, reason: 'cf-router not found' };
       }
       
-      // Read current apps.yaml
       const yamlContent = await fs.readFile(this.cfRouterAppsYaml, 'utf8');
-      const config = yaml.load(yamlContent);
+      const config = yaml.load(yamlContent) || {};
       
+      // Ensure apps key exists
+      if (!config.apps) config.apps = {};
       // Check if domain already exists (apps is an object, not array)
       const existingAppKey = Object.keys(config.apps || {}).find(key => 
         config.apps[key].hostname === domain
@@ -265,9 +275,10 @@ server {
       
       // Read current apps.yaml
       const yamlContent = await fs.readFile(this.cfRouterAppsYaml, 'utf8');
-      const config = yaml.load(yamlContent);
+      const config = yaml.load(yamlContent) || {};
       
-      // Find and remove the app entry (apps is object, not array)
+      // Ensure apps key exists
+      if (!config.apps) config.apps = {};
       const entries = Object.entries(config.apps || {});
       const targetEntry = entries.find(([, v]) => v.hostname === domain);
       if (!targetEntry) {
@@ -298,9 +309,9 @@ server {
    */
   async createCloudflareDnsRecord(domain, zoneId, ipAddress) {
     try {
-      const cfRouterUrl = 'http://127.0.0.1:7070';
-      const accountId = 'cf_1781776521858'; // Match config.yml account ID
-      const defaultZoneId = '4a56e4de3b8d9e8b11c5bea50a2ff0df'; // berkahkarya.org
+      const cfRouterUrl = CF_ROUTER_URL;
+      const accountId = CF_ACCOUNT_ID;
+      const defaultZoneId = CF_ZONE_ID;
       const targetZoneId = zoneId || defaultZoneId;
       const serverIp = ipAddress || process.env.SERVER_IP;
       
@@ -323,19 +334,15 @@ server {
   }
 
   /**
-   * Delete Cloudflare DNS record
-   */
-  /**
    * Delete a Cloudflare DNS record via cf-router HTTP API
    * @param {string} domain - Domain name to delete
    * @param {string} zoneId - Cloudflare zone ID (optional, defaults to berkahkarya.org)
    */
   async deleteCloudflareDnsRecord(domain, zoneId) {
     try {
-      const cfRouterUrl = 'http://127.0.0.1:7070';
-      const accountId = '2f9e20b54dab481f86aa4371c6e4a01f';
-      const defaultZoneId = '4a56e4de3b8d9e8b11c5bea50a2ff0df'; // berkahkarya.org
-      const targetZoneId = zoneId || defaultZoneId;
+      const cfRouterUrl = CF_ROUTER_URL;
+      const accountId = process.env.CF_DELETE_ACCOUNT_ID || CF_ACCOUNT_ID;
+      const defaultZoneId = CF_ZONE_ID;
 
       const response = await axios.delete(
         `${cfRouterUrl}/api/cf/${accountId}/${targetZoneId}/dns/${domain}`,
