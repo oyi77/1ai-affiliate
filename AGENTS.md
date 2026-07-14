@@ -54,7 +54,15 @@ Do NOT add the rules repo as a git submodule. Update rules centrally, then run/s
 5. Run GATE.md before commit/PR.
 
 ## Repo-specific conventions
-- [add conventions specific to this repo]
+- Routes mount under `/api` prefix via `app.js`
+- Auth middleware: `authenticate` + `requireAdmin` from `../middleware/auth`
+- Service pattern: `queryOne`/`queryRows`/`queryInsert`/`queryUpdate` for DB ops
+- Response helpers: `success(res, data)` / `error(res, msg, code)` from `../utils/apiResponse`
+- Error wrapping: `asyncHandler` from `../middleware/asyncHandler`
+- Pool: `const p = require('../db/mysql')` returns `mysql2/promise` pool; destructure rows: `const [rows] = await p.query(...)`
+- Migrations: idempotent SQL (`CREATE TABLE IF NOT EXISTS`, `ALTER TABLE … ADD COLUMN IF NOT EXISTS`); registered in `manifest.json`
+- Socket.io: `req.app.get('io')` for server-side broadcast; `server/socket/handlers.js` for client-side
+- API key auth: `X-API-Key` header, SHA-256 hashed, scoped via `1ai_api_keys`
 
 ## Commands
 - Dev:   `npm run dev`
