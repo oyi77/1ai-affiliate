@@ -21,6 +21,9 @@
     "028_gdpr_consent.sql",
     "029_exchange_rates_platform.sql",
     "030_p1_gaps.sql",
-    "030b_seed_postback_templates.sql"
+    "030b_seed_postback_templates.sql",
+    "031_close_all_gaps.sql",
+    "2026_07_14_ad_block_visitors.sql",
+    "2026_07_14_fix_ad_block_enum.sql"
   ]
 }

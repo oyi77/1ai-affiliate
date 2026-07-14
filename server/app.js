@@ -2,6 +2,7 @@ const path = require('path');
 const crypto = require('crypto');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const pinoHttp = require('pino-http');
@@ -11,9 +12,20 @@ const metrics = require('./metrics');
 const { idempotency } = require('./middleware/idempotency');
 const { auditLog } = require('./middleware/auditLog');
 const { authenticate } = require('./middleware/auth');
+const { Server } = require('socket.io');
+const socketHandlers = require('./socket/handlers');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || '*',
+    methods: ['GET', 'POST'],
+  },
+});
+app.set('io', io);
+io.on('connection', socketHandlers.registerHandlers);
 
 // Security + observability middleware
 app.use(helmet({
@@ -89,9 +101,12 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/om', require('./routes/om'));
 app.use('/api/am', require('./routes/am'));
+app.use('/api/notifications', require('./routes/notifications-rt'));
 // Payment routes (modern multi-gateway — legacy removed)
 app.use('/api/content', require('./routes/content'));
 app.use('/api/geo', require('./routes/geoip'));
+app.use('/api/capi', require('./routes/capi'));
+
 // Public platform settings (no auth)
 app.get('/api/platform/public', async (req, res) => {
   try {
@@ -107,6 +122,8 @@ app.get('/api/platform/public', async (req, res) => {
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
+app.use('/api', require('./routes/smartlink-rotation'));
+app.use('/api', require('./routes/ad-block'));
 app.use('/api', require('./routes/postback'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/admin/stats', require('./routes/statsSSE'));
@@ -115,6 +132,7 @@ app.use('/api/pipeline', require('./routes/pipeline'));
 app.use('/api/admin', require('./routes/gapfill'));
 app.use('/api/admin/services', require('./routes/services'));
 app.use('/api/affiliate', require('./routes/content-integration'));
+app.use('/api/affiliate/cross-device', require('./routes/cross-device'));
 app.use('/api/templates/landing', require('./routes/landingTemplates'));
 app.use('/api/templates', require('./routes/templates'));
 app.use('/api/enterprise', require('./routes/enterprise'));
@@ -125,6 +143,7 @@ app.use('/api/import-export', require('./routes/importExport'));
 app.use('/api/admin/campaigns', require('./routes/campaigns'));
 app.use('/api/admin/offers', require('./routes/offers'));
 app.use('/api/admin/affiliates', require('./routes/affiliates'));
+app.use('/api/admin/sub-affiliates', require('./routes/sub-affiliates'));
 app.use('/api/migration', require('./routes/migration'));
 app.use('/api/advertiser', require('./routes/advertiserSelfService'));
 app.use('/api/offers', require('./routes/offerBrowser'));
@@ -235,7 +254,7 @@ if (require.main === module) {
   posterWorker.start();
   pipelineWorker.start();
   autoPayoutCron.start(pool);
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);
     logger.info(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);
   });
