@@ -783,7 +783,7 @@ describe('App lifecycle', () => {
 
     expect(appSource).toContain('if (require.main === module)');
     expect(appSource).toContain('postbackQueue.start();');
-    expect(appSource).toContain('app.listen(PORT');
+    expect(appSource).toContain('server.listen(PORT');
   });
 });
 

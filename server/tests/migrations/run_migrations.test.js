@@ -16,7 +16,7 @@ const DB_PASS = process.env.DB_PASS || '';
 const TEST_DB = process.env.DB_NAME ? `${process.env.DB_NAME}_mig_test` : 'prosper1ai_test_phase_b';
 
 const BASE_DIR = path.resolve(__dirname, '../..');
-const SCRIPTS_DIR = path.resolve(__dirname, '../../../scripts');
+const SCRIPTS_DIR = path.resolve(__dirname, '../../migrations');
 
 // Jest test setup mocks DB_USER to 'test_user' for unit tests. When that is
 // the case we cannot reach a real database, so this suite skips gracefully.
