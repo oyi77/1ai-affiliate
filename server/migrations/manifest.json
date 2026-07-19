@@ -24,6 +24,7 @@
     "030b_seed_postback_templates.sql",
     "031_close_all_gaps.sql",
     "2026_07_14_ad_block_visitors.sql",
-    "2026_07_14_fix_ad_block_enum.sql"
+    "2026_07_14_fix_ad_block_enum.sql",
+    "2026_07_14_fix_missing_tables_3.sql"
   ]
 }

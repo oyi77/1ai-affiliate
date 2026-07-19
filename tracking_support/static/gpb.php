@@ -262,6 +262,7 @@ if (is_numeric($mysql['click_id'])) {
 					campaign_id = '".$mysql['campaign_id']."',
 					user_id = '".$mysql['click_user_id']."',
 					click_time = '".$mysql['click_time']."',
+					click_payout = '".$db->real_escape_string((string) ($mysql['click_payout'] ?? '0.00'))."',
 					conv_time = '".$mysql['conv_time']."',
 					time_difference = '".$mysql['time_difference']."',
 					ip = '".$mysql['ip']."',

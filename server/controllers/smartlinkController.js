@@ -158,7 +158,7 @@ async function routeTrafficByHash(req, res) {
 }
 
 async function generateSmartlink(req, res) {
-  const { offer_id, domain_id, shortener_service_id } = req.body;
+  const { offer_id, domain_id, shortener_service_id, landing_page, path: customPath, params } = req.body;
   if (!offer_id) return res.status(400).json({ error: 'offer_id required' });
 
   try {

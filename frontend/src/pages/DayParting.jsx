@@ -32,7 +32,7 @@ export function DayParting() {
   const { data: stats, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['dayparting-stats'],
     queryFn: async () => {
-      const res = await api.get('/api/admin/stats');
+      const res = await api.get('/api/admin/day-parting');
       return res.data;
     },
   });

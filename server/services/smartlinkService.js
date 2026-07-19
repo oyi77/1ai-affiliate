@@ -301,4 +301,5 @@ async function resolveFallback(offerId) {
   return rows.length ? rows[0] : null;
 }
 
-module.exports = { mintSmartlink, shortenUrl, getOfferForVisitor, getSmartlinkOffers };
+module.exports = { mintSmartlink, shortenUrl, getOfferForVisitor, getSmartlinkOffers,
+  pickWeighted, pickRandom, pickRoundRobin, pickByPriority, resolveFallback };

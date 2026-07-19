@@ -174,25 +174,24 @@ $redirect_site_url = rotateTrackerUrl($db, $tracker_row);
 $mysql['click_id'] = $db->real_escape_string($click_id);
 $mysql['click_out'] = 1;
 
+if ($click_id !== '') {
+	$update_sql = "
+		UPDATE
+			clicks_record
+		SET
+			click_out='".$mysql['click_out']."',
+			click_cloaking='".$mysql['click_cloaking']."'
+		WHERE
+			click_id='".$mysql['click_id']."'";
+	$click_result = $db->query($update_sql) or record_mysql_error($db);
 
-$update_sql = "
-	UPDATE
-		clicks_record
-	SET
-		click_out='".$mysql['click_out']."',
-		click_cloaking='".$mysql['click_cloaking']."'
-	WHERE
-		click_id='".$mysql['click_id']."'";
-$click_result = $db->query($update_sql) or record_mysql_error($db);
-//delay_sql($db, $update_sql);
-
-//set dirty hour
-$de = new DataEngine();
-$data=($de->setDirtyHour($mysql['click_id']));
+	$de = new DataEngine();
+	$data=($de->setDirtyHour($mysql['click_id']));
+}
 
 $redirect_site_url = replaceTrackerPlaceholders($db, $redirect_site_url,$mysql['click_id']);
 
-$click_redirect_site_url_id = INDEXES::get_site_url_id($db); 
+$click_redirect_site_url_id = INDEXES::get_site_url_id($db);
 $mysql['click_redirect_site_url_id'] = $db->real_escape_string((string) $click_redirect_site_url_id);
 
 

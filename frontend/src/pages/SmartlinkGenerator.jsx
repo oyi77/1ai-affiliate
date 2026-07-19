@@ -61,6 +61,9 @@ export function SmartlinkGenerator() {
   const generateMutation = useMutation({
     mutationFn: () => api.post('/api/smartlink/generate', {
       offer_id: formData.offerId || null,
+      landing_page: formData.landingPage || null,
+      path: formData.path || null,
+      params: formData.params || null,
     }),
     onSuccess: () => setStep(4),
   });

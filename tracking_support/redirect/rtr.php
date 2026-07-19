@@ -547,7 +547,7 @@ if(isset($_GET['lpr']) && $_GET['lpr'] != '') {
 					LEFT JOIN 	keywords USING (keyword_id) 
 					WHERE 	ips.ip_address='".$ip_address."'
 					AND		clicks.user_id='".$user_id."'  
-					AND		clicks.click_time >= '30'
+					AND		clicks.click_time >= UNIX_TIMESTAMP() - 30
 					ORDER BY 	clicks.click_id DESC 
 					LIMIT 		1";
 	$click_result1 = $db->query($click_sql1) or record_mysql_error($click_sql1);

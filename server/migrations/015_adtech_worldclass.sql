@@ -299,6 +299,16 @@ ALTER TABLE `1ai_offer_approval_history`
   ADD COLUMN IF NOT EXISTS `idempotency_key` CHAR(64) DEFAULT NULL,
   ADD INDEX IF NOT EXISTS `idx_idempotency_key` (`idempotency_key`);
 
+CREATE TABLE IF NOT EXISTS `1ai_assignment_history` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `click_id` INT UNSIGNED DEFAULT NULL,
+  `smartlink_id` INT UNSIGNED DEFAULT NULL,
+  `offer_id` INT UNSIGNED DEFAULT NULL,
+  `affiliate_id` INT UNSIGNED DEFAULT NULL,
+  `rule_type` VARCHAR(32) DEFAULT NULL,
+  `created_at` INT UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 ALTER TABLE `1ai_assignment_history`
   ADD COLUMN IF NOT EXISTS `idempotency_key` CHAR(64) DEFAULT NULL,
   ADD INDEX IF NOT EXISTS `idx_idempotency_key` (`idempotency_key`);
@@ -307,5 +317,15 @@ ALTER TABLE `1ai_assignment_history`
 -- 15. ASSIGNMENT FK CLEANUP FOR GLOBAL ASSIGNMENTS
 -- ===========================================================================
 -- Phase A already references this. Ensure no FK prevents affiliate_id=0.
+
+CREATE TABLE IF NOT EXISTS `1ai_offer_assignments` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `smartlink_id` INT UNSIGNED DEFAULT NULL,
+  `offer_id` INT UNSIGNED DEFAULT NULL,
+  `affiliate_id` INT UNSIGNED DEFAULT NULL,
+  `created_at` INT UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ALTER TABLE `1ai_offer_assignments`
   DROP FOREIGN KEY IF EXISTS `1ai_offer_assignments_ibfk_2`;
+
+-- test-noop

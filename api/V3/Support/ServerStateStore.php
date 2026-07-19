@@ -11,21 +11,26 @@ class ServerStateStore
     private const int DEFAULT_RETENTION = 5000;
 
     private readonly string $baseDir;
+    private bool $degraded = false;
 
     public function __construct(?string $baseDir = null)
     {
-        $this->baseDir = rtrim($baseDir ?? $this->resolveDefaultBaseDir(), '/');
-        $this->ensureDir($this->baseDir);
-        $this->ensureDir($this->dir('idempotency'));
-        $this->ensureDir($this->dir('changes'));
-        $this->ensureDir($this->dir('jobs'));
-        $this->ensureDir($this->dir('audit'));
-        $this->ensureDir($this->dir('locks'));
-        $this->ensureDir($this->dir('tokens'));
-        $this->ensureDir($this->dir('manifests'));
-        $this->ensureDir($this->dir('metrics'));
-        $this->ensureDir($this->dir('rate_limits'));
-        $this->ensureDir($this->dir('traces'));
+        try {
+            $this->baseDir = rtrim($baseDir ?? $this->resolveDefaultBaseDir(), '/');
+            $this->ensureDir($this->baseDir);
+            $this->ensureDir($this->dir('idempotency'));
+            $this->ensureDir($this->dir('changes'));
+            $this->ensureDir($this->dir('jobs'));
+            $this->ensureDir($this->dir('audit'));
+            $this->ensureDir($this->dir('locks'));
+            $this->ensureDir($this->dir('tokens'));
+            $this->ensureDir($this->dir('manifests'));
+            $this->ensureDir($this->dir('metrics'));
+            $this->ensureDir($this->dir('rate_limits'));
+            $this->ensureDir($this->dir('traces'));
+        } catch (DatabaseException) {
+            $this->degraded = true;
+        }
     }
 
     public function baseDir(): string
@@ -154,6 +159,14 @@ class ServerStateStore
 
     public function createJob(array $payload, int $actorUserId): array
     {
+        if ($this->degraded) {
+            return [
+                'job_id' => 'degraded-' . bin2hex(random_bytes(8)),
+                'status' => 'failed',
+                'error' => 'ServerStateStore is degraded — disk unavailable',
+                'created_at' => gmdate('c'),
+            ];
+        }
         $jobId = bin2hex(random_bytes(16));
         $job = [
             'job_id' => $jobId,
@@ -310,6 +323,9 @@ class ServerStateStore
      */
     public function acquirePairLock(string $sourceKey, string $targetKey): callable
     {
+        if ($this->degraded) {
+            return static function (): void {};
+        }
         $name = sha1(strtolower($sourceKey) . '|' . strtolower($targetKey));
         $path = $this->dir('locks') . '/' . $name . '.lock';
         $fh = fopen($path, 'c+');
@@ -400,6 +416,9 @@ class ServerStateStore
      */
     public function acquireJobLock(string $jobId): callable
     {
+        if ($this->degraded) {
+            return static function (): void {};
+        }
         $path = $this->dir('locks') . '/job-' . $this->slug($jobId) . '.lock';
         $fh = fopen($path, 'c+');
         if ($fh === false) {
@@ -526,6 +545,9 @@ class ServerStateStore
     /** @return array{allowed: bool, remaining: int, reset_at: int} */
     public function consumeRateLimit(string $bucket, int $maxPerWindow, int $windowSeconds): array
     {
+        if ($this->degraded) {
+            return ['allowed' => true, 'remaining' => $maxPerWindow, 'reset_at' => time() + $windowSeconds];
+        }
         $path = $this->dir('rate_limits') . '/' . $this->slug($bucket) . '.json';
         $state = $this->readJsonFile($path, ['window_start' => 0, 'count' => 0]);
 
@@ -631,6 +653,9 @@ class ServerStateStore
 
     private function writeJsonFileAtomic(string $path, array $data): void
     {
+        if ($this->degraded) {
+            return;
+        }
         $dir = dirname($path);
         $this->ensureDir($dir);
 

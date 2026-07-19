@@ -16,10 +16,31 @@ Every task follows this sequence. No exceptions.
 Full details: `~/.1ai/core/PROCESS.md` (auto-injected by hooks)
 
 ## This repo
-[One sentence: what this repo does]
-Stack: Node.js
-Domain: [what this repo is responsible for]
+Affiliate marketing platform — offer management, conversion tracking, payouts, real-time analytics, and API integrations.
+Stack: Node.js, Express, MySQL, Socket.IO, React (admin dashboard)
+Domain: affiliate network backend (routes, services, migrations, real-time events)
 
+## Repo-specific conventions
+- Routes mount under `/api` prefix via `app.js`
+- Auth middleware: `authenticate` (any logged-in user), `requireAdmin` (admin-only)
+- Async errors handled via `asyncHandler` utility
+- DB queries use `pool.query()` (mysql2/promise)
+- Response pattern: `res.json({ data: …, meta: … })` or `res.status(400).json({ error: … })`
+- Migrations in `server/migrations/` with sequential naming (`NNN_description.sql`)
+- Services in `server/services/`, controllers in `server/controllers/`, routes in `server/routes/`
+- Tests in `server/tests/` using Jest + supertest; pool mocked via `jest.mock`
+
+## Commands
+- Dev:   `cd server && node app.js`
+- Test:  `cd server && npm test`
+- Build: `cd server && npm run build` (if applicable, else `npm run lint`)
+- Lint:  `cd server && npm run lint`
+- API docs: see inline route JSDoc in `server/routes/`
+
+## Key URLs
+- Admin dashboard: `/admin`
+- API base: `/api`
+- Socket.IO: `/socket/io` (real-time notifications)
 ## Rules — thin loader, no submodule
 Rules are NOT vendored into this repo. This repo does NOT need a rules submodule.
 `AGENTS.md` is only the repo-local loader: domain, commands, conventions, and pointers to `~/.1ai`.
@@ -53,19 +74,3 @@ Do NOT add the rules repo as a git submodule. Update rules centrally, then run/s
 4. Task must match this repo domain.
 5. Run GATE.md before commit/PR.
 
-## Repo-specific conventions
-- Routes mount under `/api` prefix via `app.js`
-- Auth middleware: `authenticate` + `requireAdmin` from `../middleware/auth`
-- Service pattern: `queryOne`/`queryRows`/`queryInsert`/`queryUpdate` for DB ops
-- Response helpers: `success(res, data)` / `error(res, msg, code)` from `../utils/apiResponse`
-- Error wrapping: `asyncHandler` from `../middleware/asyncHandler`
-- Pool: `const p = require('../db/mysql')` returns `mysql2/promise` pool; destructure rows: `const [rows] = await p.query(...)`
-- Migrations: idempotent SQL (`CREATE TABLE IF NOT EXISTS`, `ALTER TABLE … ADD COLUMN IF NOT EXISTS`); registered in `manifest.json`
-- Socket.io: `req.app.get('io')` for server-side broadcast; `server/socket/handlers.js` for client-side
-- API key auth: `X-API-Key` header, SHA-256 hashed, scoped via `1ai_api_keys`
-
-## Commands
-- Dev:   `npm run dev`
-- Test:  `npm run test`
-- Build: `npm run build`
-- Lint:  `npm run lint`

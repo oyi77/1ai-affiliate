@@ -122,6 +122,7 @@ app.get('/api/platform/public', async (req, res) => {
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/docs', require('./routes/docs'));
 app.use('/api/smartlink', require('./routes/smartlink'));
+app.use('/r', require('./routes/smartlink-routing'));
 app.use('/api', require('./routes/smartlink-rotation'));
 app.use('/api', require('./routes/ad-block'));
 app.use('/api', require('./routes/postback'));
@@ -151,6 +152,22 @@ app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/admin/balance', require('./routes/balance'));
 app.use('/api/wallet', require('./routes/wallet'));
 app.use('/api/admin/finance', require('./routes/adminFinance'));
+
+// Wave-2 + Wave-3 API routes
+app.use('/api/sdk', require('./routes/sdk'));
+app.use('/api/retargeting', require('./routes/retargeting'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/recommendations', require('./routes/recommendations'));
+app.use('/api/pmp', require('./routes/pmp'));
+app.use('/api/compliance', require('./routes/compliance'));
+app.use('/api/recurring-commissions', require('./routes/recurring-commissions'));
+app.use('/api/messaging', require('./routes/messaging'));
+app.use('/api/landing-page-blocks', require('./routes/landing-page-blocks'));
+app.use('/api/scorecard', require('./routes/scorecard'));
+app.use('/api/ltv', require('./routes/ltv'));
+app.use('/api/ai-traffic', require('./routes/ai-traffic'));
+app.use('/api/marketplace', require('./routes/marketplace'));
+app.use('/api/currency-payouts', require('./routes/currency-payouts'));
 app.use('/api/boost', require('./routes/boost'));
 // Auto-optimization cron (runs every 15 minutes)
 const { runOptimization } = require('./services/autoOptimizer');
@@ -244,16 +261,27 @@ app.use((err, req, res, next) => {
     : { error: err.message || 'Error' };
   res.status(status).json(body);
 });
-
 if (require.main === module) {
+  // Process-level error safety nets — catch anything that slips through Express error middleware
+  process.on('unhandledRejection', (reason, promise) => {
+    logger.error({ err: reason, promise }, 'Unhandled promise rejection — Express asyncHandler gap');
+  });
+  process.on('uncaughtException', (err) => {
+    logger.error({ err }, 'Uncaught exception');
+    // Allow existing connections to drain, then exit
+    server.close(() => process.exit(1));
+  });
+
   const postbackQueue = require('./services/postbackQueue');
   const posterWorker = require('./services/posterWorker');
-  const pipelineWorker = require('./services/pipelineWorker');
   const autoPayoutCron = require('./cron/autoPayoutCron');
+  const scheduledExportCron = require('./cron/scheduledExportCron');
+  const pipelineWorker = require('./services/pipelineWorker');
+  autoPayoutCron.start(pool);
+  scheduledExportCron.start();
   postbackQueue.start();
   posterWorker.start();
   pipelineWorker.start();
-  autoPayoutCron.start(pool);
   server.listen(PORT, () => {
     logger.info(`1AI Affiliate Tracker server on port ${PORT}`);
     logger.info(`Shared MySQL: ${process.env.DB_NAME || '1ai-affiliate'}`);

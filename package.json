@@ -2,11 +2,10 @@
   "name": "1ai-affiliate",
   "private": true,
   "license": "BUSL-1.1",
-  "devDependencies": {
-    "@playwright/test": "^1.45.0"
-  },
+  "devDependencies": {},
   "scripts": {
-    "test:playwright": "playwright test"
+    "test": "cd server && npm test",
+    "test:playwright": "cd server && npm run test:playwright"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

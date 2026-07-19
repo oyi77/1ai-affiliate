@@ -152,7 +152,7 @@ export function ClickTracker() {
           <div className="text-slate-400 text-sm font-semibold mb-2">Total Clicks 24h</div>
           <div className="flex items-center gap-2">
             <MousePointer className="w-5 h-5 text-indigo-light" />
-            <span className="text-2xl font-bold text-white">{(stats?.clicks_24h ?? 0).toLocaleString()}</span>
+            <span className="text-2xl font-bold text-white">{(stats?.clicks24h ?? 0).toLocaleString()}</span>
           </div>
         </GlassCard>
         <GlassCard>
@@ -163,10 +163,10 @@ export function ClickTracker() {
           </div>
         </GlassCard>
         <GlassCard>
-          <div className="text-slate-400 text-sm font-semibold mb-2">Fraud Blocked</div>
+          <div className="text-slate-400 text-sm font-semibold mb-2">Attributed Conversions</div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-red-error" />
-            <span className="text-2xl font-bold text-white">{(stats?.fraud_blocked ?? 0).toLocaleString()}</span>
+            <ShieldCheck className="w-5 h-5 text-green-success" />
+            <span className="text-2xl font-bold text-white">{(stats?.attributed_conversions ?? 0).toLocaleString()}</span>
           </div>
         </GlassCard>
       </div>

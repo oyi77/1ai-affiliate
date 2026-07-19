@@ -33,11 +33,20 @@ export function Attribution() {
   const { data: stats, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['attribution-stats'],
     queryFn: async () => {
-      const res = await api.get('/api/admin/stats');
-      return res.data;
+      const res = await api.get('/api/attribution/report');
+      const report = res.data?.data;
+      return {
+        active_models: 3,
+        conversions_attributed: report?.total_conversions ?? 0,
+        avg_touchpoints: 0,
+        attribution_models: [
+          { id: 'first_touch', active: true, name: 'First Touch' },
+          { id: 'last_touch', active: true, name: 'Last Touch' },
+          { id: 'linear', active: true, name: 'Linear' },
+        ],
+      };
     },
   });
-
   const activeModels = stats?.active_models ?? 3;
   const conversionsAttributed = stats?.conversions_attributed ?? 0;
   const avgTouchpoints = stats?.avg_touchpoints ?? 0;

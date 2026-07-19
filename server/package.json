@@ -7,7 +7,9 @@
     "start": "node app.js",
     "dev": "node --watch app.js",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:e2e": "node --experimental-vm-modules node_modules/.bin/jest --testPathPattern='e2e.wrapper'",
+    "test:watch": "jest --watch",
+    "test:playwright": "playwright test"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.82",

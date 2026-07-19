@@ -26,7 +26,7 @@ module.exports = {
   },
   testMatch: ['**/tests/**/*.test.js'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
-  testPathIgnorePatterns: ['/node_modules/', '/public/'],
+  testPathIgnorePatterns: ['/node_modules/', '/public/', 'e2e.wrapper.test.js'],
   verbose: true,
   bail: false,
   maxWorkers: '50%',

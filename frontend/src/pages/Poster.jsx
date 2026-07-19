@@ -20,10 +20,13 @@ export function Poster() {
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    message: '',
-    channel: '',
-    scheduleNow: true,
-    scheduledTime: ''
+    product_url: '',
+    product_name: '',
+    image_url: '',
+    normal_price: '',
+    promo_price: '',
+    affiliate_link: '',
+    niche: 'general',
   });
 
   const { data: queueData, isLoading, isError, error, refetch } = useSafeQuery({
@@ -66,16 +69,22 @@ export function Poster() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['poster-queue'] });
       setModalOpen(false);
-      setFormData({ message: '', channel: '', scheduleNow: true, scheduledTime: '' });
+      setFormData({ product_url: '', product_name: '', image_url: '', normal_price: '', promo_price: '', affiliate_link: '', niche: 'general' });
     },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const { product_url, product_name, image_url, normal_price, promo_price, affiliate_link, niche } = formData;
+    if (!product_url || !product_name || !normal_price || !promo_price) return;
     addToQueueMutation.mutate({
-      message: formData.message,
-      channel: formData.channel,
-      scheduledTime: formData.scheduleNow ? new Date().toISOString() : formData.scheduledTime,
+      product_url,
+      product_name,
+      image_url: image_url || undefined,
+      normal_price: parseInt(normal_price),
+      promo_price: parseInt(promo_price),
+      affiliate_link: affiliate_link || undefined,
+      niche: niche || 'general',
     });
   };
 
@@ -103,20 +112,20 @@ export function Poster() {
 
   const columns = [
     {
-      header: 'Item',
-      accessorKey: 'item',
+      header: 'Product',
+      accessorKey: 'product_name',
       cell: ({ row }) => (
-        <span className="text-sm text-white font-medium">{row.original.item}</span>
+        <span className="text-sm text-white font-medium">{row.original.product_name}</span>
       ),
     },
     {
-      header: 'Scheduled',
-      accessorKey: 'scheduled',
+      header: 'Created',
+      accessorKey: 'created_at',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-slate-500" />
           <span className="text-sm text-slate-400">
-            {formatRelativeTime(row.original.scheduled)}
+            {formatRelativeTime(row.original.created_at)}
           </span>
         </div>
       ),
@@ -126,8 +135,8 @@ export function Poster() {
       accessorKey: 'status',
       cell: ({ row }) => {
         const status = row.original.status;
-        
-        if (status === 'pending') {
+
+        if (status === 'pending' || status === 'queued') {
           return (
             <span className="px-2 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center gap-1.5 w-fit">
               <Clock className="w-3 h-3" />
@@ -135,8 +144,8 @@ export function Poster() {
             </span>
           );
         }
-        
-        if (status === 'posted') {
+
+        if (status === 'posted' || status === 'sent') {
           return (
             <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-400 border border-green-500/20 flex items-center gap-1.5 w-fit">
               <CheckCircle2 className="w-3 h-3" />
@@ -144,7 +153,7 @@ export function Poster() {
             </span>
           );
         }
-        
+
         return (
           <span className="px-2 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1.5 w-fit">
             <XCircle className="w-3 h-3" />
@@ -154,10 +163,10 @@ export function Poster() {
       },
     },
     {
-      header: 'Channel',
-      accessorKey: 'channel',
+      header: 'Niche',
+      accessorKey: 'niche',
       cell: ({ row }) => (
-        <span className="text-sm text-slate-400 font-mono">{row.original.channel}</span>
+        <span className="text-sm text-slate-400 font-mono">{row.original.niche || 'general'}</span>
       ),
     },
   ];
@@ -250,63 +259,103 @@ export function Poster() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Message
-            </label>
-            <textarea
-              required
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              rows={6}
-              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors resize-none"
-              placeholder="Enter your message here..."
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Supports Telegram markdown formatting
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Channel
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.channel}
-              onChange={(e) => setFormData({ ...formData, channel: e.target.value })}
-              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors font-mono"
-              placeholder="@channel_name"
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center gap-3 p-3 bg-black/20 border border-white/10 rounded-lg cursor-pointer hover:border-indigo-primary/50 transition-colors">
-              <input
-                type="checkbox"
-                checked={formData.scheduleNow}
-                onChange={(e) => setFormData({ ...formData, scheduleNow: e.target.checked })}
-                className="w-4 h-4 rounded border-white/20 bg-black/30 text-indigo-primary focus:ring-indigo-primary focus:ring-offset-0"
-              />
-              <span className="text-sm text-slate-300">Post immediately</span>
-            </label>
-          </div>
-
-          {!formData.scheduleNow && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Scheduled Time
+                Product URL
               </label>
               <input
-                type="datetime-local"
-                required={!formData.scheduleNow}
-                value={formData.scheduledTime}
-                onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
-                className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-indigo-primary transition-colors"
+                type="url"
+                required
+                value={formData.product_url}
+                onChange={(e) => setFormData({ ...formData, product_url: e.target.value })}
+                className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors"
+                placeholder="https://shopee.com/..."
               />
             </div>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Product Name
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.product_name}
+                onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
+                className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors"
+                placeholder="Product name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Image URL (optional)
+              </label>
+              <input
+                type="url"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Affiliate Link (optional)
+              </label>
+              <input
+                type="url"
+                value={formData.affiliate_link}
+                onChange={(e) => setFormData({ ...formData, affiliate_link: e.target.value })}
+                className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors"
+                placeholder="https://..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Normal Price (Rp)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.normal_price}
+                onChange={(e) => setFormData({ ...formData, normal_price: e.target.value })}
+                className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors"
+                placeholder="100000"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Promo Price (Rp)
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.promo_price}
+                onChange={(e) => setFormData({ ...formData, promo_price: e.target.value })}
+                className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-indigo-primary transition-colors"
+                placeholder="80000"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Niche
+            </label>
+            <select
+              value={formData.niche}
+              onChange={(e) => setFormData({ ...formData, niche: e.target.value })}
+              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-indigo-primary transition-colors"
+            >
+              <option value="general">General</option>
+              <option value="fashion">Fashion</option>
+              <option value="electronics">Electronics</option>
+              <option value="home">Home & Living</option>
+              <option value="beauty">Beauty</option>
+              <option value="sports">Sports</option>
+            </select>
+          </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
             <button
@@ -321,11 +370,10 @@ export function Poster() {
               className="px-4 py-2 bg-indigo-primary hover:bg-indigo-light text-white rounded-lg font-medium transition-colors flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
-              {formData.scheduleNow ? 'Post Now' : 'Schedule Post'}
+              Add to Queue
             </button>
           </div>
         </form>
-      </Modal>
     </div>
   );
 }

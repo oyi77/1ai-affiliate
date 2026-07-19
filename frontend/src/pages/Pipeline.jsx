@@ -17,6 +17,8 @@ import { ErrorState } from '../components/ErrorState';
 
 export function Pipeline() {
   const queryClient = useQueryClient();
+  const [running, setRunning] = useState(true);
+  const [urlInput, setUrlInput] = useState('');
 
   const { data: jobsData, isLoading, isError, error, refetch } = useSafeQuery({
     queryKey: ['pipeline-jobs'],
@@ -26,36 +28,37 @@ export function Pipeline() {
     },
   });
 
-  const { data: pipelineStatus } = useSafeQuery({
-    queryKey: ['pipeline-status'],
+  const { data: accounts } = useSafeQuery({
+    queryKey: ['pipeline-accounts'],
     queryFn: async () => {
       const r = await api.get('/api/pipeline/accounts');
-      return r.data?.data ?? r.data;
+      return r.data?.data ?? r.data ?? {};
     },
   });
 
-  const running = pipelineStatus?.running ?? true;
-
   const toggleMutation = useMutation({
     mutationFn: async () => {
-      const r = await api.post('/api/pipeline/run', { action: running ? 'stop' : 'start' });
-      return r.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pipeline-status'] });
+      // Toggle is local state only — no backend endpoint for start/stop yet
+      setRunning((prev) => !prev);
+      return { ok: true };
     },
   });
 
   const runNowMutation = useMutation({
-    mutationFn: async () => {
-      const r = await api.post('/api/pipeline/run');
+    mutationFn: async (tiktokUrl) => {
+      const r = await api.post('/api/pipeline/run', { url: tiktokUrl });
       return r.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipeline-jobs'] });
-      queryClient.invalidateQueries({ queryKey: ['pipeline-status'] });
     },
   });
+
+  const jobList = Array.isArray(jobsData) ? jobsData : [];
+  const accountsAvailable = accounts?.fbPages?.length > 0 || accounts?.igAccounts?.length > 0;
+  const successCount = jobList.filter((j) => j.status === 'success').length;
+  const errorCount = jobList.filter((j) => j.status === 'error' || j.status === 'failed').length;
+  const lastSyncTime = jobList.length > 0 ? jobList[0].created_at || jobList[0].time : null;
 
   const formatRelativeTime = (date) => {
     const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -137,62 +140,66 @@ export function Pipeline() {
           </h1>
           <p className="text-slate-400">Monitor content scraping and processing pipeline</p>
         </div>
-        <button
-          onClick={() => toggleMutation.mutate()}
-          className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
-            running
-              ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20'
-              : 'bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20'
-          }`}
-        >
-          {running ? (
-            <>
-              <Pause className="w-5 h-5" />
-              Stop Pipeline
-            </>
-          ) : (
-            <>
-              <Play className="w-5 h-5" />
-              Start Pipeline
-            </>
-          )}
-        </button>
-        <button
-          onClick={() => runNowMutation.mutate()}
-          disabled={runNowMutation.isPending}
-          className="px-4 py-2 bg-indigo-primary hover:bg-indigo-light text-white rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
-        >
-          <Play className="w-4 h-4" />
-          {runNowMutation.isPending ? 'Running...' : 'Run Now'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              const url = window.prompt('Enter TikTok video URL to process:');
+              if (url) runNowMutation.mutate(url);
+            }}
+            disabled={runNowMutation.isPending}
+            className="px-4 py-2 bg-indigo-primary hover:bg-indigo-light text-white rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+          >
+            <Play className="w-4 h-4" />
+            {runNowMutation.isPending ? 'Running...' : 'Run Now'}
+          </button>
+          <button
+            onClick={() => toggleMutation.mutate()}
+            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+              running
+                ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20'
+                : 'bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20'
+            }`}
+          >
+            {running ? (
+              <>
+                <Pause className="w-5 h-5" />
+                Stop Pipeline
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5" />
+                Start Pipeline
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           label="Status"
-          value={pipelineStatus?.connected !== false ? 'Connected' : 'Disconnected'}
-          accent={pipelineStatus?.connected !== false ? 'green' : 'red'}
-          icon={pipelineStatus?.connected !== false ? CheckCircle2 : XCircle}
+          value={accountsAvailable ? 'Connected' : 'Disconnected'}
+          accent={accountsAvailable ? 'green' : 'red'}
+          icon={accountsAvailable ? CheckCircle2 : XCircle}
         />
         <StatCard
           label="Last Sync"
-          value={pipelineStatus?.lastSync ? formatRelativeTime(pipelineStatus.lastSync) : '—'}
+          value={lastSyncTime ? formatRelativeTime(lastSyncTime) : '—'}
           accent="indigo"
           icon={Clock}
         />
         <StatCard
           label="Items Processed"
-          value={(pipelineStatus?.itemsProcessed ?? 0).toLocaleString()}
+          value={successCount.toLocaleString()}
           accent="green"
           icon={TrendingUp}
         />
         <StatCard
           label="Errors"
-          value={String(pipelineStatus?.errors ?? 0)}
-          accent={(pipelineStatus?.errors ?? 0) > 0 ? 'red' : 'green'}
+          value={String(errorCount)}
+          accent={errorCount > 0 ? 'red' : 'green'}
           icon={XCircle}
         />
-      </div>
 
       <GlassCard>
         <div className="mb-6">
