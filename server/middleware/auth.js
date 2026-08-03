@@ -57,9 +57,35 @@ async function authenticate(req, res, next) {
     req.user = decoded; // { id, email, role, affiliateId? }
     next();
   } catch (err) {
-    const reason = err.name === 'TokenExpiredError' ? 'Token expired' : 'Invalid or expired token';
-    logger.warn({ err }, reason);
-    return res.status(401).json({ error: reason });
+    // Fallback: accept plain API keys issued via the 1ai_api_keys table directly
+    // in the Authorization header. This lets service-to-service callers (e.g.
+    // hub workflows) authenticate with a DB-issued key without a JWT and
+    // without depending on the PHP V3 auth service.
+    try {
+      const [rows] = await pool.query(
+        `SELECT k.id, k.user_id, k.expires_at, u.user_role
+           FROM 1ai_api_keys k
+           LEFT JOIN 1ai_users u ON u.user_id = k.user_id
+          WHERE k.api_key = ? LIMIT 1`,
+        [token]
+      );
+      if (!rows.length) {
+        const reason = err.name === 'TokenExpiredError' ? 'Token expired' : 'Invalid or expired token';
+        logger.warn({ err }, reason);
+        return res.status(401).json({ error: reason });
+      }
+      const row = rows[0];
+      if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
+        logger.warn({ keyId: row.id }, 'API key expired');
+        return res.status(401).json({ error: 'API key expired' });
+      }
+      req.user = { id: row.user_id, role: row.user_role || 'affiliate', apiKey: token };
+      logger.info({ keyId: row.id, userId: row.user_id }, 'Authenticated via DB API key');
+      return next();
+    } catch (dbErr) {
+      logger.error({ err: dbErr }, 'API key lookup failed');
+      return res.status(500).json({ error: 'Authentication service error' });
+    }
   }
 }
 
