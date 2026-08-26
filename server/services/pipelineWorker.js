@@ -84,7 +84,7 @@ async function processJob(jobId) {
     const tmpPath = path.join(os.tmpdir(), `pipeline-${jobId}.mp4`);
     await fs.writeFile(tmpPath, mutated);
 
-    const { fbPages, igAccounts } = pipelineService.getAccounts();
+    const { fbPages, igAccounts } = await pipelineService.getAccounts();
     const results = { facebook: [], instagram: [] };
 
     // 4. Post to Facebook Pages

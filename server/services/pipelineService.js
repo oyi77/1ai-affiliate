@@ -1,4 +1,5 @@
 const pool = require('../db/mysql');
+const fsSync = require('fs');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
 const execFileAsync = promisify(execFile);
@@ -19,11 +20,12 @@ const rateLimitMap = new Map();
 // Niche to 1ai_offers.id mapping for smartlink minting
 // Update as offers are seeded with seed_jendralbot_offers.js
 const NICHE_OFFER_MAP = {
-  hijab: 1,
-  sepatu: 2,
-  tas: 3,
-  atasan_pria: 4,
-  general: 5,
+  hijab: 17,        // Toko hijab DS Modest (active)
+  sepatu: 12,       // Herbal Heion (general fallback; no dedicated sepatu offer)
+  tas: 11,          // Baby & Kids Fashion (general fallback)
+  atasan_pria: 11,  // Baby & Kids Fashion (general fallback)
+  dapur: 21,        // Rak sliding Dapur (active)
+  general: 12,      // Herbal Heion (active)
 };
 
 /**
@@ -31,7 +33,7 @@ const NICHE_OFFER_MAP = {
  * Mints a smartlink via mintSmartlink() so clicks are tracked.
  * Falls back to bare SHOPEE_LINKS_JSON link if smartlink minting fails.
  */
-async function pickTrackedAffiliateLink(niche, affiliateId = 1) {
+async function pickTrackedAffiliateLink(niche, affiliateId = 13) {
   const offerId = NICHE_OFFER_MAP[niche] || NICHE_OFFER_MAP.general;
 
   try {
@@ -54,8 +56,98 @@ async function pickTrackedAffiliateLink(niche, affiliateId = 1) {
  * Fetch TikTok video info (no watermark) via tikwm.com API.
  * Returns video buffer + metadata (caption, hashtags, author, music).
  */
+/**
+ * Validate that a buffer is actually an MP4 (ISO-BMFF) file.
+ * Guards against HTML/error pages being saved as .mp4 — root cause of
+ * jobs #10-12 failing with "moov atom not found" (tikwm Cloudflare page).
+ */
+function isValidMp4(buf) {
+  return Buffer.isBuffer(buf)
+    && buf.length > 50 * 1024
+    && buf.slice(4, 8).toString('ascii') === 'ftyp';
+}
+
+/**
+ * Download TikTok video + metadata via local yt-dlp with browser impersonation.
+ * Primary path since Aug 2026 — tikwm.com serves a Cloudflare JS challenge
+ * to datacenter IPs, returning HTML instead of JSON/video.
+ */
+async function downloadViaYtDlp(url) {
+  // Resolve yt-dlp explicitly: PM2 daemons run with a minimal PATH that
+  // misses ~/.local/bin, so bare 'yt-dlp' throws ENOENT under systemd/PM2.
+  const ytdlpCandidates = [
+    process.env.YTDLP_PATH,
+    path.join(os.homedir(), '.local', 'bin', 'yt-dlp'),
+    '/usr/local/bin/yt-dlp',
+    '/usr/bin/yt-dlp',
+    'yt-dlp',
+  ].filter(Boolean);
+  const ytdlpBin = ytdlpCandidates.find(c => {
+    if (!c.includes('/')) return true; // bare name — let PATH resolve it
+    return fsSync.existsSync(c);
+  }) || 'yt-dlp';
+
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pipeline-yt-'));
+  try {
+    const { stdout } = await execFileAsync(ytdlpBin, [
+      '--impersonate', 'chrome', '-J', '--no-warnings', url,
+    ], { timeout: 90000, maxBuffer: 20 * 1024 * 1024 }).catch(err => {
+      throw new Error(`yt-dlp meta failed (${ytdlpBin}): ${String(err.message).slice(0, 300)}`);
+    });
+    const meta = JSON.parse(stdout);
+
+    await execFileAsync(ytdlpBin, [
+      '--impersonate', 'chrome',
+      '-f', 'best[ext=mp4]/best',
+      '--no-warnings',
+      '-o', path.join(tmpDir, 'video.%(ext)s'),
+      url,
+    ], { timeout: 180000 }).catch(err => {
+      throw new Error(`yt-dlp download failed (${ytdlpBin}): ${String(err.message).slice(0, 300)}`);
+    });
+
+    const files = await fs.readdir(tmpDir);
+    const fname = files.find(f => f.startsWith('video.'));
+    if (!fname) throw new Error('yt-dlp produced no output file');
+    const buffer = await fs.readFile(path.join(tmpDir, fname));
+
+    const text = [meta.title, meta.description].filter(Boolean).join(' ');
+    return {
+      buffer,
+      caption: text || '',
+      hashtags: extractHashtags(text),
+      author: meta.uploader || meta.channel || '',
+      musicTitle: meta.track || '',
+    };
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+  }
+}
+
+/**
+ * Download TikTok video: yt-dlp first, tikwm API as fallback.
+ * Always validates the result is a real MP4 before returning.
+ */
 async function downloadTikTok(url) {
-  const apiUrl = `${TIKTOK_API}?url=${encodeURIComponent(url)}`;
+  let video;
+  try {
+    video = await downloadViaYtDlp(url);
+    console.log(`[PipelineService] Downloaded via yt-dlp (${(video.buffer.length / 1024 / 1024).toFixed(1)}MB)`);
+  } catch (err) {
+    console.warn(`[PipelineService] yt-dlp failed: ${err.message}; falling back to tikwm`);
+    video = await downloadTikTokViaTikwm(url);
+  }
+  if (!isValidMp4(video.buffer)) {
+    throw new Error('Downloaded content failed MP4 validation (provider returned HTML/error page)');
+  }
+  return video;
+}
+
+/**
+ * Legacy tikwm.com API download path (fallback only).
+ */
+async function downloadTikTokViaTikwm(url) {
+  const apiUrl = `${TIKTOK_API}?url=${encodeURIComponent(url)}&hd=1`;
   const resp = await fetch(apiUrl);
   if (!resp.ok) throw new Error(`TikTok API error: ${resp.status}`);
   const data = await resp.json();
@@ -99,10 +191,12 @@ async function mutateVideoHash(inputBuffer) {
     await execFileAsync('ffmpeg', [
       '-i', inPath,
       '-af', 'volume=0.99',
-      '-c', 'copy',
+      '-c:v', 'copy',
+      '-c:a', 'aac',
+      '-movflags', '+faststart',
       outPath,
       '-y',
-    ], { timeout: 60000 });
+    ], { timeout: 120000 });
     const outputBuffer = await fs.readFile(outPath);
     return outputBuffer;
   } finally {
@@ -116,12 +210,26 @@ async function mutateVideoHash(inputBuffer) {
  */
 function detectNiche(caption, hashtags) {
   const text = (caption + ' ' + hashtags.join(' ')).toLowerCase();
+  // Order matters: most-specific niches first. Short/ambiguous keywords
+  // matched with word boundaries to avoid substring false positives
+  // (e.g. 'bag' inside 'serbaguna', 'tas' inside 'raksusun').
   const keywords = {
+    dapur: ['rak', 'dapur', 'kitchen', 'storage', 'susun', 'serbaguna', 'organizer', 'rakitan'],
     hijab: ['hijab', 'kerudung', 'jilbab', 'pashmina', 'bergamo'],
     sepatu: ['sepatu', 'sneakers', 'sendal', 'footwear'],
-    tas: ['tas', 'bag', 'backpack', 'ransel', 'slingbag'],
-    atasan_pria: ['atasan', 'kemeja', 'kaos', 'baju pria', 'jaket pria', 'pria'],
+    tas: ['tas', 'bag', 'backpack', 'ransel', 'slingbag', 'sling bag'],
+    atasan_pria: ['atasan', 'kemeja', 'kaos', 'jaket pria', 'baju pria'],
   };
+  // Word-boundary regexes for ambiguous short keywords ('tas', 'bag').
+  const boundaryWords = {
+    tas: [new RegExp('\\btas\\b', 'i'), new RegExp('\\bbag\\b', 'i')],
+  };
+  for (const [niche, words] of Object.entries(keywords)) {
+    if (words.some(w => text.includes(w))) return niche;
+    const bnd = boundaryWords[niche];
+    if (bnd && bnd.some(re => re.test(text))) return niche;
+  }
+  return 'general';  return 'general';
   for (const [niche, words] of Object.entries(keywords)) {
     if (words.some(w => text.includes(w))) return niche;
   }
