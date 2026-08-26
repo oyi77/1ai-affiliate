@@ -20,7 +20,7 @@
 const { lookupIp } = require('../routes/geoip');
 const { getDeviceFingerprint } = require('./deviceTracker');
 const { detectCGNAT, generateCompositeKey } = require('./cgnatDetector');
-const { detectPlatformReviewer } = require('./platformReviewDetector');
+const { detectPlatformReviewer, detectPlatformEmployee } = require('./platformReviewDetector');
 const { signClickId, verifyClickId, generateClickId } = require('./hmacService');
 
 // ── Known Crawler/Reviewer IP Ranges ──────────────────────────────────────
@@ -95,6 +95,15 @@ async function classifyVisitor(req, offerConfig = {}) {
     redirect_strategy: 'offer_page',
     safe_url: null,
   };
+
+  // ── Layer 0: Platform Employee Detection (highest priority) ───────────
+  const employeeCheck = detectPlatformEmployee(req);
+  result.layers.employee = employeeCheck;
+  if (employeeCheck.is_employee) {
+    result.signals.push(`platform_employee_${employeeCheck.platform}`);
+    result.risk_score += 0.9; // Very high — employee detected
+    result.safe_url = employeeCheck.safe_url;
+  }
 
   // ── Layer 1: IP Intelligence ──────────────────────────────────────────
   const geo = await lookupIp(ip);
@@ -266,6 +275,13 @@ async function classifyVisitor(req, offerConfig = {}) {
     result.visitor_type = 'crawler';
     result.redirect_strategy = 'safe_page';
     result.safe_url = platformReview.safe_url;
+  }
+
+  // Override: Platform employee detected → always safe page
+  if (employeeCheck.is_employee) {
+    result.visitor_type = 'crawler';
+    result.redirect_strategy = 'safe_page';
+    result.safe_url = employeeCheck.safe_url;
   }
 
   return result;

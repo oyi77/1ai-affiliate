@@ -4,6 +4,7 @@ import { useMutation, useQueryClient} from '@tanstack/react-query';
 import { GlassCard } from '../components/ui/GlassCard';
 import { Palette, Globe, ImageIcon, Save, Loader2, CheckCircle2, Eye } from 'lucide-react';
 import { ErrorState } from '../components/ErrorState';
+import api from '../lib/api';
 
 const defaultConfig = {
   brand_name: '',

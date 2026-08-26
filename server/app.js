@@ -247,6 +247,9 @@ app.use((req, res, next) => {
   // Only handle GET requests for HTML pages (not API, not static files)
   if (req.method !== 'GET') return next();
   if (req.path.startsWith('/api/')) return next();
+  // Static-looking paths (file extension) must NOT fall through to the SPA
+  // shell — serving text/html for missing JS/CSS breaks module loading.
+  if (/\.\w{1,10}$/.test(req.path)) return next();
   spaHandler(req, res);
 });
 

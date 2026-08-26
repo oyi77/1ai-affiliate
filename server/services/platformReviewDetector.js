@@ -2,20 +2,45 @@
 
 /**
  * Platform Review Mode — Detect and handle platform ad reviewers.
- * 
+ *
  * Platforms like Facebook, Google, TikTok have review systems that visit
  * offer URLs to check compliance. These reviewers use:
  * - Real residential IPs (not datacenter)
  * - Standard Chrome/Safari UAs
  * - Platform-specific referer domains
  * - Sometimes execute JavaScript
- * 
+ *
  * This service maintains known reviewer IP ranges and behavioral signatures
  * to identify review traffic and serve safe pages.
+ *
+ * IP ranges are stored in DB table `1ai_platform_ip_ranges` and loaded via
+ * loadPlatformRanges(pool). The constants below serve as fallback defaults.
  */
 
+// ── DB Loader ───────────────────────────────────────────────────────────
+
+/**
+ * Load platform IP ranges from DB. Returns null on error so callers
+ * can fall back to the hardcoded constants.
+ *
+ * @param {Object} pool - mysql2/promise pool
+ * @returns {Array<{platform, range_type, ip_range}>|null}
+ */
+async function loadPlatformRanges(pool) {
+  try {
+    const [rows] = await pool.query(
+      'SELECT platform, range_type, ip_range FROM 1ai_platform_ip_ranges WHERE is_active = 1'
+    );
+    return rows;
+  } catch {
+    return null;
+  }
+}
+
+// ── Hardcoded Fallback Constants ─────────────────────────────────────────
+
 // FALLBACK_DEFAULT: known platform reviewer IP ranges
-// In production, these should be loaded from DB and updated via community feed
+// Loaded from DB in production; these are the offline fallback
 const PLATFORM_REVIEWER_RANGES = {
   facebook: {
     // Meta's known IP ranges for crawlers/reviewers
@@ -81,6 +106,25 @@ const PLATFORM_REVIEWER_RANGES = {
     safe_urls: [
       'https://www.bing.com',
       'https://www.bing.com/search',
+    ],
+  },
+  twitter: {
+    ip_ranges: [
+      '199.16.156.0/22',    // Twitter primary
+      '199.96.57.0/24',     // Twitter
+      '199.96.58.0/24',     // Twitter
+      '199.96.59.0/24',     // Twitter
+      '199.59.148.0/22',    // Twitter
+      '202.160.128.0/22',   // Twitter Asia
+      '209.237.192.0/19',   // Twitter legacy
+      '104.244.42.0/21',    // Twitter
+      '185.45.5.0/24',      // X Corp
+    ],
+    ua_patterns: ['twitterbot', 'twitterbot-crawler', 'xbot'],
+    referer_patterns: ['twitter.com', 'x.com', 't.co', 'twimg.com'],
+    safe_urls: [
+      'https://twitter.com',
+      'https://x.com',
     ],
   },
 };
@@ -180,9 +224,111 @@ function getSafeUrl(platform) {
   return config.safe_urls[idx];
 }
 
+// ── Platform Employee Detection ──────────────────────────────────────────
+
+/**
+ * Check if an IP is within a specific CIDR range.
+ *
+ * @param {string} ip - IPv4 address
+ * @param {string} cidr - CIDR notation (e.g. '157.240.0.0/16')
+ * @returns {boolean}
+ */
+function isIPInCIDR(ip, cidr) {
+  if (!ip || ip.includes(':')) return false;
+  const ipNum = ipToInt(ip);
+  const { start, end } = cidrToRange(cidr);
+  return ipNum >= start && ipNum <= end;
+}
+
+/**
+ * Known platform employee / corporate IP ranges.
+ * These are ranges owned by the companies themselves — if a request
+ * originates here it's almost certainly an employee or internal tool.
+ */
+const PLATFORM_EMPLOYEE_RANGES = {
+  meta: {
+    ip_ranges: [
+      '157.240.0.0/16',     // Meta primary
+      '129.134.0.0/16',     // Meta internal
+      '157.240.192.0/18',   // Meta internal
+      '31.13.24.0/21',      // Meta/WhatsApp
+      '31.13.64.0/18',      // Meta/Instagram
+      '66.220.144.0/20',    // Meta infrastructure
+      '69.171.224.0/18',    // Meta
+      '69.171.248.0/21',    // Meta employees
+    ],
+    ua_patterns: [],
+    referer_patterns: ['internal.facebook.com', 'workplace.facebook.com', 'fb.workplace.com'],
+  },
+  google: {
+    ip_ranges: [
+      '8.8.8.0/24',         // Google DNS
+      '8.8.4.0/24',         // Google DNS
+      '23.236.48.0/20',     // Google Cloud
+      '34.64.0.0/10',       // Google Cloud
+      '35.186.0.0/16',      // Google Cloud
+      '35.190.0.0/16',      // Google Cloud
+      '35.191.0.0/16',      // Google Cloud
+      '104.154.0.0/15',     // Google Cloud
+      '142.250.0.0/15',     // Google
+      '172.217.0.0/16',     // Google
+      '216.58.192.0/19',    // Google
+    ],
+    ua_patterns: [],
+    referer_patterns: ['googleplex.com', 'corp.google.com', 'intranet.google.com'],
+  },
+  tiktok: {
+    ip_ranges: [
+      '161.117.0.0/16',     // ByteDance
+      '47.74.0.0/16',       // ByteDance
+      '47.88.0.0/16',       // ByteDance
+      '103.126.92.0/23',    // ByteDance
+      '103.155.56.0/23',    // ByteDance
+    ],
+    ua_patterns: [],
+    referer_patterns: ['bytedance.com', 'byteoversea.com', 'bytedance.net'],
+  },
+};
+
+// Safe URLs keyed by platform for employee detection responses
+const EMPLOYEE_SAFE_URLS = {
+  meta: 'https://www.facebook.com',
+  google: 'https://www.google.com',
+  tiktok: 'https://www.tiktok.com',
+};
+
+/**
+ * Detect if a request originates from a known platform employee IP range
+ * or internal referer domain.
+ *
+ * @param {Object} req - Express request
+ * @returns {{ is_employee: boolean, platform: string|null, source: string|null, safe_url: string|null }}
+ */
+function detectPlatformEmployee(req) {
+  const ip = req.ip || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || '';
+  const referer = (req.headers['referer'] || '').toLowerCase();
+  const refererLower = referer.toLowerCase();
+
+  for (const [platform, cfg] of Object.entries(PLATFORM_EMPLOYEE_RANGES)) {
+    // Check IP range
+    if (cfg.ip_ranges?.some(range => isIPInCIDR(ip, range))) {
+      return { is_employee: true, platform, source: 'ip_range', safe_url: EMPLOYEE_SAFE_URLS[platform] || 'https://www.google.com' };
+    }
+    // Check referer (internal domains)
+    if (cfg.referer_patterns?.some(pattern => refererLower.includes(pattern))) {
+      return { is_employee: true, platform, source: 'referer', safe_url: EMPLOYEE_SAFE_URLS[platform] || 'https://www.google.com' };
+    }
+  }
+  return { is_employee: false, platform: null, source: null, safe_url: null };
+}
+
 module.exports = {
+  loadPlatformRanges,
   detectPlatformReviewer,
   isPlatformReviewerIP,
   getSafeUrl,
   PLATFORM_REVIEWER_RANGES,
+  detectPlatformEmployee,
+  PLATFORM_EMPLOYEE_RANGES,
+  isIPInCIDR,
 };

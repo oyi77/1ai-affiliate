@@ -25,6 +25,8 @@
     "031_close_all_gaps.sql",
     "2026_07_14_ad_block_visitors.sql",
     "2026_07_14_fix_ad_block_enum.sql",
-    "2026_07_14_fix_missing_tables_3.sql"
+    "2026_07_14_fix_missing_tables_3.sql",
+    "031_platform_ip_ranges.sql",
+    "031b_seed_platform_ip_ranges.sql"
   ]
 }
