@@ -1,0 +1,19 @@
+{
+  "date": "2026-08-06",
+  "session": "morning",
+  "chosen_niche": "drinkware_tumbler",
+  "offer_id": 713,
+  "product": "Tumbler Viral 2 Liter - Botol Minum Besar",
+  "smartlink": "https://affiliate.berkahkarya.org/go/tumbler2l-wf02-0806m",
+  "slug": "tumbler2l-wf02-0806m",
+  "rotation_logic": "Next un-promoted offer in WF02 catalog (713 had no smartlink slug before today; 718/717/716/715/714 all already promoted 08-04..08-05)",
+  "signals": [
+    "Shopee ID search 'tumbler viral 2 liter' sorted by sales = persistent top-seller keyword (offer tracking_url grounds this)",
+    "WF02 catalog pattern: viral utility products (kipas, lampu galaxy, pore vacuum, parfum) convert best with demo-format TikTok",
+    "Tumbler 2L = hydration trend + 'mini vlog isi tumbler' format evergreen di TikTok ID",
+    "Price band Rp30-60rb = impulse-buy zone proven by prior WF02 items"
+  ],
+  "content_angle": "POV demo: kapasitas 2L tahan seharian + motivasi minum air",
+  "cta": "Link di bio / klik link keranjang kuning",
+  "payout_idr": 2500
+}
