@@ -221,6 +221,7 @@ function buildEngine(cfg) {
         visitor: compileVisitor(slug.visitorRules),
         strategy: slug.strategy,
         fallbackId: slug.fallbackId,
+        fallback: resolveFallback(cfg.offers, slug.fallbackId),
       };
       slug[COMPILED] = c;
     }
@@ -230,16 +231,16 @@ function buildEngine(cfg) {
   function route(slug, ctx) {
     if (!slug) return resolveFallback(cfg.offers, null);
     const c = compileSlug(slug);
-    if (!evalGeoCompiled(c.geo, ctx.country)) return resolveFallback(cfg.offers, c.fallbackId);
-    if (!evalDeviceCompiled(c.device, ctx.device)) return resolveFallback(cfg.offers, c.fallbackId);
-    if (!evalVisitorCompiled(c.visitor, ctx)) return resolveFallback(cfg.offers, c.fallbackId);
+    if (!evalGeoCompiled(c.geo, ctx.country)) return c.fallback;
+    if (!evalDeviceCompiled(c.device, ctx.device)) return c.fallback;
+    if (!evalVisitorCompiled(c.visitor, ctx)) return c.fallback;
 
     switch (c.strategy) {
       case 'weighted': return pickWeightedFast(cfg.offers, rand, w);
       case 'random': return pickRandom(cfg.offers, rand);
       case 'priority': return pickPriorityFast(cfg.offers, maxOffer);
       case 'roundrobin': return pickRoundRobin(cfg.offers, rrState);
-      default: return resolveFallback(cfg.offers, c.fallbackId);
+      default: return c.fallback;
     }
   }
 
