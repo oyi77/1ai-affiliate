@@ -1,9 +1,16 @@
 # P0 GAP ANALYSIS — IMPLEMENTATION PLAN
 > **Created:** 2026-07-06T21:23:12.703Z  
-> **Status:** DRAFT  
+> **Status:** DELIVERED (2026-08-26)
 > **Protocol:** 1ai-rules ENGINEERING.md §6 Core Loop  
 > **Estimated Effort:** 4 sprints (8 weeks)
 
+
+> **CLOSURE RECEIPT (2026-08-26):** All 4 P0 blockers verified delivered at HEAD.
+> - P0-1 Edge Monitoring: Prometheus metrics + structured zerolog in `edge/cmd/edgeredirect/main.go` (`/metrics` :8081); `go test ./...` ok.
+> - P0-2 Rate Limiting: Redis-backed distributed limiter `server/middleware/globalRateLimit.js` + `server/lib/redisClient.js`; suites green 11/11. Edge: `edge/internal/ratelimit` ok.
+> - P0-3 K8s Manifests: `edge/deploy/k8s.yaml` (HPA edge-redirect x3→200, PDB minAvailable 2).
+> - P0-4 Migration Rollbacks: `scripts/rollback/*_down.sql` (22 pairs) + `php scripts/run_rollback.php --from --to [--dry-run]`.
+> Full-suite gate: jest 312 passed / 0 failed / 3 skipped (real-DB skips); vite build ✓; migrations 031_platform_ip_ranges + 031b_seed applied live via manifest runner.
 ---
 
 ## §1 — PROBLEM STATEMENT
