@@ -55,6 +55,11 @@ function defaultQueryMock(sql) {
   if (s.includes('select 1')) return Promise.resolve([[{ ok: 1 }]]);
   if (s.includes('1ai_postback_queue') && s.includes('count')) return Promise.resolve([[{ pending: 0 }]]);
 
+  // Auth middleware API-key fallback lookup — no key seeded by default,
+  // so invalid/expired JWTs must fall through to 401 (not match later
+  // catch-all branches like the 1ai_users LEFT JOIN above).
+  if (s.includes('1ai_api_keys')) return Promise.resolve([[]]);
+
   // Stats
   if (s.includes('count(*)') && s.includes('1ai_clicks') && s.includes('interval 1 day')) return Promise.resolve([[{ total: 42 }]]);
   if (s.includes('count(*)') && s.includes('1ai_clicks') && s.includes('interval 2 day')) return Promise.resolve([[{ total: 38 }]]);
@@ -256,6 +261,20 @@ describe('Auth — Get /me', () => {
   test('returns 401 with expired JWT', async () => {
     const res = await request(app).get('/api/auth/me').set('Authorization', `Bearer ${makeExpiredToken()}`);
     expect(res.status).toBe(401);
+  });
+
+  test('authenticates plain DB-issued API key via Bearer (service-to-service)', async () => {
+    mockPool.query.mockImplementation((sql) => {
+      const s = (sql || '').toLowerCase();
+      if (s.includes('1ai_api_keys')) {
+        return Promise.resolve([[{ id: 9, user_id: 1, expires_at: null, user_role: 'admin' }]]);
+      }
+      return defaultQueryMock(sql);
+    });
+
+    const res = await request(app).get('/api/auth/me').set('Authorization', 'Bearer live-db-issued-key');
+    expect(res.status).toBe(200);
+    expect(res.body.user.user_email).toBe('admin@test.com');
   });
 });
 

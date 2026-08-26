@@ -6,7 +6,7 @@
  * gets isolated Express instances with fresh rate-limiter state.
  */
 
-jest.mock('../../db/mysql', () => ({ query: jest.fn(), end: jest.fn() }));
+jest.mock('../../db/mysql', () => ({ query: jest.fn().mockResolvedValue([[]]), end: jest.fn() }));
 jest.mock('bcryptjs', () => ({
   compare: jest.fn(),
   hash: jest.fn(),
@@ -55,7 +55,7 @@ function mockPoolQuery(responses) {
 /** Load a fresh app with re-mocked modules. */
 function loadApp() {
   jest.resetModules();
-  jest.doMock('../../db/mysql', () => ({ query: jest.fn(), end: jest.fn() }));
+  jest.doMock('../../db/mysql', () => ({ query: jest.fn().mockResolvedValue([[]]), end: jest.fn() }));
   jest.doMock('bcryptjs', () => ({
     compare: jest.fn(),
     hash: jest.fn(),
