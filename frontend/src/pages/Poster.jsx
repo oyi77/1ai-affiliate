@@ -374,6 +374,7 @@ export function Poster() {
             </button>
           </div>
         </form>
+      </Modal>
     </div>
   );
 }

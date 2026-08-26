@@ -200,6 +200,7 @@ export function Pipeline() {
           accent={errorCount > 0 ? 'red' : 'green'}
           icon={XCircle}
         />
+      </div>
 
       <GlassCard>
         <div className="mb-6">
