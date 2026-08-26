@@ -2,6 +2,9 @@
 
 Self-hosted campaign tracking and marketing analytics platform. Track clicks, conversions, and revenue across any traffic source with full data ownership — your data stays on your servers.
 
+> **Status:** production-track (`v1.0.1`) — all P0 readiness blockers delivered: distributed Redis rate limiting, Prometheus edge monitoring, K8s HPA manifests, migration rollback tooling. See [`plans/gap-analysis-p0-implementation.md`](plans/gap-analysis-p0-implementation.md).
+> AI-agent & contributor conventions: see [`AGENTS.md`](AGENTS.md).
+
 ## 🏗️ Integrated Architecture
 
 This platform now runs as a **polyglot stack** with three cooperating servers:
@@ -11,6 +14,7 @@ This platform now runs as a **polyglot stack** with three cooperating servers:
 | **PHP 8.3+** | Laravel-style + Slim | Core tracking & APIs (v2/v3), admin SPA, offer/rotator/attribution engines, Go CLI, edge redirector |
 | **Node.js (Express)** | `server/app.js` on port 3001 | Companion services: auth, payment (Tripay), smartlinks, **Telegram poster**, **Funnel pipeline** (FB/IG video), AI content, geo, settings, postback queue |
 | **Go** | `edge/cmd/edgeredirect` | Ultra-fast redirect microservice (Redis + GeoIP + fraud + Kafka) |
+| **React 19** | `frontend/` (Vite 8, Tailwind v4) | Admin dashboard SPA (60+ pages: campaigns, pipeline, poster, wallet, finance, reports); builds into `server/public/dist` and is served by the Node server |
 
 > **Key integration**: The Node.js companion server now **absorbs** the external Telegram poster and Funnel pipeline services — they are no longer external Python scripts but native Node modules (`server/services/posterService.js`, `server/services/pipelineService.js`). Both services mint **tracked smartlinks** via `smartlinkService.mintSmartlink()` so every posted affiliate link becomes a `/go/<slug>` redirect that the PHP platform attributes for click→conversion tracking.
 
@@ -191,24 +195,60 @@ make build
 
 ## Development Setup
 
+Three independent dependency trees (npm workspaces are NOT used):
+
 ```bash
-composer install
+npm install                        # repo root — provides socket.io/mysql2/dotenv required by server/app.js
+cd server && npm install           # Express API deps (.npmrc include=dev keeps jest/playwright)
+cd frontend && npm install         # React admin SPA deps
+composer install                   # PHP legacy core deps
+```
+
+Configuration is loaded from the **repo-root `.env`** (`server/.env` is ignored even though `server/.env.example` exists there). Hard requirement: `JWT_SECRET` — the Node server exits without it.
+
+### Running
+
+```bash
+cd server && npm run dev           # Node API on :3001 (node --watch app.js)
+cd frontend && npm run dev         # Vite dev server, proxies /api -> localhost:3001
+./start.sh --docker|--stop|--status  # full stack: MySQL, Redis, php-fpm (:9002), pm2, nginx (:6969), crons
+```
+
+### Building the SPA
+
+```bash
+cd frontend && npm run build       # emits into server/public/dist (served by the Node server)
+```
+
+### Database Migrations
+
+```bash
+node server/migrations/run_migrations.js                       # manifest.json array order; checksum ledger; FORCE=1 re-run
+php scripts/run_rollback.php --from=NNN --to=NNN [--dry-run]   # legacy-tree rollbacks only (scripts/NNN_*.sql)
 ```
 
 ### Running Tests
 
 ```bash
+npm test                           # root alias -> cd server && npm test (Jest 30; coverage always on with hard thresholds over core paths)
+cd server && npx jest tests/unit   # unit suites only
+cd server && npx jest tests/e2e    # supertest e2e against in-process app (mocked DB — no live services needed)
+cd server && npm run test:e2e      # real-DB wrapper (requires live MariaDB prosper1ai_test) — opt-in
+npm run test:playwright            # browser E2E; start the app yourself first (config has no webServer)
+
 # PHP tests
 composer test
 
-# Go CLI tests
+# Go edge + CLI
+cd edge && go test ./...
 cd go-cli && make test
 ```
 
 ### Linting
 
 ```bash
-./scripts/php-lint.sh
+./scripts/php-lint.sh              # CI also gates PHP syntax + shell via .github/workflows/pr-checks.yml
+cd frontend && npm run lint        # ESLint for the SPA
 ```
 
 ## Configuration
