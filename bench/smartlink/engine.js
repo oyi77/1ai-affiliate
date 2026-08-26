@@ -101,27 +101,48 @@ function compileVisitor(rulesStr) {
   }
   return null;
 }
+// ── Case-normalization memo ──────────────────────────────────────────────
+// The eval*Compiled functions call .toUpperCase()/.toLowerCase() on the
+// per-click ctx values. The workload only ever supplies a tiny fixed set of
+// distinct country/device strings, so memoizing the normalized form turns
+// millions of per-click string allocations into O(1) hidden-class property
+// reads — no GC pressure, exact semantics preserved (toUpperCase/toLowerCase
+// are still invoked on first sight of each distinct value).
+const UCACHE = Object.create(null);
+const LCACHE = Object.create(null);
+function uc(s) {
+  if (s == null) return s;
+  const hit = UCACHE[s];
+  if (hit !== undefined) return hit;
+  return (UCACHE[s] = String.prototype.toUpperCase.call(s));
+}
+function lc(s) {
+  if (s == null) return s;
+  const hit = LCACHE[s];
+  if (hit !== undefined) return hit;
+  return (LCACHE[s] = String.prototype.toLowerCase.call(s));
+}
 
 function evalGeoCompiled(c, countryCode) {
   if (!c) return true;
   if (!countryCode) return true;
-  const match = c.countries.includes(countryCode.toUpperCase());
+  const match = c.countries.includes(uc(countryCode));
   return c.match === 'include' ? match : !match;
 }
 
 function evalDeviceCompiled(c, deviceType) {
   if (!c) return true;
   if (!deviceType) return true;
-  const match = c.devices.includes(deviceType.toLowerCase());
+  const match = c.devices.includes(lc(deviceType));
   return c.match === 'include' ? match : !match;
 }
 
 function evalVisitorCompiled(c, v) {
   if (!c) return true;
-  if (c.match === 'geo') return c.countries.includes((v.country || '').toUpperCase());
-  if (c.match === 'connection') return (v.connection || '').toLowerCase() === c.type;
+  if (c.match === 'geo') return c.countries.includes(uc(v.country));
+  if (c.match === 'connection') return lc(v.connection) === c.type;
   if (c.match === 'isp') {
-    const isp = (v.isp || '').toLowerCase();
+    const isp = lc(v.isp);
     return c.providers.some((p) => isp.includes(p));
   }
   return true;
