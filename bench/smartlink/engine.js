@@ -123,27 +123,27 @@ function lc(s) {
   return (LCACHE[s] = String.prototype.toLowerCase.call(s));
 }
 
-function evalGeoCompiled(c, countryCode) {
-  if (!c) return true;
-  if (!countryCode) return true;
-  const match = c.countries.includes(uc(countryCode));
-  return c.match === 'include' ? match : !match;
-}
-
-function evalDeviceCompiled(c, deviceType) {
-  if (!c) return true;
-  if (!deviceType) return true;
-  const match = c.devices.includes(lc(deviceType));
-  return c.match === 'include' ? match : !match;
-}
-
-function evalVisitorCompiled(c, v) {
-  if (!c) return true;
-  if (c.match === 'geo') return c.countries.includes(uc(v.country));
-  if (c.match === 'connection') return lc(v.connection) === c.type;
-  if (c.match === 'isp') {
-    const isp = lc(v.isp);
-    return c.providers.some((p) => isp.includes(p));
+function evalRulesCompiled(c, ctx) {
+  const g = c.geo, cc = ctx.country;
+  if (g && cc) {
+    const m = g.countries.includes(uc(cc));
+    if (!(g.match === 'include' ? m : !m)) return false;
+  }
+  const d = c.device, dt = ctx.device;
+  if (d && dt) {
+    const m = d.devices.includes(lc(dt));
+    if (!(d.match === 'include' ? m : !m)) return false;
+  }
+  const v = c.visitor;
+  if (v) {
+    let vm;
+    if (v.match === 'geo') vm = v.countries.includes(uc(ctx.country));
+    else if (v.match === 'connection') vm = (lc(ctx.connection) === v.type);
+    else if (v.match === 'isp') {
+      const isp = lc(ctx.isp);
+      vm = v.providers.some((p) => isp.includes(p));
+    } else vm = true;
+    if (!vm) return false;
   }
   return true;
 }
@@ -231,9 +231,7 @@ function buildEngine(cfg) {
   function route(slug, ctx) {
     if (!slug) return resolveFallback(cfg.offers, null);
     const c = compileSlug(slug);
-    if (!evalGeoCompiled(c.geo, ctx.country)) return c.fallback;
-    if (!evalDeviceCompiled(c.device, ctx.device)) return c.fallback;
-    if (!evalVisitorCompiled(c.visitor, ctx)) return c.fallback;
+    if (!evalRulesCompiled(c, ctx)) return c.fallback;
 
     switch (c.strategy) {
       case 'weighted': return pickWeightedFast(cfg.offers, rand, w);
