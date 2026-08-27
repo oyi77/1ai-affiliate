@@ -157,9 +157,9 @@ function routeSmartlink(smartlink, offers, visitorData) {
   const sl = smartlink;
   const cc = visitorData ? visitorData.country_code : undefined;
   if (
-    !evaluateGeoRules(sl.geo_rules, cc) ||
-    !evaluateDeviceRules(sl.device_rules, visitorData && visitorData.device_type) ||
-    !evaluateVisitorRules(sl.visitor_rules, visitorData)
+    (sl.geo_rules && !evaluateGeoRules(sl.geo_rules, cc)) ||
+    (sl.device_rules && !evaluateDeviceRules(sl.device_rules, visitorData && visitorData.device_type)) ||
+    (sl.visitor_rules && !evaluateVisitorRules(sl.visitor_rules, visitorData))
   ) {
     return pickFallback(sl, indexOffers(offers));
   }
