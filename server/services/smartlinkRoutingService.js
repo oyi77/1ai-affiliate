@@ -19,6 +19,22 @@ const {
   pickByPriority,
   resolveFallback,
 } = require('./smartlinkService');
+// ── Case-normalization memo (ported from smartlink bench winner) ──────
+// Memoized toUpperCase/toLowerCase over the small fixed set of distinct
+// country/device/isp tokens. First sight of each value computes the real
+// result; thereafter returns the cached string. Pure: identical I/O.
+const UCACHE = Object.create(null);
+const LCACHE = Object.create(null);
+function uc(s) {
+  const hit = UCACHE[s];
+  if (hit !== undefined) return hit;
+  return (UCACHE[s] = s.toUpperCase());
+}
+function lc(s) {
+  const hit = LCACHE[s];
+  if (hit !== undefined) return hit;
+  return (LCACHE[s] = s.toLowerCase());
+}
 
 // ── Rule evaluation helpers ────────────────────────────────────────
 
@@ -41,7 +57,7 @@ function evaluateGeoRules(rulesStr, countryCode) {
   if (!rules || rules.match === 'all') return true;
   if (!Array.isArray(rules.countries)) return true;
 
-  const match = rules.countries.some(c => c.toUpperCase() === countryCode.toUpperCase());
+  const match = rules.countries.some(c => uc(c) === uc(countryCode));
 
   if (rules.match === 'include') return match;
   if (rules.match === 'exclude') return !match;
@@ -67,7 +83,7 @@ function evaluateDeviceRules(rulesStr, deviceType) {
   if (!rules || rules.match === 'all') return true;
   if (!Array.isArray(rules.devices)) return true;
 
-  const match = rules.devices.some(d => d.toLowerCase() === deviceType.toLowerCase());
+  const match = rules.devices.some(d => lc(d) === lc(deviceType));
 
   if (rules.match === 'include') return match;
   if (rules.match === 'exclude') return !match;
@@ -96,16 +112,16 @@ function evaluateVisitorRules(rulesStr, visitorData) {
   switch (rules.match) {
     case 'geo': {
       if (!Array.isArray(rules.countries) || !visitorData.country_code) return true;
-      return rules.countries.some(c => c.toUpperCase() === visitorData.country_code.toUpperCase());
+      return rules.countries.some(c => uc(c) === uc(visitorData.country_code));
     }
     case 'connection': {
       if (!rules.type || !visitorData.connection_type) return true;
-      return rules.type.toLowerCase() === visitorData.connection_type.toLowerCase();
+      return lc(rules.type) === lc(visitorData.connection_type);
     }
     case 'isp': {
       if (!Array.isArray(rules.providers) || !visitorData.isp) return true;
-      const isp = visitorData.isp.toLowerCase();
-      return rules.providers.some(p => isp.includes(p.toLowerCase()));
+      const isp = lc(visitorData.isp);
+      return rules.providers.some(p => isp.includes(lc(p)));
     }
     default:
       return true;
@@ -120,8 +136,8 @@ function evaluateVisitorRules(rulesStr, visitorData) {
  */
 function offerSupportsCountry(offerGeo, countryCode) {
   if (!offerGeo || !countryCode) return true;
-  const countries = offerGeo.split(',').map(c => c.trim().toUpperCase());
-  return countries.some(c => c === 'ALL' || c === countryCode.toUpperCase());
+  const countries = offerGeo.split(',').map(c => uc(c.trim()));
+  return countries.some(c => c === 'ALL' || c === uc(countryCode));
 }
 
 // ── Full routing pipeline ──────────────────────────────────────────
