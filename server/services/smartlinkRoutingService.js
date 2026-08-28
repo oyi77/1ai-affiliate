@@ -139,6 +139,29 @@ function offerSupportsCountry(offerGeo, countryCode) {
   const countries = offerGeo.split(',').map(c => uc(c.trim()));
   return countries.some(c => c === 'ALL' || c === uc(countryCode));
 }
+// ── Matched-offer memo (per smartlink + visitor country) ───────────
+// getSmartlinkOffers returns a FRESH array each call, so we key on
+// (smartlinkId, cc) rather than the array reference. The signature
+// guards correctness: any change to the offer set or an offer's geo
+// invalidates the cached entry and forces a recompute.
+const _matchCache = new Map(); // key -> { sig, offers: object[] }
+
+function _offerSetSig(offers) {
+  let s = '';
+  for (let i = 0; i < offers.length; i++) {
+    s += offers[i].offer_id + ':' + (offers[i].geo || '') + ';';
+  }
+  return s;
+}
+
+function _getMatched(smartlinkId, cc, allOffers, sig) {
+  const key = smartlinkId + '|' + cc;
+  const hit = _matchCache.get(key);
+  if (hit && hit.sig === sig) return hit.offers;
+  const matched = allOffers.filter(o => offerSupportsCountry(o.geo, cc));
+  _matchCache.set(key, { sig, offers: matched });
+  return matched;
+}
 
 // ── Full routing pipeline ──────────────────────────────────────────
 
@@ -202,8 +225,11 @@ async function routeSmartlink(smartlinkId, visitorData, options = {}) {
 
   // ── Fetch & filter offers ──────────────────────────────────────
   const allOffers = await getSmartlinkOffers(smartlinkId);
-  const matchedOffers = allOffers.filter(o =>
-    offerSupportsCountry(o.geo, visitorData.country_code)
+  const matchedOffers = _getMatched(
+    smartlinkId,
+    visitorData.country_code,
+    allOffers,
+    _offerSetSig(allOffers)
   );
 
   if (!matchedOffers.length) return pickFallback(sl);
