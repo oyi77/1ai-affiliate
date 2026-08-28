@@ -170,13 +170,13 @@ async function runOnce(seed, slTemplates, visitors, offersBySl, ITER) {
   // warmup — advances RNG/round-robin state identically on every call
   for (let i = 0; i < 20000; i++) {
     const sl = slTemplates[i % slTemplates.length];
-    await engine.routeSmartlink(sl, offersBySl[i % offersBySl.length], visitors[i % visitors.length]);
+    engine.routeSmartlink(sl, offersBySl[i % offersBySl.length], visitors[i % visitors.length]);
   }
   let checksum = 0;
   for (let i = 0; i < ITER; i++) {
     const sl = slTemplates[i % slTemplates.length];
     const v = visitors[i % visitors.length];
-    const r = await engine.routeSmartlink(sl, offersBySl[i % offersBySl.length], v);
+    const r = engine.routeSmartlink(sl, offersBySl[i % offersBySl.length], v);
     if (r.offer) checksum = (checksum + r.offer.id) >>> 0;
   }
   return checksum;
