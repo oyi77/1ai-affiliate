@@ -90,8 +90,21 @@ function pickRandom(offers) {
 }
 
 // Plain-loop weighted pick: no Array.reduce closure, no per-call allocation.
+// Consumes weights precomputed + cached on the matched array (arr._ws/_tw)
+// by getMatched on its build path; falls back to per-call coerce if absent.
 function pickWeighted(offers) {
   if (!offers || !offers.length) return null;
+  const ws = offers._ws;
+  const tw = offers._tw;
+  if (ws != null && tw != null) {
+    if (tw <= 0) return pickRandom(offers);
+    let r = _rng() * tw;
+    for (let i = 0; i < offers.length; i++) {
+      r -= ws[i];
+      if (r <= 0) return offers[i];
+    }
+    return offers[offers.length - 1];
+  }
   let total = 0;
   for (let i = 0; i < offers.length; i++) total += (Number(offers[i].weight) || 0);
   if (total <= 0) return pickRandom(offers);
@@ -137,6 +150,10 @@ function pickFallback(sl, offersById) {
 // offerSupportsCountry calls are eliminated on the hot path. The cached
 // arrays are never mutated by the pickers, so sharing references is safe
 // and determinism is preserved (same offer is selected every run).
+//
+// On the cache-miss build path (warmup only) we also precompute the
+// parallel weights array + total (arr._ws / arr._tw) so pickWeighted can
+// skip its per-call Number() coercion + total loop on the hot path.
 const _matchedCache = new Map(); // offers -> Map(cc -> matchedArray)
 function getMatched(offers, cc) {
   let byCc = _matchedCache.get(offers);
@@ -144,10 +161,19 @@ function getMatched(offers, cc) {
   let arr = byCc.get(cc);
   if (arr) return arr;
   arr = [];
+  const ws = [];
+  let tw = 0;
   const list = offers || [];
   for (let i = 0; i < list.length; i++) {
-    if (offerSupportsCountry(list[i].geo, cc)) arr.push(list[i]);
+    const w = Number(list[i].weight) || 0;
+    if (offerSupportsCountry(list[i].geo, cc)) {
+      arr.push(list[i]);
+      ws.push(w);
+      tw += w;
+    }
   }
+  arr._ws = ws;
+  arr._tw = tw;
   byCc.set(cc, arr);
   return arr;
 }
