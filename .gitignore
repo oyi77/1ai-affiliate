@@ -15,6 +15,9 @@ phpstan.neon
 .env
 .env.*
 
+# Docker secrets
+secrets/
+
 # Docker
 docker-compose.yaml
 docker-compose.staging.yml

@@ -17,21 +17,24 @@ services:
     container_name: affiliate-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
       MYSQL_DATABASE: ${DB_NAME:-Prosper1ai}
       MYSQL_USER: ${DB_USER:-affiliate}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-affiliate_pass}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
     volumes:
       - db_data:/var/lib/mysql
       - ./server/migrations:/docker-entrypoint-initdb.d:ro
     networks:
       - affiliate-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root_password}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$(cat /run/secrets/db_root_password)"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    secrets:
+      - db_root_password
+      - db_password
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # REDIS (sessions, caching, queue)
@@ -65,7 +68,7 @@ services:
       DB_HOST: db
       DB_NAME: ${DB_NAME:-Prosper1ai}
       DB_USER: ${DB_USER:-affiliate}
-      DB_PASS: ${DB_PASSWORD:-affiliate_pass}
+      DB_PASS_FILE: /run/secrets/db_password
       DB_HOST_RO: db
       # Redis
       REDIS_HOST: redis
@@ -93,6 +96,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    secrets:
+      - db_password
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # NODE COMPANION (Smartlinks, Auth, Poster, Pipeline, Payments)
@@ -108,7 +113,7 @@ services:
       DB_HOST: db
       DB_NAME: ${DB_NAME:-Prosper1ai}
       DB_USER: ${DB_USER:-affiliate}
-      DB_PASS: ${DB_PASSWORD:-affiliate_pass}
+      DB_PASS_FILE: /run/secrets/db_password
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -116,7 +121,7 @@ services:
       NODE_ENV: production
       PORT: 3001
       # JWT (shared with PHP)
-      JWT_SECRET: ${JWT_SECRET:-change_me_in_production}
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
       # cf-router: Node runs on port 3001, cf-router nginx proxies Node API routes
       # Smartlink service
       SMARTLINK_FALLBACK_DOMAIN: ${CF_DOMAIN:-affiliate.berkahkarya.org}
@@ -126,9 +131,9 @@ services:
       FB_PAGES_JSON: ${FB_PAGES_JSON:-}
       IG_ACCOUNTS_JSON: ${IG_ACCOUNTS_JSON:-}
       SHOPEE_LINKS_JSON: ${SHOPEE_LINKS_JSON:-}
-      TRIPAY_API_KEY: ${TRIPAY_API_KEY:-}
+      TRIPAY_API_KEY_FILE: /run/secrets/tripay_api_key
       TRIPAY_MERCHANT_CODE: ${TRIPAY_MERCHANT_CODE:-}
-      TRIPAY_PRIVATE_KEY: ${TRIPAY_PRIVATE_KEY:-}
+      TRIPAY_PRIVATE_KEY_FILE: /run/secrets/tripay_private_key
       # Ebook service (if used)
       EBOOK_API_URL: http://ebook:8765
     ports:
@@ -149,6 +154,11 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+    secrets:
+      - db_password
+      - jwt_secret
+      - tripay_api_key
+      - tripay_private_key
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # PHPMYADMIN (Optional - for DB management)
@@ -160,7 +170,7 @@ services:
     environment:
       PMA_HOST: db
       PMA_USER: root
-      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      PMA_PASSWORD_FILE: /run/secrets/db_root_password
       PMA_PORT: 3306
     ports:
       - "8080:80"
@@ -171,6 +181,8 @@ services:
         condition: service_healthy
     profiles:
       - tools
+    secrets:
+      - db_root_password
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # MAILHOG (Optional - for email testing)
@@ -219,6 +231,21 @@ networks:
 volumes:
   db_data:
   redis_data:
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SECRETS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+secrets:
+  db_root_password:
+    file: ./secrets/db_root_password.txt
+  db_password:
+    file: ./secrets/db_password.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  tripay_api_key:
+    file: ./secrets/tripay_api_key.txt
+  tripay_private_key:
+    file: ./secrets/tripay_private_key.txt
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # CF-ROUTER INTEGRATION NOTES
