@@ -27,6 +27,7 @@
     "2026_07_14_fix_ad_block_enum.sql",
     "2026_07_14_fix_missing_tables_3.sql",
     "031_platform_ip_ranges.sql",
-    "031b_seed_platform_ip_ranges.sql"
+    "031b_seed_platform_ip_ranges.sql",
+    "2026_09_10_smartlink_registrations.sql"
   ]
 }

@@ -8,7 +8,22 @@ const { authenticate } = require('../middleware/auth');
 router.post('/generate', authenticate, generateSmartlink);
 router.get('/list', authenticate, listSmartlinks);
 router.post('/convert', authenticate, recordConversion);
-router.get('/stats', authenticate, getSmartlinkStats);
+router.post('/register', authenticate, async (req, res) => {
+  try {
+    const { smartlink_id: slug, category, workflow } = req.body || {};
+    if (!slug) return res.status(400).json({ error: 'smartlink_id required' });
+    const [result] = await pool.query(
+      `INSERT INTO 1ai_smartlink_registrations (slug, category, workflow, created_at)
+       VALUES (?, ?, ?, UNIX_TIMESTAMP())
+       ON DUPLICATE KEY UPDATE category = VALUES(category), workflow = VALUES(workflow)`,
+      [slug, category || null, workflow || null]
+    );
+    return res.json({ success: true, slug, registered: true });
+  } catch (err) {
+    console.error('registerSmartlink error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/smartlink/category-mapping — return category→offer mapping from DB
 router.get('/category-mapping', async (req, res) => {
