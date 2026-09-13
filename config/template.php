@@ -207,7 +207,9 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
 					<!-- Uncomment to enable Highcharts accessibility (screen readers, keyboard nav) -->
 					<!-- <script type="text/javascript" src="https://code.highcharts.com/modules/accessibility.js"></script> -->
 					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/chart.theme.js"></script>
-					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution.js"></script>
+					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution/utils.js"></script>
+					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution/dashboard.js"></script>
+					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution/sandbox.js"></script>
 				<?php } ?>
                 <?php break;
                 } } // End isset navigation check ?>

@@ -43,8 +43,9 @@ $extraHead = <<<HTML
         .attribution-dashboard .anomaly-banner .alert { margin-bottom: 10px; }
         .attribution-dashboard .empty-state { padding: 30px; text-align: center; color: #7f8c8d; }
     </style>
-    <script src="{$assetBase}js/attribution-dashboard.js"></script>
-    <script src="{$assetBase}js/attribution.js"></script>
+    <script src="{$assetBase}js/attribution/utils.js"></script>
+    <script src="{$assetBase}js/attribution/dashboard.js"></script>
+    <script src="{$assetBase}js/attribution/sandbox.js"></script>
 HTML;
 
 template_top('Attribution Analytics', [
