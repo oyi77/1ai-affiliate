@@ -19,7 +19,7 @@ async function routeTrafficByHash(req, res) {
     const link = links[0];
 
     const [offers] = await pool.query(
-      'SELECT id, name, payout, network_id, advertiser_id, tracking_url, geo FROM 1ai_offers WHERE id = ? AND status = ?',
+      'SELECT id, name, payout, network_id, advertiser_id, tracking_url, affiliate_url, geo FROM 1ai_offers WHERE id = ? AND status = ?',
       [link.offer_id, 'active']
     );
     if (!offers.length) return res.status(404).send('Offer not available');
@@ -107,7 +107,7 @@ async function routeTrafficByHash(req, res) {
       [clientIp, campaignId]
     );
     if (dupCheck.length) {
-      return res.redirect(offer.tracking_url || '/');
+      return res.redirect(offer.tracking_url || offer.affiliate_url || '/');
     }
 
     // Record click enrichment data
