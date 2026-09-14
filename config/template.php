@@ -208,6 +208,7 @@ function template_top($title = '1ai-Affiliate ClickServer', ...$legacyArgs): voi
 					<!-- <script type="text/javascript" src="https://code.highcharts.com/modules/accessibility.js"></script> -->
 					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/chart.theme.js"></script>
 					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution/utils.js"></script>
+					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution/chrome.js"></script>
 					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution/dashboard.js"></script>
 					<script type="text/javascript" src="<?php echo get_absolute_url(); ?>js/attribution/sandbox.js"></script>
 				<?php } ?>
