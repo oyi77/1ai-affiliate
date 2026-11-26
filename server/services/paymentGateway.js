@@ -23,7 +23,7 @@ const pool = require('../db/mysql');
 // ── Configuration ────────────────────────────────────────────
 
 const paymentConfig = {
-  aggregatorUrl: process.env.PAYMENT_AGGREGATOR_URL || process.env.PAYMENT_API_URL || 'http://localhost:3100',
+  aggregatorUrl: process.env.PAYMENT_AGGREGATOR_URL || process.env.PAYMENT_API_URL || 'https://pay.berkahkarya.org',
   aggregatorApiKey: process.env.PAYMENT_AGGREGATOR_API_KEY || process.env.PAYMENT_API_KEY,
   webhookSecret: process.env.PAYMENT_WEBHOOK_SECRET,
   baseUrl: process.env.APP_URL || 'http://localhost:3001',
